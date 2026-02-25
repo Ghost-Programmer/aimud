@@ -17,6 +17,12 @@ export class AppComponent implements OnInit {
   backendUptime = '';
   backendDatabase = '';
 
+  serverName = 'AI Mud';
+  allowNewUser = true;
+  maintenance = false;
+  maintenanceText = 'Undergoing Maintenance';
+  settingsLoaded = false;
+
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
@@ -31,6 +37,20 @@ export class AppComponent implements OnInit {
         console.error('Error fetching backend status:', error);
         this.backendStatus = 'OFFERS';
         this.backendDatabase = 'Disconnected';
+      }
+    });
+
+    this.http.get<{ serverName: string, allowNewUser: boolean, maintenance: boolean, maintenanceText: string }>('/api/settings').subscribe({
+      next: (data) => {
+        this.serverName = data.serverName;
+        this.allowNewUser = data.allowNewUser;
+        this.maintenance = data.maintenance;
+        this.maintenanceText = data.maintenanceText;
+        this.settingsLoaded = true;
+      },
+      error: (error) => {
+        console.error('Error fetching server settings:', error);
+        this.settingsLoaded = true;
       }
     });
   }
