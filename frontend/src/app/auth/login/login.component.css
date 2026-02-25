@@ -1,0 +1,11 @@
+.success-message {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #6ee7b7;
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    text-align: center;
+    backdrop-filter: blur(4px);
+    margin-bottom: 1.5rem;
+}
