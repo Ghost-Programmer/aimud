@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { RegisterDialogComponent } from './components/register-dialog/register-dialog.component';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule],
+  imports: [RouterOutlet, CommonModule, RegisterDialogComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -22,6 +23,15 @@ export class AppComponent implements OnInit {
   maintenance = false;
   maintenanceText = 'Undergoing Maintenance';
   settingsLoaded = false;
+  isRegisterDialogOpen = false;
+
+  openRegisterDialog() {
+    this.isRegisterDialogOpen = true;
+  }
+
+  closeRegisterDialog() {
+    this.isRegisterDialogOpen = false;
+  }
 
   constructor(private http: HttpClient) { }
 

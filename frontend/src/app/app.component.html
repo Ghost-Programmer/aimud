@@ -21,7 +21,7 @@
 
       <div class="action-buttons">
         <button class="btn btn-primary">Login</button>
-        <button *ngIf="allowNewUser" class="btn btn-secondary">Create new User</button>
+        <button *ngIf="allowNewUser" class="btn btn-secondary" (click)="openRegisterDialog()">Create new User</button>
       </div>
     </div>
 
@@ -56,4 +56,6 @@
     </div>
   </div>
 </main>
+
+<app-register-dialog *ngIf="isRegisterDialogOpen" (closeDialog)="closeRegisterDialog()"></app-register-dialog>
 <router-outlet />
