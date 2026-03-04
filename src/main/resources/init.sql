@@ -18,10 +18,3 @@ CREATE TABLE IF NOT EXISTS server_settings (
 INSERT INTO server_settings (id, server_name, allow_new_user, maintenance, maintenance_text) 
 VALUES (1, 'AI Mud', true, false, 'Undergoing Maintenance')
 ON CONFLICT (id) DO NOTHING;
-
-CREATE TABLE IF NOT EXISTS app_user (
-    id SERIAL PRIMARY KEY,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    roles VARCHAR(255) NOT NULL  -- we will store comma-separated roles like "ADMIN,PLAYER"
-);
