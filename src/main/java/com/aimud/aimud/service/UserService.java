@@ -24,7 +24,15 @@ public class UserService {
                 .flatMap(existingUser -> Mono.<User>error(new IllegalArgumentException("Username already exists")))
                 .switchIfEmpty(Mono.defer(() -> {
                     user.setPassword(passwordEncoder.encode(user.getPassword()));
-                    return userRepository.save(user);
+                    return userRepository.count()
+                            .flatMap(count -> {
+                                if (count == 0) {
+                                    user.setRole("MUD_ADMIN");
+                                } else {
+                                    user.setRole("MUD_USER");
+                                }
+                                return userRepository.save(user);
+                            });
                 }));
     }
 
