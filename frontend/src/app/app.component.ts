@@ -45,7 +45,7 @@ export class AppComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error fetching backend status:', error);
-        this.backendStatus = 'OFFERS';
+        this.backendStatus = 'OFFLINE';
         this.backendDatabase = 'Disconnected';
       }
     });

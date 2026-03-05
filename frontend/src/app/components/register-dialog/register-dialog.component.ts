@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'app-register-dialog',
@@ -13,8 +14,9 @@ export class RegisterDialogComponent {
   @Output() closeDialog = new EventEmitter<void>();
 
   registerForm: FormGroup;
+  errorMessage: string = '';
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private userService: UserService) {
     this.registerForm = this.fb.group({
       username: ['', Validators.required],
       password: ['', Validators.required],
@@ -29,8 +31,21 @@ export class RegisterDialogComponent {
 
   onSubmit() {
     if (this.registerForm.valid) {
-      console.log('Registration details:', this.registerForm.value);
-      this.closeDialog.emit();
+      const { username, password } = this.registerForm.value;
+      this.userService.register({ username, password }).subscribe({
+        next: (response) => {
+          console.log('User registered successfully', response);
+          this.closeDialog.emit();
+        },
+        error: (error) => {
+          console.error('Registration failed', error);
+          if (error.status === 409) {
+             this.errorMessage = 'Username already exists';
+          } else {
+             this.errorMessage = error.error?.message || 'Registration failed';
+          }
+        }
+      });
     }
   }
 
