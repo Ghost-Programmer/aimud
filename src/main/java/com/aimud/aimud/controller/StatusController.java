@@ -1,4 +1,4 @@
-package com.aimud.aimud;
+package com.aimud.aimud.controller;
 
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.web.bind.annotation.GetMapping;

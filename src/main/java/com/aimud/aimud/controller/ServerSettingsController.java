@@ -1,5 +1,7 @@
-package com.aimud.aimud;
+package com.aimud.aimud.controller;
 
+import com.aimud.aimud.model.ServerSettings;
+import com.aimud.aimud.repository.ServerSettingsRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

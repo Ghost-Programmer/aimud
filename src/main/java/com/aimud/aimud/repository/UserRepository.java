@@ -1,5 +1,6 @@
-package com.aimud.aimud;
+package com.aimud.aimud.repository;
 
+import com.aimud.aimud.model.User;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Mono;
 
