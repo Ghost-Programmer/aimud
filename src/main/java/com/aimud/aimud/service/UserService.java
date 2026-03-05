@@ -11,10 +11,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public Mono<User> registerUser(User user) {
@@ -24,5 +26,12 @@ public class UserService {
                     user.setPassword(passwordEncoder.encode(user.getPassword()));
                     return userRepository.save(user);
                 }));
+    }
+
+    public Mono<String> login(String username, String password) {
+        return userRepository.findByUsername(username)
+                .filter(user -> passwordEncoder.matches(password, user.getPassword()))
+                .map(user -> jwtService.generateToken(user.getUsername()))
+                .switchIfEmpty(Mono.error(new RuntimeException("Invalid username or password")));
     }
 }

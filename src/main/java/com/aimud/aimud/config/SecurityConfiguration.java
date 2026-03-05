@@ -18,6 +18,7 @@ public class SecurityConfiguration {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/api/users/register").permitAll()
+                        .pathMatchers("/api/users/login").permitAll()
                         .pathMatchers("/api/status").permitAll()
                         .pathMatchers("/api/settings").permitAll()
                         .pathMatchers("/**").permitAll()

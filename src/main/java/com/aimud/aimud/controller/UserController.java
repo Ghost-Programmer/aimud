@@ -32,4 +32,18 @@ public class UserController {
                 .map(savedUser -> ResponseEntity.ok((Object)savedUser))
                 .onErrorResume(IllegalArgumentException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()))));
     }
+
+    @PostMapping("/login")
+    public Mono<ResponseEntity<Object>> login(@RequestBody User user) {
+        if (user.getUsername() == null || user.getUsername().isEmpty()) {
+            return Mono.just(ResponseEntity.badRequest().body(Map.of("message", "Username is required")));
+        }
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            return Mono.just(ResponseEntity.badRequest().body(Map.of("message", "Password is required")));
+        }
+
+        return userService.login(user.getUsername(), user.getPassword())
+                .map(token -> ResponseEntity.ok((Object)Map.of("token", token)))
+                .onErrorResume(RuntimeException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid credentials"))));
+    }
 }

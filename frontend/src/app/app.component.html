@@ -1,4 +1,4 @@
-<main class="main-container">
+<main class="main-container" *ngIf="router.url === '/'">
   <!-- Show loading state if settings aren't loaded -->
   <div *ngIf="!settingsLoaded" class="glass-panel loading-state">
     <div class="spinner"></div>
@@ -20,7 +20,7 @@
       <p class="subtitle">Welcome to the adventure.</p>
 
       <div class="action-buttons">
-        <button class="btn btn-primary">Login</button>
+        <button class="btn btn-primary" (click)="openLoginDialog()">Login</button>
         <button *ngIf="allowNewUser" class="btn btn-secondary" (click)="openRegisterDialog()">Create new User</button>
       </div>
     </div>
@@ -58,4 +58,5 @@
 </main>
 
 <app-register-dialog *ngIf="isRegisterDialogOpen" (closeDialog)="closeRegisterDialog()"></app-register-dialog>
+<app-login-dialog *ngIf="isLoginDialogOpen" (closeDialog)="closeLoginDialog()"></app-login-dialog>
 <router-outlet />

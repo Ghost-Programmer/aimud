@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router } from '@angular/router';
 import { RegisterDialogComponent } from './components/register-dialog/register-dialog.component';
+import { LoginDialogComponent } from './components/login-dialog/login-dialog.component';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, RegisterDialogComponent],
+  imports: [RouterOutlet, CommonModule, RegisterDialogComponent, LoginDialogComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -24,6 +25,7 @@ export class AppComponent implements OnInit {
   maintenanceText = 'Undergoing Maintenance';
   settingsLoaded = false;
   isRegisterDialogOpen = false;
+  isLoginDialogOpen = false;
 
   openRegisterDialog() {
     this.isRegisterDialogOpen = true;
@@ -33,7 +35,15 @@ export class AppComponent implements OnInit {
     this.isRegisterDialogOpen = false;
   }
 
-  constructor(private http: HttpClient) { }
+  openLoginDialog() {
+    this.isLoginDialogOpen = true;
+  }
+
+  closeLoginDialog() {
+    this.isLoginDialogOpen = false;
+  }
+
+  constructor(private http: HttpClient, public router: Router) { }
 
   ngOnInit() {
     this.http.get<{ status: string, version: string, uptime: string, database: string }>('/api/status').subscribe({
