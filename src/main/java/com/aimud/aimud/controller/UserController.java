@@ -1,10 +1,9 @@
 package com.aimud.aimud.controller;
 
 import com.aimud.aimud.model.User;
-import com.aimud.aimud.repository.UserRepository;
+import com.aimud.aimud.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -14,12 +13,10 @@ import java.util.Map;
 @RequestMapping("/api/users")
 public class UserController {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @PostMapping("/register")
@@ -31,11 +28,8 @@ public class UserController {
             return Mono.just(ResponseEntity.badRequest().body(Map.of("message", "Password is required")));
         }
 
-        return userRepository.findByUsername(user.getUsername())
-                .flatMap(existingUser -> Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).body((Object)Map.of("message", "Username already exists"))))
-                .switchIfEmpty(Mono.defer(() -> {
-                    user.setPassword(passwordEncoder.encode(user.getPassword()));
-                    return userRepository.save(user).map(savedUser -> ResponseEntity.ok((Object)savedUser));
-                }));
+        return userService.registerUser(user)
+                .map(savedUser -> ResponseEntity.ok((Object)savedUser))
+                .onErrorResume(IllegalArgumentException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()))));
     }
 }
