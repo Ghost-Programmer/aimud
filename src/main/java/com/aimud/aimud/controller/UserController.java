@@ -5,6 +5,7 @@ import com.aimud.aimud.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
@@ -45,5 +46,10 @@ public class UserController {
         return userService.login(user.getUsername(), user.getPassword())
                 .map(token -> ResponseEntity.ok((Object)Map.of("token", token)))
                 .onErrorResume(RuntimeException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid credentials"))));
+    }
+
+    @GetMapping
+    public Flux<User> getAllUsers() {
+        return userService.getAllUsers();
     }
 }

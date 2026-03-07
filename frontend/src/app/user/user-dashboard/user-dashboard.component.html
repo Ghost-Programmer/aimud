@@ -36,9 +36,9 @@
         <h2>Create Character</h2>
         <p>Character creation form will go here.</p>
       </div>
-      <div *ngIf="activeTab === 'players'">
+      <div *ngIf="activeTab === 'players' && role === 'MUD_ADMIN'">
         <h2>Players Management</h2>
-        <p>List of players will go here.</p>
+        <app-player-list></app-player-list>
       </div>
     </div>
   </div>

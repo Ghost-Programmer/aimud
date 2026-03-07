@@ -4,6 +4,7 @@ import com.aimud.aimud.model.User;
 import com.aimud.aimud.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -41,5 +42,9 @@ public class UserService {
                 .filter(user -> passwordEncoder.matches(password, user.getPassword()))
                 .map(user -> jwtService.generateToken(user.getUsername(), user.getRole()))
                 .switchIfEmpty(Mono.error(new RuntimeException("Invalid username or password")));
+    }
+
+    public Flux<User> getAllUsers() {
+        return userRepository.findAll();
     }
 }
