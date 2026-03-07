@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { PlayerListComponent } from '../../components/player-list/player-list.component';
 import { CreateCharacterComponent } from '../../components/create-character/create-character.component';
+import { CharacterSelectComponent } from '../../components/character-select/character-select.component';
+import { CharacterPlayComponent } from '../../components/character-play/character-play.component';
 
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, PlayerListComponent, CreateCharacterComponent],
+  imports: [CommonModule, PlayerListComponent, CreateCharacterComponent, CharacterSelectComponent, CharacterPlayComponent],
   templateUrl: './user-dashboard.component.html',
   styleUrl: './user-dashboard.component.css'
 })
@@ -16,6 +18,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   localTime: string = '';
   onlineTime: string = '00:00:00';
   activeTab: string = 'create-character';
+  selectedCharacter: any = null;
   private loginTime: number = Date.now();
   private timerInterval: any;
 
@@ -46,6 +49,14 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   setActiveTab(tabName: string) {
     this.activeTab = tabName;
+    if (tabName !== 'play-character') {
+      this.selectedCharacter = null;
+    }
+  }
+
+  onCharacterSelected(character: any) {
+    this.selectedCharacter = character;
+    this.activeTab = 'play-character';
   }
 
   logout() {

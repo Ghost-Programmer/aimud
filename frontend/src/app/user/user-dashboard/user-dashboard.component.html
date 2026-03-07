@@ -26,6 +26,13 @@
         Create Character
       </button>
       <button
+        class="tab-button"
+        [class.active]="activeTab === 'select-character' || activeTab === 'play-character'"
+        (click)="setActiveTab('select-character')">
+        <span *ngIf="activeTab !== 'play-character'">Select Character</span>
+        <span *ngIf="activeTab === 'play-character'">{{ selectedCharacter?.name }}</span>
+      </button>
+      <button
         *ngIf="role === 'MUD_ADMIN'"
         class="tab-button"
         [class.active]="activeTab === 'players'"
@@ -38,6 +45,12 @@
       <div *ngIf="activeTab === 'create-character'">
         <h2>Create Character</h2>
         <app-create-character></app-create-character>
+      </div>
+      <div *ngIf="activeTab === 'select-character'">
+        <app-character-select (characterSelected)="onCharacterSelected($event)"></app-character-select>
+      </div>
+      <div *ngIf="activeTab === 'play-character'">
+        <app-character-play [character]="selectedCharacter"></app-character-play>
       </div>
       <div *ngIf="activeTab === 'players' && role === 'MUD_ADMIN'">
         <h2>Players Management</h2>

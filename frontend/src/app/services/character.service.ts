@@ -13,4 +13,8 @@ export class CharacterService {
   createCharacter(character: any): Observable<any> {
     return this.http.post(this.apiUrl, character);
   }
+
+  getCharacters(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl);
+  }
 }
