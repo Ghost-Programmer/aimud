@@ -19,43 +19,35 @@
 
   <div class="tabs-container">
     <div class="tabs-header">
-      <button
+      <div
+        *ngFor="let tab of tabs"
         class="tab-button"
-        [class.active]="activeTab === 'create-character'"
-        (click)="setActiveTab('create-character')">
-        Create Character
-      </button>
-      <button
-        class="tab-button"
-        [class.active]="activeTab === 'select-character' || activeTab === 'play-character'"
-        (click)="setActiveTab('select-character')">
-        <span *ngIf="activeTab !== 'play-character'">Select Character</span>
-        <span *ngIf="activeTab === 'play-character'">{{ selectedCharacter?.name }}</span>
-      </button>
-      <button
-        *ngIf="role === 'MUD_ADMIN'"
-        class="tab-button"
-        [class.active]="activeTab === 'players'"
-        (click)="setActiveTab('players')">
-        Players
-      </button>
+        [class.active]="activeTabId === tab.id"
+        (click)="setActiveTab(tab.id)">
+        {{ tab.label }}
+        <span *ngIf="tab.type === 'play-character'" class="close-tab" (click)="closeTab(tab.id, $event)">×</span>
+      </div>
     </div>
 
     <div class="tab-content">
-      <div *ngIf="activeTab === 'create-character'">
-        <h2>Create Character</h2>
-        <app-create-character></app-create-character>
-      </div>
-      <div *ngIf="activeTab === 'select-character'">
-        <app-character-select (characterSelected)="onCharacterSelected($event)"></app-character-select>
-      </div>
-      <div *ngIf="activeTab === 'play-character'">
-        <app-character-play [character]="selectedCharacter"></app-character-play>
-      </div>
-      <div *ngIf="activeTab === 'players' && role === 'MUD_ADMIN'">
-        <h2>Players Management</h2>
-        <app-player-list></app-player-list>
-      </div>
+      <ng-container *ngFor="let tab of tabs">
+        <div *ngIf="activeTabId === tab.id">
+          <div *ngIf="tab.type === 'create-character'">
+            <h2>Create Character</h2>
+            <app-create-character></app-create-character>
+          </div>
+          <div *ngIf="tab.type === 'select-character'">
+            <app-character-select (characterSelected)="onCharacterSelected($event, tab.id)"></app-character-select>
+          </div>
+          <div *ngIf="tab.type === 'play-character'">
+            <app-character-play [character]="tab.data"></app-character-play>
+          </div>
+          <div *ngIf="tab.type === 'players'">
+            <h2>Players Management</h2>
+            <app-player-list></app-player-list>
+          </div>
+        </div>
+      </ng-container>
     </div>
   </div>
 </div>
