@@ -43,4 +43,16 @@ export class PlayerListComponent implements OnInit {
       });
     }
   }
+
+  toggleLock(user: any) {
+    this.userService.toggleLock(user.id).subscribe({
+      next: (updatedUser) => {
+        user.locked = updatedUser.locked;
+      },
+      error: (error) => {
+        console.error('Error toggling lock', error);
+        alert('Failed to toggle lock status');
+      }
+    });
+  }
 }

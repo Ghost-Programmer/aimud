@@ -45,7 +45,12 @@ public class UserController {
 
         return userService.login(user.getUsername(), user.getPassword())
                 .map(token -> ResponseEntity.ok((Object)Map.of("token", token)))
-                .onErrorResume(RuntimeException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid credentials"))));
+                .onErrorResume(RuntimeException.class, e -> {
+                    if (e.getMessage().equals("Account is locked")) {
+                        return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Account is locked")));
+                    }
+                    return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid credentials")));
+                });
     }
 
     @GetMapping
@@ -61,6 +66,13 @@ public class UserController {
         }
 
         return userService.changePassword(userId, newPassword)
+                .map(updatedUser -> ResponseEntity.ok((Object)updatedUser))
+                .onErrorResume(RuntimeException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", e.getMessage()))));
+    }
+
+    @PutMapping("/{userId}/lock")
+    public Mono<ResponseEntity<Object>> toggleLock(@PathVariable Long userId) {
+        return userService.toggleLock(userId)
                 .map(updatedUser -> ResponseEntity.ok((Object)updatedUser))
                 .onErrorResume(RuntimeException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", e.getMessage()))));
     }

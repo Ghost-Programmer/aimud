@@ -25,4 +25,8 @@ export class UserService {
   changePassword(userId: number, password: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/${userId}/password`, { password });
   }
+
+  toggleLock(userId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${userId}/lock`, {});
+  }
 }

@@ -40,7 +40,12 @@ public class UserService {
     public Mono<String> login(String username, String password) {
         return userRepository.findByUsername(username)
                 .filter(user -> passwordEncoder.matches(password, user.getPassword()))
-                .map(user -> jwtService.generateToken(user.getUsername(), user.getRole()))
+                .flatMap(user -> {
+                    if (user.isLocked()) {
+                        return Mono.error(new RuntimeException("Account is locked"));
+                    }
+                    return Mono.just(jwtService.generateToken(user.getUsername(), user.getRole()));
+                })
                 .switchIfEmpty(Mono.error(new RuntimeException("Invalid username or password")));
     }
 
@@ -52,6 +57,15 @@ public class UserService {
         return userRepository.findById(userId)
                 .flatMap(user -> {
                     user.setPassword(passwordEncoder.encode(newPassword));
+                    return userRepository.save(user);
+                })
+                .switchIfEmpty(Mono.error(new RuntimeException("User not found")));
+    }
+
+    public Mono<User> toggleLock(Long userId) {
+        return userRepository.findById(userId)
+                .flatMap(user -> {
+                    user.setLocked(!user.isLocked());
                     return userRepository.save(user);
                 })
                 .switchIfEmpty(Mono.error(new RuntimeException("User not found")));

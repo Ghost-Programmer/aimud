@@ -10,6 +10,7 @@ public class User {
     private String username;
     private String password;
     private String role;
+    private boolean locked;
 
     public User() {
     }
@@ -49,5 +50,13 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
     }
 }
