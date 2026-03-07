@@ -12,6 +12,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   role: string = '';
   localTime: string = '';
   onlineTime: string = '00:00:00';
+  activeTab: string = 'create-character';
   private loginTime: number = Date.now();
   private timerInterval: any;
 
@@ -36,6 +37,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
     }
+  }
+
+  setActiveTab(tabName: string) {
+    this.activeTab = tabName;
   }
 
   private updateTime() {

@@ -13,7 +13,33 @@
       <span class="value">{{ onlineTime }}</span>
     </div>
   </div>
-  <div class="dashboard-content">
-    <h1>Welcome to the Dashboard</h1>
+
+  <div class="tabs-container">
+    <div class="tabs-header">
+      <button
+        class="tab-button"
+        [class.active]="activeTab === 'create-character'"
+        (click)="setActiveTab('create-character')">
+        Create Character
+      </button>
+      <button
+        *ngIf="role === 'MUD_ADMIN'"
+        class="tab-button"
+        [class.active]="activeTab === 'players'"
+        (click)="setActiveTab('players')">
+        Players
+      </button>
+    </div>
+
+    <div class="tab-content">
+      <div *ngIf="activeTab === 'create-character'">
+        <h2>Create Character</h2>
+        <p>Character creation form will go here.</p>
+      </div>
+      <div *ngIf="activeTab === 'players'">
+        <h2>Players Management</h2>
+        <p>List of players will go here.</p>
+      </div>
+    </div>
   </div>
 </div>
