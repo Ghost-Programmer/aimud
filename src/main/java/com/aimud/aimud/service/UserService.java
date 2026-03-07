@@ -47,4 +47,13 @@ public class UserService {
     public Flux<User> getAllUsers() {
         return userRepository.findAll();
     }
+
+    public Mono<User> changePassword(Long userId, String newPassword) {
+        return userRepository.findById(userId)
+                .flatMap(user -> {
+                    user.setPassword(passwordEncoder.encode(newPassword));
+                    return userRepository.save(user);
+                })
+                .switchIfEmpty(Mono.error(new RuntimeException("User not found")));
+    }
 }

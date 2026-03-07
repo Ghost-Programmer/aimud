@@ -28,4 +28,19 @@ export class PlayerListComponent implements OnInit {
       }
     });
   }
+
+  changePassword(userId: number) {
+    const newPassword = prompt('Enter new password:');
+    if (newPassword) {
+      this.userService.changePassword(userId, newPassword).subscribe({
+        next: () => {
+          alert('Password changed successfully');
+        },
+        error: (error) => {
+          console.error('Error changing password', error);
+          alert('Failed to change password');
+        }
+      });
+    }
+  }
 }

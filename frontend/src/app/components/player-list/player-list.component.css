@@ -26,3 +26,26 @@ th {
 tr:hover {
   background-color: rgba(255, 255, 255, 0.02);
 }
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:hover {
+  color: var(--primary);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.icon-btn svg {
+  width: 18px;
+  height: 18px;
+}

@@ -21,4 +21,8 @@ export class UserService {
   getAllUsers(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);
   }
+
+  changePassword(userId: number, password: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${userId}/password`, { password });
+  }
 }

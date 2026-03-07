@@ -52,4 +52,16 @@ public class UserController {
     public Flux<User> getAllUsers() {
         return userService.getAllUsers();
     }
+
+    @PutMapping("/{userId}/password")
+    public Mono<ResponseEntity<Object>> changePassword(@PathVariable Long userId, @RequestBody Map<String, String> body) {
+        String newPassword = body.get("password");
+        if (newPassword == null || newPassword.isEmpty()) {
+            return Mono.just(ResponseEntity.badRequest().body(Map.of("message", "Password is required")));
+        }
+
+        return userService.changePassword(userId, newPassword)
+                .map(updatedUser -> ResponseEntity.ok((Object)updatedUser))
+                .onErrorResume(RuntimeException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", e.getMessage()))));
+    }
 }
