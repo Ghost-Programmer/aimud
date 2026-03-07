@@ -39,7 +39,7 @@ public class UserService {
     public Mono<String> login(String username, String password) {
         return userRepository.findByUsername(username)
                 .filter(user -> passwordEncoder.matches(password, user.getPassword()))
-                .map(user -> jwtService.generateToken(user.getUsername()))
+                .map(user -> jwtService.generateToken(user.getUsername(), user.getRole()))
                 .switchIfEmpty(Mono.error(new RuntimeException("Invalid username or password")));
     }
 }

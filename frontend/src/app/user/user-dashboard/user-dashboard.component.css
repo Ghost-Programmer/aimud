@@ -1,7 +1,44 @@
 .dashboard-container {
   display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  color: var(--text-main);
+  background-color: var(--bg-dark);
+  overflow: hidden;
+}
+
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid var(--glass-border);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  width: 100%;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  font-weight: 600;
+  margin-right: 8px;
+  color: var(--text-muted);
+}
+
+.value {
+  font-family: monospace;
+  color: var(--text-main);
+}
+
+.dashboard-content {
+  flex: 1;
+  display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  color: var(--text-main);
+  width: 100%;
 }
