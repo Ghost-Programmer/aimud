@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { PlayerListComponent } from '../../components/player-list/player-list.component';
 
 @Component({
@@ -16,6 +17,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   activeTab: string = 'create-character';
   private loginTime: number = Date.now();
   private timerInterval: any;
+
+  constructor(private router: Router) {}
 
   ngOnInit() {
     const token = localStorage.getItem('token');
@@ -42,6 +45,11 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   setActiveTab(tabName: string) {
     this.activeTab = tabName;
+  }
+
+  logout() {
+    localStorage.removeItem('token');
+    this.router.navigate(['/']);
   }
 
   private updateTime() {

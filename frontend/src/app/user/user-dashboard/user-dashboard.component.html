@@ -1,17 +1,20 @@
 <div class="dashboard-container">
   <div class="status-bar">
-    <div class="status-item">
-      <span class="label">Role:</span>
-      <span class="value">{{ role }}</span>
+    <div class="status-group">
+      <div class="status-item">
+        <span class="label">Role:</span>
+        <span class="value">{{ role }}</span>
+      </div>
+      <div class="status-item">
+        <span class="label">Local Time:</span>
+        <span class="value">{{ localTime }}</span>
+      </div>
+      <div class="status-item">
+        <span class="label">Online Time:</span>
+        <span class="value">{{ onlineTime }}</span>
+      </div>
     </div>
-    <div class="status-item">
-      <span class="label">Local Time:</span>
-      <span class="value">{{ localTime }}</span>
-    </div>
-    <div class="status-item">
-      <span class="label">Online Time:</span>
-      <span class="value">{{ onlineTime }}</span>
-    </div>
+    <button class="logout-btn" (click)="logout()">Logout</button>
   </div>
 
   <div class="tabs-container">
