@@ -2,11 +2,12 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { PlayerListComponent } from '../../components/player-list/player-list.component';
+import { CreateCharacterComponent } from '../../components/create-character/create-character.component';
 
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, PlayerListComponent],
+  imports: [CommonModule, PlayerListComponent, CreateCharacterComponent],
   templateUrl: './user-dashboard.component.html',
   styleUrl: './user-dashboard.component.css'
 })

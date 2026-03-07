@@ -37,7 +37,7 @@
     <div class="tab-content">
       <div *ngIf="activeTab === 'create-character'">
         <h2>Create Character</h2>
-        <p>Character creation form will go here.</p>
+        <app-create-character></app-create-character>
       </div>
       <div *ngIf="activeTab === 'players' && role === 'MUD_ADMIN'">
         <h2>Players Management</h2>

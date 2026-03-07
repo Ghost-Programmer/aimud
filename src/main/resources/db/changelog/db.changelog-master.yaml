@@ -3,3 +3,5 @@ databaseChangeLog:
       file: db/changelog/changes/001-initial-schema.sql
   - include:
       file: db/changelog/changes/002-add-locked-to-users.sql
+  - include:
+      file: db/changelog/changes/003-create-characters-table.sql
