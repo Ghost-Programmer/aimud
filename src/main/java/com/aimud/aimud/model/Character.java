@@ -36,6 +36,27 @@ public class Character {
     @Transient
     private int currentCharisma;
 
+    @Transient
+    private double maxHp;
+    @Transient
+    private double maxMana;
+    @Transient
+    private double hpRegen;
+    @Transient
+    private double manaRegen;
+    @Transient
+    private double dodgeChance;
+    @Transient
+    private double critChance;
+    @Transient
+    private double physicalAttack;
+    @Transient
+    private double magicAttack;
+    @Transient
+    private double armor;
+    @Transient
+    private double magicResist;
+
     public Character() {
     }
 
@@ -186,5 +207,85 @@ public class Character {
 
     public void setCurrentCharisma(int currentCharisma) {
         this.currentCharisma = currentCharisma;
+    }
+
+    public double getMaxHp() {
+        return maxHp;
+    }
+
+    public void setMaxHp(double maxHp) {
+        this.maxHp = maxHp;
+    }
+
+    public double getMaxMana() {
+        return maxMana;
+    }
+
+    public void setMaxMana(double maxMana) {
+        this.maxMana = maxMana;
+    }
+
+    public double getHpRegen() {
+        return hpRegen;
+    }
+
+    public void setHpRegen(double hpRegen) {
+        this.hpRegen = hpRegen;
+    }
+
+    public double getManaRegen() {
+        return manaRegen;
+    }
+
+    public void setManaRegen(double manaRegen) {
+        this.manaRegen = manaRegen;
+    }
+
+    public double getDodgeChance() {
+        return dodgeChance;
+    }
+
+    public void setDodgeChance(double dodgeChance) {
+        this.dodgeChance = dodgeChance;
+    }
+
+    public double getCritChance() {
+        return critChance;
+    }
+
+    public void setCritChance(double critChance) {
+        this.critChance = critChance;
+    }
+
+    public double getPhysicalAttack() {
+        return physicalAttack;
+    }
+
+    public void setPhysicalAttack(double physicalAttack) {
+        this.physicalAttack = physicalAttack;
+    }
+
+    public double getMagicAttack() {
+        return magicAttack;
+    }
+
+    public void setMagicAttack(double magicAttack) {
+        this.magicAttack = magicAttack;
+    }
+
+    public double getArmor() {
+        return armor;
+    }
+
+    public void setArmor(double armor) {
+        this.armor = armor;
+    }
+
+    public double getMagicResist() {
+        return magicResist;
+    }
+
+    public void setMagicResist(double magicResist) {
+        this.magicResist = magicResist;
     }
 }

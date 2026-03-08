@@ -28,12 +28,37 @@ public class StatService {
                     Race race = tuple.getT1();
                     CharacterClass characterClass = tuple.getT2();
 
+                    // Calculate Current Stats
                     character.setCurrentStrength(character.getStrength() + race.getStrengthMod() + characterClass.getStrengthMod());
                     character.setCurrentDexterity(character.getDexterity() + race.getDexterityMod() + characterClass.getDexterityMod());
                     character.setCurrentConstitution(character.getConstitution() + race.getConstitutionMod() + characterClass.getConstitutionMod());
                     character.setCurrentIntelligence(character.getIntelligence() + race.getIntelligenceMod() + characterClass.getIntelligenceMod());
                     character.setCurrentWisdom(character.getWisdom() + race.getWisdomMod() + characterClass.getWisdomMod());
                     character.setCurrentCharisma(character.getCharisma() + race.getCharismaMod() + characterClass.getCharismaMod());
+
+                    // Calculate Derived Stats
+                    int str = character.getCurrentStrength();
+                    int dex = character.getCurrentDexterity();
+                    int con = character.getCurrentConstitution();
+                    int intel = character.getCurrentIntelligence();
+                    int wis = character.getCurrentWisdom();
+                    int cha = character.getCurrentCharisma();
+
+                    // Health & Resource Pools
+                    character.setMaxHp(100 + (con * 15) + (str * 5));
+                    character.setMaxMana(50 + (intel * 20));
+                    character.setHpRegen(0.5 + (con / 20.0) + (str / 100.0));
+                    character.setManaRegen(1.0 + (wis / 25.0));
+
+                    // Combat Percentages
+                    character.setDodgeChance((double) dex / (dex + 500));
+                    character.setCritChance((dex + (intel / 2.0)) / (dex + intel + 1000));
+
+                    // Power & Mitigation
+                    character.setPhysicalAttack((str * 2) + (dex * 0.5));
+                    character.setMagicAttack((intel * 2.5) + (wis * 0.5));
+                    character.setArmor(str + (con * 1.5));
+                    character.setMagicResist(wis + (intel * 0.5));
 
                     return character;
                 });

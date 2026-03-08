@@ -30,6 +30,7 @@ export class CreateCharacterComponent implements OnInit {
     currentWisdom: 0,
     currentCharisma: 0
   };
+  derivedStats: any = {};
   races: any[] = [];
   classes: any[] = [];
 
@@ -117,6 +118,7 @@ export class CreateCharacterComponent implements OnInit {
           currentWisdom: generatedCharacter.currentWisdom,
           currentCharisma: generatedCharacter.currentCharisma
         };
+        this.updateDerivedStats(generatedCharacter);
       },
       error: (error) => {
         console.error('Error generating character', error);
@@ -140,11 +142,27 @@ export class CreateCharacterComponent implements OnInit {
           currentWisdom: generatedCharacter.currentWisdom,
           currentCharisma: generatedCharacter.currentCharisma
         };
+        this.updateDerivedStats(generatedCharacter);
       },
       error: (error) => {
         console.error('Error updating stats', error);
       }
     });
+  }
+
+  updateDerivedStats(character: any) {
+    this.derivedStats = {
+      maxHp: character.maxHp,
+      maxMana: character.maxMana,
+      hpRegen: character.hpRegen,
+      manaRegen: character.manaRegen,
+      dodgeChance: character.dodgeChance,
+      critChance: character.critChance,
+      physicalAttack: character.physicalAttack,
+      magicAttack: character.magicAttack,
+      armor: character.armor,
+      magicResist: character.magicResist
+    };
   }
 
   roll(): number {
@@ -174,6 +192,7 @@ export class CreateCharacterComponent implements OnInit {
           } else {
              this.baseStats = { strength: 0, dexterity: 0, constitution: 0, intelligence: 0, wisdom: 0, charisma: 0 };
              this.currentStats = { currentStrength: 0, currentDexterity: 0, currentConstitution: 0, currentIntelligence: 0, currentWisdom: 0, currentCharisma: 0 };
+             this.derivedStats = {};
           }
         },
         error: (error) => {

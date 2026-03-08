@@ -111,6 +111,46 @@ input:focus, select:focus {
   text-align: center;
 }
 
+.derived-stats-container {
+  width: 100%;
+  margin-bottom: 20px;
+  background-color: rgba(255, 255, 255, 0.02);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+}
+
+.derived-stats-container h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: var(--primary);
+  font-size: 1.1rem;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 5px;
+}
+
+.derived-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.derived-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.derived-stat .label {
+  color: var(--text-muted);
+  margin-bottom: 0;
+}
+
+.derived-stat .value {
+  font-family: monospace;
+  color: var(--text-main);
+}
+
 .dialog-actions {
   display: flex;
   justify-content: space-between;

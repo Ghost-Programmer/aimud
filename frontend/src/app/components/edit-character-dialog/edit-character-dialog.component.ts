@@ -20,6 +20,7 @@ export class EditCharacterDialogComponent {
   races: any[] = [];
   classes: any[] = [];
   currentStats: any = {};
+  derivedStats: any = {};
 
   constructor(
     private fb: FormBuilder,
@@ -77,12 +78,28 @@ export class EditCharacterDialogComponent {
             currentWisdom: generatedCharacter.currentWisdom,
             currentCharisma: generatedCharacter.currentCharisma
           };
+          this.updateDerivedStats(generatedCharacter);
         },
         error: (error) => {
           console.error('Error calculating stats', error);
         }
       });
     }
+  }
+
+  updateDerivedStats(character: any) {
+    this.derivedStats = {
+      maxHp: character.maxHp,
+      maxMana: character.maxMana,
+      hpRegen: character.hpRegen,
+      manaRegen: character.manaRegen,
+      dodgeChance: character.dodgeChance,
+      critChance: character.critChance,
+      physicalAttack: character.physicalAttack,
+      magicAttack: character.magicAttack,
+      armor: character.armor,
+      magicResist: character.magicResist
+    };
   }
 
   onSubmit() {

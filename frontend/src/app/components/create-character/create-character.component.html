@@ -80,6 +80,52 @@
     </table>
   </div>
 
+  <div class="derived-stats-container" *ngIf="derivedStats.maxHp">
+    <h3>Derived Stats</h3>
+    <div class="derived-stats-grid">
+      <div class="derived-stat">
+        <span class="label">Max HP:</span>
+        <span class="value">{{ derivedStats.maxHp | number:'1.0-0' }}</span>
+      </div>
+      <div class="derived-stat">
+        <span class="label">Max Mana:</span>
+        <span class="value">{{ derivedStats.maxMana | number:'1.0-0' }}</span>
+      </div>
+      <div class="derived-stat">
+        <span class="label">HP Regen:</span>
+        <span class="value">{{ derivedStats.hpRegen | number:'1.2-2' }}/s</span>
+      </div>
+      <div class="derived-stat">
+        <span class="label">Mana Regen:</span>
+        <span class="value">{{ derivedStats.manaRegen | number:'1.2-2' }}/s</span>
+      </div>
+      <div class="derived-stat">
+        <span class="label">Dodge:</span>
+        <span class="value">{{ derivedStats.dodgeChance | percent:'1.2-2' }}</span>
+      </div>
+      <div class="derived-stat">
+        <span class="label">Crit:</span>
+        <span class="value">{{ derivedStats.critChance | percent:'1.2-2' }}</span>
+      </div>
+      <div class="derived-stat">
+        <span class="label">Phys Atk:</span>
+        <span class="value">{{ derivedStats.physicalAttack | number:'1.1-1' }}</span>
+      </div>
+      <div class="derived-stat">
+        <span class="label">Mag Atk:</span>
+        <span class="value">{{ derivedStats.magicAttack | number:'1.1-1' }}</span>
+      </div>
+      <div class="derived-stat">
+        <span class="label">Armor:</span>
+        <span class="value">{{ derivedStats.armor | number:'1.1-1' }}</span>
+      </div>
+      <div class="derived-stat">
+        <span class="label">Mag Res:</span>
+        <span class="value">{{ derivedStats.magicResist | number:'1.1-1' }}</span>
+      </div>
+    </div>
+  </div>
+
   <div class="actions">
     <button class="icon-btn" (click)="rollStats()" title="Roll Stats">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dice-5-fill" viewBox="0 0 16 16">
