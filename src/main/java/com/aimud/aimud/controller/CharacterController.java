@@ -39,4 +39,10 @@ public class CharacterController {
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
+
+    @PostMapping("/generate")
+    public Mono<ResponseEntity<Character>> generateCharacter(@RequestBody Character character) {
+        return characterService.generateCharacter(character)
+                .map(ResponseEntity::ok);
+    }
 }

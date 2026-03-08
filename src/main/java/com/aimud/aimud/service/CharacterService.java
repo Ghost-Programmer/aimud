@@ -7,12 +7,15 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Random;
+
 @Service
 public class CharacterService {
 
     private final CharacterRepository characterRepository;
     private final UserRepository userRepository;
     private final StatService statService;
+    private final Random random = new Random();
 
     public CharacterService(CharacterRepository characterRepository, UserRepository userRepository, StatService statService) {
         this.characterRepository = characterRepository;
@@ -50,5 +53,21 @@ public class CharacterService {
                     return characterRepository.save(existingCharacter);
                 })
                 .flatMap(statService::updateCurrentStats);
+    }
+
+    public Mono<Character> generateCharacter(Character character) {
+        if (character.getStrength() == 0) {
+            character.setStrength(rollStat());
+            character.setDexterity(rollStat());
+            character.setConstitution(rollStat());
+            character.setIntelligence(rollStat());
+            character.setWisdom(rollStat());
+            character.setCharisma(rollStat());
+        }
+        return statService.updateCurrentStats(character);
+    }
+
+    private int rollStat() {
+        return random.nextInt(4) + 1;
     }
 }

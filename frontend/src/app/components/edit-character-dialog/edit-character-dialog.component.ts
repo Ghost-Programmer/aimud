@@ -19,6 +19,7 @@ export class EditCharacterDialogComponent {
   characterForm: FormGroup;
   races: any[] = [];
   classes: any[] = [];
+  currentStats: any = {};
 
   constructor(
     private fb: FormBuilder,
@@ -43,7 +44,12 @@ export class EditCharacterDialogComponent {
     this.loadClasses();
     if (this.character) {
       this.characterForm.patchValue(this.character);
+      this.updateCurrentStats();
     }
+
+    this.characterForm.valueChanges.subscribe(() => {
+      this.updateCurrentStats();
+    });
   }
 
   loadRaces() {
@@ -56,6 +62,27 @@ export class EditCharacterDialogComponent {
     this.configService.getAllCharacterClasses().subscribe(classes => {
       this.classes = classes;
     });
+  }
+
+  updateCurrentStats() {
+    if (this.characterForm.valid) {
+      const character = { ...this.character, ...this.characterForm.value };
+      this.characterService.generateCharacter(character).subscribe({
+        next: (generatedCharacter) => {
+          this.currentStats = {
+            currentStrength: generatedCharacter.currentStrength,
+            currentDexterity: generatedCharacter.currentDexterity,
+            currentConstitution: generatedCharacter.currentConstitution,
+            currentIntelligence: generatedCharacter.currentIntelligence,
+            currentWisdom: generatedCharacter.currentWisdom,
+            currentCharisma: generatedCharacter.currentCharisma
+          };
+        },
+        error: (error) => {
+          console.error('Error calculating stats', error);
+        }
+      });
+    }
   }
 
   onSubmit() {

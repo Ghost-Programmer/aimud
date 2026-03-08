@@ -36,31 +36,48 @@
     </div>
   </form>
 
-  <div class="stats-container">
-    <div class="stat-item">
-      <span class="stat-label">Strength</span>
-      <span class="stat-value">{{ stats.strength }}</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">Dexterity</span>
-      <span class="stat-value">{{ stats.dexterity }}</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">Constitution</span>
-      <span class="stat-value">{{ stats.constitution }}</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">Intelligence</span>
-      <span class="stat-value">{{ stats.intelligence }}</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">Wisdom</span>
-      <span class="stat-value">{{ stats.wisdom }}</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">Charisma</span>
-      <span class="stat-value">{{ stats.charisma }}</span>
-    </div>
+  <div class="stats-table-container">
+    <table class="stats-table">
+      <thead>
+        <tr>
+          <th>Stat</th>
+          <th>Base</th>
+          <th>Current</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Strength</td>
+          <td>{{ baseStats.strength }}</td>
+          <td>{{ currentStats.currentStrength }}</td>
+        </tr>
+        <tr>
+          <td>Dexterity</td>
+          <td>{{ baseStats.dexterity }}</td>
+          <td>{{ currentStats.currentDexterity }}</td>
+        </tr>
+        <tr>
+          <td>Constitution</td>
+          <td>{{ baseStats.constitution }}</td>
+          <td>{{ currentStats.currentConstitution }}</td>
+        </tr>
+        <tr>
+          <td>Intelligence</td>
+          <td>{{ baseStats.intelligence }}</td>
+          <td>{{ currentStats.currentIntelligence }}</td>
+        </tr>
+        <tr>
+          <td>Wisdom</td>
+          <td>{{ baseStats.wisdom }}</td>
+          <td>{{ currentStats.currentWisdom }}</td>
+        </tr>
+        <tr>
+          <td>Charisma</td>
+          <td>{{ baseStats.charisma }}</td>
+          <td>{{ currentStats.currentCharisma }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <div class="actions">
@@ -69,6 +86,6 @@
         <path d="M3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3H3zm1 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM8 8a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm4 2.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM4 10.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
       </svg>
     </button>
-    <button class="save-btn" (click)="saveCharacter()" [disabled]="characterForm.invalid">Save Character</button>
+    <button class="save-btn" (click)="saveCharacter()" [disabled]="characterForm.invalid || baseStats.strength === 0">Save Character</button>
   </div>
 </div>

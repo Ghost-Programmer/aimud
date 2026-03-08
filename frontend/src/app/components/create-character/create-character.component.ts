@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CharacterService } from '../../services/character.service';
 import { ConfigService } from '../../services/config.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-create-character',
@@ -13,13 +14,21 @@ import { ConfigService } from '../../services/config.service';
 })
 export class CreateCharacterComponent implements OnInit {
   characterForm: FormGroup;
-  stats: any = {
+  baseStats: any = {
     strength: 0,
     dexterity: 0,
     constitution: 0,
     intelligence: 0,
     wisdom: 0,
     charisma: 0
+  };
+  currentStats: any = {
+    currentStrength: 0,
+    currentDexterity: 0,
+    currentConstitution: 0,
+    currentIntelligence: 0,
+    currentWisdom: 0,
+    currentCharisma: 0
   };
   races: any[] = [];
   classes: any[] = [];
@@ -37,25 +46,51 @@ export class CreateCharacterComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.rollStats();
-    this.loadRaces();
-    this.loadClasses();
-  }
+    this.loadData();
 
-  loadRaces() {
-    this.configService.getAllRaces().subscribe(races => {
-      this.races = races;
+    this.characterForm.get('raceId')?.valueChanges.subscribe(() => {
+      if (this.baseStats.strength > 0) {
+        this.updateCurrentStats();
+      }
+    });
+
+    this.characterForm.get('classId')?.valueChanges.subscribe(() => {
+      if (this.baseStats.strength > 0) {
+        this.updateCurrentStats();
+      }
     });
   }
 
-  loadClasses() {
-    this.configService.getAllCharacterClasses().subscribe(classes => {
+  loadData() {
+    forkJoin({
+      races: this.configService.getAllRaces(),
+      classes: this.configService.getAllCharacterClasses()
+    }).subscribe(({ races, classes }) => {
+      this.races = races;
       this.classes = classes;
+
+      // Default to Human Cleric
+      const human = this.races.find(r => r.name === 'Human');
+      const cleric = this.classes.find(c => c.name === 'Cleric');
+
+      if (human && cleric) {
+        this.characterForm.patchValue({
+          raceId: human.id,
+          classId: cleric.id
+        });
+        this.rollStats(); // Generate initial stats
+      }
     });
   }
 
   rollStats() {
-    this.stats = {
+    if (this.characterForm.get('raceId')?.invalid || this.characterForm.get('classId')?.invalid) {
+      alert('Please select a Race and Class first.');
+      return;
+    }
+
+    const character = {
+      ...this.characterForm.value,
       strength: this.roll(),
       dexterity: this.roll(),
       constitution: this.roll(),
@@ -63,6 +98,53 @@ export class CreateCharacterComponent implements OnInit {
       wisdom: this.roll(),
       charisma: this.roll()
     };
+
+    this.characterService.generateCharacter(character).subscribe({
+      next: (generatedCharacter) => {
+        this.baseStats = {
+          strength: generatedCharacter.strength,
+          dexterity: generatedCharacter.dexterity,
+          constitution: generatedCharacter.constitution,
+          intelligence: generatedCharacter.intelligence,
+          wisdom: generatedCharacter.wisdom,
+          charisma: generatedCharacter.charisma
+        };
+        this.currentStats = {
+          currentStrength: generatedCharacter.currentStrength,
+          currentDexterity: generatedCharacter.currentDexterity,
+          currentConstitution: generatedCharacter.currentConstitution,
+          currentIntelligence: generatedCharacter.currentIntelligence,
+          currentWisdom: generatedCharacter.currentWisdom,
+          currentCharisma: generatedCharacter.currentCharisma
+        };
+      },
+      error: (error) => {
+        console.error('Error generating character', error);
+      }
+    });
+  }
+
+  updateCurrentStats() {
+    const character = {
+      ...this.characterForm.value,
+      ...this.baseStats
+    };
+
+    this.characterService.generateCharacter(character).subscribe({
+      next: (generatedCharacter) => {
+        this.currentStats = {
+          currentStrength: generatedCharacter.currentStrength,
+          currentDexterity: generatedCharacter.currentDexterity,
+          currentConstitution: generatedCharacter.currentConstitution,
+          currentIntelligence: generatedCharacter.currentIntelligence,
+          currentWisdom: generatedCharacter.currentWisdom,
+          currentCharisma: generatedCharacter.currentCharisma
+        };
+      },
+      error: (error) => {
+        console.error('Error updating stats', error);
+      }
+    });
   }
 
   roll(): number {
@@ -70,23 +152,37 @@ export class CreateCharacterComponent implements OnInit {
   }
 
   saveCharacter() {
-    if (this.characterForm.valid) {
+    if (this.characterForm.valid && this.baseStats.strength > 0) {
       const character = {
         ...this.characterForm.value,
-        ...this.stats
+        ...this.baseStats
       };
       this.characterService.createCharacter(character).subscribe({
         next: (response) => {
           console.log('Character created', response);
           alert('Character created successfully!');
           this.characterForm.reset();
-          this.rollStats();
+          // Reset to defaults after save
+          const human = this.races.find(r => r.name === 'Human');
+          const cleric = this.classes.find(c => c.name === 'Cleric');
+          if (human && cleric) {
+             this.characterForm.patchValue({
+               raceId: human.id,
+               classId: cleric.id
+             });
+             this.rollStats();
+          } else {
+             this.baseStats = { strength: 0, dexterity: 0, constitution: 0, intelligence: 0, wisdom: 0, charisma: 0 };
+             this.currentStats = { currentStrength: 0, currentDexterity: 0, currentConstitution: 0, currentIntelligence: 0, currentWisdom: 0, currentCharisma: 0 };
+          }
         },
         error: (error) => {
           console.error('Error creating character', error);
           alert('Failed to create character');
         }
       });
+    } else if (this.baseStats.strength === 0) {
+      alert('Please roll stats before saving.');
     }
   }
 

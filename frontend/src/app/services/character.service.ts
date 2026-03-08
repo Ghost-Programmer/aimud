@@ -21,4 +21,8 @@ export class CharacterService {
   updateCharacter(id: number, character: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, character);
   }
+
+  generateCharacter(character: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/generate`, character);
+  }
 }
