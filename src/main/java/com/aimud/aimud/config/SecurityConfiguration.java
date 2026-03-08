@@ -30,6 +30,7 @@ public class SecurityConfiguration {
                         .pathMatchers("/api/status").permitAll()
                         .pathMatchers("/api/settings").permitAll()
                         .pathMatchers("/api/characters/**").authenticated()
+                        .pathMatchers("/api/config/**").authenticated()
                         .pathMatchers("/**").permitAll()
                 )
                 .addFilterAt(new JwtAuthenticationFilter(jwtService), SecurityWebFiltersOrder.AUTHENTICATION)

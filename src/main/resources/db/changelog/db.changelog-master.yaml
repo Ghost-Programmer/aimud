@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changes/003-create-characters-table.sql
   - include:
       file: db/changelog/changes/004-create-races-and-classes.sql
+  - include:
+      file: db/changelog/changes/005-add-deleted-column.sql

@@ -5,18 +5,19 @@ import { PlayerListComponent } from '../../components/player-list/player-list.co
 import { CreateCharacterComponent } from '../../components/create-character/create-character.component';
 import { CharacterSelectComponent } from '../../components/character-select/character-select.component';
 import { CharacterPlayComponent } from '../../components/character-play/character-play.component';
+import { ConfigDashboardComponent } from '../../components/config-dashboard/config-dashboard.component';
 
 interface Tab {
   id: string;
   label: string;
-  type: 'create-character' | 'select-character' | 'play-character' | 'players';
+  type: 'create-character' | 'select-character' | 'play-character' | 'players' | 'config';
   data?: any;
 }
 
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, PlayerListComponent, CreateCharacterComponent, CharacterSelectComponent, CharacterPlayComponent],
+  imports: [CommonModule, PlayerListComponent, CreateCharacterComponent, CharacterSelectComponent, CharacterPlayComponent, ConfigDashboardComponent],
   templateUrl: './user-dashboard.component.html',
   styleUrl: './user-dashboard.component.css'
 })
@@ -44,6 +45,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         this.role = payload.role;
         if (this.role === 'MUD_ADMIN') {
           this.tabs.push({ id: 'players', label: 'Players', type: 'players' });
+          this.tabs.push({ id: 'config', label: 'Config', type: 'config' });
         }
       } catch (e) {
         console.error('Error parsing token', e);

@@ -22,6 +22,7 @@ public class Race {
     private int dexterityMod;
     @Column("constitution_mod")
     private int constitutionMod;
+    private boolean deleted;
 
     public Race() {
     }
@@ -107,5 +108,13 @@ public class Race {
 
     public void setConstitutionMod(int constitutionMod) {
         this.constitutionMod = constitutionMod;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 }

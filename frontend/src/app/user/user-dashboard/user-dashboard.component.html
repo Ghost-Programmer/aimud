@@ -49,6 +49,9 @@
             <h2>Players Management</h2>
             <app-player-list></app-player-list>
           </div>
+          <div *ngIf="tab.type === 'config'">
+            <app-config-dashboard></app-config-dashboard>
+          </div>
         </div>
       </ng-container>
     </div>
