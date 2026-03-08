@@ -17,11 +17,15 @@ public class Character {
     private int intelligence;
     private int wisdom;
     private int charisma;
+    @Column("race_id")
+    private Long raceId;
+    @Column("class_id")
+    private Long classId;
 
     public Character() {
     }
 
-    public Character(Long userId, String name, int strength, int dexterity, int constitution, int intelligence, int wisdom, int charisma) {
+    public Character(Long userId, String name, int strength, int dexterity, int constitution, int intelligence, int wisdom, int charisma, Long raceId, Long classId) {
         this.userId = userId;
         this.name = name;
         this.strength = strength;
@@ -30,6 +34,8 @@ public class Character {
         this.intelligence = intelligence;
         this.wisdom = wisdom;
         this.charisma = charisma;
+        this.raceId = raceId;
+        this.classId = classId;
     }
 
     public Long getId() {
@@ -102,5 +108,21 @@ public class Character {
 
     public void setCharisma(int charisma) {
         this.charisma = charisma;
+    }
+
+    public Long getRaceId() {
+        return raceId;
+    }
+
+    public void setRaceId(Long raceId) {
+        this.raceId = raceId;
+    }
+
+    public Long getClassId() {
+        return classId;
+    }
+
+    public void setClassId(Long classId) {
+        this.classId = classId;
     }
 }

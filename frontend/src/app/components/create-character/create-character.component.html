@@ -4,6 +4,22 @@
       <label for="name">Character Name</label>
       <input type="text" id="name" formControlName="name">
     </div>
+
+    <div class="form-group">
+      <label for="race">Race</label>
+      <select id="race" formControlName="raceId">
+        <option [ngValue]="null" disabled>Select a Race</option>
+        <option *ngFor="let race of races" [ngValue]="race.id" [title]="race.description">{{ race.name }}</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="class">Class</label>
+      <select id="class" formControlName="classId">
+        <option [ngValue]="null" disabled>Select a Class</option>
+        <option *ngFor="let cls of classes" [ngValue]="cls.id" [title]="cls.description">{{ cls.name }}</option>
+      </select>
+    </div>
   </form>
 
   <div class="stats-container">

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CharacterService } from '../../services/character.service';
+import { ConfigService } from '../../services/config.service';
 
 @Component({
   selector: 'app-create-character',
@@ -20,15 +21,37 @@ export class CreateCharacterComponent implements OnInit {
     wisdom: 0,
     charisma: 0
   };
+  races: any[] = [];
+  classes: any[] = [];
 
-  constructor(private fb: FormBuilder, private characterService: CharacterService) {
+  constructor(
+    private fb: FormBuilder,
+    private characterService: CharacterService,
+    private configService: ConfigService
+  ) {
     this.characterForm = this.fb.group({
-      name: ['', Validators.required]
+      name: ['', Validators.required],
+      raceId: [null, Validators.required],
+      classId: [null, Validators.required]
     });
   }
 
   ngOnInit() {
     this.rollStats();
+    this.loadRaces();
+    this.loadClasses();
+  }
+
+  loadRaces() {
+    this.configService.getAllRaces().subscribe(races => {
+      this.races = races;
+    });
+  }
+
+  loadClasses() {
+    this.configService.getAllCharacterClasses().subscribe(classes => {
+      this.classes = classes;
+    });
   }
 
   rollStats() {

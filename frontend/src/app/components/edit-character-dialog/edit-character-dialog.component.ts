@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CharacterService } from '../../services/character.service';
+import { ConfigService } from '../../services/config.service';
 
 @Component({
   selector: 'app-edit-character-dialog',
@@ -16,10 +17,18 @@ export class EditCharacterDialogComponent {
   @Output() characterUpdated = new EventEmitter<any>();
 
   characterForm: FormGroup;
+  races: any[] = [];
+  classes: any[] = [];
 
-  constructor(private fb: FormBuilder, private characterService: CharacterService) {
+  constructor(
+    private fb: FormBuilder,
+    private characterService: CharacterService,
+    private configService: ConfigService
+  ) {
     this.characterForm = this.fb.group({
       name: ['', Validators.required],
+      raceId: [null, Validators.required],
+      classId: [null, Validators.required],
       strength: [0, Validators.required],
       dexterity: [0, Validators.required],
       constitution: [0, Validators.required],
@@ -30,9 +39,23 @@ export class EditCharacterDialogComponent {
   }
 
   ngOnInit() {
+    this.loadRaces();
+    this.loadClasses();
     if (this.character) {
       this.characterForm.patchValue(this.character);
     }
+  }
+
+  loadRaces() {
+    this.configService.getAllRaces().subscribe(races => {
+      this.races = races;
+    });
+  }
+
+  loadClasses() {
+    this.configService.getAllCharacterClasses().subscribe(classes => {
+      this.classes = classes;
+    });
   }
 
   onSubmit() {

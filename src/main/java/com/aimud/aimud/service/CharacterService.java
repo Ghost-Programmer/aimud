@@ -41,6 +41,8 @@ public class CharacterService {
                     existingCharacter.setIntelligence(character.getIntelligence());
                     existingCharacter.setWisdom(character.getWisdom());
                     existingCharacter.setCharisma(character.getCharisma());
+                    existingCharacter.setRaceId(character.getRaceId());
+                    existingCharacter.setClassId(character.getClassId());
                     return characterRepository.save(existingCharacter);
                 });
     }
