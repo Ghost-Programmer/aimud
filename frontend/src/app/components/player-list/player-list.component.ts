@@ -1,16 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../services/user.service';
+import { EditCharacterDialogComponent } from '../edit-character-dialog/edit-character-dialog.component';
 
 @Component({
   selector: 'app-player-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, EditCharacterDialogComponent],
   templateUrl: './player-list.component.html',
   styleUrl: './player-list.component.css'
 })
 export class PlayerListComponent implements OnInit {
   users: any[] = [];
+  selectedCharacter: any = null;
 
   constructor(private userService: UserService) {}
 
@@ -54,5 +56,24 @@ export class PlayerListComponent implements OnInit {
         alert('Failed to toggle lock status');
       }
     });
+  }
+
+  openEditCharacterDialog(character: any) {
+    this.selectedCharacter = character;
+  }
+
+  closeEditCharacterDialog() {
+    this.selectedCharacter = null;
+  }
+
+  onCharacterUpdated(updatedCharacter: any) {
+    // Find the user and character to update the local list
+    for (const user of this.users) {
+      const charIndex = user.characters.findIndex((c: any) => c.id === updatedCharacter.id);
+      if (charIndex !== -1) {
+        user.characters[charIndex] = updatedCharacter;
+        break;
+      }
+    }
   }
 }

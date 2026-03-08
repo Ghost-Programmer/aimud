@@ -30,4 +30,18 @@ public class CharacterService {
         return userRepository.findByUsername(username)
                 .flatMapMany(user -> characterRepository.findByUserId(user.getId()));
     }
+
+    public Mono<Character> updateCharacter(Long id, Character character) {
+        return characterRepository.findById(id)
+                .flatMap(existingCharacter -> {
+                    existingCharacter.setName(character.getName());
+                    existingCharacter.setStrength(character.getStrength());
+                    existingCharacter.setDexterity(character.getDexterity());
+                    existingCharacter.setConstitution(character.getConstitution());
+                    existingCharacter.setIntelligence(character.getIntelligence());
+                    existingCharacter.setWisdom(character.getWisdom());
+                    existingCharacter.setCharisma(character.getCharisma());
+                    return characterRepository.save(existingCharacter);
+                });
+    }
 }

@@ -17,4 +17,8 @@ export class CharacterService {
   getCharacters(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);
   }
+
+  updateCharacter(id: number, character: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, character);
+  }
 }

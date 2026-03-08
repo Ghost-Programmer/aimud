@@ -32,4 +32,11 @@ public class CharacterController {
                 .map(ctx -> ctx.getAuthentication().getName())
                 .flatMapMany(characterService::getCharactersByUser);
     }
+
+    @PutMapping("/{id}")
+    public Mono<ResponseEntity<Character>> updateCharacter(@PathVariable Long id, @RequestBody Character character) {
+        return characterService.updateCharacter(id, character)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
 }
