@@ -78,4 +78,16 @@ export class EditCharacterDialogComponent {
   onCancel() {
     this.closeDialog.emit();
   }
+
+  getSelectedRaceDescription(): string {
+    const raceId = this.characterForm.get('raceId')?.value;
+    const race = this.races.find(r => r.id === raceId);
+    return race ? race.description : '';
+  }
+
+  getSelectedClassDescription(): string {
+    const classId = this.characterForm.get('classId')?.value;
+    const cls = this.classes.find(c => c.id === classId);
+    return cls ? cls.description : '';
+  }
 }

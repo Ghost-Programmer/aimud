@@ -70,6 +70,19 @@ input:focus, select:focus {
   border-color: var(--primary);
 }
 
+.select-with-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.info-icon {
+  color: var(--primary);
+  cursor: help;
+  display: flex;
+  align-items: center;
+}
+
 .dialog-actions {
   display: flex;
   justify-content: space-between;

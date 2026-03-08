@@ -35,6 +35,19 @@ select option {
   color: var(--text-main);
 }
 
+.select-with-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.info-icon {
+  color: var(--primary);
+  cursor: help;
+  display: flex;
+  align-items: center;
+}
+
 .stats-container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
