@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CharacterService } from '../../services/character.service';
 
@@ -10,6 +10,7 @@ import { CharacterService } from '../../services/character.service';
   styleUrl: './character-select.component.css'
 })
 export class CharacterSelectComponent implements OnInit {
+  @Input() excludeCharacterIds: number[] = [];
   @Output() characterSelected = new EventEmitter<any>();
   characters: any[] = [];
 
@@ -28,6 +29,10 @@ export class CharacterSelectComponent implements OnInit {
         console.error('Error fetching characters', error);
       }
     });
+  }
+
+  get filteredCharacters() {
+    return this.characters.filter(c => !this.excludeCharacterIds.includes(c.id));
   }
 
   selectCharacter(character: any) {

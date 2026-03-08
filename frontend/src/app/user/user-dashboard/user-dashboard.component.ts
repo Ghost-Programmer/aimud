@@ -134,4 +134,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   getActiveTab(): Tab | undefined {
     return this.tabs.find(t => t.id === this.activeTabId);
   }
+
+  getPlayingCharacterIds(): number[] {
+    return this.tabs
+      .filter(t => t.type === 'play-character')
+      .map(t => t.data.id);
+  }
 }

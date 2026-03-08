@@ -37,7 +37,10 @@
             <app-create-character></app-create-character>
           </div>
           <div *ngIf="tab.type === 'select-character'">
-            <app-character-select (characterSelected)="onCharacterSelected($event, tab.id)"></app-character-select>
+            <app-character-select
+              [excludeCharacterIds]="getPlayingCharacterIds()"
+              (characterSelected)="onCharacterSelected($event, tab.id)">
+            </app-character-select>
           </div>
           <div *ngIf="tab.type === 'play-character'">
             <app-character-play [character]="tab.data"></app-character-play>

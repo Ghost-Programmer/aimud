@@ -1,7 +1,7 @@
 <div class="character-list-container">
   <h2>Select a Character</h2>
   <div class="character-grid">
-    <div *ngFor="let character of characters" class="character-card" (click)="selectCharacter(character)">
+    <div *ngFor="let character of filteredCharacters" class="character-card" (click)="selectCharacter(character)">
       <h3>{{ character.name }}</h3>
       <div class="stats-preview">
         <span>STR: {{ character.strength }}</span>
@@ -12,7 +12,7 @@
         <span>CHA: {{ character.charisma }}</span>
       </div>
     </div>
-    <div *ngIf="characters.length === 0" class="no-characters">
+    <div *ngIf="filteredCharacters.length === 0" class="no-characters">
       <p>No characters found. Create one to get started!</p>
     </div>
   </div>
