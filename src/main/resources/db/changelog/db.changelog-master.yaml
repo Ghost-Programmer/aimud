@@ -9,3 +9,5 @@ databaseChangeLog:
       file: db/changelog/changes/004-create-races-and-classes.sql
   - include:
       file: db/changelog/changes/005-add-deleted-column.sql
+  - include:
+      file: db/changelog/changes/006-insert-default-races.sql
