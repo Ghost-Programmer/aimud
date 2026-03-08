@@ -10,7 +10,7 @@ h2 {
 
 .character-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
 }
 
@@ -21,6 +21,9 @@ h2 {
   padding: 15px;
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .character-card:hover {
@@ -30,18 +33,77 @@ h2 {
   border-color: var(--primary);
 }
 
+.card-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 10px;
+  gap: 5px;
+}
+
 .character-card h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
+  margin: 0;
   color: var(--primary);
+  font-size: 1.2rem;
+}
+
+.race-class {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.resource-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.resource-bar {
+  height: 20px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.hp-bar .bar-fill {
+  background-color: #ef4444;
+}
+
+.mana-bar .bar-fill {
+  background-color: #3b82f6;
+}
+
+.bar-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+  color: white;
 }
 
 .stats-preview {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 5px;
-  font-size: 0.9rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  font-size: 0.85rem;
   color: var(--text-muted);
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  border-radius: 4px;
 }
 
 .no-characters {

@@ -2,14 +2,29 @@
   <h2>Select a Character</h2>
   <div class="character-grid">
     <div *ngFor="let character of filteredCharacters" class="character-card" (click)="selectCharacter(character)">
-      <h3>{{ character.name }}</h3>
+      <div class="card-header">
+        <h3>{{ character.name }}</h3>
+        <div class="race-class">{{ getRaceName(character.raceId) }} / {{ getClassName(character.classId) }}</div>
+      </div>
+
+      <div class="resource-bars">
+        <div class="resource-bar hp-bar">
+          <div class="bar-fill" [style.width.%]="(character.maxHp / character.maxHp) * 100"></div>
+          <span class="bar-text">HP: {{ character.maxHp | number:'1.0-0' }} / {{ character.maxHp | number:'1.0-0' }}</span>
+        </div>
+        <div class="resource-bar mana-bar">
+          <div class="bar-fill" [style.width.%]="(character.maxMana / character.maxMana) * 100"></div>
+          <span class="bar-text">MP: {{ character.maxMana | number:'1.0-0' }} / {{ character.maxMana | number:'1.0-0' }}</span>
+        </div>
+      </div>
+
       <div class="stats-preview">
-        <span>STR: {{ character.strength }}</span>
-        <span>DEX: {{ character.dexterity }}</span>
-        <span>CON: {{ character.constitution }}</span>
-        <span>INT: {{ character.intelligence }}</span>
-        <span>WIS: {{ character.wisdom }}</span>
-        <span>CHA: {{ character.charisma }}</span>
+        <span>STR: {{ character.currentStrength }}</span>
+        <span>DEX: {{ character.currentDexterity }}</span>
+        <span>CON: {{ character.currentConstitution }}</span>
+        <span>INT: {{ character.currentIntelligence }}</span>
+        <span>WIS: {{ character.currentWisdom }}</span>
+        <span>CHA: {{ character.currentCharisma }}</span>
       </div>
     </div>
     <div *ngIf="filteredCharacters.length === 0" class="no-characters">
