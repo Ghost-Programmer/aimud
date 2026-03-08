@@ -12,10 +12,12 @@ public class CharacterService {
 
     private final CharacterRepository characterRepository;
     private final UserRepository userRepository;
+    private final StatService statService;
 
-    public CharacterService(CharacterRepository characterRepository, UserRepository userRepository) {
+    public CharacterService(CharacterRepository characterRepository, UserRepository userRepository, StatService statService) {
         this.characterRepository = characterRepository;
         this.userRepository = userRepository;
+        this.statService = statService;
     }
 
     public Mono<Character> createCharacter(String username, Character character) {
@@ -23,12 +25,14 @@ public class CharacterService {
                 .flatMap(user -> {
                     character.setUserId(user.getId());
                     return characterRepository.save(character);
-                });
+                })
+                .flatMap(statService::updateCurrentStats);
     }
 
     public Flux<Character> getCharactersByUser(String username) {
         return userRepository.findByUsername(username)
-                .flatMapMany(user -> characterRepository.findByUserId(user.getId()));
+                .flatMapMany(user -> characterRepository.findByUserId(user.getId()))
+                .flatMap(statService::updateCurrentStats);
     }
 
     public Mono<Character> updateCharacter(Long id, Character character) {
@@ -44,6 +48,7 @@ public class CharacterService {
                     existingCharacter.setRaceId(character.getRaceId());
                     existingCharacter.setClassId(character.getClassId());
                     return characterRepository.save(existingCharacter);
-                });
+                })
+                .flatMap(statService::updateCurrentStats);
     }
 }

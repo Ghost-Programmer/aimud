@@ -1,6 +1,7 @@
 package com.aimud.aimud.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -21,6 +22,19 @@ public class Character {
     private Long raceId;
     @Column("class_id")
     private Long classId;
+
+    @Transient
+    private int currentStrength;
+    @Transient
+    private int currentDexterity;
+    @Transient
+    private int currentConstitution;
+    @Transient
+    private int currentIntelligence;
+    @Transient
+    private int currentWisdom;
+    @Transient
+    private int currentCharisma;
 
     public Character() {
     }
@@ -124,5 +138,53 @@ public class Character {
 
     public void setClassId(Long classId) {
         this.classId = classId;
+    }
+
+    public int getCurrentStrength() {
+        return currentStrength;
+    }
+
+    public void setCurrentStrength(int currentStrength) {
+        this.currentStrength = currentStrength;
+    }
+
+    public int getCurrentDexterity() {
+        return currentDexterity;
+    }
+
+    public void setCurrentDexterity(int currentDexterity) {
+        this.currentDexterity = currentDexterity;
+    }
+
+    public int getCurrentConstitution() {
+        return currentConstitution;
+    }
+
+    public void setCurrentConstitution(int currentConstitution) {
+        this.currentConstitution = currentConstitution;
+    }
+
+    public int getCurrentIntelligence() {
+        return currentIntelligence;
+    }
+
+    public void setCurrentIntelligence(int currentIntelligence) {
+        this.currentIntelligence = currentIntelligence;
+    }
+
+    public int getCurrentWisdom() {
+        return currentWisdom;
+    }
+
+    public void setCurrentWisdom(int currentWisdom) {
+        this.currentWisdom = currentWisdom;
+    }
+
+    public int getCurrentCharisma() {
+        return currentCharisma;
+    }
+
+    public void setCurrentCharisma(int currentCharisma) {
+        this.currentCharisma = currentCharisma;
     }
 }
