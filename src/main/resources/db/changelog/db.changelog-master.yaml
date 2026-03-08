@@ -13,3 +13,5 @@ databaseChangeLog:
       file: db/changelog/changes/006-insert-default-races.sql
   - include:
       file: db/changelog/changes/007-add-race-class-to-character.sql
+  - include:
+      file: db/changelog/changes/008-create-rooms-table.sql
