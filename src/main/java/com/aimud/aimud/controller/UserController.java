@@ -54,8 +54,8 @@ public class UserController {
     }
 
     @GetMapping
-    public Flux<User> getAllUsers() {
-        return userService.getAllUsers();
+    public Flux<Map<String, Object>> getAllUsers() {
+        return userService.getAllUsersWithCharacters();
     }
 
     @PutMapping("/{userId}/password")

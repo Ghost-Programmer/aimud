@@ -1,21 +1,26 @@
 package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.User;
+import com.aimud.aimud.repository.CharacterRepository;
 import com.aimud.aimud.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final CharacterRepository characterRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public UserService(UserRepository userRepository, CharacterRepository characterRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
+        this.characterRepository = characterRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
@@ -49,8 +54,17 @@ public class UserService {
                 .switchIfEmpty(Mono.error(new RuntimeException("Invalid username or password")));
     }
 
-    public Flux<User> getAllUsers() {
-        return userRepository.findAll();
+    public Flux<Map<String, Object>> getAllUsersWithCharacters() {
+        return userRepository.findAll()
+                .flatMap(user -> characterRepository.findByUserId(user.getId())
+                        .collectList()
+                        .map(characters -> Map.of(
+                                "id", user.getId(),
+                                "username", user.getUsername(),
+                                "role", user.getRole(),
+                                "locked", user.isLocked(),
+                                "characters", characters
+                        )));
     }
 
     public Mono<User> changePassword(Long userId, String newPassword) {

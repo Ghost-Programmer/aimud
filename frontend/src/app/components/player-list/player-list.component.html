@@ -5,6 +5,7 @@
         <th>ID</th>
         <th>Username</th>
         <th>Role</th>
+        <th>Characters</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -13,6 +14,11 @@
         <td>{{ user.id }}</td>
         <td>{{ user.username }}</td>
         <td>{{ user.role }}</td>
+        <td>
+          <ul class="character-list">
+            <li *ngFor="let char of user.characters">{{ char.name }}</li>
+          </ul>
+        </td>
         <td class="actions-cell">
           <button class="icon-btn" (click)="changePassword(user.id)" title="Change Password">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-key-fill" viewBox="0 0 16 16">
