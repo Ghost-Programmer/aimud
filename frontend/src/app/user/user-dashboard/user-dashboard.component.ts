@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { PlayerListComponent } from '../../components/player-list/player-list.component';
 import { CreateCharacterComponent } from '../../components/create-character/create-character.component';
 import { CharacterSelectComponent } from '../../components/character-select/character-select.component';
@@ -17,7 +18,7 @@ interface Tab {
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, PlayerListComponent, CreateCharacterComponent, CharacterSelectComponent, CharacterPlayComponent, ConfigDashboardComponent],
+  imports: [CommonModule, DragDropModule, PlayerListComponent, CreateCharacterComponent, CharacterSelectComponent, CharacterPlayComponent, ConfigDashboardComponent],
   templateUrl: './user-dashboard.component.html',
   styleUrl: './user-dashboard.component.css'
 })
@@ -26,11 +27,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   localTime: string = '';
   onlineTime: string = '00:00:00';
 
-  tabs: Tab[] = [
-    { id: 'create-character', label: 'Create Character', type: 'create-character' },
-    { id: 'select-character-1', label: 'Select Character', type: 'select-character' }
-  ];
-  activeTabId: string = 'create-character';
+  tabs: Tab[] = [];
+  activeTabId: string = '';
 
   private loginTime: number = Date.now();
   private timerInterval: any;
@@ -43,10 +41,20 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         this.role = payload.role;
+
+        // Initialize tabs based on role
         if (this.role === 'MUD_ADMIN') {
           this.tabs.push({ id: 'players', label: 'Players', type: 'players' });
           this.tabs.push({ id: 'config', label: 'Config', type: 'config' });
         }
+        this.tabs.push({ id: 'select-character-1', label: 'Select Character', type: 'select-character' });
+        this.tabs.push({ id: 'create-character', label: 'Create Character', type: 'create-character' });
+
+        // Set active tab to the first one
+        if (this.tabs.length > 0) {
+          this.activeTabId = this.tabs[0].id;
+        }
+
       } catch (e) {
         console.error('Error parsing token', e);
       }
@@ -68,6 +76,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.activeTabId = tabId;
   }
 
+  onTabDrop(event: CdkDragDrop<Tab[]>) {
+    moveItemInArray(this.tabs, event.previousIndex, event.currentIndex);
+  }
+
   onCharacterSelected(character: any, tabId: string) {
     // Find the tab that triggered this
     const tabIndex = this.tabs.findIndex(t => t.id === tabId);
@@ -81,21 +93,13 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       };
       this.activeTabId = this.tabs[tabIndex].id;
 
-      // Add a new Select Character tab if one doesn't exist (optional, but requested behavior implies always having one available)
-      // Check if there is already a generic select character tab
+      // Add a new Select Character tab if one doesn't exist
       const hasSelectTab = this.tabs.some(t => t.type === 'select-character');
       if (!hasSelectTab) {
         const newSelectTabId = `select-character-${Date.now()}`;
-        // Insert it after the current tab or at the end? Let's put it after the create tab for consistency or just append.
-        // Let's append it before the Players tab if it exists.
-        const playersTabIndex = this.tabs.findIndex(t => t.type === 'players');
+        // Insert it after the current tab
         const newTab: Tab = { id: newSelectTabId, label: 'Select Character', type: 'select-character' };
-
-        if (playersTabIndex !== -1) {
-          this.tabs.splice(playersTabIndex, 0, newTab);
-        } else {
-          this.tabs.push(newTab);
-        }
+        this.tabs.splice(tabIndex + 1, 0, newTab);
       }
     }
   }

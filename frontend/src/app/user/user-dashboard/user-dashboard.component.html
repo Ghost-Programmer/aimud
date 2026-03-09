@@ -18,10 +18,11 @@
   </div>
 
   <div class="tabs-container">
-    <div class="tabs-header">
+    <div class="tabs-header" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="onTabDrop($event)">
       <div
         *ngFor="let tab of tabs"
         class="tab-button"
+        cdkDrag
         [class.active]="activeTabId === tab.id"
         (click)="setActiveTab(tab.id)">
         {{ tab.label }}
