@@ -34,6 +34,17 @@
     </div>
 
     <div class="stat-content" *ngIf="activeStatTab === 'stats'">
+      <div class="resource-bars">
+        <div class="resource-bar hp-bar">
+          <div class="bar-fill" [style.width.%]="(character.maxHp / character.maxHp) * 100"></div>
+          <span class="bar-text">HP: {{ character.maxHp | number:'1.0-0' }} / {{ character.maxHp | number:'1.0-0' }}</span>
+        </div>
+        <div class="resource-bar mana-bar">
+          <div class="bar-fill" [style.width.%]="(character.maxMana / character.maxMana) * 100"></div>
+          <span class="bar-text">Mana: {{ character.maxMana | number:'1.0-0' }} / {{ character.maxMana | number:'1.0-0' }}</span>
+        </div>
+      </div>
+      <div class="divider"></div>
       <div class="stat-row">
         <span class="stat-label">STR:</span> <span class="stat-value">{{ character.currentStrength }}</span>
       </div>
@@ -51,13 +62,6 @@
       </div>
       <div class="stat-row">
         <span class="stat-label">CHA:</span> <span class="stat-value">{{ character.currentCharisma }}</span>
-      </div>
-      <div class="divider"></div>
-      <div class="stat-row">
-        <span class="stat-label">HP:</span> <span class="stat-value">{{ character.maxHp | number:'1.0-0' }}</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-label">Mana:</span> <span class="stat-value">{{ character.maxMana | number:'1.0-0' }}</span>
       </div>
     </div>
 
