@@ -3,6 +3,7 @@ package com.aimud.aimud.service;
 import com.aimud.aimud.model.Character;
 import com.aimud.aimud.model.CharacterClass;
 import com.aimud.aimud.model.Race;
+import com.aimud.aimud.model.Room;
 import com.aimud.aimud.repository.CharacterClassRepository;
 import com.aimud.aimud.repository.RaceRepository;
 import org.springframework.stereotype.Service;
@@ -13,10 +14,12 @@ public class StatService {
 
     private final RaceRepository raceRepository;
     private final CharacterClassRepository characterClassRepository;
+    private final RoomService roomService;
 
-    public StatService(RaceRepository raceRepository, CharacterClassRepository characterClassRepository) {
+    public StatService(RaceRepository raceRepository, CharacterClassRepository characterClassRepository, RoomService roomService) {
         this.raceRepository = raceRepository;
         this.characterClassRepository = characterClassRepository;
+        this.roomService = roomService;
     }
 
     public Mono<Character> updateCurrentStats(Character character) {
@@ -59,6 +62,18 @@ public class StatService {
                     character.setMagicAttack((intel * 2.5) + (wis * 0.5));
                     character.setArmor(str + (con * 1.5));
                     character.setMagicResist(wis + (intel * 0.5));
+
+                    // Set Current Room Name
+                    if (character.getCurrentRoomId() != null) {
+                        Room room = roomService.getRoom(character.getCurrentRoomId());
+                        if (room != null) {
+                            character.setCurrentRoomName(room.getName());
+                        } else {
+                            character.setCurrentRoomName("Unknown Location");
+                        }
+                    } else {
+                        character.setCurrentRoomName("Unknown Location");
+                    }
 
                     return character;
                 });

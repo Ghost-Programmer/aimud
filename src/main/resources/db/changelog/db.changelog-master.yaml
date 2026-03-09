@@ -15,3 +15,7 @@ databaseChangeLog:
       file: db/changelog/changes/007-add-race-class-to-character.sql
   - include:
       file: db/changelog/changes/008-create-rooms-table.sql
+  - include:
+      file: db/changelog/changes/009-insert-mud-entrance.sql
+  - include:
+      file: db/changelog/changes/010-add-current-room-to-character.sql

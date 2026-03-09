@@ -22,6 +22,8 @@ public class Character {
     private Long raceId;
     @Column("class_id")
     private Long classId;
+    @Column("current_room_id")
+    private Long currentRoomId;
 
     @Transient
     private int currentStrength;
@@ -56,6 +58,9 @@ public class Character {
     private double armor;
     @Transient
     private double magicResist;
+
+    @Transient
+    private String currentRoomName;
 
     public Character() {
     }
@@ -159,6 +164,14 @@ public class Character {
 
     public void setClassId(Long classId) {
         this.classId = classId;
+    }
+
+    public Long getCurrentRoomId() {
+        return currentRoomId;
+    }
+
+    public void setCurrentRoomId(Long currentRoomId) {
+        this.currentRoomId = currentRoomId;
     }
 
     public int getCurrentStrength() {
@@ -287,5 +300,13 @@ public class Character {
 
     public void setMagicResist(double magicResist) {
         this.magicResist = magicResist;
+    }
+
+    public String getCurrentRoomName() {
+        return currentRoomName;
+    }
+
+    public void setCurrentRoomName(String currentRoomName) {
+        this.currentRoomName = currentRoomName;
     }
 }

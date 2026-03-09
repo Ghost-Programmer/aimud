@@ -33,6 +33,7 @@ export class CreateCharacterComponent implements OnInit {
   derivedStats: any = {};
   races: any[] = [];
   classes: any[] = [];
+  currentRoomName: string = 'Mud Entrance';
 
   constructor(
     private fb: FormBuilder,
@@ -119,6 +120,9 @@ export class CreateCharacterComponent implements OnInit {
           currentCharisma: generatedCharacter.currentCharisma
         };
         this.updateDerivedStats(generatedCharacter);
+        if (generatedCharacter.currentRoomName) {
+            this.currentRoomName = generatedCharacter.currentRoomName;
+        }
       },
       error: (error) => {
         console.error('Error generating character', error);

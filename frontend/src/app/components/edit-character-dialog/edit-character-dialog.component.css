@@ -78,6 +78,18 @@ input:focus, select:focus {
   align-items: center;
 }
 
+.room-input-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.room-name {
+  color: var(--primary);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
 .stats-table-container {
   width: 100%;
   margin-bottom: 20px;

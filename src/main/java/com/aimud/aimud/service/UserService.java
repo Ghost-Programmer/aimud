@@ -17,12 +17,14 @@ public class UserService {
     private final CharacterRepository characterRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final StatService statService;
 
-    public UserService(UserRepository userRepository, CharacterRepository characterRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public UserService(UserRepository userRepository, CharacterRepository characterRepository, PasswordEncoder passwordEncoder, JwtService jwtService, StatService statService) {
         this.userRepository = userRepository;
         this.characterRepository = characterRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.statService = statService;
     }
 
     public Mono<User> registerUser(User user) {
@@ -57,6 +59,7 @@ public class UserService {
     public Flux<Map<String, Object>> getAllUsersWithCharacters() {
         return userRepository.findAll()
                 .flatMap(user -> characterRepository.findByUserId(user.getId())
+                        .flatMap(statService::updateCurrentStats)
                         .collectList()
                         .map(characters -> Map.of(
                                 "id", user.getId(),

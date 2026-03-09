@@ -21,6 +21,7 @@ export class EditCharacterDialogComponent {
   classes: any[] = [];
   currentStats: any = {};
   derivedStats: any = {};
+  currentRoomName: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -36,7 +37,8 @@ export class EditCharacterDialogComponent {
       constitution: [0, Validators.required],
       intelligence: [0, Validators.required],
       wisdom: [0, Validators.required],
-      charisma: [0, Validators.required]
+      charisma: [0, Validators.required],
+      currentRoomId: [null]
     });
   }
 
@@ -45,6 +47,7 @@ export class EditCharacterDialogComponent {
     this.loadClasses();
     if (this.character) {
       this.characterForm.patchValue(this.character);
+      this.currentRoomName = this.character.currentRoomName;
       this.updateCurrentStats();
     }
 
@@ -79,6 +82,9 @@ export class EditCharacterDialogComponent {
             currentCharisma: generatedCharacter.currentCharisma
           };
           this.updateDerivedStats(generatedCharacter);
+          if (generatedCharacter.currentRoomName) {
+              this.currentRoomName = generatedCharacter.currentRoomName;
+          }
         },
         error: (error) => {
           console.error('Error calculating stats', error);

@@ -37,6 +37,14 @@
         </div>
       </div>
 
+      <div class="form-group">
+        <label for="currentRoomId">Current Room ID</label>
+        <div class="room-input-group">
+          <input type="number" id="currentRoomId" formControlName="currentRoomId">
+          <span class="room-name" *ngIf="currentRoomName">({{ currentRoomName }})</span>
+        </div>
+      </div>
+
       <div class="stats-table-container">
         <table class="stats-table">
           <thead>
