@@ -82,20 +82,20 @@ public class StatService {
                                 c.setMagicResist(wis + (intel * 0.5));
 
                                 // Set Current Room Name
+                                Mono<String> roomNameMono = Mono.just("Unknown Location");
                                 if (c.getCurrentRoomId() != null) {
-                                    Room room = roomService.getRoom(c.getCurrentRoomId());
-                                    if (room != null) {
-                                        c.setCurrentRoomName(room.getName());
-                                    } else {
-                                        c.setCurrentRoomName("Unknown Location");
-                                    }
-                                } else {
-                                    c.setCurrentRoomName("Unknown Location");
+                                    roomNameMono = roomService.getRoom(c.getCurrentRoomId())
+                                            .map(Room::getName)
+                                            .defaultIfEmpty("Unknown Location");
                                 }
 
-                                return c;
+                                return roomNameMono.map(roomName -> {
+                                    c.setCurrentRoomName(roomName);
+                                    return c;
+                                });
                             });
-                });
+                })
+                .flatMap(mono -> mono);
     }
 
     private void applyEquipmentBonuses(Character c) {

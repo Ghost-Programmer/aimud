@@ -2,7 +2,7 @@ package com.aimud.aimud.controller;
 
 import com.aimud.aimud.model.Room;
 import com.aimud.aimud.model.enums.RoomType;
-import com.aimud.aimud.repository.RoomRepository;
+import com.aimud.aimud.service.RoomService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -15,10 +15,10 @@ import java.util.Map;
 @RequestMapping("/api/rooms")
 public class RoomController {
 
-    private final RoomRepository roomRepository;
+    private final RoomService roomService;
 
-    public RoomController(RoomRepository roomRepository) {
-        this.roomRepository = roomRepository;
+    public RoomController(RoomService roomService) {
+        this.roomService = roomService;
     }
 
     @GetMapping
@@ -30,7 +30,7 @@ public class RoomController {
             @RequestParam(required = false) Long minId,
             @RequestParam(required = false) Long maxId) {
 
-        return roomRepository.findAll()
+        return roomService.getAllRooms()
                 .filter(room -> {
                     boolean matches = true;
                     if (name != null && !name.isEmpty()) {
@@ -68,20 +68,20 @@ public class RoomController {
 
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Room>> getRoom(@PathVariable Long id) {
-        return roomRepository.findById(id)
+        return roomService.getRoom(id)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     public Mono<ResponseEntity<Room>> createRoom(@RequestBody Room room) {
-        return roomRepository.save(room)
+        return roomService.saveRoom(room)
                 .map(ResponseEntity::ok);
     }
 
     @PutMapping("/{id}")
     public Mono<ResponseEntity<Room>> updateRoom(@PathVariable Long id, @RequestBody Room room) {
-        return roomRepository.findById(id)
+        return roomService.getRoom(id)
                 .flatMap(existingRoom -> {
                     existingRoom.setName(room.getName());
                     existingRoom.setDescription(room.getDescription());
@@ -108,7 +108,7 @@ public class RoomController {
                     existingRoom.setUpDoorOpen(room.isUpDoorOpen());
                     existingRoom.setDownDoorOpen(room.isDownDoorOpen());
                     
-                    return roomRepository.save(existingRoom);
+                    return roomService.saveRoom(existingRoom);
                 })
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
@@ -116,7 +116,7 @@ public class RoomController {
 
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Void>> deleteRoom(@PathVariable Long id) {
-        return roomRepository.deleteById(id)
+        return roomService.deleteRoom(id)
                 .then(Mono.just(ResponseEntity.noContent().<Void>build()));
     }
 }

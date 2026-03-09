@@ -2,10 +2,78 @@ package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Effect;
 import com.aimud.aimud.model.Item;
+import com.aimud.aimud.repository.EffectRepository;
+import com.aimud.aimud.repository.ItemRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Service
 public class ItemService {
+
+    private final ItemRepository itemRepository;
+    private final EffectRepository effectRepository;
+
+    public ItemService(ItemRepository itemRepository, EffectRepository effectRepository) {
+        this.itemRepository = itemRepository;
+        this.effectRepository = effectRepository;
+    }
+
+    public Flux<Item> getAllItems() {
+        return itemRepository.findAll()
+                .flatMap(this::loadEffectsAndValue);
+    }
+
+    @Cacheable(value = "items", key = "#id")
+    public Mono<Item> getItem(Long id) {
+        return itemRepository.findById(id)
+                .flatMap(this::loadEffectsAndValue);
+    }
+
+    private Mono<Item> loadEffectsAndValue(Item item) {
+        return effectRepository.findByItemId(item.getId())
+                .collectList()
+                .map(effects -> {
+                    item.setEffects(effects);
+                    item.setValue(calculateItemValue(item));
+                    return item;
+                });
+    }
+
+    @CachePut(value = "items", key = "#item.id", condition = "#item.id != null")
+    public Mono<Item> saveItem(Item item) {
+        List<Effect> effects = item.getEffects();
+        return itemRepository.save(item)
+                .flatMap(savedItem -> {
+                    if (effects == null || effects.isEmpty()) {
+                        return Mono.just(savedItem);
+                    }
+                    return effectRepository.deleteByItemId(savedItem.getId())
+                            .thenMany(Flux.fromIterable(effects))
+                            .flatMap(effect -> {
+                                effect.setId(null);
+                                effect.setItemId(savedItem.getId());
+                                return effectRepository.save(effect);
+                            })
+                            .collectList()
+                            .map(savedEffects -> {
+                                savedItem.setEffects(savedEffects);
+                                savedItem.setValue(calculateItemValue(savedItem));
+                                return savedItem;
+                            });
+                });
+    }
+
+    @CacheEvict(value = "items", key = "#id")
+    public Mono<Void> deleteItem(Long id) {
+        return effectRepository.deleteByItemId(id)
+                .then(itemRepository.deleteById(id));
+    }
 
     public int calculateItemValue(Item item) {
         if (item == null) {

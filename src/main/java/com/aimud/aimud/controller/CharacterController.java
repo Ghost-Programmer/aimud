@@ -34,7 +34,8 @@ public class CharacterController {
     public Flux<Character> getCharacters() {
         return ReactiveSecurityContextHolder.getContext()
                 .map(ctx -> ctx.getAuthentication().getName())
-                .flatMapMany(characterService::getCharactersByUser);
+                .flatMapMany(username -> characterService.getCharactersByUser(username)
+                        .flatMapMany(Flux::fromIterable));
     }
 
     @PutMapping("/{id}")
@@ -60,14 +61,9 @@ public class CharacterController {
     @GetMapping("/{id}/room")
     public Mono<ResponseEntity<Object>> getCharacterRoom(@PathVariable Long id) {
         return characterService.getCharacterById(id)
-                .map(character -> {
-                    Room room = roomService.getRoom(character.getCurrentRoomId());
-                    if (room != null) {
-                        return ResponseEntity.ok((Object)room);
-                    } else {
-                        return ResponseEntity.notFound().build();
-                    }
-                })
+                .flatMap(character -> roomService.getRoom(character.getCurrentRoomId())
+                        .map(room -> ResponseEntity.ok((Object)room))
+                        .defaultIfEmpty(ResponseEntity.notFound().build()))
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
 }

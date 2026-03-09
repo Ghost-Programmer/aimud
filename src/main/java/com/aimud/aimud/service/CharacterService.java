@@ -5,6 +5,10 @@ import com.aimud.aimud.model.Item;
 import com.aimud.aimud.repository.CharacterRepository;
 import com.aimud.aimud.repository.ItemRepository;
 import com.aimud.aimud.repository.UserRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -12,7 +16,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 @Service
 public class CharacterService {
@@ -30,6 +33,7 @@ public class CharacterService {
         this.databaseClient = databaseClient;
     }
 
+    @CacheEvict(value = "userCharacters", key = "#username")
     public Mono<Character> createCharacter(String username, Character character) {
         return userRepository.findByUsername(username)
                 .flatMap(user -> {
@@ -39,12 +43,18 @@ public class CharacterService {
                 .flatMap(statService::updateCurrentStats);
     }
 
-    public Flux<Character> getCharactersByUser(String username) {
+    @Cacheable(value = "userCharacters", key = "#username")
+    public Mono<List<Character>> getCharactersByUser(String username) {
         return userRepository.findByUsername(username)
                 .flatMapMany(user -> characterRepository.findByUserId(user.getId()))
-                .flatMap(statService::updateCurrentStats);
+                .flatMap(statService::updateCurrentStats)
+                .collectList();
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "characters", key = "#id"),
+        @CacheEvict(value = "userCharacters", allEntries = true)
+    })
     public Mono<Character> updateCharacter(Long id, Character character) {
         return characterRepository.findById(id)
                 .flatMap(existingCharacter -> {
@@ -113,6 +123,7 @@ public class CharacterService {
         return statService.updateCurrentStats(character);
     }
 
+    @Cacheable(value = "characters", key = "#id")
     public Mono<Character> getCharacterById(Long id) {
         return characterRepository.findById(id)
                 .flatMap(statService::updateCurrentStats);

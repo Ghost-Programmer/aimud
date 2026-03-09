@@ -23,13 +23,9 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/items")
 public class ItemController {
 
-    private final ItemRepository itemRepository;
-    private final EffectRepository effectRepository;
     private final ItemService itemService;
 
-    public ItemController(ItemRepository itemRepository, EffectRepository effectRepository, ItemService itemService) {
-        this.itemRepository = itemRepository;
-        this.effectRepository = effectRepository;
+    public ItemController(ItemService itemService) {
         this.itemService = itemService;
     }
 
@@ -43,16 +39,7 @@ public class ItemController {
             @RequestParam(required = false) Integer minValue,
             @RequestParam(required = false) Integer maxValue) {
 
-        // For simplicity in R2DBC without complex specifications, we fetch and filter
-        // In a real app, we'd use a more efficient query or R2DBC-EntityTemplate
-        return itemRepository.findAll()
-                .flatMap(item -> effectRepository.findByItemId(item.getId())
-                        .collectList()
-                        .map(effects -> {
-                            item.setEffects(effects);
-                            item.setValue(itemService.calculateItemValue(item));
-                            return item;
-                        }))
+        return itemService.getAllItems()
                 .filter(item -> {
                     boolean matches = true;
                     if (name != null && !name.isEmpty()) {
@@ -93,70 +80,28 @@ public class ItemController {
 
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Item>> getItem(@PathVariable Long id) {
-        return itemRepository.findById(id)
-                .flatMap(item -> effectRepository.findByItemId(item.getId())
-                        .collectList()
-                        .map(effects -> {
-                            item.setEffects(effects);
-                            item.setValue(itemService.calculateItemValue(item));
-                            return ResponseEntity.ok(item);
-                        }))
+        return itemService.getItem(id)
+                .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     public Mono<ResponseEntity<Item>> createItem(@RequestBody Item item) {
-        List<Effect> effects = item.getEffects();
-        return itemRepository.save(item)
-                .flatMap(savedItem -> {
-                    if (effects == null || effects.isEmpty()) {
-                        return Mono.just(savedItem);
-                    }
-                    return Flux.fromIterable(effects)
-                            .flatMap(effect -> {
-                                effect.setItemId(savedItem.getId());
-                                return effectRepository.save(effect);
-                            })
-                            .collectList()
-                            .map(savedEffects -> {
-                                savedItem.setEffects(savedEffects);
-                                savedItem.setValue(itemService.calculateItemValue(savedItem));
-                                return savedItem;
-                            });
-                })
+        return itemService.saveItem(item)
                 .map(ResponseEntity::ok);
     }
 
     @PutMapping("/{id}")
     public Mono<ResponseEntity<Item>> updateItem(@PathVariable Long id, @RequestBody Item item) {
-        return itemRepository.findById(id)
+        return itemService.getItem(id)
                 .flatMap(existingItem -> {
                     existingItem.setName(item.getName());
                     existingItem.setDescription(item.getDescription());
                     existingItem.setItemType(item.getItemType());
                     existingItem.setWearLocation(item.getWearLocation());
+                    existingItem.setEffects(item.getEffects());
                     
-                    List<Effect> newEffects = item.getEffects();
-                    
-                    return itemRepository.save(existingItem)
-                            .flatMap(savedItem -> effectRepository.deleteByItemId(savedItem.getId())
-                                    .then(Mono.defer(() -> {
-                                        if (newEffects == null || newEffects.isEmpty()) {
-                                            return Mono.just(savedItem);
-                                        }
-                                        return Flux.fromIterable(newEffects)
-                                                .flatMap(effect -> {
-                                                    effect.setId(null); // Ensure it's treated as new
-                                                    effect.setItemId(savedItem.getId());
-                                                    return effectRepository.save(effect);
-                                                })
-                                                .collectList()
-                                                .map(savedEffects -> {
-                                                    savedItem.setEffects(savedEffects);
-                                                    savedItem.setValue(itemService.calculateItemValue(savedItem));
-                                                    return savedItem;
-                                                });
-                                    })));
+                    return itemService.saveItem(existingItem);
                 })
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
@@ -164,8 +109,7 @@ public class ItemController {
 
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Void>> deleteItem(@PathVariable Long id) {
-        return effectRepository.deleteByItemId(id)
-                .then(itemRepository.deleteById(id))
+        return itemService.deleteItem(id)
                 .then(Mono.just(ResponseEntity.noContent().<Void>build()));
     }
 }
