@@ -23,13 +23,15 @@ public class StatService {
     private final RoomService roomService;
     private final ItemRepository itemRepository;
     private final EffectRepository effectRepository;
+    private final ItemService itemService;
 
-    public StatService(RaceRepository raceRepository, CharacterClassRepository characterClassRepository, RoomService roomService, ItemRepository itemRepository, EffectRepository effectRepository) {
+    public StatService(RaceRepository raceRepository, CharacterClassRepository characterClassRepository, RoomService roomService, ItemRepository itemRepository, EffectRepository effectRepository, ItemService itemService) {
         this.raceRepository = raceRepository;
         this.characterClassRepository = characterClassRepository;
         this.roomService = roomService;
         this.itemRepository = itemRepository;
         this.effectRepository = effectRepository;
+        this.itemService = itemService;
     }
 
     public Mono<Character> updateCurrentStats(Character character) {
@@ -154,6 +156,7 @@ public class StatService {
                         .collectList()
                         .map(effects -> {
                             item.setEffects(effects);
+                            item.setValue(itemService.calculateItemValue(item));
                             return item;
                         }))
                 .collectList()
@@ -170,6 +173,7 @@ public class StatService {
                         .collectList()
                         .map(effects -> {
                             item.setEffects(effects);
+                            item.setValue(itemService.calculateItemValue(item));
                             return item;
                         }));
     }

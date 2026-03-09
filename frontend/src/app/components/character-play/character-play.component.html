@@ -186,7 +186,29 @@
     </div>
 
     <div class="stat-content" *ngIf="activeStatTab === 'inventory'">
-      <p class="empty-inventory">Inventory is empty.</p>
+      <div class="inventory-container">
+        <table class="inventory-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Location</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of character.inventory">
+              <td class="item-name">{{ item.name }}</td>
+              <td>{{ item.itemType }}</td>
+              <td>{{ item.wearLocation }}</td>
+              <td class="item-value">{{ item.value }}g</td>
+            </tr>
+            <tr *ngIf="!character.inventory || character.inventory.length === 0">
+              <td colspan="4" class="empty-inventory">Inventory is empty.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>

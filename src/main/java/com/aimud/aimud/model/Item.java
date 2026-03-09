@@ -22,6 +22,9 @@ public class Item {
     @Transient
     private List<Effect> effects = new ArrayList<>();
 
+    @Transient
+    private int value;
+
     private String name;
     private String description;
 
@@ -81,5 +84,13 @@ public class Item {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public void setValue(int value) {
+        this.value = value;
     }
 }
