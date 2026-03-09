@@ -19,3 +19,5 @@ databaseChangeLog:
       file: db/changelog/changes/009-insert-mud-entrance.sql
   - include:
       file: db/changelog/changes/010-add-current-room-to-character.sql
+  - include:
+      file: db/changelog/changes/011-create-items-and-effects-and-add-to-character.sql

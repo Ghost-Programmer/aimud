@@ -50,6 +50,23 @@ public class CharacterService {
                     existingCharacter.setCharisma(character.getCharisma());
                     existingCharacter.setRaceId(character.getRaceId());
                     existingCharacter.setClassId(character.getClassId());
+                    existingCharacter.setHeadId(character.getHeadId());
+                    existingCharacter.setChestId(character.getChestId());
+                    existingCharacter.setLegsId(character.getLegsId());
+                    existingCharacter.setFeetId(character.getFeetId());
+                    existingCharacter.setArmsId(character.getArmsId());
+                    existingCharacter.setHandsId(character.getHandsId());
+                    existingCharacter.setRightFingerId(character.getRightFingerId());
+                    existingCharacter.setLeftFingerId(character.getLeftFingerId());
+                    existingCharacter.setRightWristId(character.getRightWristId());
+                    existingCharacter.setLeftWristId(character.getLeftWristId());
+                    existingCharacter.setNeckId(character.getNeckId());
+                    existingCharacter.setLeftEarId(character.getLeftEarId());
+                    existingCharacter.setRightEarId(character.getRightEarId());
+                    existingCharacter.setFaceId(character.getFaceId());
+                    existingCharacter.setWaistId(character.getWaistId());
+                    existingCharacter.setPrimaryId(character.getPrimaryId());
+                    existingCharacter.setOffhandId(character.getOffhandId());
                     if (character.getCurrentRoomId() != null) {
                         existingCharacter.setCurrentRoomId(character.getCurrentRoomId());
                     }

@@ -1,6 +1,7 @@
 package com.aimud.aimud.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -18,6 +19,7 @@ public class Item {
     @Column("wear_location")
     private WearLocation wearLocation;
 
+    @Transient
     private List<Effect> effects = new ArrayList<>();
 
     private String name;
