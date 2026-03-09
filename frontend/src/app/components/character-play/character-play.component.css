@@ -181,6 +181,15 @@
   font-weight: bold;
 }
 
+.stat-group-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 10px;
+  opacity: 0.8;
+}
+
 .divider {
   height: 1px;
   background-color: var(--glass-border);

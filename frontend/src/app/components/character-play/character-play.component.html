@@ -63,6 +63,32 @@
       <div class="stat-row">
         <span class="stat-label">CHA:</span> <span class="stat-value">{{ character.currentCharisma }}</span>
       </div>
+      <div class="divider"></div>
+      <div class="stat-group-label">Derived Stats</div>
+      <div class="stat-row">
+        <span class="stat-label">HP Regen:</span> <span class="stat-value">{{ character.hpRegen | number:'1.1-1' }}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Mana Regen:</span> <span class="stat-value">{{ character.manaRegen | number:'1.1-1' }}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Phys Attack:</span> <span class="stat-value">{{ character.physicalAttack | number:'1.1-1' }}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Mag Attack:</span> <span class="stat-value">{{ character.magicAttack | number:'1.1-1' }}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Armor:</span> <span class="stat-value">{{ character.armor | number:'1.1-1' }}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Mag Resist:</span> <span class="stat-value">{{ character.magicResist | number:'1.1-1' }}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Dodge:</span> <span class="stat-value">{{ character.dodgeChance | number:'1.1-1' }}%</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Crit:</span> <span class="stat-value">{{ character.critChance | number:'1.1-1' }}%</span>
+      </div>
     </div>
 
     <div class="stat-content" *ngIf="activeStatTab === 'inventory'">
