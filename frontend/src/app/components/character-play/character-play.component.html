@@ -190,14 +190,34 @@
         <table class="inventory-table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Location</th>
-              <th>Value</th>
+              <th (click)="toggleSort('name')" [class.sorted]="sortColumn === 'name'">
+                Name
+                <span class="sort-indicator" *ngIf="sortColumn === 'name'">
+                  {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
+              <th (click)="toggleSort('itemType')" [class.sorted]="sortColumn === 'itemType'">
+                Type
+                <span class="sort-indicator" *ngIf="sortColumn === 'itemType'">
+                  {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
+              <th (click)="toggleSort('wearLocation')" [class.sorted]="sortColumn === 'wearLocation'">
+                Location
+                <span class="sort-indicator" *ngIf="sortColumn === 'wearLocation'">
+                  {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
+              <th (click)="toggleSort('value')" [class.sorted]="sortColumn === 'value'">
+                Value
+                <span class="sort-indicator" *ngIf="sortColumn === 'value'">
+                  {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of character.inventory">
+            <tr *ngFor="let item of sortedInventory">
               <td class="item-name">{{ item.name }}</td>
               <td>{{ item.itemType }}</td>
               <td>{{ item.wearLocation }}</td>

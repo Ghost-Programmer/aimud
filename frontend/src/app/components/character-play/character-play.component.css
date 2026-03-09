@@ -223,6 +223,23 @@
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.inventory-table th:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.inventory-table th.sorted {
+  color: #ffd700;
+  background-color: rgba(255, 215, 0, 0.1);
+}
+
+.sort-indicator {
+  font-size: 0.8rem;
+  margin-left: 4px;
 }
 
 .inventory-table td {

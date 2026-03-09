@@ -15,6 +15,8 @@ export class CharacterPlayComponent implements OnInit, OnChanges {
   activeStatTab: string = 'stats';
   currentRoom: any = null;
   exits: string[] = [];
+  sortColumn: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
 
   constructor(private characterService: CharacterService) {}
 
@@ -56,5 +58,40 @@ export class CharacterPlayComponent implements OnInit, OnChanges {
 
   setActiveStatTab(tab: string) {
     this.activeStatTab = tab;
+  }
+
+  toggleSort(column: string) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+  }
+
+  get sortedInventory() {
+    if (!this.character || !this.character.inventory) return [];
+
+    const inventory = [...this.character.inventory];
+    if (!this.sortColumn) return inventory;
+
+    return inventory.sort((a, b) => {
+      let valA = this.getSortValue(a, this.sortColumn);
+      let valB = this.getSortValue(b, this.sortColumn);
+
+      if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
+      if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  private getSortValue(item: any, column: string): any {
+    switch (column) {
+      case 'name': return item.name?.toLowerCase() || '';
+      case 'itemType': return item.itemType?.toLowerCase() || '';
+      case 'wearLocation': return item.wearLocation?.toLowerCase() || '';
+      case 'value': return item.value || 0;
+      default: return '';
+    }
   }
 }
