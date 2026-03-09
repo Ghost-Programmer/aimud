@@ -53,6 +53,58 @@
           <div *ngIf="tab.type === 'config'">
             <app-config-dashboard></app-config-dashboard>
           </div>
+          <div *ngIf="tab.type === 'world'">
+            <h2>World Builder</h2>
+            <div class="world-builder-container">
+              <!-- Room Management Accordion -->
+              <div class="accordion-item" [class.active]="activeWorldSection === 'rooms'">
+                <div class="accordion-header" (click)="toggleWorldSection('rooms')">
+                  <span class="accordion-title">Room Management</span>
+                  <span class="accordion-icon">{{ activeWorldSection === 'rooms' ? '▼' : '▶' }}</span>
+                </div>
+                <div class="accordion-content">
+                  <p>Tools for creating and managing game rooms and locations.</p>
+                  <button class="admin-btn">Open Room Editor</button>
+                </div>
+              </div>
+
+              <!-- Area Editor Accordion -->
+              <div class="accordion-item" [class.active]="activeWorldSection === 'areas'">
+                <div class="accordion-header" (click)="toggleWorldSection('areas')">
+                  <span class="accordion-title">Area Editor</span>
+                  <span class="accordion-icon">{{ activeWorldSection === 'areas' ? '▼' : '▶' }}</span>
+                </div>
+                <div class="accordion-content">
+                  <p>Define larger geographic zones and their properties.</p>
+                  <button class="admin-btn">Open Area Editor</button>
+                </div>
+              </div>
+
+              <!-- NPC Spawner Accordion -->
+              <div class="accordion-item" [class.active]="activeWorldSection === 'npcs'">
+                <div class="accordion-header" (click)="toggleWorldSection('npcs')">
+                  <span class="accordion-title">NPC Spawner</span>
+                  <span class="accordion-icon">{{ activeWorldSection === 'npcs' ? '▼' : '▶' }}</span>
+                </div>
+                <div class="accordion-content">
+                  <p>Create and configure non-player characters and their spawn points.</p>
+                  <button class="admin-btn">Manage NPCs</button>
+                </div>
+              </div>
+
+              <!-- Item Creator Accordion -->
+              <div class="accordion-item" [class.active]="activeWorldSection === 'items'">
+                <div class="accordion-header" (click)="toggleWorldSection('items')">
+                  <span class="accordion-title">Item Creator</span>
+                  <span class="accordion-icon">{{ activeWorldSection === 'items' ? '▼' : '▶' }}</span>
+                </div>
+                <div class="accordion-content">
+                  <p>Design weapons, armor, and consumables for the world.</p>
+                  <button class="admin-btn">Open Item Forge</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </ng-container>
     </div>

@@ -11,7 +11,7 @@ import { ConfigDashboardComponent } from '../../components/config-dashboard/conf
 interface Tab {
   id: string;
   label: string;
-  type: 'create-character' | 'select-character' | 'play-character' | 'players' | 'config';
+  type: 'create-character' | 'select-character' | 'play-character' | 'players' | 'config' | 'world';
   data?: any;
 }
 
@@ -29,6 +29,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   tabs: Tab[] = [];
   activeTabId: string = '';
+  activeWorldSection: string = '';
 
   private loginTime: number = Date.now();
   private timerInterval: any;
@@ -44,6 +45,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
         // Initialize tabs based on role
         if (this.role === 'MUD_ADMIN') {
+          this.tabs.push({ id: 'world', label: 'World', type: 'world' });
           this.tabs.push({ id: 'players', label: 'Players', type: 'players' });
           this.tabs.push({ id: 'config', label: 'Config', type: 'config' });
         }
@@ -74,6 +76,14 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   setActiveTab(tabId: string) {
     this.activeTabId = tabId;
+  }
+
+  toggleWorldSection(sectionId: string) {
+    if (this.activeWorldSection === sectionId) {
+      this.activeWorldSection = '';
+    } else {
+      this.activeWorldSection = sectionId;
+    }
   }
 
   onTabDrop(event: CdkDragDrop<Tab[]>) {
