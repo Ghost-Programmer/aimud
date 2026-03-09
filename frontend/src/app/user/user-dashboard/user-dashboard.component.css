@@ -244,7 +244,7 @@ tr:hover {
 
 .accordion-item.active .accordion-content {
   padding: 0 20px 20px 20px;
-  max-height: 500px;
+  max-height: 2000px;
   opacity: 1;
 }
 

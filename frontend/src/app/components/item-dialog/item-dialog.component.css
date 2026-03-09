@@ -1,0 +1,189 @@
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.dialog-container {
+  padding: 1.5rem;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 8px;
+  width: 90%;
+  max-width: 650px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+h2 {
+  color: #ffd700;
+  margin-top: 0;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+  padding-bottom: 0.5rem;
+}
+
+.form-content {
+  margin-top: 1rem;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.half {
+  flex: 1;
+}
+
+label {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-bottom: 0.3rem;
+}
+
+.form-input {
+  background: rgba(20, 20, 30, 0.8);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 4px;
+  color: #fff;
+  padding: 0.6rem;
+  font-size: 0.9rem;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #ffd700;
+  background: rgba(30, 30, 45, 0.9);
+}
+
+.effects-section {
+  margin-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #ffd700;
+}
+
+.add-btn {
+  background: rgba(76, 175, 80, 0.2);
+  color: #81c784;
+  border: 1px solid #4caf50;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-btn:hover {
+  background: rgba(76, 175, 80, 0.4);
+}
+
+.effect-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.effect-header {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.effect-type {
+  flex: 1;
+}
+
+.remove-btn {
+  background: rgba(244, 67, 54, 0.2);
+  color: #e57373;
+  border: 1px solid #f44336;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.modifier-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem;
+}
+
+.mod-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.small {
+  padding: 0.4rem;
+}
+
+.no-effects {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 1rem;
+}
+
+.actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.save-btn {
+  background: #ffd700;
+  color: #000;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background: transparent;
+  color: #aaa;
+  border: 1px solid #555;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+}

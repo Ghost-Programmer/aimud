@@ -7,6 +7,7 @@ import { CreateCharacterComponent } from '../../components/create-character/crea
 import { CharacterSelectComponent } from '../../components/character-select/character-select.component';
 import { CharacterPlayComponent } from '../../components/character-play/character-play.component';
 import { ConfigDashboardComponent } from '../../components/config-dashboard/config-dashboard.component';
+import { ItemCreatorComponent } from '../../components/item-creator/item-creator.component';
 
 interface Tab {
   id: string;
@@ -18,7 +19,7 @@ interface Tab {
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, DragDropModule, PlayerListComponent, CreateCharacterComponent, CharacterSelectComponent, CharacterPlayComponent, ConfigDashboardComponent],
+  imports: [CommonModule, DragDropModule, PlayerListComponent, CreateCharacterComponent, CharacterSelectComponent, CharacterPlayComponent, ConfigDashboardComponent, ItemCreatorComponent],
   templateUrl: './user-dashboard.component.html',
   styleUrl: './user-dashboard.component.css'
 })

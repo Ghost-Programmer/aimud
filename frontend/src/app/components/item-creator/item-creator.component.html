@@ -1,0 +1,69 @@
+<div class="item-creator-container">
+  <div class="filters-bar">
+    <div class="filter-group">
+      <input type="text" [(ngModel)]="filters.name" (ngModelChange)="onSearch()" placeholder="Search by name..." class="search-input">
+    </div>
+
+    <div class="filter-group">
+      <select [(ngModel)]="filters.type" (change)="onSearch()" class="filter-select">
+        <option value="">All Types</option>
+        <option *ngFor="let type of itemTypes" [value]="type">{{ type }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <select [(ngModel)]="filters.location" (change)="onSearch()" class="filter-select">
+        <option value="">All Locations</option>
+        <option *ngFor="let loc of wearLocations" [value]="loc">{{ loc }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group cost-filters">
+      <input type="number" [(ngModel)]="filters.minValue" (ngModelChange)="onSearch()" placeholder="Min Cost" class="cost-input">
+      <input type="number" [(ngModel)]="filters.maxValue" (ngModelChange)="onSearch()" placeholder="Max Cost" class="cost-input">
+    </div>
+
+    <button class="create-btn" (click)="openCreateDialog()">+ New Item</button>
+  </div>
+
+  <div class="table-container">
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Location</th>
+          <th>Cost</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of items" (click)="editItem(item)" class="clickable-row">
+          <td>{{ item.name }}</td>
+          <td>{{ item.itemType }}</td>
+          <td>{{ item.wearLocation }}</td>
+          <td class="gold-text">{{ item.value }}g</td>
+          <td>
+            <button class="delete-btn" (click)="deleteItem(item, $event)">Delete</button>
+          </td>
+        </tr>
+        <tr *ngIf="items.length === 0">
+          <td colspan="5" class="no-results">No items found matching your criteria.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination">
+    <button [disabled]="page === 0" (click)="prevPage()" class="pag-btn">Previous</button>
+    <span class="page-info">Page {{ page + 1 }} of {{ Math.ceil(totalItems / size) || 1 }} ({{ totalItems }} total)</span>
+    <button [disabled]="(page + 1) * size >= totalItems" (click)="nextPage()" class="pag-btn">Next</button>
+  </div>
+
+  <app-item-dialog
+    *ngIf="showDialog"
+    [itemData]="selectedItem"
+    (saveItem)="onSaveItem($event)"
+    (cancelDialog)="onCancelDialog()">
+  </app-item-dialog>
+</div>
