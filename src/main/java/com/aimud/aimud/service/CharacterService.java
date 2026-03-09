@@ -50,6 +50,9 @@ public class CharacterService {
                     existingCharacter.setCharisma(character.getCharisma());
                     existingCharacter.setRaceId(character.getRaceId());
                     existingCharacter.setClassId(character.getClassId());
+                    if (character.getCurrentRoomId() != null) {
+                        existingCharacter.setCurrentRoomId(character.getCurrentRoomId());
+                    }
                     return characterRepository.save(existingCharacter);
                 })
                 .flatMap(statService::updateCurrentStats);
@@ -65,6 +68,11 @@ public class CharacterService {
             character.setCharisma(rollStat());
         }
         return statService.updateCurrentStats(character);
+    }
+
+    public Mono<Character> getCharacterById(Long id) {
+        return characterRepository.findById(id)
+                .flatMap(statService::updateCurrentStats);
     }
 
     private int rollStat() {

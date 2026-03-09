@@ -1,14 +1,68 @@
-<div class="play-container">
-  <h2>Playing as {{ character.name }}</h2>
-  <div class="stats-panel">
-    <div class="stat">STR: {{ character.strength }}</div>
-    <div class="stat">DEX: {{ character.dexterity }}</div>
-    <div class="stat">CON: {{ character.constitution }}</div>
-    <div class="stat">INT: {{ character.intelligence }}</div>
-    <div class="stat">WIS: {{ character.wisdom }}</div>
-    <div class="stat">CHA: {{ character.charisma }}</div>
+<div class="play-container" cdkDropListGroup>
+  <div class="panel action-panel" cdkDrag>
+    <div class="panel-handle" cdkDragHandle>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-grip-vertical" viewBox="0 0 16 16">
+        <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+      </svg>
+      Action
+    </div>
+    <div class="room-info" *ngIf="currentRoom">
+      <h2 class="room-title">{{ currentRoom.name }}</h2>
+      <p class="room-description">{{ currentRoom.description }}</p>
+      <div class="room-exits">
+        <span class="exits-label">Exits:</span>
+        <span *ngFor="let exit of exits" class="exit">{{ exit }}</span>
+        <span *ngIf="exits.length === 0" class="no-exits">None</span>
+      </div>
+    </div>
+    <div class="room-info" *ngIf="!currentRoom">
+      <p>Loading room...</p>
+    </div>
   </div>
-  <div class="game-area">
-    <p>Game content will go here...</p>
+
+  <div class="panel stat-panel" cdkDrag>
+    <div class="panel-handle" cdkDragHandle>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-grip-vertical" viewBox="0 0 16 16">
+        <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+      </svg>
+      Stats & Inventory
+    </div>
+
+    <div class="stat-tabs">
+      <button class="stat-tab-btn" [class.active]="activeStatTab === 'stats'" (click)="setActiveStatTab('stats')">Stats</button>
+      <button class="stat-tab-btn" [class.active]="activeStatTab === 'inventory'" (click)="setActiveStatTab('inventory')">Inventory</button>
+    </div>
+
+    <div class="stat-content" *ngIf="activeStatTab === 'stats'">
+      <div class="stat-row">
+        <span class="stat-label">STR:</span> <span class="stat-value">{{ character.currentStrength }}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">DEX:</span> <span class="stat-value">{{ character.currentDexterity }}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">CON:</span> <span class="stat-value">{{ character.currentConstitution }}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">INT:</span> <span class="stat-value">{{ character.currentIntelligence }}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">WIS:</span> <span class="stat-value">{{ character.currentWisdom }}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">CHA:</span> <span class="stat-value">{{ character.currentCharisma }}</span>
+      </div>
+      <div class="divider"></div>
+      <div class="stat-row">
+        <span class="stat-label">HP:</span> <span class="stat-value">{{ character.maxHp | number:'1.0-0' }}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Mana:</span> <span class="stat-value">{{ character.maxMana | number:'1.0-0' }}</span>
+      </div>
+    </div>
+
+    <div class="stat-content" *ngIf="activeStatTab === 'inventory'">
+      <p class="empty-inventory">Inventory is empty.</p>
+    </div>
   </div>
 </div>

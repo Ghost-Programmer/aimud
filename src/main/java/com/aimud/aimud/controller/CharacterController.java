@@ -1,7 +1,9 @@
 package com.aimud.aimud.controller;
 
 import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Room;
 import com.aimud.aimud.service.CharacterService;
+import com.aimud.aimud.service.RoomService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +15,11 @@ import reactor.core.publisher.Mono;
 public class CharacterController {
 
     private final CharacterService characterService;
+    private final RoomService roomService;
 
-    public CharacterController(CharacterService characterService) {
+    public CharacterController(CharacterService characterService, RoomService roomService) {
         this.characterService = characterService;
+        this.roomService = roomService;
     }
 
     @PostMapping
@@ -34,9 +38,9 @@ public class CharacterController {
     }
 
     @PutMapping("/{id}")
-    public Mono<ResponseEntity<Character>> updateCharacter(@PathVariable Long id, @RequestBody Character character) {
+    public Mono<ResponseEntity<Object>> updateCharacter(@PathVariable Long id, @RequestBody Character character) {
         return characterService.updateCharacter(id, character)
-                .map(ResponseEntity::ok)
+                .map(updated -> ResponseEntity.ok((Object)updated))
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
@@ -44,5 +48,26 @@ public class CharacterController {
     public Mono<ResponseEntity<Character>> generateCharacter(@RequestBody Character character) {
         return characterService.generateCharacter(character)
                 .map(ResponseEntity::ok);
+    }
+
+    @GetMapping("/{id}")
+    public Mono<ResponseEntity<Object>> getCharacter(@PathVariable Long id) {
+        return characterService.getCharacterById(id)
+                .map(c -> ResponseEntity.ok((Object)c))
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{id}/room")
+    public Mono<ResponseEntity<Object>> getCharacterRoom(@PathVariable Long id) {
+        return characterService.getCharacterById(id)
+                .map(character -> {
+                    Room room = roomService.getRoom(character.getCurrentRoomId());
+                    if (room != null) {
+                        return ResponseEntity.ok((Object)room);
+                    } else {
+                        return ResponseEntity.notFound().build();
+                    }
+                })
+                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
 }

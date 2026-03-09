@@ -18,6 +18,14 @@ export class CharacterService {
     return this.http.get<any[]>(this.apiUrl);
   }
 
+  getCharacter(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
+  }
+
+  getCharacterRoom(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}/room`);
+  }
+
   updateCharacter(id: number, character: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, character);
   }

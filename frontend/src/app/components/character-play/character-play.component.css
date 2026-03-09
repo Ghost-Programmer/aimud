@@ -1,31 +1,174 @@
 .play-container {
-  padding: 20px;
-  color: var(--text-main);
-}
-
-h2 {
-  color: var(--primary);
-  margin-top: 0;
-}
-
-.stats-panel {
   display: flex;
-  gap: 15px;
-  background-color: rgba(0, 0, 0, 0.3);
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-  font-family: monospace;
+  height: 100%;
+  width: 100%;
+  padding: 20px;
+  gap: 20px;
+  color: var(--text-main);
+  overflow: hidden;
 }
 
-.stat {
+.panel {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.action-panel {
+  flex: 2;
+}
+
+.stat-panel {
+  flex: 1;
+  min-width: 250px;
+}
+
+.panel-handle {
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid var(--glass-border);
+  cursor: move;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
   color: var(--text-muted);
 }
 
-.game-area {
-  background-color: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--glass-border);
-  border-radius: 8px;
+.panel-handle svg {
+  opacity: 0.5;
+}
+
+.room-info {
   padding: 20px;
-  min-height: 300px;
+  overflow-y: auto;
+}
+
+.room-title {
+  margin-top: 0;
+  color: var(--primary);
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.room-description {
+  line-height: 1.6;
+  margin-bottom: 20px;
+  color: var(--text-main);
+}
+
+.room-exits {
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.exits-label {
+  font-weight: bold;
+  color: var(--text-muted);
+  margin-right: 10px;
+}
+
+.exit {
+  display: inline-block;
+  margin-right: 10px;
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.exit:hover {
+  text-decoration: underline;
+}
+
+.no-exits {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Stat Panel Styles */
+.stat-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.stat-tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.stat-tab-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+}
+
+.stat-tab-btn.active {
+  color: var(--primary);
+  border-bottom: 2px solid var(--primary);
+}
+
+.stat-content {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.stat-label {
+  color: var(--text-muted);
+}
+
+.stat-value {
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--glass-border);
+  margin: 15px 0;
+}
+
+.empty-inventory {
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 20px;
+}
+
+/* Dragging Styles */
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 8px;
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+              0 8px 10px 1px rgba(0, 0, 0, 0.14),
+              0 3px 14px 2px rgba(0, 0, 0, 0.12);
+  background-color: #1a1d24;
+  color: var(--text-main);
+  opacity: 0.9;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.play-container.cdk-drop-list-dragging .panel:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
