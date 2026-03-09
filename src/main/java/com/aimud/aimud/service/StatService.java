@@ -2,6 +2,7 @@ package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.*;
 import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Item;
 import com.aimud.aimud.repository.CharacterClassRepository;
 import com.aimud.aimud.repository.EffectRepository;
 import com.aimud.aimud.repository.ItemRepository;
@@ -141,7 +142,25 @@ public class StatService {
         monos.add(loadItemWithEffects(character.getPrimaryId()).doOnNext(character::setPrimary).defaultIfEmpty(new Item()));
         monos.add(loadItemWithEffects(character.getOffhandId()).doOnNext(character::setOffhand).defaultIfEmpty(new Item()));
 
-        return Mono.zip(monos, results -> character);
+        return Mono.zip(monos, results -> results)
+                .flatMap(results -> loadInventory(character));
+    }
+
+    private Mono<Character> loadInventory(Character character) {
+        if (character.getId() == null) return Mono.just(character);
+
+        return itemRepository.findAllByCharacterId(character.getId())
+                .flatMap(item -> effectRepository.findByItemId(item.getId())
+                        .collectList()
+                        .map(effects -> {
+                            item.setEffects(effects);
+                            return item;
+                        }))
+                .collectList()
+                .map(inventory -> {
+                    character.setInventory(inventory);
+                    return character;
+                });
     }
 
     private Mono<Item> loadItemWithEffects(Long itemId) {

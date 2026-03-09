@@ -1,13 +1,18 @@
 package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Item;
 import com.aimud.aimud.repository.CharacterRepository;
+import com.aimud.aimud.repository.ItemRepository;
 import com.aimud.aimud.repository.UserRepository;
+import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 public class CharacterService {
@@ -15,12 +20,14 @@ public class CharacterService {
     private final CharacterRepository characterRepository;
     private final UserRepository userRepository;
     private final StatService statService;
+    private final DatabaseClient databaseClient;
     private final Random random = new Random();
 
-    public CharacterService(CharacterRepository characterRepository, UserRepository userRepository, StatService statService) {
+    public CharacterService(CharacterRepository characterRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient) {
         this.characterRepository = characterRepository;
         this.userRepository = userRepository;
         this.statService = statService;
+        this.databaseClient = databaseClient;
     }
 
     public Mono<Character> createCharacter(String username, Character character) {
@@ -70,9 +77,28 @@ public class CharacterService {
                     if (character.getCurrentRoomId() != null) {
                         existingCharacter.setCurrentRoomId(character.getCurrentRoomId());
                     }
-                    return characterRepository.save(existingCharacter);
+                    return characterRepository.save(existingCharacter)
+                            .flatMap(savedCharacter -> updateInventory(savedCharacter, character.getInventory()));
                 })
                 .flatMap(statService::updateCurrentStats);
+    }
+
+    private Mono<Character> updateInventory(Character character, List<Item> inventory) {
+        if (inventory == null) return Mono.just(character);
+
+        return databaseClient.sql("DELETE FROM character_inventory WHERE character_id = :characterId")
+                .bind("characterId", character.getId())
+                .then()
+                .thenMany(Flux.fromIterable(inventory))
+                .flatMap(item -> {
+                    if (item.getId() == null) return Mono.empty();
+                    return databaseClient.sql("INSERT INTO character_inventory (character_id, item_id) VALUES (:characterId, :itemId)")
+                            .bind("characterId", character.getId())
+                            .bind("itemId", item.getId())
+                            .fetch()
+                            .rowsUpdated();
+                })
+                .then(Mono.just(character));
     }
 
     public Mono<Character> generateCharacter(Character character) {

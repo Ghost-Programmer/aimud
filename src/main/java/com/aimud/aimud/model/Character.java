@@ -5,6 +5,9 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Table("characters")
 public class Character {
     @Id
@@ -130,6 +133,9 @@ public class Character {
     private Long offhandId;
     @Transient
     private Item offhand;
+
+    @Transient
+    private List<Item> inventory = new ArrayList<>();
 
     public Character() {
     }
@@ -666,5 +672,12 @@ public class Character {
     public void setOffhand(Item offhand) {
         this.offhand = offhand;
         this.offhandId = offhand != null ? offhand.getId() : null;
+    }
+    public List<Item> getInventory() {
+        return inventory;
+    }
+
+    public void setInventory(List<Item> inventory) {
+        this.inventory = inventory;
     }
 }
