@@ -51,7 +51,8 @@ public class StatService {
                                 c.setCurrentWisdom(c.getWisdom() + race.getWisdomMod() + characterClass.getWisdomMod());
                                 c.setCurrentCharisma(c.getCharisma() + race.getCharismaMod() + characterClass.getCharismaMod());
 
-                                // TODO: Add bonuses from equipment stats here once Item stats logic is clear
+                                // Add bonuses from equipment stats
+                                applyEquipmentBonuses(c);
 
                                 // Calculate Derived Stats
                                 int str = c.getCurrentStrength();
@@ -92,6 +93,32 @@ public class StatService {
                                 return c;
                             });
                 });
+    }
+
+    private void applyEquipmentBonuses(Character c) {
+        Item[] equipment = {
+                c.getHead(), c.getChest(), c.getLegs(), c.getFeet(), c.getArms(), c.getHands(),
+                c.getRightFinger(), c.getLeftFinger(), c.getRightWrist(), c.getLeftWrist(),
+                c.getNeck(), c.getLeftEar(), c.getRightEar(), c.getFace(), c.getWaist(),
+                c.getPrimary(), c.getOffhand()
+        };
+
+        for (Item item : equipment) {
+            if (item != null && item.getEffects() != null) {
+                for (Effect effect : item.getEffects()) {
+                    if (effect.getEffectType() != null) {
+                        switch (effect.getEffectType()) {
+                            case STRENGTH -> c.setCurrentStrength(c.getCurrentStrength() + effect.getModifier1());
+                            case DEXTERITY -> c.setCurrentDexterity(c.getCurrentDexterity() + effect.getModifier1());
+                            case CONSTITUTION -> c.setCurrentConstitution(c.getCurrentConstitution() + effect.getModifier1());
+                            case INTELLIGENCE -> c.setCurrentIntelligence(c.getCurrentIntelligence() + effect.getModifier1());
+                            case WISDOM -> c.setCurrentWisdom(c.getCurrentWisdom() + effect.getModifier1());
+                            case CHARISMA -> c.setCurrentCharisma(c.getCurrentCharisma() + effect.getModifier1());
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private Mono<Character> loadEquipment(Character character) {

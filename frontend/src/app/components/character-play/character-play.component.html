@@ -30,6 +30,7 @@
 
     <div class="stat-tabs">
       <button class="stat-tab-btn" [class.active]="activeStatTab === 'stats'" (click)="setActiveStatTab('stats')">Stats</button>
+      <button class="stat-tab-btn" [class.active]="activeStatTab === 'equipped'" (click)="setActiveStatTab('equipped')">Equipped</button>
       <button class="stat-tab-btn" [class.active]="activeStatTab === 'inventory'" (click)="setActiveStatTab('inventory')">Inventory</button>
     </div>
 
@@ -88,6 +89,99 @@
       </div>
       <div class="stat-row">
         <span class="stat-label">Crit:</span> <span class="stat-value">{{ character.critChance | number:'1.1-1' }}%</span>
+      </div>
+    </div>
+
+    <div class="stat-content equipped-tab" *ngIf="activeStatTab === 'equipped'">
+      <div class="equipment-layout">
+        <div class="equipment-column left-column">
+          <div class="equipment-slot" [class.has-item]="character.head">
+            <span class="slot-label">Head:</span>
+            <span class="slot-item">{{ character.head?.name || 'Empty' }}</span>
+          </div>
+          <div class="equipment-slot" [class.has-item]="character.face">
+            <span class="slot-label">Face:</span>
+            <span class="slot-item">{{ character.face?.name || 'Empty' }}</span>
+          </div>
+          <div class="equipment-slot" [class.has-item]="character.neck">
+            <span class="slot-label">Neck:</span>
+            <span class="slot-item">{{ character.neck?.name || 'Empty' }}</span>
+          </div>
+          <div class="equipment-slot" [class.has-item]="character.leftEar">
+            <span class="slot-label">Left Ear:</span>
+            <span class="slot-item">{{ character.leftEar?.name || 'Empty' }}</span>
+          </div>
+          <div class="equipment-slot" [class.has-item]="character.leftFinger">
+            <span class="slot-label">L. Finger:</span>
+            <span class="slot-item">{{ character.leftFinger?.name || 'Empty' }}</span>
+          </div>
+          <div class="equipment-slot" [class.has-item]="character.leftWrist">
+            <span class="slot-label">L. Wrist:</span>
+            <span class="slot-item">{{ character.leftWrist?.name || 'Empty' }}</span>
+          </div>
+          <div class="equipment-slot" [class.has-item]="character.arms">
+            <span class="slot-label">Arms:</span>
+            <span class="slot-item">{{ character.arms?.name || 'Empty' }}</span>
+          </div>
+          <div class="equipment-slot" [class.has-item]="character.hands">
+            <span class="slot-label">Hands:</span>
+            <span class="slot-item">{{ character.hands?.name || 'Empty' }}</span>
+          </div>
+        </div>
+
+        <div class="human-figure-container">
+          <div class="human-figure">
+            <div class="figure-head"></div>
+            <div class="figure-neck"></div>
+            <div class="figure-torso"></div>
+            <div class="figure-arm-l"></div>
+            <div class="figure-arm-r"></div>
+            <div class="figure-waist"></div>
+            <div class="figure-leg-l"></div>
+            <div class="figure-leg-r"></div>
+          </div>
+        </div>
+
+        <div class="equipment-column right-column">
+          <div class="equipment-slot" [class.has-item]="character.chest">
+            <span class="slot-item">{{ character.chest?.name || 'Empty' }}</span>
+            <span class="slot-label">:Chest</span>
+          </div>
+          <div class="equipment-slot" [class.has-item]="character.waist">
+            <span class="slot-item">{{ character.waist?.name || 'Empty' }}</span>
+            <span class="slot-label">:Waist</span>
+          </div>
+          <div class="equipment-slot" [class.has-item]="character.legs">
+            <span class="slot-item">{{ character.legs?.name || 'Empty' }}</span>
+            <span class="slot-label">:Legs</span>
+          </div>
+          <div class="equipment-slot" [class.has-item]="character.feet">
+            <span class="slot-item">{{ character.feet?.name || 'Empty' }}</span>
+            <span class="slot-label">:Feet</span>
+          </div>
+          <div class="equipment-slot" [class.has-item]="character.rightEar">
+            <span class="slot-item">{{ character.rightEar?.name || 'Empty' }}</span>
+            <span class="slot-label">:Right Ear</span>
+          </div>
+          <div class="equipment-slot" [class.has-item]="character.rightFinger">
+            <span class="slot-item">{{ character.rightFinger?.name || 'Empty' }}</span>
+            <span class="slot-label">:R. Finger</span>
+          </div>
+          <div class="equipment-slot" [class.has-item]="character.rightWrist">
+            <span class="slot-item">{{ character.rightWrist?.name || 'Empty' }}</span>
+            <span class="slot-label">:R. Wrist</span>
+          </div>
+          <div class="equipment-slot primary-offhand" [class.has-item]="character.primary || character.offhand">
+            <div class="weapon-slot" [class.has-item]="character.primary">
+              <span class="slot-label">Primary:</span>
+              <span class="slot-item">{{ character.primary?.name || 'Empty' }}</span>
+            </div>
+            <div class="weapon-slot" [class.has-item]="character.offhand">
+              <span class="slot-label">Offhand:</span>
+              <span class="slot-item">{{ character.offhand?.name || 'Empty' }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 

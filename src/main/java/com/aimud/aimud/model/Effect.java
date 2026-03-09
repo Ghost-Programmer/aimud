@@ -9,6 +9,9 @@ public class Effect {
     @Id
     private Long id;
 
+    @Column("item_id")
+    private Long itemId;
+
     @Column("effect_type")
     private EffectType effectType;
 
@@ -34,6 +37,14 @@ public class Effect {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
     }
 
     public EffectType getEffectType() {
