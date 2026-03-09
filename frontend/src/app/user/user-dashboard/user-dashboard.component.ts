@@ -8,6 +8,7 @@ import { CharacterSelectComponent } from '../../components/character-select/char
 import { CharacterPlayComponent } from '../../components/character-play/character-play.component';
 import { ConfigDashboardComponent } from '../../components/config-dashboard/config-dashboard.component';
 import { ItemCreatorComponent } from '../../components/item-creator/item-creator.component';
+import { RoomManagementComponent } from '../../components/room-management/room-management.component';
 
 interface Tab {
   id: string;
@@ -19,7 +20,7 @@ interface Tab {
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, DragDropModule, PlayerListComponent, CreateCharacterComponent, CharacterSelectComponent, CharacterPlayComponent, ConfigDashboardComponent, ItemCreatorComponent],
+  imports: [CommonModule, DragDropModule, PlayerListComponent, CreateCharacterComponent, CharacterSelectComponent, CharacterPlayComponent, ConfigDashboardComponent, ItemCreatorComponent, RoomManagementComponent],
   templateUrl: './user-dashboard.component.html',
   styleUrl: './user-dashboard.component.css'
 })
