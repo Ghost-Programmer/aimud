@@ -30,6 +30,17 @@
   align-items: center;
 }
 
+.ai-icon {
+  cursor: pointer;
+  font-size: 1.5rem;
+  transition: transform 0.2s;
+  padding: 0 10px;
+}
+
+.ai-icon:hover {
+  transform: scale(1.2);
+}
+
 .label {
   font-weight: 600;
   margin-right: 8px;

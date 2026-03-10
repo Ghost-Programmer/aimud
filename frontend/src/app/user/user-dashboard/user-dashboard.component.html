@@ -14,7 +14,12 @@
         <span class="value">{{ onlineTime }}</span>
       </div>
     </div>
-    <button class="logout-btn" (click)="logout()">Logout</button>
+    <div class="status-group">
+      <div *ngIf="role === 'MUD_ADMIN'" class="status-item ai-icon" (click)="openAiDialog()" title="AI Assistant">
+        <span class="value">🤖</span>
+      </div>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
   </div>
 
   <div class="tabs-container">
@@ -67,17 +72,6 @@
                 </div>
               </div>
 
-              <!-- Area Editor Accordion -->
-              <div class="accordion-item" [class.active]="activeWorldSection === 'areas'">
-                <div class="accordion-header" (click)="toggleWorldSection('areas')">
-                  <span class="accordion-title">Area Builder</span>
-                  <span class="accordion-icon">{{ activeWorldSection === 'areas' ? '▼' : '▶' }}</span>
-                </div>
-                <div class="accordion-content">
-                  <app-area-builder></app-area-builder>
-                </div>
-              </div>
-
               <!-- NPC Spawner Accordion -->
               <div class="accordion-item" [class.active]="activeWorldSection === 'npcs'">
                 <div class="accordion-header" (click)="toggleWorldSection('npcs')">
@@ -107,3 +101,5 @@
     </div>
   </div>
 </div>
+
+<app-ai-dialog [isOpen]="isAiDialogOpen" (close)="closeAiDialog()"></app-ai-dialog>

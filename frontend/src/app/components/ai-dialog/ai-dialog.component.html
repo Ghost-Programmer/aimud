@@ -1,0 +1,31 @@
+<div class="ai-dialog-overlay" [style.display]="isOpen ? 'flex' : 'none'">
+  <div class="ai-dialog-container">
+    <div class="ai-dialog-header">
+      <h3>AI Assistant</h3>
+      <button class="close-btn" (click)="closeDialog()">×</button>
+    </div>
+    <div class="ai-dialog-content" #scrollContainer>
+      <div *ngFor="let message of messages" class="message" [ngClass]="'message-' + message.role">
+        <div class="message-bubble">
+          <span class="message-role">{{ message.role === 'user' ? 'You' : 'AI' }}</span>
+          <p>{{ message.text }}</p>
+        </div>
+      </div>
+      <div *ngIf="isLoading" class="message message-ai">
+        <div class="message-bubble">
+          <span class="message-role">AI</span>
+          <p class="typing-indicator">...</p>
+        </div>
+      </div>
+    </div>
+    <div class="ai-dialog-footer">
+      <textarea
+        [(ngModel)]="prompt"
+        (keydown.enter)="sendMessage(); $event.preventDefault()"
+        placeholder="Type your message..."
+        [disabled]="isLoading"
+      ></textarea>
+      <button (click)="sendMessage()" [disabled]="isLoading">Send</button>
+    </div>
+  </div>
+</div>

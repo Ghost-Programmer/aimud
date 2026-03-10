@@ -9,7 +9,7 @@ import { CharacterPlayComponent } from '../../components/character-play/characte
 import { ConfigDashboardComponent } from '../../components/config-dashboard/config-dashboard.component';
 import { ItemCreatorComponent } from '../../components/item-creator/item-creator.component';
 import { RoomManagementComponent } from '../../components/room-management/room-management.component';
-import { AreaBuilderComponent } from '../../components/area-builder/area-builder.component';
+import { AiDialogComponent } from '../../components/ai-dialog/ai-dialog.component';
 
 interface Tab {
   id: string;
@@ -21,7 +21,7 @@ interface Tab {
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, DragDropModule, PlayerListComponent, CreateCharacterComponent, CharacterSelectComponent, CharacterPlayComponent, ConfigDashboardComponent, ItemCreatorComponent, RoomManagementComponent, AreaBuilderComponent],
+  imports: [CommonModule, DragDropModule, PlayerListComponent, CreateCharacterComponent, CharacterSelectComponent, CharacterPlayComponent, ConfigDashboardComponent, ItemCreatorComponent, RoomManagementComponent, AiDialogComponent],
   templateUrl: './user-dashboard.component.html',
   styleUrl: './user-dashboard.component.css'
 })
@@ -29,6 +29,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   role: string = '';
   localTime: string = '';
   onlineTime: string = '00:00:00';
+  isAiDialogOpen: boolean = false;
 
   tabs: Tab[] = [];
   activeTabId: string = '';
@@ -132,6 +133,14 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   logout() {
     localStorage.removeItem('token');
     this.router.navigate(['/']);
+  }
+
+  openAiDialog() {
+    this.isAiDialogOpen = true;
+  }
+
+  closeAiDialog() {
+    this.isAiDialogOpen = false;
   }
 
   private updateTime() {
