@@ -22,7 +22,7 @@ services:
       - |
         ollama serve &
         sleep 5
-        ollama pull qwen3.5
+        ollama pull gemma3:12b
         wait
 
 volumes:
