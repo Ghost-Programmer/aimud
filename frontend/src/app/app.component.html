@@ -30,9 +30,9 @@
       <div class="status-header">
         <h2>System Status</h2>
         <div class="status-indicator">
-          <span class="status-dot" [class.online]="backendStatus === 'ONLINE'"></span>
-          <span class="status-text" [class.online-text]="backendStatus === 'ONLINE'">
-            {{ backendStatus || 'CONNECTING...' }}
+          <span class="status-dot" [class.online]="systemStatus?.status === 'ONLINE'"></span>
+          <span class="status-text" [class.online-text]="systemStatus?.status === 'ONLINE'">
+            {{ systemStatus?.status || 'CONNECTING...' }}
           </span>
         </div>
       </div>
@@ -42,15 +42,23 @@
       <div class="status-grid">
         <div class="status-item">
           <span class="label">Version</span>
-          <span class="value">{{ backendVersion || '---' }}</span>
+          <span class="value">{{ systemStatus?.version || '---' }}</span>
         </div>
         <div class="status-item">
           <span class="label">Uptime</span>
-          <span class="value">{{ backendUptime || '---' }}</span>
+          <span class="value">{{ systemStatus?.uptime || '---' }}</span>
         </div>
         <div class="status-item">
           <span class="label">Database</span>
-          <span class="value">{{ backendDatabase || '---' }}</span>
+          <span class="value">{{ systemStatus?.database || '---' }}</span>
+        </div>
+        <div class="status-item">
+          <span class="label">LLM</span>
+          <span class="value" [class.online-text]="systemStatus?.llmStatus === 'Connected'">{{ systemStatus?.llmStatus || '---' }}</span>
+        </div>
+        <div class="status-item">
+          <span class="label">Model</span>
+          <span class="value">{{ systemStatus?.llmModel || '---' }}</span>
         </div>
       </div>
     </div>

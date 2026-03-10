@@ -4,6 +4,7 @@ import { RegisterDialogComponent } from './components/register-dialog/register-d
 import { LoginDialogComponent } from './components/login-dialog/login-dialog.component';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { StatusService, SystemStatus } from './services/status.service';
 
 @Component({
   selector: 'app-root',
@@ -14,10 +15,7 @@ import { CommonModule } from '@angular/common';
 })
 export class AppComponent implements OnInit {
   title = 'frontend';
-  backendStatus = '';
-  backendVersion = '';
-  backendUptime = '';
-  backendDatabase = '';
+  systemStatus?: SystemStatus;
 
   serverName = 'AI Mud';
   allowNewUser = true;
@@ -43,20 +41,23 @@ export class AppComponent implements OnInit {
     this.isLoginDialogOpen = false;
   }
 
-  constructor(private http: HttpClient, public router: Router) { }
+  constructor(private http: HttpClient, public router: Router, private statusService: StatusService) { }
 
   ngOnInit() {
-    this.http.get<{ status: string, version: string, uptime: string, database: string }>('/api/status').subscribe({
+    this.statusService.getSystemStatus().subscribe({
       next: (data) => {
-        this.backendStatus = data.status;
-        this.backendVersion = data.version;
-        this.backendUptime = data.uptime;
-        this.backendDatabase = data.database;
+        this.systemStatus = data;
       },
       error: (error) => {
         console.error('Error fetching backend status:', error);
-        this.backendStatus = 'OFFLINE';
-        this.backendDatabase = 'Disconnected';
+        this.systemStatus = {
+          status: 'OFFLINE',
+          version: '---',
+          uptime: '---',
+          database: 'Disconnected',
+          llmStatus: 'Disconnected',
+          llmModel: '---'
+        };
       }
     });
 

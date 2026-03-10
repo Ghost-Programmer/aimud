@@ -1,5 +1,7 @@
 package com.aimud.aimud.service;
 
+import org.springframework.ai.ollama.OllamaChatModel;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -7,15 +9,21 @@ import reactor.core.publisher.Mono;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
 public class StatusService {
 
     private final DatabaseClient databaseClient;
+    private final OllamaChatModel ollamaChatModel;
 
-    public StatusService(DatabaseClient databaseClient) {
+    @Value("${spring.ai.ollama.chat.options.model:qwen3.5}")
+    private String modelName;
+
+    public StatusService(DatabaseClient databaseClient, OllamaChatModel ollamaChatModel) {
         this.databaseClient = databaseClient;
+        this.ollamaChatModel = ollamaChatModel;
     }
 
     public Mono<Map<String, Object>> getSystemStatus() {
@@ -28,19 +36,32 @@ public class StatusService {
                 uptime.toMinutesPart(),
                 uptime.toSecondsPart());
 
+        // Simple check for LLM connection (just confirming the bean is present and modelName is set)
+        String llmStatus = ollamaChatModel != null ? "Connected" : "Disconnected";
+
         return databaseClient.sql("SELECT value FROM server_info WHERE key = 'db_status'")
                 .map(row -> row.get("value", String.class))
                 .one()
                 .defaultIfEmpty("Database Disconnected")
-                .map(dbMessage -> Map.<String, Object>of(
-                        "status", "ONLINE",
-                        "database", dbMessage,
-                        "version", "0.0.1-SNAPSHOT",
-                        "uptime", uptimeString))
-                .onErrorResume(e -> Mono.just(Map.<String, Object>of(
-                        "status", "ONLINE",
-                        "database", "Connection Failed: " + e.getMessage(),
-                        "version", "0.0.1-SNAPSHOT",
-                        "uptime", uptimeString)));
+                .map(dbMessage -> {
+                    Map<String, Object> status = new HashMap<>();
+                    status.put("status", "ONLINE");
+                    status.put("database", dbMessage);
+                    status.put("version", "0.0.1-SNAPSHOT");
+                    status.put("uptime", uptimeString);
+                    status.put("llmStatus", llmStatus);
+                    status.put("llmModel", modelName);
+                    return status;
+                })
+                .onErrorResume(e -> {
+                    Map<String, Object> status = new HashMap<>();
+                    status.put("status", "ONLINE");
+                    status.put("database", "Connection Failed: " + e.getMessage());
+                    status.put("version", "0.0.1-SNAPSHOT");
+                    status.put("uptime", uptimeString);
+                    status.put("llmStatus", llmStatus);
+                    status.put("llmModel", modelName);
+                    return Mono.just(status);
+                });
     }
 }
