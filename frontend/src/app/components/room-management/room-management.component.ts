@@ -43,13 +43,12 @@ export class RoomManagementComponent implements OnInit {
   }
 
   loadRooms() {
-    const activeFilters: any = {};
-    if (this.filters.name) activeFilters.name = this.filters.name;
-    if (this.filters.type) activeFilters.type = this.filters.type;
-    if (this.filters.minId !== undefined) activeFilters.minId = this.filters.minId;
-    if (this.filters.maxId !== undefined) activeFilters.maxId = this.filters.maxId;
-
-    this.roomService.getRooms(this.page, this.size, activeFilters).subscribe(response => {
+    this.roomService.getRooms(this.page, this.size, {
+      name: this.filters.name,
+      type: this.filters.type || undefined,
+      minId: this.filters.minId,
+      maxId: this.filters.maxId
+    }).subscribe(response => {
       this.rooms = response.rooms;
       this.totalRooms = response.total;
     });

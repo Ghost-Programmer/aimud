@@ -1,36 +1,26 @@
 <div class="room-management-container">
-  <h2>Room Management</h2>
-
-  <div class="filters card">
-    <div class="filter-row">
-      <div class="filter-group">
-        <label>Name</label>
-        <input type="text" [(ngModel)]="filters.name" (keyup.enter)="onSearch()" placeholder="Search by name...">
-      </div>
-      <div class="filter-group">
-        <label>Type</label>
-        <select [(ngModel)]="filters.type">
-          <option value="">All Types</option>
-          <option *ngFor="let type of roomTypes" [value]="type">{{type}}</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>Min ID</label>
-        <input type="number" [(ngModel)]="filters.minId" placeholder="Min ID">
-      </div>
-      <div class="filter-group">
-        <label>Max ID</label>
-        <input type="number" [(ngModel)]="filters.maxId" placeholder="Max ID">
-      </div>
-      <div class="filter-actions">
-        <button class="btn-primary" (click)="onSearch()">Search</button>
-        <button class="btn-success" (click)="openCreateDialog()">Create Room</button>
-      </div>
+  <div class="filters-bar">
+    <div class="filter-group">
+      <input type="text" [(ngModel)]="filters.name" (ngModelChange)="onSearch()" placeholder="Search by name..." class="search-input">
     </div>
+
+    <div class="filter-group">
+      <select [(ngModel)]="filters.type" (change)="onSearch()" class="filter-select">
+        <option value="">All Types</option>
+        <option *ngFor="let type of roomTypes" [value]="type">{{ type }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group id-filters">
+      <input type="number" [(ngModel)]="filters.minId" (ngModelChange)="onSearch()" placeholder="Min ID" class="id-input">
+      <input type="number" [(ngModel)]="filters.maxId" (ngModelChange)="onSearch()" placeholder="Max ID" class="id-input">
+    </div>
+
+    <button class="create-btn" (click)="openCreateDialog()">+ New Room</button>
   </div>
 
-  <div class="table-container card">
-    <table class="data-table">
+  <div class="table-container">
+    <table class="rooms-table">
       <thead>
         <tr>
           <th>ID</th>
@@ -42,32 +32,32 @@
       </thead>
       <tbody>
         <tr *ngFor="let room of rooms" (click)="editRoom(room)" class="clickable-row">
-          <td>{{room.id}}</td>
-          <td>{{room.name}}</td>
-          <td>{{room.roomType}}</td>
+          <td>{{ room.id }}</td>
+          <td>{{ room.name }}</td>
+          <td>{{ room.roomType }}</td>
           <td>
-            {{room.northId ? 'N' : '-'}}
-            {{room.southId ? 'S' : '-'}}
-            {{room.eastId ? 'E' : '-'}}
-            {{room.westId ? 'W' : '-'}}
-            {{room.upId ? 'U' : '-'}}
-            {{room.downId ? 'D' : '-'}}
+            {{ room.northId ? 'N' : '-' }}
+            {{ room.southId ? 'S' : '-' }}
+            {{ room.eastId ? 'E' : '-' }}
+            {{ room.westId ? 'W' : '-' }}
+            {{ room.upId ? 'U' : '-' }}
+            {{ room.downId ? 'D' : '-' }}
           </td>
           <td>
-            <button class="btn-danger btn-sm" (click)="deleteRoom(room, $event)">Delete</button>
+            <button class="delete-btn" (click)="deleteRoom(room, $event)">Delete</button>
           </td>
         </tr>
         <tr *ngIf="rooms.length === 0">
-          <td colspan="5" class="no-data">No rooms found.</td>
+          <td colspan="5" class="no-results">No rooms found matching your criteria.</td>
         </tr>
       </tbody>
     </table>
+  </div>
 
-    <div class="pagination">
-      <button [disabled]="page === 0" (click)="prevPage()">Previous</button>
-      <span>Page {{page + 1}} of {{Math.ceil(totalRooms / size) || 1}} (Total: {{totalRooms}})</span>
-      <button [disabled]="(page + 1) * size >= totalRooms" (click)="nextPage()">Next</button>
-    </div>
+  <div class="pagination">
+    <button [disabled]="page === 0" (click)="prevPage()" class="pag-btn">Previous</button>
+    <span class="page-info">Page {{ page + 1 }} of {{ Math.ceil(totalRooms / size) || 1 }} ({{ totalRooms }} total)</span>
+    <button [disabled]="(page + 1) * size >= totalRooms" (click)="nextPage()" class="pag-btn">Next</button>
   </div>
 
   <app-room-dialog

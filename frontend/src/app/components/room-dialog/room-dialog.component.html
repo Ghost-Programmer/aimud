@@ -1,95 +1,89 @@
-<div class="dialog-backdrop" (click)="onCancel()">
-  <div class="dialog-content card" (click)="$event.stopPropagation()">
-    <header>
-      <h3>{{editRoom.id ? 'Edit Room' : 'Create Room'}}</h3>
-    </header>
+<div class="dialog-overlay" (click)="onCancel()">
+  <div class="dialog-container" (click)="$event.stopPropagation()">
+    <h2>{{ editRoom.id ? 'Edit Room' : 'Create New Room' }}</h2>
 
-    <div class="form-container">
-      <div class="form-row">
-        <div class="form-group full-width">
-          <label>Name</label>
-          <input type="text" [(ngModel)]="editRoom.name" placeholder="Room name">
-        </div>
+    <div class="form-content">
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input id="name" type="text" [(ngModel)]="editRoom.name" placeholder="Room name" class="form-input">
       </div>
 
-      <div class="form-row">
-        <div class="form-group full-width">
-          <label>Description</label>
-          <textarea [(ngModel)]="editRoom.description" rows="4" placeholder="Room description"></textarea>
-        </div>
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" [(ngModel)]="editRoom.description" rows="4" placeholder="Room description" class="form-input"></textarea>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label>Room Type</label>
-          <select [(ngModel)]="editRoom.roomType">
-            <option *ngFor="let type of roomTypes" [value]="type">{{type}}</option>
-          </select>
-        </div>
+      <div class="form-group">
+        <label for="roomType">Room Type</label>
+        <select id="roomType" [(ngModel)]="editRoom.roomType" class="form-input">
+          <option *ngFor="let type of roomTypes" [value]="type">{{ type }}</option>
+        </select>
       </div>
 
-      <h4>Exits & Doors</h4>
-      <div class="exits-grid">
-        <div class="exit-row header">
-          <div class="dir">Direction</div>
-          <div class="dest">Destination ID</div>
-          <div class="door">Has Door?</div>
-          <div class="open">Initially Open?</div>
-        </div>
+      <div class="exits-section">
+        <h3>Exits & Doors</h3>
+        <div class="exits-grid">
+          <div class="exit-row header">
+            <div class="dir">Direction</div>
+            <div class="dest">Destination ID</div>
+            <div class="door">Door?</div>
+            <div class="open">Open?</div>
+          </div>
 
-        <!-- North -->
-        <div class="exit-row">
-          <div class="dir">North</div>
-          <div class="dest"><input type="number" [(ngModel)]="editRoom.northId"></div>
-          <div class="door"><input type="checkbox" [(ngModel)]="editRoom.northDoor"></div>
-          <div class="open"><input type="checkbox" [(ngModel)]="editRoom.northDoorOpen"></div>
-        </div>
+          <!-- North -->
+          <div class="exit-row">
+            <div class="dir">North</div>
+            <div class="dest"><input type="number" [(ngModel)]="editRoom.northId" class="form-input small"></div>
+            <div class="door"><input type="checkbox" [(ngModel)]="editRoom.northDoor"></div>
+            <div class="open"><input type="checkbox" [(ngModel)]="editRoom.northDoorOpen"></div>
+          </div>
 
-        <!-- South -->
-        <div class="exit-row">
-          <div class="dir">South</div>
-          <div class="dest"><input type="number" [(ngModel)]="editRoom.southId"></div>
-          <div class="door"><input type="checkbox" [(ngModel)]="editRoom.southDoor"></div>
-          <div class="open"><input type="checkbox" [(ngModel)]="editRoom.southDoorOpen"></div>
-        </div>
+          <!-- South -->
+          <div class="exit-row">
+            <div class="dir">South</div>
+            <div class="dest"><input type="number" [(ngModel)]="editRoom.southId" class="form-input small"></div>
+            <div class="door"><input type="checkbox" [(ngModel)]="editRoom.southDoor"></div>
+            <div class="open"><input type="checkbox" [(ngModel)]="editRoom.southDoorOpen"></div>
+          </div>
 
-        <!-- East -->
-        <div class="exit-row">
-          <div class="dir">East</div>
-          <div class="dest"><input type="number" [(ngModel)]="editRoom.eastId"></div>
-          <div class="door"><input type="checkbox" [(ngModel)]="editRoom.eastDoor"></div>
-          <div class="open"><input type="checkbox" [(ngModel)]="editRoom.eastDoorOpen"></div>
-        </div>
+          <!-- East -->
+          <div class="exit-row">
+            <div class="dir">East</div>
+            <div class="dest"><input type="number" [(ngModel)]="editRoom.eastId" class="form-input small"></div>
+            <div class="door"><input type="checkbox" [(ngModel)]="editRoom.eastDoor"></div>
+            <div class="open"><input type="checkbox" [(ngModel)]="editRoom.eastDoorOpen"></div>
+          </div>
 
-        <!-- West -->
-        <div class="exit-row">
-          <div class="dir">West</div>
-          <div class="dest"><input type="number" [(ngModel)]="editRoom.westId"></div>
-          <div class="door"><input type="checkbox" [(ngModel)]="editRoom.westDoor"></div>
-          <div class="open"><input type="checkbox" [(ngModel)]="editRoom.westDoorOpen"></div>
-        </div>
+          <!-- West -->
+          <div class="exit-row">
+            <div class="dir">West</div>
+            <div class="dest"><input type="number" [(ngModel)]="editRoom.westId" class="form-input small"></div>
+            <div class="door"><input type="checkbox" [(ngModel)]="editRoom.westDoor"></div>
+            <div class="open"><input type="checkbox" [(ngModel)]="editRoom.westDoorOpen"></div>
+          </div>
 
-        <!-- Up -->
-        <div class="exit-row">
-          <div class="dir">Up</div>
-          <div class="dest"><input type="number" [(ngModel)]="editRoom.upId"></div>
-          <div class="door"><input type="checkbox" [(ngModel)]="editRoom.upDoor"></div>
-          <div class="open"><input type="checkbox" [(ngModel)]="editRoom.upDoorOpen"></div>
-        </div>
+          <!-- Up -->
+          <div class="exit-row">
+            <div class="dir">Up</div>
+            <div class="dest"><input type="number" [(ngModel)]="editRoom.upId" class="form-input small"></div>
+            <div class="door"><input type="checkbox" [(ngModel)]="editRoom.upDoor"></div>
+            <div class="open"><input type="checkbox" [(ngModel)]="editRoom.upDoorOpen"></div>
+          </div>
 
-        <!-- Down -->
-        <div class="exit-row">
-          <div class="dir">Down</div>
-          <div class="dest"><input type="number" [(ngModel)]="editRoom.downId"></div>
-          <div class="door"><input type="checkbox" [(ngModel)]="editRoom.downDoor"></div>
-          <div class="open"><input type="checkbox" [(ngModel)]="editRoom.downDoorOpen"></div>
+          <!-- Down -->
+          <div class="exit-row">
+            <div class="dir">Down</div>
+            <div class="dest"><input type="number" [(ngModel)]="editRoom.downId" class="form-input small"></div>
+            <div class="door"><input type="checkbox" [(ngModel)]="editRoom.downDoor"></div>
+            <div class="open"><input type="checkbox" [(ngModel)]="editRoom.downDoorOpen"></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <footer class="dialog-actions">
-      <button class="btn-secondary" (click)="onCancel()">Cancel</button>
-      <button class="btn-primary" (click)="onSave()">Save</button>
-    </footer>
+    <div class="actions">
+      <button class="cancel-btn" (click)="onCancel()">Cancel</button>
+      <button class="save-btn" (click)="onSave()">Save</button>
+    </div>
   </div>
 </div>
