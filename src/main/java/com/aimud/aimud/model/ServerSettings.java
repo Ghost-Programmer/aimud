@@ -10,5 +10,6 @@ public record ServerSettings(
         @Column("server_name") String serverName,
         @Column("allow_new_user") boolean allowNewUser,
         @Column("maintenance") boolean maintenance,
-        @Column("maintenance_text") String maintenanceText) {
+        @Column("maintenance_text") String maintenanceText,
+        @Column("ai_system_prompt") String aiSystemPrompt) {
 }

@@ -23,3 +23,5 @@ databaseChangeLog:
       file: db/changelog/changes/011-create-items-and-effects-and-add-to-character.sql
   - include:
       file: db/changelog/changes/012-create-character-inventory.sql
+  - include:
+      file: db/changelog/changes/013-add-ai-system-prompt.sql

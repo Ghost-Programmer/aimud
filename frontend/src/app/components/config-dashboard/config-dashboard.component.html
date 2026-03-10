@@ -19,6 +19,10 @@
         <label for="maintenanceText">Maintenance Text</label>
         <input type="text" id="maintenanceText" formControlName="maintenanceText">
       </div>
+      <div class="form-group">
+        <label for="aiSystemPrompt">AI System Prompt</label>
+        <textarea id="aiSystemPrompt" formControlName="aiSystemPrompt" rows="10" style="width: 100%; resize: vertical;"></textarea>
+      </div>
       <button type="submit" class="btn-primary" [disabled]="serverSettingsForm.invalid">Save Settings</button>
     </form>
   </section>

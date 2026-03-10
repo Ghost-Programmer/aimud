@@ -29,7 +29,8 @@ export class ConfigDashboardComponent implements OnInit {
       serverName: ['', Validators.required],
       allowNewUser: [true],
       maintenance: [false],
-      maintenanceText: ['']
+      maintenanceText: [''],
+      aiSystemPrompt: ['']
     });
 
     this.raceForm = this.fb.group({
