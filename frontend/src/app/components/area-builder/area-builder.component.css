@@ -1,0 +1,118 @@
+.area-builder-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 8px;
+}
+
+.prompt-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+label {
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+textarea {
+  width: 100%;
+  min-height: 150px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #eee;
+  padding: 12px;
+  font-family: 'Courier New', Courier, monospace;
+  resize: vertical;
+  transition: border-color 0.3s;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #ffd700;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.response-section {
+  margin-top: 10px;
+  animation: fadeIn 0.5s ease-in;
+}
+
+h3 {
+  color: #ffd700;
+  margin-bottom: 10px;
+}
+
+.response-content {
+  background: rgba(30, 30, 30, 0.8);
+  border-left: 4px solid #ffd700;
+  padding: 15px;
+  border-radius: 4px;
+  color: #ccc;
+  min-height: 60px;
+  white-space: pre-wrap;
+}
+
+.loading-message {
+  font-style: italic;
+  color: #888;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.loader {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-top-color: #ffd700;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Match the admin-btn style from the dashboard */
+.admin-btn {
+  background: linear-gradient(135deg, #ffd700, #b8860b);
+  border: none;
+  color: #000;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+}
+
+.admin-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.admin-btn:disabled {
+  background: #444;
+  color: #888;
+  cursor: not-allowed;
+}

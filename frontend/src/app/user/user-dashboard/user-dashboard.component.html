@@ -70,12 +70,11 @@
               <!-- Area Editor Accordion -->
               <div class="accordion-item" [class.active]="activeWorldSection === 'areas'">
                 <div class="accordion-header" (click)="toggleWorldSection('areas')">
-                  <span class="accordion-title">Area Editor</span>
+                  <span class="accordion-title">Area Builder</span>
                   <span class="accordion-icon">{{ activeWorldSection === 'areas' ? '▼' : '▶' }}</span>
                 </div>
                 <div class="accordion-content">
-                  <p>Define larger geographic zones and their properties.</p>
-                  <button class="admin-btn">Open Area Editor</button>
+                  <app-area-builder></app-area-builder>
                 </div>
               </div>
 
