@@ -4,6 +4,7 @@ import com.aimud.aimud.model.Character;
 import com.aimud.aimud.model.Room;
 import com.aimud.aimud.service.CharacterService;
 import com.aimud.aimud.service.RoomService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/characters")
+@Slf4j
 public class CharacterController {
 
     private final CharacterService characterService;
@@ -24,6 +26,7 @@ public class CharacterController {
 
     @PostMapping
     public Mono<ResponseEntity<Character>> createCharacter(@RequestBody Character character) {
+        log.info("REST Request to create character: {}", character.getName());
         return ReactiveSecurityContextHolder.getContext()
                 .map(ctx -> ctx.getAuthentication().getName())
                 .flatMap(username -> characterService.createCharacter(username, character))
@@ -32,6 +35,7 @@ public class CharacterController {
 
     @GetMapping
     public Flux<Character> getCharacters() {
+        log.info("REST Request to get characters for current user");
         return ReactiveSecurityContextHolder.getContext()
                 .map(ctx -> ctx.getAuthentication().getName())
                 .flatMapMany(username -> characterService.getCharactersByUser(username)
@@ -40,6 +44,7 @@ public class CharacterController {
 
     @PutMapping("/{id}")
     public Mono<ResponseEntity<Object>> updateCharacter(@PathVariable Long id, @RequestBody Character character) {
+        log.info("REST Request to update character: {}", id);
         return characterService.updateCharacter(id, character)
                 .map(updated -> ResponseEntity.ok((Object)updated))
                 .defaultIfEmpty(ResponseEntity.notFound().build());
@@ -47,12 +52,14 @@ public class CharacterController {
 
     @PostMapping("/generate")
     public Mono<ResponseEntity<Character>> generateCharacter(@RequestBody Character character) {
+        log.info("REST Request to generate character: {}", character.getName());
         return characterService.generateCharacter(character)
                 .map(ResponseEntity::ok);
     }
 
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Object>> getCharacter(@PathVariable Long id) {
+        log.info("REST Request to get character: {}", id);
         return characterService.getCharacterById(id)
                 .map(c -> ResponseEntity.ok((Object)c))
                 .defaultIfEmpty(ResponseEntity.notFound().build());
@@ -60,6 +67,7 @@ public class CharacterController {
 
     @GetMapping("/{id}/room")
     public Mono<ResponseEntity<Object>> getCharacterRoom(@PathVariable Long id) {
+        log.info("REST Request to get room for character: {}", id);
         return characterService.getCharacterById(id)
                 .flatMap(character -> roomService.getRoom(character.getCurrentRoomId())
                         .map(room -> ResponseEntity.ok((Object)room))

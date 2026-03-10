@@ -1,5 +1,6 @@
 package com.aimud.aimud.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.r2dbc.core.DatabaseClient;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class StatusService {
 
     private final DatabaseClient databaseClient;
@@ -27,6 +29,7 @@ public class StatusService {
     }
 
     public Mono<Map<String, Object>> getSystemStatus() {
+        log.info("Retrieving system status");
         RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
         long uptimeInMillis = runtimeBean.getUptime();
         Duration uptime = Duration.ofMillis(uptimeInMillis);
@@ -38,6 +41,7 @@ public class StatusService {
 
         // Simple check for LLM connection (just confirming the bean is present and modelName is set)
         String llmStatus = ollamaChatModel != null ? "Connected" : "Disconnected";
+        log.debug("LLM Status: {}, Model: {}", llmStatus, modelName);
 
         return databaseClient.sql("SELECT value FROM server_info WHERE key = 'db_status'")
                 .map(row -> row.get("value", String.class))
@@ -54,6 +58,7 @@ public class StatusService {
                     return status;
                 })
                 .onErrorResume(e -> {
+                    log.error("Failed to retrieve database status", e);
                     Map<String, Object> status = new HashMap<>();
                     status.put("status", "ONLINE");
                     status.put("database", "Connection Failed: " + e.getMessage());

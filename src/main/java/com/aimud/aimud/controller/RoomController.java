@@ -3,6 +3,7 @@ package com.aimud.aimud.controller;
 import com.aimud.aimud.model.Room;
 import com.aimud.aimud.model.enums.RoomType;
 import com.aimud.aimud.service.RoomService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -13,6 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/rooms")
+@Slf4j
 public class RoomController {
 
     private final RoomService roomService;
@@ -29,7 +31,7 @@ public class RoomController {
             @RequestParam(required = false) RoomType type,
             @RequestParam(required = false) Long minId,
             @RequestParam(required = false) Long maxId) {
-
+        log.info("REST Request to get rooms: page={}, size={}, name={}, type={}", page, size, name, type);
         return roomService.getAllRooms()
                 .filter(room -> {
                     boolean matches = true;
@@ -68,6 +70,7 @@ public class RoomController {
 
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Room>> getRoom(@PathVariable Long id) {
+        log.info("REST Request to get room: {}", id);
         return roomService.getRoom(id)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
@@ -75,12 +78,14 @@ public class RoomController {
 
     @PostMapping
     public Mono<ResponseEntity<Room>> createRoom(@RequestBody Room room) {
+        log.info("REST Request to create room: {}", room.getName());
         return roomService.saveRoom(room)
                 .map(ResponseEntity::ok);
     }
 
     @PutMapping("/{id}")
     public Mono<ResponseEntity<Room>> updateRoom(@PathVariable Long id, @RequestBody Room room) {
+        log.info("REST Request to update room: {}", id);
         return roomService.getRoom(id)
                 .flatMap(existingRoom -> {
                     existingRoom.setName(room.getName());
@@ -116,6 +121,7 @@ public class RoomController {
 
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Void>> deleteRoom(@PathVariable Long id) {
+        log.info("REST Request to delete room: {}", id);
         return roomService.deleteRoom(id)
                 .then(Mono.just(ResponseEntity.noContent().<Void>build()));
     }

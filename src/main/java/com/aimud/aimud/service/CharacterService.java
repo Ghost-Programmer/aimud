@@ -5,6 +5,7 @@ import com.aimud.aimud.model.Item;
 import com.aimud.aimud.repository.CharacterRepository;
 import com.aimud.aimud.repository.ItemRepository;
 import com.aimud.aimud.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Random;
 
 @Service
+@Slf4j
 public class CharacterService {
 
     private final CharacterRepository characterRepository;
@@ -35,9 +37,11 @@ public class CharacterService {
 
     @CacheEvict(value = "userCharacters", key = "#username")
     public Mono<Character> createCharacter(String username, Character character) {
+        log.info("Creating character for user: {}", username);
         return userRepository.findByUsername(username)
                 .flatMap(user -> {
                     character.setUserId(user.getId());
+                    log.debug("Found user id: {} for username: {}", user.getId(), username);
                     return characterRepository.save(character);
                 })
                 .flatMap(statService::updateCurrentStats);
@@ -45,6 +49,7 @@ public class CharacterService {
 
     @Cacheable(value = "userCharacters", key = "#username")
     public Mono<List<Character>> getCharactersByUser(String username) {
+        log.info("Fetching characters for user: {}", username);
         return userRepository.findByUsername(username)
                 .flatMapMany(user -> characterRepository.findByUserId(user.getId()))
                 .flatMap(statService::updateCurrentStats)
@@ -56,8 +61,10 @@ public class CharacterService {
         @CacheEvict(value = "userCharacters", allEntries = true)
     })
     public Mono<Character> updateCharacter(Long id, Character character) {
+        log.info("Updating character with id: {}", id);
         return characterRepository.findById(id)
                 .flatMap(existingCharacter -> {
+                    log.debug("Merging character data for id: {}", id);
                     existingCharacter.setName(character.getName());
                     existingCharacter.setStrength(character.getStrength());
                     existingCharacter.setDexterity(character.getDexterity());
@@ -95,7 +102,7 @@ public class CharacterService {
 
     private Mono<Character> updateInventory(Character character, List<Item> inventory) {
         if (inventory == null) return Mono.just(character);
-
+        log.debug("Updating inventory for character: {}", character.getId());
         return databaseClient.sql("DELETE FROM character_inventory WHERE character_id = :characterId")
                 .bind("characterId", character.getId())
                 .then()
@@ -125,6 +132,7 @@ public class CharacterService {
 
     @Cacheable(value = "characters", key = "#id")
     public Mono<Character> getCharacterById(Long id) {
+        log.info("Fetching character by id: {}", id);
         return characterRepository.findById(id)
                 .flatMap(statService::updateCurrentStats);
     }
