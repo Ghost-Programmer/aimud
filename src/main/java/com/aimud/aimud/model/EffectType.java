@@ -1,5 +1,9 @@
 package com.aimud.aimud.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.stream.Stream;
+
 public enum EffectType {
     SLASHING_DAMAGE("Slashing Damage", "Number of Dice", "Size of the Dice", null, null),
     BASHING_DAMAGE("Bashing Damage", "Number of Dice", "Size of the Dice", null, null),
@@ -25,7 +29,8 @@ public enum EffectType {
     ELECTRICAL_DAMAGE("Electrical Damage", "Number of Dice", "Size of the Dice", null, null),
     FLY("Fly", null, null, null, null),
     WATER_BREATHING("Water Breathing", null, null, null, null),
-    INVISIBLE("Invisible", null, null, null, null);
+    INVISIBLE("Invisible", null, null, null, null),
+    UNKNOWN("Unknown", null, null, null, null);
 
     private final String label;
     private final String modifier1Name;
@@ -41,8 +46,20 @@ public enum EffectType {
         this.modifier4Name = modifier4Name;
     }
 
+    @JsonValue
     public String getLabel() {
         return label;
+    }
+
+    @JsonCreator
+    public static EffectType fromString(String value) {
+        if (value == null || value.isBlank()) {
+            return UNKNOWN;
+        }
+        return Stream.of(EffectType.values())
+                .filter(et -> et.name().equalsIgnoreCase(value) || et.getLabel().equalsIgnoreCase(value))
+                .findFirst()
+                .orElse(UNKNOWN);
     }
 
     public String getModifier1Name() {

@@ -38,8 +38,8 @@ public class CharacterController {
         log.info("REST Request to get characters for current user");
         return ReactiveSecurityContextHolder.getContext()
                 .map(ctx -> ctx.getAuthentication().getName())
-                .flatMapMany(username -> characterService.getCharactersByUser(username)
-                        .flatMapMany(Flux::fromIterable));
+                .flatMapMany(characterService::getCharactersByUser)
+                .flatMapIterable(list -> list);
     }
 
     @PutMapping("/{id}")
