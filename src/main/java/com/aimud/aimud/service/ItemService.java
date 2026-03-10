@@ -2,7 +2,6 @@ package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Effect;
 import com.aimud.aimud.model.Item;
-import com.aimud.aimud.repository.EffectRepository;
 import com.aimud.aimud.repository.ItemRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -17,11 +16,11 @@ import java.util.List;
 public class ItemService {
 
     private final ItemRepository itemRepository;
-    private final EffectRepository effectRepository;
+    private final EffectService effectService;
 
-    public ItemService(ItemRepository itemRepository, EffectRepository effectRepository) {
+    public ItemService(ItemRepository itemRepository, EffectService effectService) {
         this.itemRepository = itemRepository;
-        this.effectRepository = effectRepository;
+        this.effectService = effectService;
     }
 
     public Flux<Item> getAllItems() {
@@ -36,7 +35,7 @@ public class ItemService {
     }
 
     private Mono<Item> loadEffectsAndValue(Item item) {
-        return effectRepository.findByItemId(item.getId())
+        return effectService.getEffectsByItem(item.getId())
                 .collectList()
                 .map(effects -> {
                     item.setEffects(effects);
@@ -53,12 +52,12 @@ public class ItemService {
                     if (effects == null || effects.isEmpty()) {
                         return Mono.just(savedItem);
                     }
-                    return effectRepository.deleteByItemId(savedItem.getId())
+                    return effectService.deleteByItemId(savedItem.getId())
                             .thenMany(Flux.fromIterable(effects))
                             .flatMap(effect -> {
                                 effect.setId(null);
                                 effect.setItemId(savedItem.getId());
-                                return effectRepository.save(effect);
+                                return effectService.saveEffect(effect);
                             })
                             .collectList()
                             .map(savedEffects -> {
@@ -71,7 +70,7 @@ public class ItemService {
 
     @CacheEvict(value = "items", key = "#id")
     public Mono<Void> deleteItem(Long id) {
-        return effectRepository.deleteByItemId(id)
+        return effectService.deleteByItemId(id)
                 .then(itemRepository.deleteById(id));
     }
 

@@ -17,3 +17,9 @@ spring:
     compose:
       enabled: true
       file: docker-compose.yml
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        options:
+          model: qwen3.5
