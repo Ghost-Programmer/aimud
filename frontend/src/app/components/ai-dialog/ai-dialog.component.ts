@@ -55,4 +55,8 @@ export class AiDialogComponent implements AfterViewChecked {
   closeDialog() {
     this.close.emit();
   }
+
+  clearHistory() {
+    this.messages = [];
+  }
 }

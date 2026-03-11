@@ -26,6 +26,8 @@
         [disabled]="isLoading"
       ></textarea>
       <div class="dialog-actions">
+        <button type="button" class="clear-btn" (click)="clearHistory()" [disabled]="messages.length === 0 || isLoading">Clear</button>
+        <div class="spacer"></div>
         <button type="button" (click)="closeDialog()">Close</button>
         <button type="submit" (click)="sendMessage()" [disabled]="isLoading || !prompt.trim()">Send</button>
       </div>

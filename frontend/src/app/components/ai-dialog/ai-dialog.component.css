@@ -145,6 +145,21 @@
   gap: 1rem;
 }
 
+.spacer {
+  flex: 1;
+}
+
+.clear-btn:hover:not(:disabled) {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  color: var(--error) !important;
+  border-color: var(--error) !important;
+}
+
+.clear-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 button {
   padding: 0.6rem 1.2rem;
   border-radius: 0.5rem;
