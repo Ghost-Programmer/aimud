@@ -1,8 +1,10 @@
 package com.aimud.aimud.model;
 
-import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.*;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
+
+import java.time.LocalDateTime;
 
 @Table("effects")
 public class Effect {
@@ -19,6 +21,22 @@ public class Effect {
     private int modifier2;
     private int modifier3;
     private int modifier4;
+
+    @CreatedDate
+    @Column("created_at")
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column("modified_at")
+    private LocalDateTime modifiedAt;
+
+    @CreatedBy
+    @Column("created_by")
+    private String createdBy;
+
+    @LastModifiedBy
+    @Column("modified_by")
+    private String modifiedBy;
 
     public Effect() {
     }
@@ -85,5 +103,37 @@ public class Effect {
 
     public void setModifier4(int modifier4) {
         this.modifier4 = modifier4;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getModifiedAt() {
+        return modifiedAt;
+    }
+
+    public void setModifiedAt(LocalDateTime modifiedAt) {
+        this.modifiedAt = modifiedAt;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getModifiedBy() {
+        return modifiedBy;
+    }
+
+    public void setModifiedBy(String modifiedBy) {
+        this.modifiedBy = modifiedBy;
     }
 }

@@ -1,9 +1,11 @@
 package com.aimud.aimud.model;
 
 import com.aimud.aimud.model.enums.RoomType;
-import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.*;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
+
+import java.time.LocalDateTime;
 
 @Table("rooms")
 public class Room {
@@ -13,7 +15,6 @@ public class Room {
     private String description;
     @Column("room_type")
     private RoomType roomType;
-
     @Column("north_id")
     private Long northId;
     @Column("south_id")
@@ -52,6 +53,22 @@ public class Room {
     private boolean upDoorOpen;
     @Column("down_door_open")
     private boolean downDoorOpen;
+
+    @CreatedDate
+    @Column("created_at")
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column("modified_at")
+    private LocalDateTime modifiedAt;
+
+    @CreatedBy
+    @Column("created_by")
+    private String createdBy;
+
+    @LastModifiedBy
+    @Column("modified_by")
+    private String modifiedBy;
 
     public Room() {
     }
@@ -230,5 +247,37 @@ public class Room {
 
     public void setDownDoorOpen(boolean downDoorOpen) {
         this.downDoorOpen = downDoorOpen;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getModifiedAt() {
+        return modifiedAt;
+    }
+
+    public void setModifiedAt(LocalDateTime modifiedAt) {
+        this.modifiedAt = modifiedAt;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getModifiedBy() {
+        return modifiedBy;
+    }
+
+    public void setModifiedBy(String modifiedBy) {
+        this.modifiedBy = modifiedBy;
     }
 }

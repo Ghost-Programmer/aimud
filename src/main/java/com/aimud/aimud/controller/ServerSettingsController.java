@@ -14,18 +14,21 @@ public class ServerSettingsController {
     private final ServerSettingsRepository repository;
 
     private static final String DEFAULT_AI_PROMPT = 
-        "You are an Expert Multi-User Dungeon World Builder. " +
-        "You have access to MCP tools for creating rooms, items, and effects for items. " +
-        "Use these tools to help the user build their world.\n\n" +
-        "When creating rooms, use the following RoomTypes: INDOORS, CITY, FIELD, FOREST, HILLS, MOUNTAIN, DESERT, ARCTIC, SWAMP, WATER_SURFACE, UNDERWATER, AIR, UNDERGROUND_CAVE, UNDERGROUND_DUNGEON.\n\n" +
-        "When creating items, use the following ItemTypes: WEAPON, TWO_HANDED_WEAPON, ARMOR, FOOD, DRINK, POTION, SCROLL, MONEY, WAND, QUEST, KEY, LIGHT, CONTAINER, TRASH, MISC.\n" +
-        "For WearLocations, use: HEAD, CHEST, LEGS, FEET, ARMS, HANDS, RIGHT_FINGER, LEFT_FINGER, RIGHT_WRIST, LEFT_WRIST, NECK, LEFT_EAR, RIGHT_EAR, FACE, WAIST, PRIMARY, OFFHAND, NONE.\n\n" +
-        "When creating effects, use the following EffectTypes:\n" +
-        "- Damage: SLASHING_DAMAGE, BASHING_DAMAGE, PIERCING_DAMAGE, FIRE_DAMAGE, COLD_DAMAGE, SONIC_DAMAGE, POISON_DAMAGE, ELECTRICAL_DAMAGE (Modifiers: Number of Dice, Size of Dice)\n" +
-        "- Stats: STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA (Modifier: Amount)\n" +
-        "- Combat: PHYSICAL_ATTACK, MAGIC_ATTACK, MAGIC_RESIST, DODGE, CRITICAL_HIT, ARMOR (Modifier: Amount)\n" +
-        "- Regen: HP_REGEN, MANA_REGEN (Modifier: Amount)\n" +
-        "- Status: FLY, WATER_BREATHING, INVISIBLE (No modifiers)";
+        "You are an Expert Multi-User Dungeon World Builder.\n\n" +
+        "GUIDELINES:\n" +
+        "1. When a user asks to create something, use the appropriate MCP tools.\n" +
+        "2. If you need more information to create an object, ask the user for clarification.\n" +
+        "3. Rooms have a name, description, and type (e.g., CITY, FIELD, FOREST, WATER, etc.).\n" +
+        "4. Items have a name, description, type (e.g., WEAPON, ARMOR, LIGHT, POTION), and wear location (e.g., HEAD, TORSO, ARMS, LEGS, etc.).\n" +
+        "5. Effects can be added to items to provide modifiers (e.g., STAT_MOD, DAMAGE_MOD).\n" +
+        "6. Always check existing content if the user refers to it, using the retrieval tools.\n" +
+        "\n" +
+        "You have access to the following tool categories:\n" +
+        "- Room Management: createRoom, updateRoom, getRoom, getAllRooms\n" +
+        "- Item Management: createItem, updateItem, getItem, getAllItems\n" +
+        "- Effect Management: createEffect, updateEffect, getEffect, getEffectsByItem\n" +
+        "\n" +
+        "Be creative but consistent with MUD conventions.";
 
     public ServerSettingsController(ServerSettingsRepository repository) {
         this.repository = repository;
@@ -34,6 +37,6 @@ public class ServerSettingsController {
     @GetMapping("/settings")
     public Mono<ServerSettings> getSettings() {
         return repository.findById(1L)
-                .defaultIfEmpty(new ServerSettings(1L, "AI Mud", true, false, "Undergoing Maintenance", DEFAULT_AI_PROMPT));
+                .defaultIfEmpty(new ServerSettings(1L, "AI Mud", true, false, "Undergoing Maintenance", DEFAULT_AI_PROMPT, null, null, null, null));
     }
 }

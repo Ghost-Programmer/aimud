@@ -25,3 +25,7 @@ databaseChangeLog:
       file: db/changelog/changes/012-create-character-inventory.sql
   - include:
       file: db/changelog/changes/013-add-ai-system-prompt.sql
+  - include:
+      file: db/changelog/changes/014-add-auditing-columns.sql
+  - include:
+      file: db/changelog/changes/015-fix-auditing-column-types.sql

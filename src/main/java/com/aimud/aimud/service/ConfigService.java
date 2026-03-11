@@ -44,20 +44,39 @@ public class ConfigService {
     @Cacheable(value = "serverSettings", key = "1")
     public Mono<ServerSettings> getServerSettings() {
         return serverSettingsRepository.findById(1L)
-                .defaultIfEmpty(new ServerSettings(1L, "AI Mud", true, false, "Undergoing Maintenance", DEFAULT_AI_PROMPT));
+                .defaultIfEmpty(new ServerSettings(1L, "AI Mud", true, false, "Undergoing Maintenance", DEFAULT_AI_PROMPT, null, null, null, null));
     }
 
     @CachePut(value = "serverSettings", key = "1")
     public Mono<ServerSettings> updateServerSettings(ServerSettings settings) {
-        ServerSettings settingsWithId = new ServerSettings(
-                1L,
-                settings.serverName(),
-                settings.allowNewUser(),
-                settings.maintenance(),
-                settings.maintenanceText(),
-                settings.aiSystemPrompt()
-        );
-        return serverSettingsRepository.save(settingsWithId);
+        return serverSettingsRepository.findById(1L)
+                .flatMap(existingSettings -> {
+                    ServerSettings settingsToSave = new ServerSettings(
+                            1L,
+                            settings.serverName(),
+                            settings.allowNewUser(),
+                            settings.maintenance(),
+                            settings.maintenanceText(),
+                            settings.aiSystemPrompt(),
+                            existingSettings.createdAt(),
+                            existingSettings.modifiedAt(),
+                            existingSettings.createdBy(),
+                            existingSettings.modifiedBy()
+                    );
+                    return serverSettingsRepository.save(settingsToSave);
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    ServerSettings newSettings = new ServerSettings(
+                            1L,
+                            settings.serverName(),
+                            settings.allowNewUser(),
+                            settings.maintenance(),
+                            settings.maintenanceText(),
+                            settings.aiSystemPrompt(),
+                            null, null, null, null
+                    );
+                    return serverSettingsRepository.save(newSettings);
+                }));
     }
 
     // Races
