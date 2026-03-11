@@ -23,6 +23,7 @@
       <input type="number" [(ngModel)]="filters.maxValue" (ngModelChange)="onSearch()" placeholder="Max Cost" class="cost-input">
     </div>
 
+    <button class="refresh-btn" (click)="loadItems()">&#x21bb;</button>
     <button class="create-btn" (click)="openCreateDialog()">+ New Item</button>
   </div>
 

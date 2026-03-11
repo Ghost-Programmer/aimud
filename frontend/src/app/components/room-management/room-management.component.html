@@ -16,6 +16,7 @@
       <input type="number" [(ngModel)]="filters.maxId" (ngModelChange)="onSearch()" placeholder="Max ID" class="id-input">
     </div>
 
+    <button class="refresh-btn" (click)="loadRooms()">&#x21bb;</button>
     <button class="create-btn" (click)="openCreateDialog()">+ New Room</button>
   </div>
 

@@ -36,8 +36,28 @@
   width: 80px;
 }
 
-.create-btn {
+.refresh-btn {
   margin-left: auto;
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
+  padding: 0.6rem 1rem;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.refresh-btn:hover {
+  background: #444;
+  border-color: #777;
+}
+
+.create-btn {
   background: #ffd700;
   color: #000;
   border: none;
