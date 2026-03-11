@@ -37,7 +37,7 @@ public class AiService {
                                 return "";
                             })
                             .collectList()
-                            .map(list -> String.join("", list));
+                            .map(list -> String.join("\n", list));
                 });
     }
 }
