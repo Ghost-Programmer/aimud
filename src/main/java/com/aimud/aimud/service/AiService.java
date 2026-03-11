@@ -9,6 +9,7 @@ import org.springframework.ai.model.function.FunctionCallback;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -23,11 +24,11 @@ public class AiService {
     private final ConfigService configService;
     private final List<FunctionCallback> mcpTools;
 
-    public Mono<String> processPrompt(String userPrompt) {
+    public Flux<String> processPrompt(String userPrompt) {
         log.info("Processing AI prompt: {}", userPrompt);
 
         return configService.getServerSettings()
-                .flatMap(settings -> {
+                .flatMapMany(settings -> {
                     String systemPrompt = settings.aiSystemPrompt();
                     SystemMessage systemMessage = new SystemMessage(systemPrompt);
                     UserMessage userMessage = new UserMessage(userPrompt);
@@ -38,13 +39,14 @@ public class AiService {
 
                     Prompt prompt = new Prompt(List.of(systemMessage, userMessage), options);
 
-                    return Mono.fromCallable(() -> {
-                        var response = chatModel.call(prompt);
-                        if (response != null && response.getResult() != null && response.getResult().getOutput() != null) {
-                            return response.getResult().getOutput().getText();
-                        }
-                        return "";
-                    }).subscribeOn(Schedulers.boundedElastic());
+                    return chatModel.stream(prompt)
+                            .map(response -> {
+                                if (response != null && response.getResult() != null && response.getResult().getOutput() != null) {
+                                    return response.getResult().getOutput().getText();
+                                }
+                                return "";
+                            })
+                            .filter(text -> !text.isEmpty());
                 });
     }
 }

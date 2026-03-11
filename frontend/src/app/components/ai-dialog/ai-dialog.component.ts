@@ -51,15 +51,21 @@ export class AiDialogComponent implements AfterViewChecked {
     this.isLoading = true;
     this.shouldScrollToBottom = true;
 
+    let aiMessage = { role: 'ai' as const, text: '' };
+    this.messages.push(aiMessage);
+
     this.aiService.processPrompt(currentPrompt).subscribe({
-      next: (response) => {
-        this.messages.push({ role: 'ai', text: response.response });
+      next: (chunk) => {
+        aiMessage.text += chunk;
+        this.shouldScrollToBottom = true;
+      },
+      complete: () => {
         this.isLoading = false;
         this.shouldScrollToBottom = true;
       },
       error: (error) => {
         console.error('AI Service Error:', error);
-        this.messages.push({ role: 'ai', text: 'Sorry, I encountered an error processing your request.' });
+        aiMessage.text = 'Sorry, I encountered an error processing your request.';
         this.isLoading = false;
         this.shouldScrollToBottom = true;
       }
