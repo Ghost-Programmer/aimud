@@ -27,7 +27,7 @@ public class AiService {
                     String systemPrompt = settings.aiSystemPrompt();
                     SystemMessage systemMessage = new SystemMessage(systemPrompt);
                     UserMessage userMessage = new UserMessage(userPrompt);
-                    Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
+                    Prompt prompt = new Prompt("User Request: " + userPrompt + "\n" + systemPrompt);
 
                     return chatModel.stream(prompt)
                             .map(response -> {
