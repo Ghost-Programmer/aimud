@@ -2,10 +2,14 @@ package com.aimud.aimud.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -21,8 +25,9 @@ public class AiService {
         return configService.getServerSettings()
                 .flatMap(settings -> {
                     String systemPrompt = settings.aiSystemPrompt();
-                    String combinedPrompt = systemPrompt + "\n\nUser request: " + userPrompt;
-                    Prompt prompt = new Prompt(combinedPrompt);
+                    SystemMessage systemMessage = new SystemMessage(systemPrompt);
+                    UserMessage userMessage = new UserMessage(userPrompt);
+                    Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
 
                     return chatModel.stream(prompt)
                             .map(response -> {
