@@ -49,7 +49,14 @@ public class EffectService {
     }
 
     public Mono<Void> deleteByItemId(Long itemId) {
-        log.info("Deleting all effects for item: {}", itemId);
-        return effectRepository.deleteByItemId(itemId);
+        log.info("Deleting all item_effects links for item: {}", itemId);
+        // We only delete the links, not the effects themselves, as effects might be shared or managed separately
+        // If the intent is to delete effects that belong ONLY to this item, that logic would be more complex
+        // For now, we'll assume we just unlink them
+        return effectRepository.deleteItemEffectsByItemId(itemId);
+    }
+    
+    public Mono<Void> linkItemAndEffect(Long itemId, Long effectId) {
+        return effectRepository.linkItemAndEffect(itemId, effectId);
     }
 }

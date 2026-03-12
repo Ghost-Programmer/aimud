@@ -31,3 +31,5 @@ databaseChangeLog:
       file: db/changelog/changes/015-fix-auditing-column-types.sql
   - include:
       file: db/changelog/changes/016-update-ai-system-prompt.sql
+  - include:
+      file: db/changelog/changes/017-modify-effects-schema.sql

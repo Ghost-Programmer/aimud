@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -166,7 +167,6 @@ public class McpToolService {
             @ToolParam(description = "The fourth modifier value") int modifier4) {
         log.info("MCP Tool: Creating effect: {} for item: {}", effectType, itemId);
         Effect effect = new Effect();
-        effect.setItemId(itemId);
         if (effectType != null) {
             try {
                 effect.setEffectType(EffectType.valueOf(effectType.toUpperCase()));
@@ -178,7 +178,16 @@ public class McpToolService {
         effect.setModifier2(modifier2);
         effect.setModifier3(modifier3);
         effect.setModifier4(modifier4);
-        return effectService.saveEffect(effect).block();
+        
+        return effectService.saveEffect(effect)
+                .flatMap(savedEffect -> {
+                    if (itemId != null) {
+                        return effectService.linkItemAndEffect(itemId, savedEffect.getId())
+                                .thenReturn(savedEffect);
+                    }
+                    return Mono.just(savedEffect);
+                })
+                .block();
     }
 
     @Tool(description = "Update an existing effect")
@@ -193,7 +202,6 @@ public class McpToolService {
         log.info("MCP Tool: Updating effect: {} (id: {})", effectType, id);
         Effect effect = new Effect();
         effect.setId(id);
-        effect.setItemId(itemId);
         if (effectType != null) {
             try {
                 effect.setEffectType(EffectType.valueOf(effectType.toUpperCase()));
@@ -205,7 +213,17 @@ public class McpToolService {
         effect.setModifier2(modifier2);
         effect.setModifier3(modifier3);
         effect.setModifier4(modifier4);
-        return effectService.saveEffect(effect).block();
+
+        return effectService.saveEffect(effect)
+                 .flatMap(savedEffect -> {
+                     if (itemId != null) {
+                         return effectService.linkItemAndEffect(itemId, savedEffect.getId())
+                                 .onErrorResume(e -> Mono.empty())
+                                 .thenReturn(savedEffect);
+                     }
+                     return Mono.just(savedEffect);
+                 })
+                .block();
     }
 
     @Tool(description = "Retrieve an effect by its ID")

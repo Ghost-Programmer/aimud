@@ -64,8 +64,9 @@ public class ItemService {
                             .thenMany(Flux.fromIterable(effects))
                             .flatMap(effect -> {
                                 effect.setId(null);
-                                effect.setItemId(savedItem.getId());
-                                return effectService.saveEffect(effect);
+                                // item_id removed from Effect model, so we don't set it here.
+                                return effectService.saveEffect(effect)
+                                    .flatMap(savedEffect -> effectService.linkItemAndEffect(savedItem.getId(), savedEffect.getId()).thenReturn(savedEffect));
                             })
                             .collectList()
                             .map(savedEffects -> {
