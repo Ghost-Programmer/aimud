@@ -1,7 +1,7 @@
 package com.aimud.aimud.controller;
 
 import com.aimud.aimud.model.Room;
-import com.aimud.aimud.model.enums.RoomType;
+import com.aimud.aimud.types.RoomType;
 import com.aimud.aimud.repository.RoomRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

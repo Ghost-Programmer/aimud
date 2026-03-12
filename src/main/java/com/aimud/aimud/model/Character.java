@@ -219,6 +219,11 @@ public class Character {
     @Transient
     private List<Item> inventory = new ArrayList<>();
 
+    // Active spell effects applied to this character
+    @Setter
+    @Transient
+    private List<CharacterEffect> spellEffects = new ArrayList<>();
+
     public Character() {
     }
 

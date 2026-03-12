@@ -1,4 +1,4 @@
-package com.aimud.aimud.model.enums;
+package com.aimud.aimud.types;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.stream.Stream;

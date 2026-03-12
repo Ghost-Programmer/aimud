@@ -1,6 +1,6 @@
 package com.aimud.aimud.model;
 
-import com.aimud.aimud.model.enums.RoomType;
+import com.aimud.aimud.types.RoomType;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.*;

@@ -2,6 +2,8 @@ package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Character;
 import com.aimud.aimud.model.Item;
+import com.aimud.aimud.model.CharacterEffect;
+import com.aimud.aimud.repository.CharacterEffectRepository;
 import com.aimud.aimud.repository.CharacterRepository;
 import com.aimud.aimud.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -26,16 +28,18 @@ public class CharacterService {
     private final UserRepository userRepository;
     private final StatService statService;
     private final DatabaseClient databaseClient;
+    private final CharacterEffectRepository characterEffectRepository;
     private final Random random = new Random();
 
     // In-memory storage for active/available characters
     private final ConcurrentHashMap<Long, Character> availableCharacters = new ConcurrentHashMap<>();
 
-    public CharacterService(CharacterRepository characterRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient) {
+    public CharacterService(CharacterRepository characterRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository) {
         this.characterRepository = characterRepository;
         this.userRepository = userRepository;
         this.statService = statService;
         this.databaseClient = databaseClient;
+        this.characterEffectRepository = characterEffectRepository;
     }
 
     public Mono<Void> selectCharacter(Long characterId) {
@@ -162,6 +166,31 @@ public class CharacterService {
         log.info("Fetching character by id: {}", id);
         return characterRepository.findById(id)
                 .flatMap(statService::updateCurrentStats);
+    }
+
+    @Caching(evict = {
+        @CacheEvict(value = "characters", key = "#character.id"),
+        @CacheEvict(value = "userCharacters", allEntries = true)
+    })
+    public Mono<Character> save(Character character) {
+        log.info("Saving character: {}", character.getName());
+        return characterRepository.save(character)
+                .flatMap(savedCharacter -> {
+                    log.debug("Updating spell effects for character: {}", savedCharacter.getId());
+                    return characterEffectRepository.deleteByCharacterId(savedCharacter.getId())
+                            .thenMany(Flux.fromIterable(character.getSpellEffects()))
+                            .doOnNext(effect -> effect.setCharacterId(savedCharacter.getId()))
+                            .flatMap(characterEffectRepository::save)
+                            .collectList()
+                            .doOnNext(savedCharacter::setSpellEffects)
+                            .thenReturn(savedCharacter);
+                })
+                .flatMap(statService::updateCurrentStats)
+                .doOnNext(c -> {
+                    if (availableCharacters.containsKey(c.getId())) {
+                        availableCharacters.put(c.getId(), c);
+                    }
+                });
     }
 
     private int rollStat() {
