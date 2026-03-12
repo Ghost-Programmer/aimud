@@ -1,7 +1,9 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, OnChanges, Input, SimpleChanges, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CharacterService } from '../../services/character.service';
+import { GameWebSocketService } from '../../services/game-websocket.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-character-play',
@@ -10,7 +12,7 @@ import { CharacterService } from '../../services/character.service';
   templateUrl: './character-play.component.html',
   styleUrl: './character-play.component.css'
 })
-export class CharacterPlayComponent implements OnInit, OnChanges {
+export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
   @Input() character: any;
   activeStatTab: string = 'stats';
   currentRoom: any = null;
@@ -18,18 +20,58 @@ export class CharacterPlayComponent implements OnInit, OnChanges {
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
 
-  constructor(private characterService: CharacterService) {}
+  private wsSubscription: Subscription | null = null;
+
+  constructor(
+      private characterService: CharacterService,
+      private gameWebSocketService: GameWebSocketService
+  ) {}
 
   ngOnInit() {
     if (this.character) {
+      this.refreshCharacter();
       this.loadRoomData();
+      this.subscribeToUpdates();
     }
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['character'] && !changes['character'].firstChange) {
       this.loadRoomData();
+      this.refreshCharacter();
+
+      if (this.wsSubscription) {
+          this.wsSubscription.unsubscribe();
+      }
+      this.subscribeToUpdates();
     }
+  }
+
+  ngOnDestroy() {
+      if (this.wsSubscription) {
+          this.wsSubscription.unsubscribe();
+      }
+  }
+
+  refreshCharacter() {
+      if (!this.character?.id) return;
+      this.characterService.getCharacter(this.character.id).subscribe({
+          next: (c) => {
+              Object.assign(this.character, c);
+          },
+          error: (err) => console.error('Error refreshing character', err)
+      });
+  }
+
+  subscribeToUpdates() {
+      if (!this.character?.id) return;
+      this.wsSubscription = this.gameWebSocketService.getCharacterUpdates(this.character.id).subscribe({
+          next: (update) => {
+              // Apply updates in place to maintain reference for parent
+              Object.assign(this.character, update);
+          },
+          error: (err) => console.error('WebSocket error', err)
+      });
   }
 
   loadRoomData() {

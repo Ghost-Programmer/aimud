@@ -4,6 +4,8 @@ import com.aimud.aimud.model.Character;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
 
 import java.util.List;
 
@@ -12,9 +14,14 @@ import java.util.List;
 public class TickService {
 
     private final CharacterService characterService;
+    private final Sinks.Many<Character> characterUpdates = Sinks.many().multicast().onBackpressureBuffer();
 
     public TickService(CharacterService characterService) {
         this.characterService = characterService;
+    }
+
+    public Flux<Character> getCharacterUpdates() {
+        return characterUpdates.asFlux();
     }
 
     @Scheduled(fixedRate = 2000)
@@ -52,6 +59,7 @@ public class TickService {
                     character.getName(), 
                     character.getCurrentHp(), character.getMaxHp(), character.getHpRegen(),
                     character.getCurrentMana(), character.getMaxMana(), character.getManaRegen());
+            characterUpdates.tryEmitNext(character);
         }
     }
 }
