@@ -35,6 +35,8 @@ public class TickService {
             if (effectsChanged || statsChanged) {
                 characterUpdates.tryEmitNext(character);
             }
+
+
         }
     }
 

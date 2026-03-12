@@ -216,8 +216,16 @@ public class Character {
     private Item offhand;
 
     @Setter
+    @Getter
     @Transient
     private List<Item> inventory = new ArrayList<>();
+
+    @Setter
+    @Getter
+    @Transient
+    private List<String> commandQueue = new ArrayList<>();
+
+
 
     // Active spell effects applied to this character
     @Setter
