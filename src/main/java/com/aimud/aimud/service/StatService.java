@@ -163,6 +163,14 @@ public class StatService {
                 case INTELLIGENCE -> c.setCurrentIntelligence(c.getCurrentIntelligence() + effect.getModifier1());
                 case WISDOM -> c.setCurrentWisdom(c.getCurrentWisdom() + effect.getModifier1());
                 case CHARISMA -> c.setCurrentCharisma(c.getCurrentCharisma() + effect.getModifier1());
+                case ARMOR -> c.setArmor(c.getArmor() + effect.getModifier1());
+                case MAGIC_RESIST -> c.setMagicResist(c.getMagicResist() + effect.getModifier1());
+                case HP_REGEN -> c.setHpRegen(c.getHpRegen() + effect.getModifier1());
+                case MANA_REGEN -> c.setManaRegen(c.getManaRegen() + effect.getModifier1());
+                case PHYSICAL_ATTACK -> c.setPhysicalAttack(c.getPhysicalAttack() + effect.getModifier1());
+                case MAGIC_ATTACK -> c.setMagicAttack(c.getMagicAttack() + effect.getModifier1());
+                case DODGE -> c.setDodgeChance(c.getDodgeChance() + (effect.getModifier1() / 100.0));
+                case CRITICAL_HIT -> c.setCritChance(c.getCritChance() + (effect.getModifier1() / 100.0));
             }
         }
     }

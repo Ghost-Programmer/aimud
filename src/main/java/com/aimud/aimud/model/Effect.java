@@ -18,6 +18,7 @@ public class Effect {
 
     @Column("effect_type")
     private EffectType effectType;
+    private String name;
 
     private int modifier1;
     private int modifier2;
