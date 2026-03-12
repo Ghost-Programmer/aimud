@@ -1,7 +1,6 @@
 package com.aimud.aimud.controller;
 
 import com.aimud.aimud.model.Character;
-import com.aimud.aimud.model.Room;
 import com.aimud.aimud.service.CharacterService;
 import com.aimud.aimud.service.RoomService;
 import lombok.extern.slf4j.Slf4j;
@@ -10,8 +9,6 @@ import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/characters")

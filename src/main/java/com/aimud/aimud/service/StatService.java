@@ -2,18 +2,15 @@ package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.*;
 import com.aimud.aimud.model.Character;
-import com.aimud.aimud.model.Item;
 import com.aimud.aimud.repository.CharacterClassRepository;
 import com.aimud.aimud.repository.EffectRepository;
 import com.aimud.aimud.repository.ItemRepository;
 import com.aimud.aimud.repository.RaceRepository;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class StatService {
@@ -126,7 +123,7 @@ public class StatService {
         
         // Simple formula combining these factors
         // Weights: Stats (1), HP (2), Offense (3), Defense (2)
-        float cr = (statsScore * 1.0f + hpScore * 2.0f + offensiveScore * 3.0f + defensiveScore * 2.0f) / 8.0f;
+        float cr = (statsScore + hpScore * 2.0f + offensiveScore * 3.0f + defensiveScore * 2.0f) / 8.0f;
         
         return Math.round(cr * 10.0f) / 10.0f; // Round to 1 decimal place
     }

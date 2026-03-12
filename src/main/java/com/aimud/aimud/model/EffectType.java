@@ -2,6 +2,8 @@ package com.aimud.aimud.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.Getter;
+
 import java.util.stream.Stream;
 
 public enum EffectType {
@@ -33,9 +35,13 @@ public enum EffectType {
     UNKNOWN("Unknown", null, null, null, null);
 
     private final String label;
+    @Getter
     private final String modifier1Name;
+    @Getter
     private final String modifier2Name;
+    @Getter
     private final String modifier3Name;
+    @Getter
     private final String modifier4Name;
 
     EffectType(String label, String modifier1Name, String modifier2Name, String modifier3Name, String modifier4Name) {
@@ -62,19 +68,4 @@ public enum EffectType {
                 .orElse(UNKNOWN);
     }
 
-    public String getModifier1Name() {
-        return modifier1Name;
-    }
-
-    public String getModifier2Name() {
-        return modifier2Name;
-    }
-
-    public String getModifier3Name() {
-        return modifier3Name;
-    }
-
-    public String getModifier4Name() {
-        return modifier4Name;
-    }
 }

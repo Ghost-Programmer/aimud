@@ -1,24 +1,17 @@
 package com.aimud.aimud.controller;
 
-import com.aimud.aimud.model.Effect;
 import com.aimud.aimud.model.Item;
 import com.aimud.aimud.model.ItemType;
 import com.aimud.aimud.model.WearLocation;
-import com.aimud.aimud.repository.EffectRepository;
-import com.aimud.aimud.repository.ItemRepository;
 import com.aimud.aimud.service.ItemService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/items")
