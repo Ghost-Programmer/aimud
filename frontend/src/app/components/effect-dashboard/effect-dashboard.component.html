@@ -1,0 +1,62 @@
+<div class="panel">
+  <div class="panel-header">
+    <h2>Effects</h2>
+    <div class="spacer"></div>
+    <button class="btn" (click)="refresh()" [disabled]="isLoading">Refresh</button>
+    <button class="btn primary" (click)="newEffect()">New Effect</button>
+  </div>
+
+  <div class="filters">
+    <input class="input" type="text" placeholder="Search name..." [(ngModel)]="nameFilter" (ngModelChange)="page=0; load()">
+    <select class="input" [(ngModel)]="typeFilter" (ngModelChange)="page=0; load()">
+      <option [ngValue]="undefined">All Types</option>
+      <option *ngFor="let t of effectTypes" [ngValue]="t">{{ t }}</option>
+    </select>
+    <select class="input" [(ngModel)]="sort" (ngModelChange)="page=0; load()">
+      <option value="effectType">Sort by Type</option>
+      <option value="name">Sort by Name</option>
+      <option value="id">Sort by ID</option>
+    </select>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width:72px;">ID</th>
+          <th style="width:220px;">Name</th>
+          <th>Effect Type</th>
+          <th>Mod1</th>
+          <th>Mod2</th>
+          <th>Mod3</th>
+          <th>Mod4</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of effects" (click)="edit(e)">
+          <td>{{ e.id }}</td>
+          <td>{{ e.name || '-' }}</td>
+          <td>{{ e.effectType }}</td>
+          <td>{{ e.modifier1 }}</td>
+          <td>{{ e.modifier2 }}</td>
+          <td>{{ e.modifier3 }}</td>
+          <td>{{ e.modifier4 }}</td>
+        </tr>
+        <tr *ngIf="!isLoading && effects.length === 0">
+          <td colspan="7" class="empty">No effects found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination">
+    <button class="btn" (click)="prevPage()" [disabled]="!canPrev()">Prev</button>
+    <span>Page {{ page + 1 }} / {{ pageCount() }}</span>
+    <button class="btn" (click)="nextPage()" [disabled]="!canNext()">Next</button>
+  </div>
+
+  <app-effect-dialog *ngIf="showDialog"
+    [effectData]="editingEffect"
+    (saveEffect)="onDialogSave($event)"
+    (cancelDialog)="onDialogCancel()"></app-effect-dialog>
+</div>

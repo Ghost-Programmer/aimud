@@ -1,0 +1,43 @@
+<div class="dialog-overlay" (click)="cancel()">
+  <div class="dialog-container" (click)="$event.stopPropagation()">
+    <h2>{{ effect.id ? 'Edit Effect' : 'Create New Effect' }}</h2>
+
+    <div class="form-content">
+      <div class="form-group">
+        <label for="name">Name (optional)</label>
+        <input id="name" type="text" [(ngModel)]="effect.name" placeholder="Effect name" class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label for="effectType">Effect Type</label>
+        <select id="effectType" [(ngModel)]="effect.effectType" class="form-input">
+          <option *ngFor="let t of effectTypes" [value]="t">{{ t }}</option>
+        </select>
+      </div>
+
+      <div class="grid">
+        <div class="form-group">
+          <label for="mod1">Modifier 1</label>
+          <input id="mod1" type="number" [(ngModel)]="effect.modifier1" class="form-input small">
+        </div>
+        <div class="form-group">
+          <label for="mod2">Modifier 2</label>
+          <input id="mod2" type="number" [(ngModel)]="effect.modifier2" class="form-input small">
+        </div>
+        <div class="form-group">
+          <label for="mod3">Modifier 3</label>
+          <input id="mod3" type="number" [(ngModel)]="effect.modifier3" class="form-input small">
+        </div>
+        <div class="form-group">
+          <label for="mod4">Modifier 4</label>
+          <input id="mod4" type="number" [(ngModel)]="effect.modifier4" class="form-input small">
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="cancel-btn" (click)="cancel()">Cancel</button>
+      <button class="save-btn" (click)="save()">Save</button>
+    </div>
+  </div>
+</div>
