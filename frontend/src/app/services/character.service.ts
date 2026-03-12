@@ -33,4 +33,12 @@ export class CharacterService {
   generateCharacter(character: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/generate`, character);
   }
+
+  selectCharacter(id: number): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${id}/select`, {});
+  }
+
+  getAvailableCharacters(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/available`);
+  }
 }

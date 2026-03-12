@@ -49,7 +49,14 @@ export class CharacterSelectComponent implements OnInit {
   }
 
   selectCharacter(character: any) {
-    this.characterSelected.emit(character);
+    this.characterService.selectCharacter(character.id).subscribe({
+      next: () => {
+        this.characterSelected.emit(character);
+      },
+      error: (err) => {
+        console.error('Error selecting character', err);
+      }
+    });
   }
 
   getRaceName(raceId: number): string {

@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/characters")
 @Slf4j
@@ -22,6 +24,19 @@ public class CharacterController {
     public CharacterController(CharacterService characterService, RoomService roomService) {
         this.characterService = characterService;
         this.roomService = roomService;
+    }
+
+    @PostMapping("/{id}/select")
+    public Mono<ResponseEntity<Void>> selectCharacter(@PathVariable Long id) {
+        log.info("REST Request to select character: {}", id);
+        return characterService.selectCharacter(id)
+                .thenReturn(ResponseEntity.ok().build());
+    }
+
+    @GetMapping("/available")
+    public Flux<Character> getAvailableCharacters() {
+        log.info("REST Request to get available characters");
+        return Flux.fromIterable(characterService.getAvailableCharacters());
     }
 
     @PostMapping

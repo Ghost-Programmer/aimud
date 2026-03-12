@@ -15,8 +15,11 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
@@ -28,11 +31,32 @@ public class CharacterService {
     private final DatabaseClient databaseClient;
     private final Random random = new Random();
 
+    // In-memory storage for active/available characters
+    private final ConcurrentHashMap<Long, Character> availableCharacters = new ConcurrentHashMap<>();
+
     public CharacterService(CharacterRepository characterRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient) {
         this.characterRepository = characterRepository;
         this.userRepository = userRepository;
         this.statService = statService;
         this.databaseClient = databaseClient;
+    }
+
+    public Mono<Void> selectCharacter(Long characterId) {
+        log.info("Selecting character with id: {}", characterId);
+        return getCharacterById(characterId)
+                .doOnNext(character -> {
+                    availableCharacters.put(character.getId(), character);
+                    log.info("Character {} added to available list", character.getName());
+                })
+                .then();
+    }
+
+    public List<Character> getAvailableCharacters() {
+        return new ArrayList<>(availableCharacters.values());
+    }
+    
+    public void removeAvailableCharacter(Long characterId) {
+        availableCharacters.remove(characterId);
     }
 
     @CacheEvict(value = "userCharacters", key = "#username")
@@ -97,7 +121,13 @@ public class CharacterService {
                     return characterRepository.save(existingCharacter)
                             .flatMap(savedCharacter -> updateInventory(savedCharacter, character.getInventory()));
                 })
-                .flatMap(statService::updateCurrentStats);
+                .flatMap(updatedCharacter -> statService.updateCurrentStats(updatedCharacter)
+                        .doOnNext(c -> {
+                            // Update the character in the available map if it exists there
+                            if (availableCharacters.containsKey(c.getId())) {
+                                availableCharacters.put(c.getId(), c);
+                            }
+                        }));
     }
 
     private Mono<Character> updateInventory(Character character, List<Item> inventory) {
