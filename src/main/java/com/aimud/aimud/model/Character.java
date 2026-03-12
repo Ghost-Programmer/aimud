@@ -77,6 +77,8 @@ public class Character {
     private double armor;
     @Transient
     private double magicResist;
+    @Transient
+    private float challengeRating;
 
     @Transient
     private String currentRoomName;
@@ -391,6 +393,14 @@ public class Character {
 
     public void setMagicResist(double magicResist) {
         this.magicResist = magicResist;
+    }
+    
+    public float getChallengeRating() {
+        return challengeRating;
+    }
+    
+    public void setChallengeRating(float challengeRating) {
+        this.challengeRating = challengeRating;
     }
 
     public String getCurrentRoomName() {

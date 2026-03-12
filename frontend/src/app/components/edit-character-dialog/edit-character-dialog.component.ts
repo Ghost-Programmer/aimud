@@ -104,7 +104,8 @@ export class EditCharacterDialogComponent {
       physicalAttack: character.physicalAttack,
       magicAttack: character.magicAttack,
       armor: character.armor,
-      magicResist: character.magicResist
+      magicResist: character.magicResist,
+      challengeRating: character.challengeRating
     };
   }
 

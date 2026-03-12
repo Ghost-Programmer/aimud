@@ -80,6 +80,10 @@ public class StatService {
                                 c.setMagicAttack((intel * 2.5) + (wis * 0.5));
                                 c.setArmor(str + (con * 1.5));
                                 c.setMagicResist(wis + (intel * 0.5));
+                                
+                                // Calculate Challenge Rating
+                                float cr = calculateChallengeRating(c);
+                                c.setChallengeRating(cr);
 
                                 // Set Current Room Name
                                 Mono<String> roomNameMono = Mono.just("Unknown Location");
@@ -96,6 +100,25 @@ public class StatService {
                             });
                 })
                 .flatMap(mono -> mono);
+    }
+    
+    private float calculateChallengeRating(Character c) {
+        // Base stats contribution
+        float statsScore = (c.getCurrentStrength() + c.getCurrentDexterity() + c.getCurrentConstitution() + 
+                           c.getCurrentIntelligence() + c.getCurrentWisdom() + c.getCurrentCharisma()) / 6.0f;
+                           
+        // HP contribution (assuming 100 HP is roughly CR 1 for a basic mob, but scaling down)
+        float hpScore = (float) c.getMaxHp() / 50.0f;
+        
+        // Attack/Defense contribution
+        float offensiveScore = (float) (c.getPhysicalAttack() + c.getMagicAttack()) / 20.0f;
+        float defensiveScore = (float) (c.getArmor() + c.getMagicResist() + (c.getDodgeChance() * 100)) / 20.0f;
+        
+        // Simple formula combining these factors
+        // Weights: Stats (1), HP (2), Offense (3), Defense (2)
+        float cr = (statsScore * 1.0f + hpScore * 2.0f + offensiveScore * 3.0f + defensiveScore * 2.0f) / 8.0f;
+        
+        return Math.round(cr * 10.0f) / 10.0f; // Round to 1 decimal place
     }
 
     private void applyEquipmentBonuses(Character c) {

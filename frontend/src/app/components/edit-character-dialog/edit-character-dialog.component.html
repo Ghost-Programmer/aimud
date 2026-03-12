@@ -45,6 +45,11 @@
         </div>
       </div>
 
+      <div class="form-group" *ngIf="derivedStats.challengeRating !== undefined">
+        <label>Challenge Rating</label>
+        <div class="cr-value">{{ derivedStats.challengeRating }}</div>
+      </div>
+
       <div class="stats-table-container">
         <table class="stats-table">
           <thead>
