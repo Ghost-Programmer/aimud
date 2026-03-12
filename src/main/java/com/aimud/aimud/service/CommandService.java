@@ -55,8 +55,15 @@ public class CommandService {
 
     public void processCommand(Character character) {
         String command = character.getCommandQueue().remove(0);
+        String[] commands = command.trim().split("\\s+");
         log.debug("Processing command '{}' for character '{}'", command, character.getName());
 
+        Command task = this.getTask(commands[0]);
+        if (task != null) {
+            task.execute(character, command);
+        } else {
+            //TODO: Tell user invalid command
+        }
 
     }
 }
