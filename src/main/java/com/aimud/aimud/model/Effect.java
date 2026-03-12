@@ -1,5 +1,6 @@
 package com.aimud.aimud.model;
 
+import com.aimud.aimud.types.EffectType;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.*;

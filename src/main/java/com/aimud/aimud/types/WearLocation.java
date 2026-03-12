@@ -1,4 +1,4 @@
-package com.aimud.aimud.model;
+package com.aimud.aimud.types;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
