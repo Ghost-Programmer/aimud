@@ -52,6 +52,12 @@ public class CharacterService {
                 .then();
     }
 
+    public Mono<Void> deselectCharacter(Long characterId) {
+        log.info("Deselecting character with id: {}", characterId);
+        availableCharacters.remove(characterId);
+        return Mono.empty();
+    }
+
     public List<Character> getAvailableCharacters() {
         return new ArrayList<>(availableCharacters.values());
     }

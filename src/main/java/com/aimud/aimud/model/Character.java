@@ -225,6 +225,16 @@ public class Character {
     @Transient
     private List<String> commandQueue = new ArrayList<>();
 
+    @Setter
+    @Getter
+    @Transient
+    private Integer idle = 0;
+
+    @Setter
+    @Getter
+    @Transient
+    private Integer mana;
+
 
 
     // Active spell effects applied to this character

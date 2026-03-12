@@ -15,10 +15,12 @@ import java.util.List;
 public class TickService {
 
     private final CharacterService characterService;
+    private final CommandService commandService;
     private final Sinks.Many<Character> characterUpdates = Sinks.many().multicast().onBackpressureBuffer();
 
-    public TickService(CharacterService characterService) {
+    public TickService(CharacterService characterService, CommandService commandService) {
         this.characterService = characterService;
+        this.commandService = commandService;
     }
 
     public Flux<Character> getCharacterUpdates() {
@@ -36,7 +38,17 @@ public class TickService {
                 characterUpdates.tryEmitNext(character);
             }
 
+            if (!character.getCommandQueue().isEmpty()) {
+                commandService.processCommand(character);
+            } else {
+                character.setIdle(character.getIdle() + 1);
 
+                if(character.getIdle() > 300) {
+                    character.getCommandQueue().add("logout");
+                    commandService.processCommand(character);
+                    characterService.deselectCharacter(character.getId());
+                }
+            }
         }
     }
 
