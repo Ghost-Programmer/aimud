@@ -24,6 +24,9 @@ public class CharacterEffect {
     @Column("tick_count")
     private int tickCount;
 
+    @Transient
+    private Effect effect;
+
     @CreatedDate
     @Column("created_at")
     private LocalDateTime createdAt;

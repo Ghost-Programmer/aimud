@@ -2,10 +2,7 @@ package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.*;
 import com.aimud.aimud.model.Character;
-import com.aimud.aimud.repository.CharacterClassRepository;
-import com.aimud.aimud.repository.EffectRepository;
-import com.aimud.aimud.repository.ItemRepository;
-import com.aimud.aimud.repository.RaceRepository;
+import com.aimud.aimud.repository.*;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -20,14 +17,16 @@ public class StatService {
     private final RoomService roomService;
     private final ItemRepository itemRepository;
     private final EffectRepository effectRepository;
+    private final CharacterEffectRepository characterEffectRepository;
     private final ItemService itemService;
 
-    public StatService(RaceRepository raceRepository, CharacterClassRepository characterClassRepository, RoomService roomService, ItemRepository itemRepository, EffectRepository effectRepository, ItemService itemService) {
+    public StatService(RaceRepository raceRepository, CharacterClassRepository characterClassRepository, RoomService roomService, ItemRepository itemRepository, EffectRepository effectRepository, CharacterEffectRepository characterEffectRepository, ItemService itemService) {
         this.raceRepository = raceRepository;
         this.characterClassRepository = characterClassRepository;
         this.roomService = roomService;
         this.itemRepository = itemRepository;
         this.effectRepository = effectRepository;
+        this.characterEffectRepository = characterEffectRepository;
         this.itemService = itemService;
     }
 
@@ -136,20 +135,34 @@ public class StatService {
                 c.getPrimary(), c.getOffhand()
         };
 
+        // Apply equipment effects
         for (Item item : equipment) {
             if (item != null && item.getEffects() != null) {
                 for (Effect effect : item.getEffects()) {
-                    if (effect.getEffectType() != null) {
-                        switch (effect.getEffectType()) {
-                            case STRENGTH -> c.setCurrentStrength(c.getCurrentStrength() + effect.getModifier1());
-                            case DEXTERITY -> c.setCurrentDexterity(c.getCurrentDexterity() + effect.getModifier1());
-                            case CONSTITUTION -> c.setCurrentConstitution(c.getCurrentConstitution() + effect.getModifier1());
-                            case INTELLIGENCE -> c.setCurrentIntelligence(c.getCurrentIntelligence() + effect.getModifier1());
-                            case WISDOM -> c.setCurrentWisdom(c.getCurrentWisdom() + effect.getModifier1());
-                            case CHARISMA -> c.setCurrentCharisma(c.getCurrentCharisma() + effect.getModifier1());
-                        }
-                    }
+                    applyEffect(c, effect);
                 }
+            }
+        }
+
+        // Apply spell effects
+        if (c.getSpellEffects() != null) {
+            for (CharacterEffect characterEffect : c.getSpellEffects()) {
+                if (characterEffect.getEffect() != null) {
+                    applyEffect(c, characterEffect.getEffect());
+                }
+            }
+        }
+    }
+
+    private void applyEffect(Character c, Effect effect) {
+        if (effect.getEffectType() != null) {
+            switch (effect.getEffectType()) {
+                case STRENGTH -> c.setCurrentStrength(c.getCurrentStrength() + effect.getModifier1());
+                case DEXTERITY -> c.setCurrentDexterity(c.getCurrentDexterity() + effect.getModifier1());
+                case CONSTITUTION -> c.setCurrentConstitution(c.getCurrentConstitution() + effect.getModifier1());
+                case INTELLIGENCE -> c.setCurrentIntelligence(c.getCurrentIntelligence() + effect.getModifier1());
+                case WISDOM -> c.setCurrentWisdom(c.getCurrentWisdom() + effect.getModifier1());
+                case CHARISMA -> c.setCurrentCharisma(c.getCurrentCharisma() + effect.getModifier1());
             }
         }
     }
@@ -175,7 +188,24 @@ public class StatService {
         monos.add(loadItemWithEffects(character.getOffhandId()).doOnNext(character::setOffhand).defaultIfEmpty(new Item()));
 
         return Mono.zip(monos, results -> results)
+                .flatMap(results -> loadSpellEffects(character))
                 .flatMap(results -> loadInventory(character));
+    }
+
+    private Mono<Character> loadSpellEffects(Character character) {
+        if (character.getId() == null) return Mono.just(character);
+
+        return characterEffectRepository.findByCharacterId(character.getId())
+                .flatMap(ce -> effectRepository.findById(ce.getEffectId())
+                        .map(e -> {
+                            ce.setEffect(e);
+                            return ce;
+                        }))
+                .collectList()
+                .map(effects -> {
+                    character.setSpellEffects(effects);
+                    return character;
+                });
     }
 
     private Mono<Character> loadInventory(Character character) {
