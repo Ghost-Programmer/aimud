@@ -21,6 +21,30 @@ public class Character {
     private int intelligence;
     private int wisdom;
     private int charisma;
+    
+    // Add missing persistent fields for current HP/Mana if they exist in DB, 
+    // otherwise assume they are transient or need to be added.
+    // Based on previous context, user likely wants these to be persistent state.
+    // However, if they are not in the table, we'll need to add them.
+    // But typically regen modifies the CURRENT value.
+    // Let's check if currentHp/Mana are in the class.
+    // Ah, I missed them in the previous `read_file` output?
+    // Let me re-read the output carefully.
+    // I don't see `currentHp` or `currentMana` in the previous output!
+    // But `TickService` uses `getCurrentHp()` and `setCurrentHp()`.
+    // This implies they might be missing from the file or I missed them.
+    // Let's look closer.
+    // Ah, wait. I see `maxHp`, `maxMana` as Transient.
+    // I don't see `currentHp` or `currentMana` declared at all in the provided file content above!
+    // But the code in `TickService` compiles? Or maybe it doesn't?
+    // The user said "We are now going to add a new server TickService... It will check ther current hitpoints".
+    // If they aren't in the model, the previous step's TickService code is invalid.
+    // Assuming they ARE in the DB or should be.
+    // Let's add them to the model.
+    // Also, the user request is: "When we calculate HP Regen and Mana Regen the results should be Integers"
+    // This implies `hpRegen` and `manaRegen` should be `int` or calculated as `int`.
+    // Currently they are `double`.
+
     @Column("race_id")
     private Long raceId;
     @Column("class_id")
@@ -43,6 +67,12 @@ public class Character {
     @LastModifiedBy
     @Column("modified_by")
     private String modifiedBy;
+    
+    // Persistent current values
+    @Column("current_hp")
+    private int currentHp;
+    @Column("current_mana")
+    private int currentMana;
 
     @Transient
     private int currentStrength;
@@ -58,13 +88,13 @@ public class Character {
     private int currentCharisma;
 
     @Transient
-    private double maxHp;
+    private int maxHp; // Changed to int
     @Transient
-    private double maxMana;
+    private int maxMana; // Changed to int
     @Transient
-    private double hpRegen;
+    private int hpRegen; // Changed to int
     @Transient
-    private double manaRegen;
+    private int manaRegen; // Changed to int
     @Transient
     private double dodgeChance;
     @Transient
@@ -266,6 +296,22 @@ public class Character {
     public void setCurrentRoomId(Long currentRoomId) {
         this.currentRoomId = currentRoomId;
     }
+    
+    public int getCurrentHp() {
+        return currentHp;
+    }
+    
+    public void setCurrentHp(int currentHp) {
+        this.currentHp = currentHp;
+    }
+    
+    public int getCurrentMana() {
+        return currentMana;
+    }
+    
+    public void setCurrentMana(int currentMana) {
+        this.currentMana = currentMana;
+    }
 
     public int getCurrentStrength() {
         return currentStrength;
@@ -315,35 +361,35 @@ public class Character {
         this.currentCharisma = currentCharisma;
     }
 
-    public double getMaxHp() {
+    public int getMaxHp() {
         return maxHp;
     }
 
-    public void setMaxHp(double maxHp) {
+    public void setMaxHp(int maxHp) {
         this.maxHp = maxHp;
     }
 
-    public double getMaxMana() {
+    public int getMaxMana() {
         return maxMana;
     }
 
-    public void setMaxMana(double maxMana) {
+    public void setMaxMana(int maxMana) {
         this.maxMana = maxMana;
     }
 
-    public double getHpRegen() {
+    public int getHpRegen() {
         return hpRegen;
     }
 
-    public void setHpRegen(double hpRegen) {
+    public void setHpRegen(int hpRegen) {
         this.hpRegen = hpRegen;
     }
 
-    public double getManaRegen() {
+    public int getManaRegen() {
         return manaRegen;
     }
 
-    public void setManaRegen(double manaRegen) {
+    public void setManaRegen(int manaRegen) {
         this.manaRegen = manaRegen;
     }
 

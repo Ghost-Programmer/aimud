@@ -68,8 +68,18 @@ public class StatService {
                                 // Health & Resource Pools
                                 c.setMaxHp(100 + (con * 15) + (str * 5));
                                 c.setMaxMana(50 + (intel * 20));
-                                c.setHpRegen(0.5 + (con / 20.0) + (str / 100.0));
-                                c.setManaRegen(1.0 + (wis / 25.0));
+                                c.setHpRegen(Math.max(1, (int) (0.5 + (con / 20.0) + (str / 100.0))));
+                                c.setManaRegen(Math.max(1, (int) (1.0 + (wis / 25.0))));
+                                
+                                // Ensure current stats are not above max (e.g. if max dropped due to equipment change)
+                                // Although currentHp/currentMana are persistent, we might want to clamp them here just in case?
+                                // For now, we only calculate derived stats.
+                                if (c.getCurrentHp() > c.getMaxHp()) {
+                                    c.setCurrentHp(c.getMaxHp());
+                                }
+                                if (c.getCurrentMana() > c.getMaxMana()) {
+                                    c.setCurrentMana(c.getMaxMana());
+                                }
 
                                 // Combat Percentages
                                 c.setDodgeChance((double) dex / (dex + 500));
