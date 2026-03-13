@@ -3,6 +3,7 @@ package com.aimud.aimud.service;
 import com.aimud.aimud.model.Character;
 import com.aimud.aimud.model.Item;
 import com.aimud.aimud.model.CharacterEffect;
+import com.aimud.aimud.model.Room;
 import com.aimud.aimud.repository.CharacterEffectRepository;
 import com.aimud.aimud.repository.CharacterRepository;
 import com.aimud.aimud.repository.UserRepository;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -30,24 +32,35 @@ public class CharacterService {
     private final DatabaseClient databaseClient;
     private final CharacterEffectRepository characterEffectRepository;
     private final Random random = new Random();
+    private final CommunicationService communicationService;
+    private final RoomService roomService;
 
     // In-memory storage for active/available characters
     private final ConcurrentHashMap<Long, Character> availableCharacters = new ConcurrentHashMap<>();
 
-    public CharacterService(CharacterRepository characterRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository) {
+    public CharacterService(CharacterRepository characterRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository, CommunicationService communicationService, RoomService roomService) {
         this.characterRepository = characterRepository;
         this.userRepository = userRepository;
         this.statService = statService;
         this.databaseClient = databaseClient;
         this.characterEffectRepository = characterEffectRepository;
+        this.communicationService = communicationService;
+        this.roomService = roomService;
+    }
+
+    public List<Character> findAllByRoomId(Long roomId) {
+        return availableCharacters.values().stream()
+                .filter(character -> character.getCurrentRoomId().equals(roomId))
+                .collect(Collectors.toList());
     }
 
     public Mono<Void> selectCharacter(Long characterId) {
         log.info("Selecting character with id: {}", characterId);
         return getCharacterById(characterId)
-                .doOnNext(character -> {
+                .flatMap(character -> {
                     availableCharacters.put(character.getId(), character);
                     log.info("Character {} added to available list", character.getName());
+                    return this.enterRoom(character, character.getCurrentRoomId());
                 })
                 .then();
     }
@@ -201,5 +214,46 @@ public class CharacterService {
 
     private int rollStat() {
         return random.nextInt(4) + 1;
+    }
+
+    public Mono<Void> enterRoom(Character character, Long roomId) {
+        return this.roomService.getRoom(roomId)
+                .flatMap(room -> {
+                    this.findAllByRoomId(character.getCurrentRoomId()).stream().filter(c -> !c.getId().equals(character.getId())).forEach(c -> {
+                        this.communicationService.sendTextMessage(c, "\n" + character.getName() + " has left the room.");
+                    });
+
+                    character.setCurrentRoomId(room.getId());
+                    return this.save(character)
+                            .doOnNext(savedChar -> {
+                                this.findAllByRoomId(roomId).stream().filter(c -> !c.getId().equals(character.getId())).forEach(c -> {
+                                    this.communicationService.sendTextMessage(c, "\n" + character.getName() + " has entered the room.");
+                                });
+
+                                this.communicationService.sendTextMessage(character, "\n\nYou have entered " + room.getName() + ".");
+                                this.communicationService.sendTextMessage(character, "\n\n" + room.getDescription() + "\n");
+                                List<String> exits = new ArrayList<>();
+                                if (room.getNorthId() != null) {
+                                    exits.add("North");
+                                }
+                                if (room.getEastId() != null) {
+                                    exits.add("East");
+                                }
+                                if (room.getSouthId() != null) {
+                                    exits.add("South");
+                                }
+                                if (room.getWestId() != null) {
+                                    exits.add("West");
+                                }
+                                if (room.getUpId() != null) {
+                                    exits.add("Up");
+                                }
+                                if (room.getDownId() != null) {
+                                    exits.add("Down");
+                                }
+                                this.communicationService.sendTextMessage(character, "\n\nExits: " + String.join(", ", exits));
+                            })
+                            .then();
+                });
     }
 }
