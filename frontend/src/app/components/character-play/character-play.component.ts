@@ -1,4 +1,4 @@
-import { Component, OnInit, OnChanges, Input, SimpleChanges, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnChanges, Input, SimpleChanges, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CharacterService } from '../../services/character.service';
@@ -14,9 +14,8 @@ import { Subscription } from 'rxjs';
 })
 export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
   @Input() character: any;
+  @ViewChild('consoleTextarea') consoleTextarea!: ElementRef<HTMLTextAreaElement>;
   activeStatTab: string = 'stats';
-  currentRoom: any = null;
-  exits: string[] = [];
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
   textMessages: string[] = [];
@@ -31,14 +30,12 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit() {
     if (this.character) {
       this.refreshCharacter();
-      this.loadRoomData();
       this.subscribeToUpdates();
     }
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['character'] && !changes['character'].firstChange) {
-      this.loadRoomData();
       this.refreshCharacter();
 
       if (this.wsSubscription) {
@@ -72,7 +69,7 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
                   // Apply updates in place to maintain reference for parent
                   Object.assign(this.character, update.data);
               } else if (update.type === 'text') {
-                  this.textMessages.push(update.data);
+                  this.textMessages = [...this.textMessages, update.data];
                   this.scrollToBottom();
               }
           },
@@ -82,35 +79,11 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
 
   scrollToBottom() {
       setTimeout(() => {
-          const consoleElement = document.querySelector('.console-output');
-          if (consoleElement) {
-              consoleElement.scrollTop = consoleElement.scrollHeight;
+          if (this.consoleTextarea) {
+              const textarea = this.consoleTextarea.nativeElement;
+              textarea.scrollTop = textarea.scrollHeight;
           }
       }, 0);
-  }
-
-  loadRoomData() {
-    if (!this.character || !this.character.id) return;
-
-    this.characterService.getCharacterRoom(this.character.id).subscribe({
-      next: (room) => {
-        this.currentRoom = room;
-        this.parseExits(room);
-      },
-      error: (error) => {
-        console.error('Error loading room data', error);
-      }
-    });
-  }
-
-  parseExits(room: any) {
-    this.exits = [];
-    if (room.northId) this.exits.push('North');
-    if (room.southId) this.exits.push('South');
-    if (room.eastId) this.exits.push('East');
-    if (room.westId) this.exits.push('West');
-    if (room.upId) this.exits.push('Up');
-    if (room.downId) this.exits.push('Down');
   }
 
   setActiveStatTab(tab: string) {

@@ -27,7 +27,11 @@ export class GameWebSocketService {
   public getCharacterUpdates(characterId: number): Observable<any> {
     return this.socket$.pipe(
       retry({ delay: 3000 }),
-      filter(msg => msg && msg.id === characterId)
+      filter(msg => {
+        if (!msg) return false;
+        // Match targeted messages or broadcast messages (id: -1)
+        return msg.id === characterId || msg.id === -1;
+      })
     );
   }
 }
