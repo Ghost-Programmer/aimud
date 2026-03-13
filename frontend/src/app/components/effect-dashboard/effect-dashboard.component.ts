@@ -39,7 +39,7 @@ export class EffectDashboardComponent {
     this.isLoading = true;
     this.effectService.getEffects(this.page, this.size, {
       name: this.nameFilter || undefined,
-      type: this.typeFilter,
+      type: this.typeFilter || undefined,
       sort: this.sort
     }).subscribe({
       next: (res) => {

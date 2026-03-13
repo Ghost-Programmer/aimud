@@ -1,5 +1,320 @@
 --liquibase formatted sql
 
+--changeset jeff:1
+CREATE TABLE IF NOT EXISTS server_info (
+    id SERIAL PRIMARY KEY,
+    key VARCHAR(255) NOT NULL UNIQUE,
+    value VARCHAR(255) NOT NULL
+);
+
+INSERT INTO server_info (key, value) VALUES ('db_status', 'R2DBC Connection Established!')
+ON CONFLICT (key) DO UPDATE SET value = 'R2DBC Connection Established!';
+
+CREATE TABLE IF NOT EXISTS server_settings (
+    id SERIAL PRIMARY KEY,
+    server_name VARCHAR(255) NOT NULL DEFAULT 'AI Mud',
+    allow_new_user BOOLEAN NOT NULL DEFAULT true,
+    maintenance BOOLEAN NOT NULL DEFAULT false,
+    maintenance_text VARCHAR(255) NOT NULL DEFAULT 'Undergoing Maintenance'
+);
+
+INSERT INTO server_settings (id, server_name, allow_new_user, maintenance, maintenance_text)
+VALUES (1, 'AI Mud', true, false, 'Undergoing Maintenance')
+ON CONFLICT (id) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL DEFAULT 'MUD_USER'
+);
+
+--changeset jeff:2
+ALTER TABLE users ADD COLUMN locked BOOLEAN NOT NULL DEFAULT false;
+
+--changeset jeff:3
+CREATE TABLE IF NOT EXISTS characters (
+    id SERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    strength INT NOT NULL DEFAULT 0,
+    dexterity INT NOT NULL DEFAULT 0,
+    constitution INT NOT NULL DEFAULT 0,
+    intelligence INT NOT NULL DEFAULT 0,
+    wisdom INT NOT NULL DEFAULT 0,
+    charisma INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+--changeset jeff:4
+CREATE TABLE IF NOT EXISTS races (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description VARCHAR(300) NOT NULL,
+    strength_mod INT NOT NULL DEFAULT 0,
+    intelligence_mod INT NOT NULL DEFAULT 0,
+    wisdom_mod INT NOT NULL DEFAULT 0,
+    charisma_mod INT NOT NULL DEFAULT 0,
+    dexterity_mod INT NOT NULL DEFAULT 0,
+    constitution_mod INT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS character_classes (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description VARCHAR(300) NOT NULL,
+    strength_mod INT NOT NULL DEFAULT 0,
+    intelligence_mod INT NOT NULL DEFAULT 0,
+    wisdom_mod INT NOT NULL DEFAULT 0,
+    charisma_mod INT NOT NULL DEFAULT 0,
+    dexterity_mod INT NOT NULL DEFAULT 0,
+    constitution_mod INT NOT NULL DEFAULT 0
+);
+
+INSERT INTO character_classes (name, description, strength_mod, intelligence_mod, wisdom_mod, charisma_mod, dexterity_mod, constitution_mod) VALUES
+('Cleric', 'A priestly champion who wields divine magic in service of a higher power.', 0, 0, 2, 0, 0, 0),
+('Druid', 'A priest of the Old Faith, wielding the powers of nature and adopting animal forms.', 0, 0, 2, 0, 0, 0),
+('Fighter', 'A master of martial combat, skilled with a variety of weapons and armor.', 2, 0, 0, 0, 0, 1),
+('Rogue', 'A scoundrel who uses stealth and trickery to overcome obstacles and enemies.', 0, 0, 0, 0, 2, 0),
+('Paladin', 'A holy warrior bound to a sacred oath.', 2, 0, 0, 1, 0, 0),
+('Wizard', 'A scholarly magic-user capable of manipulating the structures of reality.', 0, 2, 0, 0, 0, 0);
+
+--changeset jeff:5
+ALTER TABLE races ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE character_classes ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT false;
+
+--changeset jeff:6
+INSERT INTO races (name, description, strength_mod, intelligence_mod, wisdom_mod, charisma_mod, dexterity_mod, constitution_mod) VALUES
+('Elf', 'A magical people of otherworldly grace, living in the world but not entirely part of it.', 0, 1, 0, 0, 2, 0),
+('Halfling', 'The diminutive halflings survive in a world full of larger creatures by avoiding notice or, barring that, avoiding offense.', 0, 0, 0, 0, 2, 0),
+('Human', 'Humans are the most adaptable and ambitious people among the common races.', 1, 1, 1, 1, 1, 1),
+('Gnome', 'A constant hum of busy activity permeates the warrens and neighborhoods where gnomes form their close-knit communities.', 0, 2, 0, 0, 0, 0),
+('Dwarf', 'Bold and hardy, dwarves are known as skilled warriors, miners, and workers of stone and metal.', 0, 0, 0, 0, 0, 2),
+('Orc', 'Orcs are savage raiders and pillagers with stooped postures, low foreheads, and piggish faces.', 2, 0, 0, 0, 0, 1);
+
+--changeset jeff:7
+ALTER TABLE characters ADD COLUMN race_id BIGINT;
+ALTER TABLE characters ADD COLUMN class_id BIGINT;
+ALTER TABLE characters ADD CONSTRAINT fk_character_race FOREIGN KEY (race_id) REFERENCES races(id);
+ALTER TABLE characters ADD CONSTRAINT fk_character_class FOREIGN KEY (class_id) REFERENCES character_classes(id);
+
+--changeset jeff:8
+CREATE TABLE IF NOT EXISTS rooms (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    room_type VARCHAR(50) NOT NULL,
+    north_id BIGINT,
+    south_id BIGINT,
+    east_id BIGINT,
+    west_id BIGINT,
+    up_id BIGINT,
+    down_id BIGINT,
+    north_door BOOLEAN DEFAULT false,
+    south_door BOOLEAN DEFAULT false,
+    east_door BOOLEAN DEFAULT false,
+    west_door BOOLEAN DEFAULT false,
+    up_door BOOLEAN DEFAULT false,
+    down_door BOOLEAN DEFAULT false,
+    north_door_open BOOLEAN DEFAULT false,
+    south_door_open BOOLEAN DEFAULT false,
+    east_door_open BOOLEAN DEFAULT false,
+    west_door_open BOOLEAN DEFAULT false,
+    up_door_open BOOLEAN DEFAULT false,
+    down_door_open BOOLEAN DEFAULT false
+);
+
+--changeset jeff:9
+INSERT INTO rooms (id, name, description, room_type) VALUES
+(1, 'Mud Entrance', 'You stand at the grand entrance of the AI MUD. This is the primary gathering place for adventurers starting their journey.', 'CITY')
+ON CONFLICT (id) DO NOTHING;
+
+--changeset jeff:10
+ALTER TABLE characters ADD COLUMN current_room_id BIGINT DEFAULT 1;
+ALTER TABLE characters ADD CONSTRAINT fk_character_room FOREIGN KEY (current_room_id) REFERENCES rooms(id);
+
+--changeset jeff:11
+CREATE TABLE IF NOT EXISTS items (
+    id SERIAL PRIMARY KEY,
+    item_type VARCHAR(50) NOT NULL,
+    wear_location VARCHAR(50),
+    name VARCHAR(255) NOT NULL,
+    description TEXT
+);
+
+CREATE TABLE IF NOT EXISTS effects (
+    id SERIAL PRIMARY KEY,
+    item_id BIGINT REFERENCES items(id),
+    effect_type VARCHAR(50) NOT NULL,
+    modifier1 INTEGER NOT NULL DEFAULT 0,
+    modifier2 INTEGER NOT NULL DEFAULT 0,
+    modifier3 INTEGER NOT NULL DEFAULT 0,
+    modifier4 INTEGER NOT NULL DEFAULT 0
+);
+
+ALTER TABLE characters ADD COLUMN head_id BIGINT REFERENCES items(id);
+ALTER TABLE characters ADD COLUMN chest_id BIGINT REFERENCES items(id);
+ALTER TABLE characters ADD COLUMN legs_id BIGINT REFERENCES items(id);
+ALTER TABLE characters ADD COLUMN feet_id BIGINT REFERENCES items(id);
+ALTER TABLE characters ADD COLUMN arms_id BIGINT REFERENCES items(id);
+ALTER TABLE characters ADD COLUMN hands_id BIGINT REFERENCES items(id);
+ALTER TABLE characters ADD COLUMN right_finger_id BIGINT REFERENCES items(id);
+ALTER TABLE characters ADD COLUMN left_finger_id BIGINT REFERENCES items(id);
+ALTER TABLE characters ADD COLUMN right_wrist_id BIGINT REFERENCES items(id);
+ALTER TABLE characters ADD COLUMN left_wrist_id BIGINT REFERENCES items(id);
+ALTER TABLE characters ADD COLUMN neck_id BIGINT REFERENCES items(id);
+ALTER TABLE characters ADD COLUMN left_ear_id BIGINT REFERENCES items(id);
+ALTER TABLE characters ADD COLUMN right_ear_id BIGINT REFERENCES items(id);
+ALTER TABLE characters ADD COLUMN face_id BIGINT REFERENCES items(id);
+ALTER TABLE characters ADD COLUMN waist_id BIGINT REFERENCES items(id);
+ALTER TABLE characters ADD COLUMN primary_id BIGINT REFERENCES items(id);
+ALTER TABLE characters ADD COLUMN offhand_id BIGINT REFERENCES items(id);
+
+--changeset jeff:12
+CREATE TABLE IF NOT EXISTS character_inventory (
+    character_id BIGINT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    item_id BIGINT NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    PRIMARY KEY (character_id, item_id)
+);
+
+--changeset jeff:add-ai-system-prompt
+ALTER TABLE server_settings ADD COLUMN ai_system_prompt TEXT;
+
+UPDATE server_settings SET ai_system_prompt = 'You are an Expert Multi-User Dungeon World Builder. You have access to MCP tools for creating rooms, items, and effects for items. Use these tools to help the user build their world.
+
+When creating rooms, use the following RoomTypes: INDOORS, CITY, FIELD, FOREST, HILLS, MOUNTAIN, DESERT, ARCTIC, SWAMP, WATER_SURFACE, UNDERWATER, AIR, UNDERGROUND_CAVE, UNDERGROUND_DUNGEON.
+
+When creating items, use the following ItemTypes: WEAPON, TWO_HANDED_WEAPON, ARMOR, FOOD, DRINK, POTION, SCROLL, MONEY, WAND, QUEST, KEY, LIGHT, CONTAINER, TRASH, MISC.
+For WearLocations, use: HEAD, CHEST, LEGS, FEET, ARMS, HANDS, RIGHT_FINGER, LEFT_FINGER, RIGHT_WRIST, LEFT_WRIST, NECK, LEFT_EAR, RIGHT_EAR, FACE, WAIST, PRIMARY, OFFHAND, NONE.
+
+When creating effects, use the following EffectTypes:
+- Damage: SLASHING_DAMAGE, BASHING_DAMAGE, PIERCING_DAMAGE, FIRE_DAMAGE, COLD_DAMAGE, SONIC_DAMAGE, POISON_DAMAGE, ELECTRICAL_DAMAGE (Modifiers: Number of Dice, Size of Dice)
+- Stats: STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA (Modifier: Amount)
+- Combat: PHYSICAL_ATTACK, MAGIC_ATTACK, MAGIC_RESIST, DODGE, CRITICAL_HIT, ARMOR (Modifier: Amount)
+- Regen: HP_REGEN, MANA_REGEN (Modifier: Amount)
+- Status: FLY, WATER_BREATHING, INVISIBLE (No modifiers)';
+
+--changeset jeff:14 validCheckSum:ANY
+ALTER TABLE users ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE users ADD COLUMN modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE users ADD COLUMN created_by VARCHAR(255) DEFAULT 'system';
+ALTER TABLE users ADD COLUMN modified_by VARCHAR(255) DEFAULT 'system';
+
+ALTER TABLE characters ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE characters ADD COLUMN modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE characters ADD COLUMN created_by VARCHAR(255) DEFAULT 'system';
+ALTER TABLE characters ADD COLUMN modified_by VARCHAR(255) DEFAULT 'system';
+
+ALTER TABLE races ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE races ADD COLUMN modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE races ADD COLUMN created_by VARCHAR(255) DEFAULT 'system';
+ALTER TABLE races ADD COLUMN modified_by VARCHAR(255) DEFAULT 'system';
+
+ALTER TABLE character_classes ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE character_classes ADD COLUMN modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE character_classes ADD COLUMN created_by VARCHAR(255) DEFAULT 'system';
+ALTER TABLE character_classes ADD COLUMN modified_by VARCHAR(255) DEFAULT 'system';
+
+ALTER TABLE rooms ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE rooms ADD COLUMN modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE rooms ADD COLUMN created_by VARCHAR(255) DEFAULT 'system';
+ALTER TABLE rooms ADD COLUMN modified_by VARCHAR(255) DEFAULT 'system';
+
+ALTER TABLE items ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE items ADD COLUMN modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE items ADD COLUMN created_by VARCHAR(255) DEFAULT 'system';
+ALTER TABLE items ADD COLUMN modified_by VARCHAR(255) DEFAULT 'system';
+
+ALTER TABLE effects ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE effects ADD COLUMN modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE effects ADD COLUMN created_by VARCHAR(255) DEFAULT 'system';
+ALTER TABLE effects ADD COLUMN modified_by VARCHAR(255) DEFAULT 'system';
+
+ALTER TABLE server_settings ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE server_settings ADD COLUMN modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE server_settings ADD COLUMN created_by VARCHAR(255) DEFAULT 'system';
+ALTER TABLE server_settings ADD COLUMN modified_by VARCHAR(255) DEFAULT 'system';
+
+ALTER TABLE server_info ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE server_info ADD COLUMN modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE server_info ADD COLUMN created_by VARCHAR(255) DEFAULT 'system';
+ALTER TABLE server_info ADD COLUMN modified_by VARCHAR(255) DEFAULT 'system';
+
+--changeset jeff:15
+ALTER TABLE users ALTER COLUMN created_at TYPE TIMESTAMP;
+ALTER TABLE users ALTER COLUMN modified_at TYPE TIMESTAMP;
+
+ALTER TABLE characters ALTER COLUMN created_at TYPE TIMESTAMP;
+ALTER TABLE characters ALTER COLUMN modified_at TYPE TIMESTAMP;
+
+ALTER TABLE races ALTER COLUMN created_at TYPE TIMESTAMP;
+ALTER TABLE races ALTER COLUMN modified_at TYPE TIMESTAMP;
+
+ALTER TABLE character_classes ALTER COLUMN created_at TYPE TIMESTAMP;
+ALTER TABLE character_classes ALTER COLUMN modified_at TYPE TIMESTAMP;
+
+ALTER TABLE rooms ALTER COLUMN created_at TYPE TIMESTAMP;
+ALTER TABLE rooms ALTER COLUMN modified_at TYPE TIMESTAMP;
+
+ALTER TABLE items ALTER COLUMN created_at TYPE TIMESTAMP;
+ALTER TABLE items ALTER COLUMN modified_at TYPE TIMESTAMP;
+
+ALTER TABLE effects ALTER COLUMN created_at TYPE TIMESTAMP;
+ALTER TABLE effects ALTER COLUMN modified_at TYPE TIMESTAMP;
+
+ALTER TABLE server_settings ALTER COLUMN created_at TYPE TIMESTAMP;
+ALTER TABLE server_settings ALTER COLUMN modified_at TYPE TIMESTAMP;
+
+ALTER TABLE server_info ALTER COLUMN created_at TYPE TIMESTAMP;
+ALTER TABLE server_info ALTER COLUMN modified_at TYPE TIMESTAMP;
+
+-- changeset jeff:16
+UPDATE server_settings
+SET ai_system_prompt = 'You are an Expert Multi-User Dungeon World Builder.\n\nGUIDELINES:\n1. When a user asks to create something, use the appropriate MCP tools.\n2. To associate an effect with an item, first create the item using createItem to obtain its ID, then use createEffect setting the itemId field.\n3. Rooms have a name, description, and type (e.g., CITY, FIELD, FOREST, WATER, etc.).\n4. Items have a name, description, type (e.g., WEAPON, ARMOR, LIGHT, POTION), and wear location (e.g., HEAD, TORSO, ARMS, LEGS, etc.).\n5. Weapons MUST have damage effects. Use EffectTypes like SLASHING_DAMAGE, PIERCING_DAMAGE, or BASHING_DAMAGE. Set modifier1 to the number of dice and modifier2 to the size of the dice (e.g., 2d6 means modifier1=2, modifier2=6).\n6. Items can have stat modifiers. Use EffectTypes like STRENGTH, DEXTERITY, ARMOR, etc., and set modifier1 to the bonus amount.\n7. If you need more information to create an object, ask the user for clarification.\n8. Always check existing content if the user refers to it, using the retrieval tools.\n\nYou have access to the following tool categories:\n- Room Management: createRoom, updateRoom, getRoom, getAllRooms\n- Item Management: createItem, updateItem, getItem, getAllItems\n- Effect Management: createEffect, updateEffect, getEffect, getEffectsByItem\n\nBe creative but consistent with MUD conventions.'
+WHERE id = 1;
+
+--changeset jeff:17
+CREATE TABLE item_effects (
+    item_id BIGINT REFERENCES items(id),
+    effect_id BIGINT REFERENCES effects(id),
+    PRIMARY KEY (item_id, effect_id)
+);
+
+INSERT INTO item_effects (item_id, effect_id)
+SELECT item_id, id FROM effects WHERE item_id IS NOT NULL;
+
+ALTER TABLE effects DROP COLUMN item_id;
+
+--changeset jeff:18
+ALTER TABLE characters ADD COLUMN current_hp INTEGER DEFAULT 0;
+ALTER TABLE characters ADD COLUMN current_mana INTEGER DEFAULT 0;
+
+-- Initialize current values (e.g., set to some default or calculate later)
+-- For now we just default to 0, but ideally we might want to set them to maxHp if we had that stored.
+-- Since maxHp is calculated dynamically, we can't set it here easily in SQL without duplicating logic.
+-- However, we can set a reasonable default or leave at 0 and let the app handle it on load.
+UPDATE characters SET current_hp = 100, current_mana = 50;
+
+-- changeset 19:jeff
+CREATE TABLE IF NOT EXISTS character_effects (
+    id BIGSERIAL PRIMARY KEY,
+    character_id BIGINT NOT NULL,
+    effect_id BIGINT NOT NULL,
+    tick_count INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255),
+    modified_by VARCHAR(255),
+    CONSTRAINT fk_character_effects_character FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE,
+    CONSTRAINT fk_character_effects_effect FOREIGN KEY (effect_id) REFERENCES effects(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_character_effects_character_id ON character_effects(character_id);
+CREATE INDEX IF NOT EXISTS idx_character_effects_effect_id ON character_effects(effect_id);
+
+-- changeset jeff:20
+ALTER TABLE effects ADD COLUMN name VARCHAR(255);
+
 --changeset jeff:21
 -- Insert default rooms
 INSERT INTO rooms (id, name, description, room_type, north_id, south_id, east_id, west_id) VALUES
@@ -553,7 +868,4 @@ INSERT INTO effects (id, name, effect_type, modifier1, modifier2, modifier3, mod
 ( 537, 'Sonic Damage 10d20', 'SONIC_DAMAGE', 10, 20, 0, 0),
 ( 538, 'Poison Damage 10d20', 'POISON_DAMAGE', 10, 20, 0, 0),
 ( 539, 'Electrical Damage 10d20', 'ELECTRICAL_DAMAGE', 10, 20, 0, 0)
-
-
-
 ON CONFLICT (id) DO NOTHING;
