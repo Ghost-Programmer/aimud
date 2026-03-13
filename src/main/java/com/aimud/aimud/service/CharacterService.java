@@ -65,6 +65,10 @@ public class CharacterService {
 
     public Mono<Void> deselectCharacter(Long characterId) {
         log.info("Deselecting character with id: {}", characterId);
+        Character character = availableCharacters.get(characterId);
+        this.findAllByRoomId(character.getCurrentRoomId()).stream().filter(c -> !c.getId().equals(character.getId())).forEach(c -> {
+            this.communicationService.sendTextMessage(c, "\n" + character.getName() + " has left the game.");
+        });
         availableCharacters.remove(characterId);
         return Mono.empty();
     }
