@@ -2,8 +2,6 @@ package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Character;
 import com.aimud.aimud.model.Item;
-import com.aimud.aimud.model.CharacterEffect;
-import com.aimud.aimud.model.Room;
 import com.aimud.aimud.repository.CharacterEffectRepository;
 import com.aimud.aimud.repository.CharacterRepository;
 import com.aimud.aimud.repository.UserRepository;

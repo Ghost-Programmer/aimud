@@ -1,9 +1,9 @@
 package com.aimud.aimud.controller;
 
 import com.aimud.aimud.model.Item;
+import com.aimud.aimud.service.ItemService;
 import com.aimud.aimud.types.ItemType;
 import com.aimud.aimud.types.WearLocation;
-import com.aimud.aimud.service.ItemService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

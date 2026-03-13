@@ -1,8 +1,8 @@
 package com.aimud.aimud.controller;
 
 import com.aimud.aimud.model.Room;
-import com.aimud.aimud.types.RoomType;
 import com.aimud.aimud.service.RoomService;
+import com.aimud.aimud.types.RoomType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

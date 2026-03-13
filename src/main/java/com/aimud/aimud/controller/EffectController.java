@@ -1,14 +1,13 @@
 package com.aimud.aimud.controller;
 
 import com.aimud.aimud.model.Effect;
-import com.aimud.aimud.types.EffectType;
 import com.aimud.aimud.service.EffectService;
+import com.aimud.aimud.types.EffectType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

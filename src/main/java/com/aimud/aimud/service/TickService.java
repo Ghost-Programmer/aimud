@@ -1,10 +1,9 @@
 package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Character;
-import com.aimud.aimud.model.CharacterEffect;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
