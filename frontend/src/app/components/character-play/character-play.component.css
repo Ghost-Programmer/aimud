@@ -64,15 +64,15 @@
 .console-textarea {
   flex: 1;
   background: transparent;
-  border: 1px solid rgba(0, 255, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   padding: 10px;
-  color: #00ff00; /* Green terminal color */
+  color: #ffffff; /* White terminal color */
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.9rem;
   resize: none;
   outline: none;
-  text-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
   scrollbar-width: thin;
   scrollbar-color: var(--primary) transparent;
 }
@@ -94,8 +94,8 @@
 }
 
 .console-textarea:focus {
-  border-color: rgba(0, 255, 0, 0.5);
-  box-shadow: 0 0 10px rgba(0, 255, 0, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
 
 
