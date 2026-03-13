@@ -30,7 +30,8 @@ export class GameWebSocketService {
       filter(msg => {
         if (!msg) return false;
         // Match targeted messages or broadcast messages (id: -1)
-        return msg.id === characterId || msg.id === -1;
+        // Use string conversion to handle potential type differences (string vs number)
+        return String(msg.id) === String(characterId) || String(msg.id) === '-1';
       })
     );
   }

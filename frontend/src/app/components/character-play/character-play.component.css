@@ -98,6 +98,51 @@
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
 
+.command-form {
+  display: flex;
+  padding: 10px 15px;
+  gap: 10px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-top: 1px solid var(--glass-border);
+}
+
+.command-input {
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #ffffff;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.command-input:focus {
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.command-submit {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.command-submit:hover {
+  filter: brightness(1.2);
+}
+
+.command-submit:active {
+  transform: translateY(1px);
+}
+
 
 
 

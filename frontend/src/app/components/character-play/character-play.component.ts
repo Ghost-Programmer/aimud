@@ -1,5 +1,6 @@
 import { Component, OnInit, OnChanges, Input, SimpleChanges, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CharacterService } from '../../services/character.service';
 import { GameWebSocketService } from '../../services/game-websocket.service';
@@ -8,7 +9,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-character-play',
   standalone: true,
-  imports: [CommonModule, DragDropModule],
+  imports: [CommonModule, FormsModule, DragDropModule],
   templateUrl: './character-play.component.html',
   styleUrl: './character-play.component.css'
 })
@@ -19,6 +20,7 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
   textMessages: string[] = [];
+  command: string = '';
 
   private wsSubscription: Subscription | null = null;
 
@@ -84,6 +86,17 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
               textarea.scrollTop = textarea.scrollHeight;
           }
       }, 0);
+  }
+
+  onSendCommand() {
+      if (!this.command.trim() || !this.character?.id) return;
+
+      const cmd = this.command.trim();
+      this.command = '';
+
+      this.characterService.sendCommand(this.character.id, cmd).subscribe({
+          error: (err) => console.error('Error sending command', err)
+      });
   }
 
   setActiveStatTab(tab: string) {

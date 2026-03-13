@@ -38,6 +38,10 @@ export class CharacterService {
     return this.http.post<void>(`${this.apiUrl}/${id}/select`, {});
   }
 
+  sendCommand(id: number, command: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${id}/command`, command);
+  }
+
   getAvailableCharacters(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/available`);
   }

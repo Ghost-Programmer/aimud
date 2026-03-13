@@ -10,6 +10,10 @@
       <div class="console-wrapper">
         <textarea #consoleTextarea readonly class="console-textarea" [value]="textMessages.join('')"></textarea>
       </div>
+      <form class="command-form" (submit)="onSendCommand()">
+        <input type="text" [(ngModel)]="command" name="command" class="command-input" placeholder="Enter command..." autocomplete="off">
+        <button type="submit" class="command-submit">Send</button>
+      </form>
     </div>
   </div>
 

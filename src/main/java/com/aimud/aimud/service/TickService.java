@@ -36,6 +36,7 @@ public class TickService {
             }
 
             if (!character.getCommandQueue().isEmpty()) {
+                log.info("Processing command queue for {}: {}", character.getName(), character.getCommandQueue());
                 commandService.processCommand(character);
             } else {
                 character.setIdle(character.getIdle() + 1);

@@ -185,6 +185,17 @@ public class CharacterService {
                 .flatMap(statService::updateCurrentStats);
     }
 
+    public void addCommand(Long characterId, String command) {
+        log.info("Adding command '{}' to character id {}", command, characterId);
+        getAvailableCharacters().stream()
+                .filter(c -> c.getId().equals(characterId))
+                .findFirst()
+                .ifPresent(c -> {
+                    c.getCommandQueue().add(command);
+                    c.setIdle(0);
+                });
+    }
+
     @Caching(evict = {
         @CacheEvict(value = "characters", key = "#character.id"),
         @CacheEvict(value = "userCharacters", allEntries = true)

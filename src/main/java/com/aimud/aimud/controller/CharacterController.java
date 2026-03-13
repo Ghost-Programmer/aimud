@@ -77,6 +77,13 @@ public class CharacterController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    @PostMapping("/{id}/command")
+    public Mono<ResponseEntity<Void>> addCommand(@PathVariable Long id, @RequestBody String command) {
+        log.info("REST Request to add command '{}' to character: {}", command, id);
+        characterService.addCommand(id, command);
+        return Mono.just(ResponseEntity.ok().build());
+    }
+
     @GetMapping("/{id}/room")
     public Mono<ResponseEntity<Object>> getCharacterRoom(@PathVariable Long id) {
         log.info("REST Request to get room for character: {}", id);
