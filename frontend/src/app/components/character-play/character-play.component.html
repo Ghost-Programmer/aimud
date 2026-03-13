@@ -6,17 +6,25 @@
       </svg>
       Action
     </div>
-    <div class="room-info" *ngIf="currentRoom">
-      <h2 class="room-title">{{ currentRoom.name }}</h2>
-      <p class="room-description">{{ currentRoom.description }}</p>
-      <div class="room-exits">
-        <span class="exits-label">Exits:</span>
-        <span *ngFor="let exit of exits" class="exit">{{ exit }}</span>
-        <span *ngIf="exits.length === 0" class="no-exits">None</span>
+    <div class="action-content">
+      <div class="room-info" *ngIf="currentRoom">
+        <h2 class="room-title">{{ currentRoom.name }}</h2>
+        <p class="room-description">{{ currentRoom.description }}</p>
+        <div class="room-exits">
+          <span class="exits-label">Exits:</span>
+          <span *ngFor="let exit of exits" class="exit">{{ exit }}</span>
+          <span *ngIf="exits.length === 0" class="no-exits">None</span>
+        </div>
       </div>
-    </div>
-    <div class="room-info" *ngIf="!currentRoom">
-      <p>Loading room...</p>
+      <div class="room-info" *ngIf="!currentRoom">
+        <p>Loading room...</p>
+      </div>
+
+      <div class="console-output">
+        <div *ngFor="let msg of textMessages" class="console-msg">
+          {{ msg }}
+        </div>
+      </div>
     </div>
   </div>
 

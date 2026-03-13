@@ -19,6 +19,7 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
   exits: string[] = [];
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
+  textMessages: string[] = [];
 
   private wsSubscription: Subscription | null = null;
 
@@ -67,11 +68,25 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
       if (!this.character?.id) return;
       this.wsSubscription = this.gameWebSocketService.getCharacterUpdates(this.character.id).subscribe({
           next: (update) => {
-              // Apply updates in place to maintain reference for parent
-              Object.assign(this.character, update);
+              if (update.type === 'character') {
+                  // Apply updates in place to maintain reference for parent
+                  Object.assign(this.character, update.data);
+              } else if (update.type === 'text') {
+                  this.textMessages.push(update.data);
+                  this.scrollToBottom();
+              }
           },
           error: (err) => console.error('WebSocket error', err)
       });
+  }
+
+  scrollToBottom() {
+      setTimeout(() => {
+          const consoleElement = document.querySelector('.console-output');
+          if (consoleElement) {
+              consoleElement.scrollTop = consoleElement.scrollHeight;
+          }
+      }, 0);
   }
 
   loadRoomData() {

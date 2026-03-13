@@ -5,8 +5,6 @@ import com.aimud.aimud.model.CharacterEffect;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 
 import java.util.List;
 
@@ -16,26 +14,26 @@ public class TickService {
 
     private final CharacterService characterService;
     private final CommandService commandService;
-    private final Sinks.Many<Character> characterUpdates = Sinks.many().multicast().onBackpressureBuffer();
+    private final CommunicationService communicationService;
 
-    public TickService(CharacterService characterService, CommandService commandService) {
+    public TickService(CharacterService characterService, CommandService commandService, CommunicationService communicationService) {
         this.characterService = characterService;
         this.commandService = commandService;
+        this.communicationService = communicationService;
     }
 
-    public Flux<Character> getCharacterUpdates() {
-        return characterUpdates.asFlux();
-    }
 
     @Scheduled(fixedRate = 2000)
     public void processTick() {
         List<Character> characters = characterService.getAvailableCharacters();
         for (Character character : characters) {
+
+            communicationService.sendTextMessage(character, "\nTick Tock\n");
             boolean effectsChanged = processSpellEffects(character);
             boolean statsChanged = processRegen(character);
 
             if (effectsChanged || statsChanged) {
-                characterUpdates.tryEmitNext(character);
+                communicationService.sendCharacterUpdate(character);
             }
 
             if (!character.getCommandQueue().isEmpty()) {

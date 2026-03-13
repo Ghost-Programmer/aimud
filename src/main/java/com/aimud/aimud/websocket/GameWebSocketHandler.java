@@ -1,6 +1,6 @@
 package com.aimud.aimud.websocket;
 
-import com.aimud.aimud.service.TickService;
+import com.aimud.aimud.service.CommunicationService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -8,29 +8,54 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketSession;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class GameWebSocketHandler implements WebSocketHandler {
 
-    private final TickService tickService;
+    private final CommunicationService communicationService;
     private final ObjectMapper objectMapper;
 
     @Override
     public Mono<Void> handle(WebSocketSession session) {
+        Flux<String> characterUpdates = communicationService.getCharacterUpdates()
+                .flatMap(character -> {
+                    try {
+                        String json = objectMapper.writeValueAsString(Map.of(
+                                "type", "character",
+                                "id", character.getId(),
+                                "data", character
+                        ));
+                        return Mono.just(json);
+                    } catch (JsonProcessingException e) {
+                        log.error("Error serializing character update", e);
+                        return Mono.empty();
+                    }
+                });
+
+        Flux<String> textMessages = communicationService.getTextMessages()
+                .flatMap(message -> {
+                    try {
+                        String json = objectMapper.writeValueAsString(Map.of(
+                                "type", "text",
+                                "id", message.getCharacterId() != null ? message.getCharacterId() : -1,
+                                "data", message.getContent()
+                        ));
+                        return Mono.just(json);
+                    } catch (JsonProcessingException e) {
+                        log.error("Error serializing text message", e);
+                        return Mono.empty();
+                    }
+                });
+
         return session.send(
-                tickService.getCharacterUpdates()
-                        .flatMap(character -> {
-                            try {
-                                String json = objectMapper.writeValueAsString(character);
-                                return Mono.just(session.textMessage(json));
-                            } catch (JsonProcessingException e) {
-                                log.error("Error serializing character update", e);
-                                return Mono.empty();
-                            }
-                        })
+                Flux.merge(characterUpdates, textMessages)
+                        .map(session::textMessage)
         );
     }
 }

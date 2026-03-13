@@ -19,12 +19,13 @@ public class CommandService {
 
 
     private final ApplicationContext context;
+    private final CommunicationService communicationService;
 
     private final Map<String, Command> taskMap = new HashMap<>();
 
-    public CommandService(ApplicationContext context) {
-
+    public CommandService(ApplicationContext context, CommunicationService communicationService) {
         this.context = context;
+        this.communicationService = communicationService;
     }
 
     @PostConstruct
@@ -62,7 +63,7 @@ public class CommandService {
         if (task != null) {
             task.execute(character, command);
         } else {
-            //TODO: Tell user invalid command
+            communicationService.sendTextMessage(character, "Invalid command: " + commands[0]);
         }
 
     }
