@@ -55,18 +55,42 @@ public class ItemService {
         List<Effect> effects = item.getEffects();
         return itemRepository.save(item)
                 .flatMap(savedItem -> {
-                    if (effects == null || effects.isEmpty()) {
-                        log.debug("No effects to save for item: {}", savedItem.getId());
+                    if (effects == null) { // Allow empty list to clear effects
+                        log.debug("Effects list is null, keeping existing or doing nothing?");
+                        // If null, maybe we shouldn't touch effects? Or treat as empty?
+                        // For now, let's treat null as "don't change effects" if we want, or "clear".
+                        // Given previous logic was clearing if null/empty, let's stick to that but be careful.
+                        // Actually, previous logic was: if null or empty, return savedItem. Which means it didn't clear them?
+                        // "if (effects == null || effects.isEmpty()) { ... return Mono.just(savedItem); }"
+                        // This implies if you send empty list, it DOES NOT clear existing effects in DB. That seems wrong for an update.
+                        // But let's follow the previous pattern for now to avoid regression, but fixed the ID reuse.
+                        
+                        // Wait, if I want to remove effects, I send empty list. If the code returns early, I can't remove effects.
+                        // The previous code:
+                        /*
+                        if (effects == null || effects.isEmpty()) {
+                            return Mono.just(savedItem);
+                        }
+                        return effectService.deleteByItemId(...)
+                        */
+                        // So sending empty list meant "do nothing to effects". This is weird for a PUT.
+                        // I will keep it for now but maybe I should fix it later.
                         return Mono.just(savedItem);
                     }
+                    
                     log.debug("Saving {} effects for item: {}", effects.size(), savedItem.getId());
                     return effectService.deleteByItemId(savedItem.getId())
                             .thenMany(Flux.fromIterable(effects))
                             .flatMap(effect -> {
-                                effect.setId(null);
-                                // item_id removed from Effect model, so we don't set it here.
-                                return effectService.saveEffect(effect)
-                                    .flatMap(savedEffect -> effectService.linkItemAndEffect(savedItem.getId(), savedEffect.getId()).thenReturn(savedEffect));
+                                if (effect.getId() != null) {
+                                    // Link existing effect
+                                    return effectService.linkItemAndEffect(savedItem.getId(), effect.getId())
+                                            .then(effectService.getEffect(effect.getId())); // Return the effect for the list
+                                } else {
+                                    // Create new effect and link
+                                    return effectService.saveEffect(effect)
+                                            .flatMap(savedEffect -> effectService.linkItemAndEffect(savedItem.getId(), savedEffect.getId()).thenReturn(savedEffect));
+                                }
                             })
                             .collectList()
                             .map(savedEffects -> {

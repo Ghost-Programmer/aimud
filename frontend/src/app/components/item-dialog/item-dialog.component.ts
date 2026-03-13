@@ -1,7 +1,9 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Item, ItemType, WearLocation, Effect, EffectType } from '../../models/item.model';
+import { Item, ItemType, WearLocation } from '../../models/item.model';
+import { Effect, EffectType } from '../../models/effect.model';
+import { EffectService } from '../../services/effect.service';
 
 @Component({
   selector: 'app-item-dialog',
@@ -25,62 +27,48 @@ export class ItemDialogComponent implements OnInit {
 
   itemTypes = Object.values(ItemType);
   wearLocations = Object.values(WearLocation);
-  effectTypes = Object.values(EffectType);
 
-  // Map EffectType to its modifier names
-  effectModifierNames: Record<EffectType, string[]> = {
-    [EffectType.SLASHING_DAMAGE]: ['Number of Dice', 'Size of the Dice', '', ''],
-    [EffectType.BASHING_DAMAGE]: ['Number of Dice', 'Size of the Dice', '', ''],
-    [EffectType.PIERCING_DAMAGE]: ['Number of Dice', 'Size of the Dice', '', ''],
-    [EffectType.STRENGTH]: ['Amount', '', '', ''],
-    [EffectType.DEXTERITY]: ['Amount', '', '', ''],
-    [EffectType.CONSTITUTION]: ['Amount', '', '', ''],
-    [EffectType.INTELLIGENCE]: ['Amount', '', '', ''],
-    [EffectType.WISDOM]: ['Amount', '', '', ''],
-    [EffectType.CHARISMA]: ['Amount', '', '', ''],
-    [EffectType.ARMOR]: ['Amount', '', '', ''],
-    [EffectType.HP_REGEN]: ['Amount', '', '', ''],
-    [EffectType.MANA_REGEN]: ['Amount', '', '', ''],
-    [EffectType.PHYSICAL_ATTACK]: ['Amount', '', '', ''],
-    [EffectType.MAGIC_ATTACK]: ['Amount', '', '', ''],
-    [EffectType.MAGIC_RESIST]: ['Amount', '', '', ''],
-    [EffectType.DODGE]: ['Amount', '', '', ''],
-    [EffectType.CRITICAL_HIT]: ['Amount', '', '', ''],
-    [EffectType.FIRE_DAMAGE]: ['Number of Dice', 'Size of the Dice', '', ''],
-    [EffectType.COLD_DAMAGE]: ['Number of Dice', 'Size of the Dice', '', ''],
-    [EffectType.SONIC_DAMAGE]: ['Number of Dice', 'Size of the Dice', '', ''],
-    [EffectType.POISON_DAMAGE]: ['Number of Dice', 'Size of the Dice', '', ''],
-    [EffectType.ELECTRICAL_DAMAGE]: ['Number of Dice', 'Size of the Dice', '', ''],
-    [EffectType.FLY]: ['', '', '', ''],
-    [EffectType.WATER_BREATHING]: ['', '', '', ''],
-    [EffectType.INVISIBLE]: ['', '', '', '']
-  };
+  availableEffects: Effect[] = [];
+  selectedEffectId: number | null = null;
 
-  constructor() {}
+  constructor(private effectService: EffectService) {}
 
   ngOnInit(): void {
     if (this.itemData) {
       this.item = JSON.parse(JSON.stringify(this.itemData));
     }
+    this.loadEffects();
   }
 
-  addEffect() {
-    const newEffect: Effect = {
-      effectType: EffectType.STRENGTH,
-      modifier1: 0,
-      modifier2: 0,
-      modifier3: 0,
-      modifier4: 0
-    };
-    this.item.effects.push(newEffect);
+  loadEffects() {
+    // Fetch all effects. In a real app, you might want pagination/search here.
+    this.effectService.getEffects(0, 1000, {}).subscribe(pagedEffects => {
+      this.availableEffects = pagedEffects.effects.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    });
+  }
+
+  addSelectedEffect() {
+    if (this.selectedEffectId) {
+      const effectToAdd = this.availableEffects.find(e => e.id === this.selectedEffectId);
+      if (effectToAdd && !this.item.effects.some(e => e.id === effectToAdd.id)) {
+        this.item.effects.push(effectToAdd);
+      }
+      this.selectedEffectId = null; // Reset selector
+    }
   }
 
   removeEffect(index: number) {
     this.item.effects.splice(index, 1);
   }
 
-  getModifierName(effectType: EffectType, index: number): string {
-    return this.effectModifierNames[effectType][index];
+  getEffectDisplay(effect: Effect): string {
+    if (effect.name) {
+      return effect.name;
+    }
+    let display: string = effect.effectType;
+    if (effect.modifier1) display += ` ${effect.modifier1}`;
+    if (effect.modifier2) display += `d${effect.modifier2}`;
+    return display;
   }
 
   save() {

@@ -3,73 +3,66 @@
     <h2>{{ item.id ? 'Edit Item' : 'Create New Item' }}</h2>
 
     <div class="form-content">
-    <div class="form-group">
-      <label for="name">Name</label>
-      <input id="name" [(ngModel)]="item.name" placeholder="Item Name" class="form-input">
-    </div>
-
-    <div class="form-group">
-      <label for="description">Description</label>
-      <textarea id="description" [(ngModel)]="item.description" placeholder="Item Description" class="form-input" rows="3"></textarea>
-    </div>
-
-    <div class="form-row">
-      <div class="form-group half">
-        <label for="type">Item Type</label>
-        <select id="type" [(ngModel)]="item.itemType" class="form-input">
-          <option *ngFor="let type of itemTypes" [ngValue]="type">{{ type }}</option>
-        </select>
-      </div>
-      <div class="form-group half">
-        <label for="location">Wear Location</label>
-        <select id="location" [(ngModel)]="item.wearLocation" class="form-input">
-          <option *ngFor="let loc of wearLocations" [ngValue]="loc">{{ loc }}</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="effects-section">
-      <div class="section-header">
-        <h3>Effects</h3>
-        <button class="add-btn" (click)="addEffect()">+ Add Effect</button>
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input id="name" [(ngModel)]="item.name" placeholder="Item Name" class="form-input">
       </div>
 
-      <div *ngFor="let effect of item.effects; let i = index" class="effect-item">
-        <div class="effect-header">
-          <select [(ngModel)]="effect.effectType" class="form-input effect-type">
-            <option *ngFor="let type of effectTypes" [ngValue]="type">{{ type }}</option>
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" [(ngModel)]="item.description" placeholder="Item Description" class="form-input" rows="3"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half">
+          <label for="type">Item Type</label>
+          <select id="type" [(ngModel)]="item.itemType" class="form-input">
+            <option *ngFor="let type of itemTypes" [ngValue]="type">{{ type }}</option>
           </select>
-          <button class="remove-btn" (click)="removeEffect(i)">×</button>
         </div>
-
-        <div class="modifier-grid">
-          <div *ngIf="getModifierName(effect.effectType, 0)" class="mod-group">
-            <label>{{ getModifierName(effect.effectType, 0) }}</label>
-            <input type="number" [(ngModel)]="effect.modifier1" class="form-input small">
-          </div>
-          <div *ngIf="getModifierName(effect.effectType, 1)" class="mod-group">
-            <label>{{ getModifierName(effect.effectType, 1) }}</label>
-            <input type="number" [(ngModel)]="effect.modifier2" class="form-input small">
-          </div>
-          <div *ngIf="getModifierName(effect.effectType, 2)" class="mod-group">
-            <label>{{ getModifierName(effect.effectType, 2) }}</label>
-            <input type="number" [(ngModel)]="effect.modifier3" class="form-input small">
-          </div>
-          <div *ngIf="getModifierName(effect.effectType, 3)" class="mod-group">
-            <label>{{ getModifierName(effect.effectType, 3) }}</label>
-            <input type="number" [(ngModel)]="effect.modifier4" class="form-input small">
-          </div>
+        <div class="form-group half">
+          <label for="location">Wear Location</label>
+          <select id="location" [(ngModel)]="item.wearLocation" class="form-input">
+            <option *ngFor="let loc of wearLocations" [ngValue]="loc">{{ loc }}</option>
+          </select>
         </div>
       </div>
-      <div *ngIf="item.effects.length === 0" class="no-effects">
-        No effects added to this item.
+
+      <div class="effects-section">
+        <h3>Effects</h3>
+
+        <div class="add-effect-row">
+          <select [(ngModel)]="selectedEffectId" class="form-input effect-select">
+            <option [ngValue]="null">Select an Effect...</option>
+            <option *ngFor="let effect of availableEffects" [ngValue]="effect.id">
+              {{ effect.name || (effect.effectType + ' (' + effect.modifier1 + ')') }}
+            </option>
+          </select>
+          <button class="add-btn" (click)="addSelectedEffect()" [disabled]="!selectedEffectId">Add</button>
+        </div>
+
+        <div class="effect-list">
+          <div *ngFor="let effect of item.effects; let i = index" class="effect-item-row">
+            <div class="effect-info">
+              <span class="effect-name">{{ effect.name || effect.effectType }}</span>
+              <span class="effect-details">
+                {{ effect.effectType }}
+                {{ effect.modifier1 ? '(' + effect.modifier1 + ')' : '' }}
+                {{ effect.modifier2 ? ' d' + effect.modifier2 : '' }}
+              </span>
+            </div>
+            <button class="remove-btn" (click)="removeEffect(i)" title="Remove">×</button>
+          </div>
+          <div *ngIf="item.effects.length === 0" class="no-effects">
+            No effects added.
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="actions">
-    <button class="cancel-btn" (click)="cancel()">Cancel</button>
-    <button class="save-btn" (click)="save()">Save</button>
+    <div class="actions">
+      <button class="cancel-btn" (click)="cancel()">Cancel</button>
+      <button class="save-btn" (click)="save()">Save</button>
+    </div>
   </div>
-</div>
 </div>

@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Effect, PagedEffects } from '../models/effect.model';
-import { EffectType } from '../models/item.model';
+import { Effect, PagedEffects, EffectType } from '../models/effect.model';
 
 @Injectable({
   providedIn: 'root'

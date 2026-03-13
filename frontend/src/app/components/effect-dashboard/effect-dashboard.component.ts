@@ -2,8 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EffectService } from '../../services/effect.service';
-import { Effect, PagedEffects } from '../../models/effect.model';
-import { EffectType } from '../../models/item.model';
+import { Effect, PagedEffects, EffectType } from '../../models/effect.model';
 import { EffectDialogComponent } from '../effect-dialog/effect-dialog.component';
 
 @Component({

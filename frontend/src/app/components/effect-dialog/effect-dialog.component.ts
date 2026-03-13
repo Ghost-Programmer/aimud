@@ -1,8 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { EffectType } from '../../models/item.model';
-import { Effect } from '../../models/effect.model';
+import { Effect, EffectType } from '../../models/effect.model';
 
 @Component({
   selector: 'app-effect-dialog',
