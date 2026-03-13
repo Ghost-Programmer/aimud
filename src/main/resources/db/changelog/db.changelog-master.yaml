@@ -39,3 +39,5 @@ databaseChangeLog:
       file: db/changelog/changes/019-create-character-effects.sql
   - include:
       file: db/changelog/changes/020-add-name-to-effects.sql
+  - include:
+      file: db/changelog/changes/021-insert-default-rooms-and-effects.sql

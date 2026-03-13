@@ -7,7 +7,6 @@ import lombok.Getter;
 import java.util.stream.Stream;
 
 public enum EffectType {
-    SLASHING_DAMAGE("Slashing Damage", "Number of Dice", "Size of the Dice", null, null),
     BASHING_DAMAGE("Bashing Damage", "Number of Dice", "Size of the Dice", null, null),
     PIERCING_DAMAGE("Piercing Damage", "Number of Dice", "Size of the Dice", null, null),
     STRENGTH("Strength", "Amount", null, null, null),
@@ -23,6 +22,7 @@ public enum EffectType {
     MAGIC_ATTACK("Magic Attack", "Amount", null, null, null),
     MAGIC_RESIST("Magic Resist", "Amount", null, null, null),
     DODGE("Dodge", "Amount", null, null, null),
+    SLASHING_DAMAGE("Slashing Damage", "Number of Dice", "Size of the Dice", null, null),
     CRITICAL_HIT("Critical Hit", "Amount", null, null, null),
     FIRE_DAMAGE("Fire Damage", "Number of Dice", "Size of the Dice", null, null),
     COLD_DAMAGE("Cold Damage", "Number of Dice", "Size of the Dice", null, null),
