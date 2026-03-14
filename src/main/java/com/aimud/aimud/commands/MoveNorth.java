@@ -23,11 +23,9 @@ public class MoveNorth implements Command{
 
         return this.roomService.getRoom(character.getCurrentRoomId()).flatMap(room -> {
             if (room.getNorthId() != null) {
-                log.info("Moving character '{}' north to room id {}", character.getName(), room.getNorthId());
                 return this.characterService.enterRoom(character, room.getNorthId());
             } else {
-                log.info("Character '{}' cannot move north from room id {}", character.getName(), character.getCurrentRoomId());
-                communicationService.sendTextMessage(character, "You can't go north from here.");
+                communicationService.sendTextMessage(character, "\n\nYou can't go north from here.");
             }
             return Mono.empty();
         }).then();

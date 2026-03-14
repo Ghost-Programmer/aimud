@@ -21,10 +21,10 @@ public class MoveSouth implements Command{
         log.info("Executing move south command for character: {}", character.getName());
 
         return this.roomService.getRoom(character.getCurrentRoomId()).flatMap(room -> {
-            if (room.getNorthId() != null) {
-                return this.characterService.enterRoom(character, room.getNorthId());
+            if (room.getSouthId() != null) {
+                return this.characterService.enterRoom(character, room.getSouthId());
             } else {
-                communicationService.sendTextMessage(character, "You can't go south from here.");
+                communicationService.sendTextMessage(character, "\n\nYou can't go south from here.");
             }
             return Mono.empty();
         }).then();

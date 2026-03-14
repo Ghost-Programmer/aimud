@@ -22,10 +22,10 @@ public class MoveEast implements Command{
         log.info("Executing move east command for character: {}", character.getName());
 
         return this.roomService.getRoom(character.getCurrentRoomId()).flatMap(room -> {
-            if (room.getNorthId() != null) {
-                return this.characterService.enterRoom(character, room.getNorthId());
+            if (room.getEastId() != null) {
+                return this.characterService.enterRoom(character, room.getEastId());
             } else {
-                communicationService.sendTextMessage(character, "You can't go east from here.");
+                communicationService.sendTextMessage(character, "\n\nYou can't go east from here.");
             }
             return Mono.empty();
         }).then();

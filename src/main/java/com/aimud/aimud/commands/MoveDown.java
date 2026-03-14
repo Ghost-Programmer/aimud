@@ -22,10 +22,10 @@ public class MoveDown implements Command{
         log.info("Executing move down command for character: {}", character.getName());
 
         return this.roomService.getRoom(character.getCurrentRoomId()).flatMap(room -> {
-            if (room.getNorthId() != null) {
-                return this.characterService.enterRoom(character, room.getNorthId());
+            if (room.getDownId() != null) {
+                return this.characterService.enterRoom(character, room.getDownId());
             } else {
-                communicationService.sendTextMessage(character, "You can't go down from here.");
+                communicationService.sendTextMessage(character, "\n\nYou can't go down from here.");
             }
             return Mono.empty();
         }).then();
