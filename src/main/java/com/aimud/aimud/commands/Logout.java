@@ -6,6 +6,7 @@ import com.aimud.aimud.service.CharacterService;
 import com.aimud.aimud.service.CommunicationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 
 @Slf4j
@@ -17,9 +18,9 @@ public class Logout implements Command{
     private final CommunicationService communicationService;
 
     @Override
-    public void execute(Character character, String commandLine) {
+    public Mono<Void> execute(Character character, String commandLine) {
         log.info("Executing logout command for character: {}", character.getName());
-        communicationService.sendLogout(character);
-        characterService.deselectCharacter(character.getId());
+        return Mono.fromRunnable(() -> communicationService.sendLogout(character))
+                .then(characterService.deselectCharacter(character.getId()));
     }
 }

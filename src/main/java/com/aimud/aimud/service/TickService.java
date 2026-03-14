@@ -37,13 +37,19 @@ public class TickService {
             }
 
             if (!character.getCommandQueue().isEmpty()) {
-                commandService.processCommand(character);
+                commandService.processCommand(character)
+                        .doOnError(error -> log.error("Error processing command for {}", character.getName(), error))
+                        .onErrorResume(error -> reactor.core.publisher.Mono.empty())
+                        .subscribe();
             } else {
                 character.setIdle(character.getIdle() + 1);
 
                 if(character.getIdle() > 300) {
                     character.getCommandQueue().add("logout");
-                    commandService.processCommand(character);
+                    commandService.processCommand(character)
+                            .doOnError(error -> log.error("Error processing idle logout for {}", character.getName(), error))
+                            .onErrorResume(error -> reactor.core.publisher.Mono.empty())
+                            .subscribe();
                 }
             }
             if(save) {

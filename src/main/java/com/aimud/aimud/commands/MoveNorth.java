@@ -9,8 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
-import java.util.Optional;
-
 @Slf4j
 @RequiredArgsConstructor
 @MudCommand(name = "n")
@@ -20,16 +18,18 @@ public class MoveNorth implements Command{
     private final RoomService roomService;
 
     @Override
-    public void execute(Character character, String commandLine) {
-        log.info("Executing move north command for character: {}", character.getName());
+    public Mono<Void> execute(Character character, String commandLine) {
+        log.info("Executing move north command for character: {} in roomo id {}.", character.getName(),character.getCurrentRoomId());
 
-        this.roomService.getRoom(character.getCurrentRoomId()).flatMap(room -> {
+        return this.roomService.getRoom(character.getCurrentRoomId()).flatMap(room -> {
             if (room.getNorthId() != null) {
+                log.info("Moving character '{}' north to room id {}", character.getName(), room.getNorthId());
                 return this.characterService.enterRoom(character, room.getNorthId());
             } else {
+                log.info("Character '{}' cannot move north from room id {}", character.getName(), character.getCurrentRoomId());
                 communicationService.sendTextMessage(character, "You can't go north from here.");
             }
             return Mono.empty();
-        });
+        }).then();
     }
 }

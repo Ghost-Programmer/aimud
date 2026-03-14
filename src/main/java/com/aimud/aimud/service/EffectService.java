@@ -3,9 +3,6 @@ package com.aimud.aimud.service;
 import com.aimud.aimud.model.Effect;
 import com.aimud.aimud.repository.EffectRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -25,7 +22,6 @@ public class EffectService {
         return effectRepository.findAll();
     }
 
-    @Cacheable(value = "effects", key = "#id")
     public Mono<Effect> getEffect(Long id) {
         log.info("Fetching effect by id: {}", id);
         return effectRepository.findById(id);
@@ -36,13 +32,11 @@ public class EffectService {
         return effectRepository.findByItemId(itemId);
     }
 
-    @CachePut(value = "effects", key = "#effect.id", condition = "#effect.id != null")
     public Mono<Effect> saveEffect(Effect effect) {
         log.info("Saving effect: {} (id: {})", effect.getEffectType(), effect.getId());
         return effectRepository.save(effect);
     }
 
-    @CacheEvict(value = "effects", key = "#id")
     public Mono<Void> deleteEffect(Long id) {
         log.info("Deleting effect by id: {}", id);
         return effectRepository.deleteById(id);

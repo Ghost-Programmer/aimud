@@ -6,9 +6,6 @@ import com.aimud.aimud.repository.CharacterEffectRepository;
 import com.aimud.aimud.repository.CharacterRepository;
 import com.aimud.aimud.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -82,7 +79,6 @@ public class CharacterService {
         availableCharacters.remove(characterId);
     }
 
-    @CacheEvict(value = "userCharacters", key = "#username")
     public Mono<Character> createCharacter(String username, Character character) {
         log.info("Creating character for user: {}", username);
         return userRepository.findByUsername(username)
@@ -94,7 +90,6 @@ public class CharacterService {
                 .flatMap(statService::updateCurrentStats);
     }
 
-    @Cacheable(value = "userCharacters", key = "#username")
     public Mono<List<Character>> getCharactersByUser(String username) {
         log.info("Fetching characters for user: {}", username);
         return userRepository.findByUsername(username)
@@ -103,10 +98,6 @@ public class CharacterService {
                 .collectList();
     }
 
-    @Caching(evict = {
-        @CacheEvict(value = "characters", key = "#id"),
-        @CacheEvict(value = "userCharacters", allEntries = true)
-    })
     public Mono<Character> updateCharacter(Long id, Character character) {
         log.info("Updating character with id: {}", id);
         return characterRepository.findById(id)
@@ -183,7 +174,6 @@ public class CharacterService {
         return statService.updateCurrentStats(character);
     }
 
-    @Cacheable(value = "characters", key = "#id")
     public Mono<Character> getCharacterById(Long id) {
         log.info("Fetching character by id: {}", id);
         return characterRepository.findById(id)
@@ -201,10 +191,6 @@ public class CharacterService {
                 });
     }
 
-    @Caching(evict = {
-        @CacheEvict(value = "characters", key = "#character.id"),
-        @CacheEvict(value = "userCharacters", allEntries = true)
-    })
     public Mono<Character> save(Character character) {
         log.info("Saving character: {}", character.getName());
         return characterRepository.save(character)

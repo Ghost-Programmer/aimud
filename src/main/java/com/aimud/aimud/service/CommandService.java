@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,16 +54,17 @@ public class CommandService {
         return new HashMap<>(taskMap); // Return a copy for immutability
     }
 
-    public void processCommand(Character character) {
+    public Mono<Void> processCommand(Character character) {
         String command = character.getCommandQueue().remove(0);
         String[] commands = command.trim().split("\\s+");
         log.info("Processing command '{}' for character '{}'", command, character.getName());
 
         Command task = this.getTask(commands[0]);
         if (task != null) {
-            task.execute(character, command);
+            return task.execute(character, command);
         } else {
             communicationService.sendTextMessage(character, "Invalid command: " + commands[0]);
+            return Mono.empty();
         }
 
     }

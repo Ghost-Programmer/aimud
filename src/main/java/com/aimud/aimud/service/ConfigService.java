@@ -6,9 +6,6 @@ import com.aimud.aimud.model.ServerSettings;
 import com.aimud.aimud.repository.CharacterClassRepository;
 import com.aimud.aimud.repository.RaceRepository;
 import com.aimud.aimud.repository.ServerSettingsRepository;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -60,13 +57,11 @@ public class ConfigService {
     }
 
     // Server Settings
-    @Cacheable(value = "serverSettings", key = "1")
     public Mono<ServerSettings> getServerSettings() {
         return serverSettingsRepository.findById(1L)
                 .defaultIfEmpty(new ServerSettings(1L, "AI Mud", true, false, "Undergoing Maintenance", DEFAULT_AI_PROMPT, null, null, null, null));
     }
 
-    @CachePut(value = "serverSettings", key = "1")
     public Mono<ServerSettings> updateServerSettings(ServerSettings settings) {
         return serverSettingsRepository.findById(1L)
                 .flatMap(existingSettings -> {
@@ -99,17 +94,14 @@ public class ConfigService {
     }
 
     // Races
-    @Cacheable(value = "races")
     public Flux<Race> getAllRaces() {
         return raceRepository.findAll().filter(race -> !race.isDeleted());
     }
 
-    @CacheEvict(value = "races", allEntries = true)
     public Mono<Race> createRace(Race race) {
         return raceRepository.save(race);
     }
 
-    @CacheEvict(value = "races", allEntries = true)
     public Mono<Race> updateRace(Long id, Race race) {
         return raceRepository.findById(id)
                 .flatMap(existingRace -> {
@@ -125,7 +117,6 @@ public class ConfigService {
                 });
     }
 
-    @CacheEvict(value = "races", allEntries = true)
     public Mono<Void> deleteRace(Long id) {
         return raceRepository.findById(id)
                 .flatMap(race -> {
@@ -136,17 +127,14 @@ public class ConfigService {
     }
 
     // Character Classes
-    @Cacheable(value = "characterClasses")
     public Flux<CharacterClass> getAllCharacterClasses() {
         return characterClassRepository.findAll().filter(cc -> !cc.isDeleted());
     }
 
-    @CacheEvict(value = "characterClasses", allEntries = true)
     public Mono<CharacterClass> createCharacterClass(CharacterClass characterClass) {
         return characterClassRepository.save(characterClass);
     }
 
-    @CacheEvict(value = "characterClasses", allEntries = true)
     public Mono<CharacterClass> updateCharacterClass(Long id, CharacterClass characterClass) {
         return characterClassRepository.findById(id)
                 .flatMap(existingClass -> {
@@ -162,7 +150,6 @@ public class ConfigService {
                 });
     }
 
-    @CacheEvict(value = "characterClasses", allEntries = true)
     public Mono<Void> deleteCharacterClass(Long id) {
         return characterClassRepository.findById(id)
                 .flatMap(cc -> {
