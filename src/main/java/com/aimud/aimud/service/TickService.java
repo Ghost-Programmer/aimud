@@ -41,7 +41,7 @@ public class TickService {
             } else {
                 character.setIdle(character.getIdle() + 1);
 
-                if(character.getIdle() > 300) {
+                if(character.getIdle() > 10) {
                     character.getCommandQueue().add("logout");
                     commandService.processCommand(character);
                 }

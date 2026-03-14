@@ -93,6 +93,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   private subscribeToWs() {
     this.wsSubscription = this.gameWebSocketService.getAllMessages().subscribe({
       next: (msg) => {
+        console.log('Dashboard received message:', msg);
         if (msg && msg.type === 'logout') {
           const characterId = msg.id;
           const tabId = `play-${characterId}`;

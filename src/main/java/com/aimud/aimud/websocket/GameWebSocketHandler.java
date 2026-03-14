@@ -55,6 +55,7 @@ public class GameWebSocketHandler implements WebSocketHandler {
 
         Flux<String> logoutMessages = communicationService.getLogoutMessages()
                 .flatMap(character -> {
+                    log.info("Preparing logout message for character: {}", character.getName());
                     try {
                         String json = objectMapper.writeValueAsString(Map.of(
                                 "type", "logout",

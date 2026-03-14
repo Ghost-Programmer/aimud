@@ -13,7 +13,7 @@ public class CommunicationService {
 
     private final Sinks.Many<Character> characterUpdates = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<TextMessage> textMessages = Sinks.many().replay().limit(20);
-    private final Sinks.Many<Character> logoutMessages = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<Character> logoutMessages = Sinks.many().replay().limit(10);
 
     public Flux<Character> getCharacterUpdates() {
         return characterUpdates.asFlux();
