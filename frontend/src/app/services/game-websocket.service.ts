@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
-import { Observable, filter, retry } from 'rxjs';
+import { Observable, filter, retry, shareReplay } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GameWebSocketService {
   private socket$: WebSocketSubject<any>;
+  private messages$: Observable<any>;
 
   constructor() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -22,11 +23,15 @@ export class GameWebSocketService {
         next: () => console.log('WebSocket disconnected')
       }
     });
+
+    this.messages$ = this.socket$.pipe(
+      retry({ delay: 3000 }),
+      shareReplay({ bufferSize: 10, refCount: true })
+    );
   }
 
   public getCharacterUpdates(characterId: number): Observable<any> {
-    return this.socket$.pipe(
-      retry({ delay: 3000 }),
+    return this.messages$.pipe(
       filter(msg => {
         if (!msg) return false;
         // Match targeted messages or broadcast messages (id: -1)
@@ -34,5 +39,9 @@ export class GameWebSocketService {
         return String(msg.id) === String(characterId) || String(msg.id) === '-1';
       })
     );
+  }
+
+  public getAllMessages(): Observable<any> {
+    return this.messages$;
   }
 }

@@ -11,6 +11,8 @@ import { ItemCreatorComponent } from '../../components/item-creator/item-creator
 import { RoomManagementComponent } from '../../components/room-management/room-management.component';
 import { AiDialogComponent } from '../../components/ai-dialog/ai-dialog.component';
 import {EffectDashboardComponent} from '../../components/effect-dashboard/effect-dashboard.component';
+import { GameWebSocketService } from '../../services/game-websocket.service';
+import { Subscription } from 'rxjs';
 
 interface Tab {
   id: string;
@@ -38,8 +40,12 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   private loginTime: number = Date.now();
   private timerInterval: any;
+  private wsSubscription: Subscription | null = null;
 
-  constructor(private router: Router) {}
+  constructor(
+      private router: Router,
+      private gameWebSocketService: GameWebSocketService
+  ) {}
 
   ngOnInit() {
     const token = localStorage.getItem('token');
@@ -71,12 +77,36 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.timerInterval = setInterval(() => {
       this.updateTime();
     }, 1000);
+
+    this.subscribeToWs();
   }
 
   ngOnDestroy() {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
     }
+    if (this.wsSubscription) {
+      this.wsSubscription.unsubscribe();
+    }
+  }
+
+  private subscribeToWs() {
+    this.wsSubscription = this.gameWebSocketService.getAllMessages().subscribe({
+      next: (msg) => {
+        if (msg && msg.type === 'logout') {
+          const characterId = msg.id;
+          const tabId = `play-${characterId}`;
+          const tabIndex = this.tabs.findIndex(t => t.id === tabId);
+          if (tabIndex !== -1) {
+            console.log(`Closing tab ${tabId} due to logout message`);
+            // Create a fake event to reuse closeTab logic
+            const fakeEvent = { stopPropagation: () => {} } as Event;
+            this.closeTab(tabId, fakeEvent);
+          }
+        }
+      },
+      error: (err) => console.error('Dashboard WS error', err)
+    });
   }
 
   setActiveTab(tabId: string) {

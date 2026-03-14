@@ -53,8 +53,23 @@ public class GameWebSocketHandler implements WebSocketHandler {
                     }
                 });
 
+        Flux<String> logoutMessages = communicationService.getLogoutMessages()
+                .flatMap(character -> {
+                    try {
+                        String json = objectMapper.writeValueAsString(Map.of(
+                                "type", "logout",
+                                "id", character.getId(),
+                                "data", character
+                        ));
+                        return Mono.just(json);
+                    } catch (JsonProcessingException e) {
+                        log.error("Error serializing logout message", e);
+                        return Mono.empty();
+                    }
+                });
+
         return session.send(
-                Flux.merge(characterUpdates, textMessages)
+                Flux.merge(characterUpdates, textMessages, logoutMessages)
                         .map(session::textMessage)
         );
     }

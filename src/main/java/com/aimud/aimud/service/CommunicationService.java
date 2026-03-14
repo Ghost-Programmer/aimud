@@ -12,7 +12,8 @@ import reactor.core.publisher.Sinks;
 public class CommunicationService {
 
     private final Sinks.Many<Character> characterUpdates = Sinks.many().multicast().onBackpressureBuffer();
-    private final Sinks.Many<TextMessage> textMessages = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<TextMessage> textMessages = Sinks.many().replay().limit(20);
+    private final Sinks.Many<Character> logoutMessages = Sinks.many().multicast().onBackpressureBuffer();
 
     public Flux<Character> getCharacterUpdates() {
         return characterUpdates.asFlux();
@@ -22,9 +23,18 @@ public class CommunicationService {
         return textMessages.asFlux();
     }
 
+    public Flux<Character> getLogoutMessages() {
+        return logoutMessages.asFlux();
+    }
+
     public void sendCharacterUpdate(Character character) {
         log.info("Sending character update for {}", character.getName());
         characterUpdates.tryEmitNext(character);
+    }
+
+    public void sendLogout(Character character) {
+        log.info("Sending logout message for {}", character.getName());
+        logoutMessages.tryEmitNext(character);
     }
 
     public void sendTextMessage(String message) {
