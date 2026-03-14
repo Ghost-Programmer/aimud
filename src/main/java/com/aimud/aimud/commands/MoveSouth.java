@@ -1,0 +1,34 @@
+package com.aimud.aimud.commands;
+import com.aimud.aimud.annontation.MudCommand;
+import com.aimud.aimud.model.Character;
+import com.aimud.aimud.service.CharacterService;
+import com.aimud.aimud.service.CommunicationService;
+import com.aimud.aimud.service.RoomService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
+
+import java.util.Optional;
+
+@Slf4j
+@RequiredArgsConstructor
+@MudCommand(name = "s")
+public class MoveSouth implements Command{
+    private final CharacterService characterService;
+    private final CommunicationService communicationService;
+    private final RoomService roomService;
+
+    @Override
+    public void execute(Character character, String commandLine) {
+        log.info("Executing move south command for character: {}", character.getName());
+
+        this.roomService.getRoom(character.getCurrentRoomId()).flatMap(room -> {
+            if (room.getNorthId() != null) {
+                return this.characterService.enterRoom(character, room.getNorthId());
+            } else {
+                communicationService.sendTextMessage(character, "You can't go south from here.");
+            }
+            return Mono.empty();
+        });
+    }
+}

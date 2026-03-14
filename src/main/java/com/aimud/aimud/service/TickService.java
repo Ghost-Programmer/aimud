@@ -26,17 +26,17 @@ public class TickService {
     public void processTick() {
         List<Character> characters = characterService.getAvailableCharacters();
         for (Character character : characters) {
+            boolean save = false;
 
-            communicationService.sendTextMessage(character, "\nTick Tock\n");
             boolean effectsChanged = processSpellEffects(character);
             boolean statsChanged = processRegen(character);
 
             if (effectsChanged || statsChanged) {
+               save = true;
                 communicationService.sendCharacterUpdate(character);
             }
 
             if (!character.getCommandQueue().isEmpty()) {
-                log.info("Processing command queue for {}: {}", character.getName(), character.getCommandQueue());
                 commandService.processCommand(character);
             } else {
                 character.setIdle(character.getIdle() + 1);
@@ -45,6 +45,9 @@ public class TickService {
                     character.getCommandQueue().add("logout");
                     commandService.processCommand(character);
                 }
+            }
+            if(save) {
+                characterService.save(character).subscribe();
             }
         }
     }
@@ -72,11 +75,17 @@ public class TickService {
         int oldHp = character.getCurrentHp();
         int oldMana = character.getCurrentMana();
 
+        log.info("Processing regeneration for {}: HP {}/{} (+{}), Mana {}/{} (+{})",
+                character.getName(),
+                character.getCurrentHp(), character.getMaxHp(), character.getHpRegen(),
+                character.getCurrentMana(), character.getMaxMana(), character.getManaRegen());
+
         // Health Regeneration
         if (character.getCurrentHp() < character.getMaxHp()) {
             int newHp = (int) Math.min(character.getCurrentHp() + character.getHpRegen(), character.getMaxHp());
             if (newHp != character.getCurrentHp()) {
                 character.setCurrentHp(newHp);
+                log.info("Regenerated HP for {}: {}/{} (+{})", character.getName(), character.getCurrentHp(), character.getMaxHp(), character.getCurrentHp() - oldHp);
                 updated = true;
             }
         }
@@ -86,6 +95,7 @@ public class TickService {
              int newMana = (int) Math.min(character.getCurrentMana() + character.getManaRegen(), character.getMaxMana());
              if (newMana != character.getCurrentMana()) {
                  character.setCurrentMana(newMana);
+                 log.info("Regenerated Mana for {}: {}/{} (+{})", character.getName(), character.getCurrentMana(), character.getMaxMana(), character.getCurrentMana() - oldMana);
                  updated = true;
              }
         }

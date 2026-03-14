@@ -10,11 +10,11 @@
       <div class="resource-bars">
         <div class="resource-bar hp-bar">
           <div class="bar-fill" [style.width.%]="(character.maxHp / character.maxHp) * 100"></div>
-          <span class="bar-text">HP: {{ character.maxHp | number:'1.0-0' }} / {{ character.maxHp | number:'1.0-0' }}</span>
+          <span class="bar-text">HP: {{ character.currentHp | number:'1.0-0' }} / {{ character.maxHp | number:'1.0-0' }}</span>
         </div>
         <div class="resource-bar mana-bar">
           <div class="bar-fill" [style.width.%]="(character.maxMana / character.maxMana) * 100"></div>
-          <span class="bar-text">MP: {{ character.maxMana | number:'1.0-0' }} / {{ character.maxMana | number:'1.0-0' }}</span>
+          <span class="bar-text">MP: {{ character.currentMana | number:'1.0-0' }} / {{ character.maxMana | number:'1.0-0' }}</span>
         </div>
       </div>
 

@@ -231,6 +231,7 @@ public class CharacterService {
     }
 
     public Mono<Void> enterRoom(Character character, Long roomId) {
+        log.info("Entering room {} for character {}", roomId, character.getName());
         return this.roomService.getRoom(roomId)
                 .flatMap(room -> {
                     if (character.getCurrentRoomId() != null) {
