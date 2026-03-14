@@ -21,7 +21,5 @@ public class Logout implements Command{
         log.info("Executing logout command for character: {}", character.getName());
         communicationService.sendLogout(character);
         characterService.deselectCharacter(character.getId());
-
-        //TODO: Tell user logged out
     }
 }

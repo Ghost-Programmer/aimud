@@ -2,10 +2,13 @@ package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Character;
 import com.aimud.aimud.model.TextMessage;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -14,6 +17,9 @@ public class CommunicationService {
     private final Sinks.Many<Character> characterUpdates = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<TextMessage> textMessages = Sinks.many().replay().limit(20);
     private final Sinks.Many<Character> logoutMessages = Sinks.many().replay().limit(10);
+
+    @Setter
+    private CharacterService characterService;
 
     public Flux<Character> getCharacterUpdates() {
         return characterUpdates.asFlux();
@@ -49,5 +55,12 @@ public class CommunicationService {
         }
         log.info("Sending text message to {}: {}", character.getName(), message);
         textMessages.tryEmitNext(new TextMessage(character.getId(), message));
+    }
+
+    public void roomMessage(Character character, String message){
+        this.characterService.findAllByRoomId(character.getCurrentRoomId()).stream().filter(c -> !c.getId().equals(character.getId())).forEach(c -> {
+            this.sendTextMessage(c, message);
+        });
+
     }
 }
