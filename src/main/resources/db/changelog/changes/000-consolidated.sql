@@ -869,3 +869,13 @@ INSERT INTO effects (id, name, effect_type, modifier1, modifier2, modifier3, mod
 ( 538, 'Poison Damage 10d20', 'POISON_DAMAGE', 10, 20, 0, 0),
 ( 539, 'Electrical Damage 10d20', 'ELECTRICAL_DAMAGE', 10, 20, 0, 0)
 ON CONFLICT (id) DO NOTHING;
+
+--changeset jeff:47
+CREATE TABLE IF NOT EXISTS skills (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    rank INT NOT NULL DEFAULT 1,
+    character_id BIGINT NOT NULL,
+    FOREIGN KEY (character_id) REFERENCES characters(id),
+    UNIQUE (character_id, name)
+);

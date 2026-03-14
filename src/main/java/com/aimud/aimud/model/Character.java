@@ -74,6 +74,10 @@ public class Character {
 
     @Setter
     @Transient
+    private List<Skill> skills = new ArrayList<>();
+
+    @Setter
+    @Transient
     private int currentStrength;
     @Setter
     @Transient

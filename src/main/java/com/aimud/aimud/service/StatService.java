@@ -19,8 +19,9 @@ public class StatService {
     private final EffectRepository effectRepository;
     private final CharacterEffectRepository characterEffectRepository;
     private final ItemService itemService;
+    private final SkillRepository skillRepository;
 
-    public StatService(RaceRepository raceRepository, CharacterClassRepository characterClassRepository, RoomService roomService, ItemRepository itemRepository, EffectRepository effectRepository, CharacterEffectRepository characterEffectRepository, ItemService itemService) {
+    public StatService(RaceRepository raceRepository, CharacterClassRepository characterClassRepository, RoomService roomService, ItemRepository itemRepository, EffectRepository effectRepository, CharacterEffectRepository characterEffectRepository, ItemService itemService, SkillRepository skillRepository) {
         this.raceRepository = raceRepository;
         this.characterClassRepository = characterClassRepository;
         this.roomService = roomService;
@@ -28,6 +29,7 @@ public class StatService {
         this.effectRepository = effectRepository;
         this.characterEffectRepository = characterEffectRepository;
         this.itemService = itemService;
+        this.skillRepository = skillRepository;
     }
 
     public Mono<Character> updateCurrentStats(Character character) {
@@ -197,7 +199,19 @@ public class StatService {
 
         return Mono.zip(monos, results -> results)
                 .flatMap(results -> loadSpellEffects(character))
-                .flatMap(results -> loadInventory(character));
+                .flatMap(results -> loadInventory(character))
+                .flatMap(results -> loadSkills(character));
+    }
+
+    private Mono<Character> loadSkills(Character character) {
+        if (character.getId() == null) return Mono.just(character);
+
+        return skillRepository.findByCharacterId(character.getId())
+                .collectList()
+                .map(skills -> {
+                    character.setSkills(skills);
+                    return character;
+                });
     }
 
     private Mono<Character> loadSpellEffects(Character character) {
