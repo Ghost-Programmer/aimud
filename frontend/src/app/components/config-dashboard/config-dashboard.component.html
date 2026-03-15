@@ -144,6 +144,14 @@
         <label for="classDesc">Description</label>
         <textarea id="classDesc" formControlName="description"></textarea>
       </div>
+      <div class="form-group">
+        <label for="startingItems">Starting Items (comma-separated IDs)</label>
+        <input type="text" id="startingItems" formControlName="startingItems" placeholder="e.g. 1, 2, 5">
+      </div>
+      <div class="form-group">
+        <label for="startingSkills">Starting Skills (comma-separated names)</label>
+        <input type="text" id="startingSkills" formControlName="startingSkills" placeholder="e.g. Sword, Shield, Block">
+      </div>
       <div class="stats-grid">
         <div class="form-group"><label>STR Mod</label><input type="number" formControlName="strengthMod"></div>
         <div class="form-group"><label>DEX Mod</label><input type="number" formControlName="dexterityMod"></div>

@@ -54,7 +54,9 @@ export class ConfigDashboardComponent implements OnInit {
       wisdomMod: [0],
       charismaMod: [0],
       dexterityMod: [0],
-      constitutionMod: [0]
+      constitutionMod: [0],
+      startingItems: [''],
+      startingSkills: ['']
     });
   }
 
@@ -143,7 +145,8 @@ export class ConfigDashboardComponent implements OnInit {
     } else {
       this.classForm.reset({
         strengthMod: 0, intelligenceMod: 0, wisdomMod: 0,
-        charismaMod: 0, dexterityMod: 0, constitutionMod: 0
+        charismaMod: 0, dexterityMod: 0, constitutionMod: 0,
+        startingItems: '', startingSkills: ''
       });
     }
     this.isClassFormVisible = true;
