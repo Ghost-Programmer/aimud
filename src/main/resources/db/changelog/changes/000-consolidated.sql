@@ -902,7 +902,7 @@ INSERT INTO skills_registry (id, name) VALUES
 (3, 'Sing Song'),
 (4, 'Light Armor'),
 (5, 'Medium Armor'),
-(6, 'Health Armor'),
+(6, 'Heavy Armor'),
 (7, 'One Handed Weapon'),
 (8, 'Two Handed Weapon'),
 (9, 'Bash'),
@@ -923,3 +923,12 @@ CREATE INDEX IF NOT EXISTS idx_item_effects_effect_id ON item_effects(effect_id)
 CREATE INDEX IF NOT EXISTS idx_item_effects_item_id ON item_effects(item_id);
 CREATE INDEX IF NOT EXISTS idx_characters_current_room_id ON characters(current_room_id);
 CREATE INDEX IF NOT EXISTS idx_skills_character_id ON skills(character_id);
+
+--changeset jeff:53
+UPDATE character_classes SET starting_skills = 'Bandage,Cast Magic,Light Armor,One Handed Weapon' WHERE name = 'Druid';
+UPDATE character_classes SET starting_skills = 'Backstab,Bandage,Dodge,Light Armor,Medium Armor,One Handed Weapon,Parry,Pickpocket' WHERE name = 'Rogue';
+UPDATE character_classes SET starting_skills = 'Bandage,Cast Magic,Light Armor,One Handed Weapon' WHERE name = 'Wizard';
+UPDATE character_classes SET starting_skills = 'Bandage,Dodge,Dual Wield,Hide,Light Armor,Medium Armor,One Handed Weapon,Parry' WHERE name = 'Ranger';
+UPDATE character_classes SET starting_skills = 'Bandage,Say Prayer,Light Armor,Medium Armor,One Handed Weapon,Two Handed Weapon,Heavy Armor' WHERE name = 'Cleric';
+UPDATE character_classes SET starting_skills = 'Bandage,Bash,Dodge,Dual Wield,Light Armor,Medium Armor,One Handed Weapon,Parry,Shield Block,Two Handed Weapon,Heavy Armor' WHERE name = 'Fighter';
+UPDATE character_classes SET starting_skills = 'Bandage,Bash,Dodge,Dual Wield,Light Armor,Medium Armor,Parry,Say Prayer,Shield Block,Heavy Armor' WHERE name = 'Paladin';
