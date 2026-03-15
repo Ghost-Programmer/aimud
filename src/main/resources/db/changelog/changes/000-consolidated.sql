@@ -894,3 +894,24 @@ CREATE TABLE IF NOT EXISTS skills_registry (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE
 );
+
+--changeset jeff:51
+INSERT INTO skills_registry (id, name) VALUES
+(1, 'Cast Magic'),
+(2, 'Say Prayer'),
+(3, 'Sing Song'),
+(4, 'Light Armor'),
+(5, 'Medium Armor'),
+(6, 'Health Armor'),
+(7, 'One Handed Weapon'),
+(8, 'Two Handed Weapon'),
+(9, 'Bash'),
+(10, 'Bandage'),
+(11, 'Dodge'),
+(12, 'Dual Wield'),
+(13, 'Parry'),
+(14, 'Shield Block'),
+(15, 'Hide'),
+(16, 'Backstab'),
+(17, 'Pickpocket')
+ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
