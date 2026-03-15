@@ -915,3 +915,11 @@ INSERT INTO skills_registry (id, name) VALUES
 (16, 'Backstab'),
 (17, 'Pickpocket')
 ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+
+--changeset jeff:52
+CREATE INDEX IF NOT EXISTS idx_characters_user_id ON characters(user_id);
+CREATE INDEX IF NOT EXISTS idx_character_inventory_item_id ON character_inventory(item_id);
+CREATE INDEX IF NOT EXISTS idx_item_effects_effect_id ON item_effects(effect_id);
+CREATE INDEX IF NOT EXISTS idx_item_effects_item_id ON item_effects(item_id);
+CREATE INDEX IF NOT EXISTS idx_characters_current_room_id ON characters(current_room_id);
+CREATE INDEX IF NOT EXISTS idx_skills_character_id ON skills(character_id);
