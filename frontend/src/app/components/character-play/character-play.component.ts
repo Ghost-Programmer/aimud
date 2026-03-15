@@ -30,6 +30,9 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
   ) {}
 
   ngOnInit() {
+    // Create a shallow copy of the messages to prevent mutations of the parent array.
+    // This ensures that messages for one character don't leak to another.
+    this.textMessages = [...this.textMessages];
     if (this.character) {
       this.refreshCharacter();
       this.subscribeToUpdates();
