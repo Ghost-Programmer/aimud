@@ -325,6 +325,15 @@
   text-align: right;
 }
 
+.skill-rank-header,
+.skill-rank-value {
+  text-align: right;
+}
+
+.skill-rank-value {
+  font-family: monospace;
+}
+
 /* Equipment Tab Styles */
 .equipped-tab {
   padding: 10px;

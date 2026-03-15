@@ -29,6 +29,7 @@
       <button class="stat-tab-btn" [class.active]="activeStatTab === 'stats'" (click)="setActiveStatTab('stats')">Stats</button>
       <button class="stat-tab-btn" [class.active]="activeStatTab === 'equipped'" (click)="setActiveStatTab('equipped')">Equipped</button>
       <button class="stat-tab-btn" [class.active]="activeStatTab === 'inventory'" (click)="setActiveStatTab('inventory')">Inventory</button>
+      <button class="stat-tab-btn" [class.active]="activeStatTab === 'skills'" (click)="setActiveStatTab('skills')">Skills</button>
     </div>
 
     <div class="stat-content" *ngIf="activeStatTab === 'stats'">
@@ -222,6 +223,28 @@
             </tr>
             <tr *ngIf="!character.inventory || character.inventory.length === 0">
               <td colspan="4" class="empty-inventory">Inventory is empty.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="stat-content" *ngIf="activeStatTab === 'skills'">
+      <div class="inventory-container">
+        <table class="inventory-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th class="skill-rank-header">Rank</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let skill of character.skills">
+              <td class="item-name">{{ skill.name }}</td>
+              <td class="skill-rank-value">{{ skill.rank }}</td>
+            </tr>
+            <tr *ngIf="!character.skills || character.skills.length === 0">
+              <td colspan="2" class="empty-inventory">No skills learned.</td>
             </tr>
           </tbody>
         </table>
