@@ -52,4 +52,9 @@ export class ConfigService {
   deleteCharacterClass(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/classes/${id}`);
   }
+
+  // Skills Registry
+  getAllSkills(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/skills`);
+  }
 }

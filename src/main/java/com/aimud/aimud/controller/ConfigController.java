@@ -3,6 +3,7 @@ package com.aimud.aimud.controller;
 import com.aimud.aimud.model.CharacterClass;
 import com.aimud.aimud.model.Race;
 import com.aimud.aimud.model.ServerSettings;
+import com.aimud.aimud.model.SkillRegistry;
 import com.aimud.aimud.service.ConfigService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -76,5 +77,11 @@ public class ConfigController {
     public Mono<ResponseEntity<Void>> deleteCharacterClass(@PathVariable Long id) {
         return configService.deleteCharacterClass(id)
                 .then(Mono.just(ResponseEntity.ok().build()));
+    }
+
+    // Skills Registry
+    @GetMapping("/skills")
+    public Flux<SkillRegistry> getAllSkills() {
+        return configService.getAllSkills();
     }
 }

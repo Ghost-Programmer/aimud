@@ -888,3 +888,9 @@ UPDATE character_classes SET starting_items = '' WHERE starting_items IS NULL;
 --changeset jeff:49
 ALTER TABLE character_classes ADD COLUMN starting_skills TEXT;
 UPDATE character_classes SET starting_skills = '' WHERE starting_skills IS NULL;
+
+--changeset jeff:50
+CREATE TABLE IF NOT EXISTS skills_registry (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
+);

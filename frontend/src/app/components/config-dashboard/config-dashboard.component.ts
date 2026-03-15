@@ -25,10 +25,15 @@ export class ConfigDashboardComponent implements OnInit {
   classForm: FormGroup;
   isClassFormVisible = false;
 
-  // New logic for starting items selection
+  // Items selection
   availableItems: Item[] = [];
   selectedItemId: number | null = null;
   currentClassStartingItems: Item[] = [];
+
+  // Skills selection
+  availableSkills: any[] = [];
+  selectedSkillName: string | null = null;
+  currentClassStartingSkills: string[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -76,6 +81,7 @@ export class ConfigDashboardComponent implements OnInit {
     this.loadRaces();
     this.loadClasses();
     this.loadItems();
+    this.loadSkills();
   }
 
   // Server Settings
@@ -143,12 +149,17 @@ export class ConfigDashboardComponent implements OnInit {
     }
   }
 
-  // Items for Class dropdown
+  // Items
   loadItems() {
-    // We assume 1000 items is enough to load for the dropdown,
-    // like the implementation in effect-dialog
     this.itemService.getItems(0, 1000, {}).subscribe(response => {
       this.availableItems = response.items.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    });
+  }
+
+  // Skills
+  loadSkills() {
+    this.configService.getAllSkills().subscribe(skills => {
+      this.availableSkills = skills.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     });
   }
 
@@ -162,14 +173,23 @@ export class ConfigDashboardComponent implements OnInit {
   openClassForm(cls: any = null) {
     this.selectedClass = cls;
     this.currentClassStartingItems = [];
+    this.currentClassStartingSkills = [];
+
     if (cls) {
       this.classForm.patchValue(cls);
+
       if (cls.startingItems) {
         const itemIds = cls.startingItems.split(',')
           .map((s: string) => parseInt(s.trim()))
           .filter((n: number) => !isNaN(n));
 
         this.currentClassStartingItems = this.availableItems.filter(i => itemIds.includes(i.id!));
+      }
+
+      if (cls.startingSkills) {
+        this.currentClassStartingSkills = cls.startingSkills.split(',')
+          .map((s: string) => s.trim())
+          .filter((s: string) => s.length > 0);
       }
     } else {
       this.classForm.reset({
@@ -185,15 +205,15 @@ export class ConfigDashboardComponent implements OnInit {
     this.isClassFormVisible = false;
     this.selectedClass = null;
     this.currentClassStartingItems = [];
+    this.currentClassStartingSkills = [];
   }
 
+  // Item List Management
   addSelectedItem() {
     if (this.selectedItemId) {
-      // parse it just in case it is bound as a string from the select option
       const itemId = Number(this.selectedItemId);
       const itemToAdd = this.availableItems.find(i => i.id === itemId);
       if (itemToAdd) {
-        // Allow duplicates, but typical use case might be unique starting items
         this.currentClassStartingItems.push(itemToAdd);
         this.updateStartingItemsFormValue();
       }
@@ -211,6 +231,38 @@ export class ConfigDashboardComponent implements OnInit {
     this.classForm.patchValue({ startingItems: ids });
   }
 
+  onSelectItemIdChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.selectedItemId = target.value ? Number(target.value) : null;
+  }
+
+  // Skill List Management
+  addSelectedSkill() {
+    if (this.selectedSkillName) {
+      if (!this.currentClassStartingSkills.includes(this.selectedSkillName)) {
+        this.currentClassStartingSkills.push(this.selectedSkillName);
+        this.updateStartingSkillsFormValue();
+      }
+      this.selectedSkillName = null;
+    }
+  }
+
+  removeStartingSkill(index: number) {
+    this.currentClassStartingSkills.splice(index, 1);
+    this.updateStartingSkillsFormValue();
+  }
+
+  updateStartingSkillsFormValue() {
+    const names = this.currentClassStartingSkills.join(',');
+    this.classForm.patchValue({ startingSkills: names });
+  }
+
+  onSelectSkillChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.selectedSkillName = target.value || null;
+  }
+
+  // Save/Delete Class
   saveClass() {
     if (this.classForm.valid) {
       const cls = this.classForm.value;
@@ -234,10 +286,5 @@ export class ConfigDashboardComponent implements OnInit {
         this.loadClasses();
       });
     }
-  }
-
-  onSelectItemIdChange(event: Event) {
-    const target = event.target as HTMLSelectElement;
-    this.selectedItemId = target.value ? Number(target.value) : null;
   }
 }

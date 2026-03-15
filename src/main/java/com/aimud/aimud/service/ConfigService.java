@@ -3,9 +3,11 @@ package com.aimud.aimud.service;
 import com.aimud.aimud.model.CharacterClass;
 import com.aimud.aimud.model.Race;
 import com.aimud.aimud.model.ServerSettings;
+import com.aimud.aimud.model.SkillRegistry;
 import com.aimud.aimud.repository.CharacterClassRepository;
 import com.aimud.aimud.repository.RaceRepository;
 import com.aimud.aimud.repository.ServerSettingsRepository;
+import com.aimud.aimud.repository.SkillRegistryRepository;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -16,6 +18,7 @@ public class ConfigService {
     private final ServerSettingsRepository serverSettingsRepository;
     private final RaceRepository raceRepository;
     private final CharacterClassRepository characterClassRepository;
+    private final SkillRegistryRepository skillRegistryRepository;
 
     private static final String DEFAULT_AI_PROMPT =
             """
@@ -50,10 +53,11 @@ public class ConfigService {
                     - Status: FLY, WATER_BREATHING, INVISIBLE (No modifiers)
                    """;
 
-    public ConfigService(ServerSettingsRepository serverSettingsRepository, RaceRepository raceRepository, CharacterClassRepository characterClassRepository) {
+    public ConfigService(ServerSettingsRepository serverSettingsRepository, RaceRepository raceRepository, CharacterClassRepository characterClassRepository, SkillRegistryRepository skillRegistryRepository) {
         this.serverSettingsRepository = serverSettingsRepository;
         this.raceRepository = raceRepository;
         this.characterClassRepository = characterClassRepository;
+        this.skillRegistryRepository = skillRegistryRepository;
     }
 
     // Server Settings
@@ -159,5 +163,10 @@ public class ConfigService {
                     return characterClassRepository.save(cc);
                 })
                 .then();
+    }
+
+    // Skills
+    public Flux<SkillRegistry> getAllSkills() {
+        return skillRegistryRepository.findAll();
     }
 }

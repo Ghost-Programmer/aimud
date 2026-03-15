@@ -165,15 +165,32 @@
           </select>
           <button type="button" class="btn-secondary" (click)="addSelectedItem()" [disabled]="!selectedItemId">Add</button>
         </div>
-
-        <!-- Hidden input to maintain form state -->
         <input type="hidden" formControlName="startingItems">
       </div>
 
+      <!-- Starting Skills UI -->
       <div class="form-group">
-        <label for="startingSkills">Starting Skills (comma-separated names)</label>
-        <input type="text" id="startingSkills" formControlName="startingSkills" placeholder="e.g. Sword, Shield, Block">
+        <label>Starting Skills</label>
+
+        <div class="selected-items-list" *ngIf="currentClassStartingSkills.length > 0">
+          <div class="selected-item-pill" *ngFor="let skill of currentClassStartingSkills; let i = index">
+            <span>{{ skill }}</span>
+            <button type="button" class="remove-btn" (click)="removeStartingSkill(i)" title="Remove">&times;</button>
+          </div>
+        </div>
+
+        <div class="item-selector">
+          <select [ngModel]="selectedSkillName" (change)="onSelectSkillChange($event)" [ngModelOptions]="{standalone: true}">
+            <option [value]="null">Select a skill to add...</option>
+            <option *ngFor="let skill of availableSkills" [value]="skill.name">
+              {{ skill.name }}
+            </option>
+          </select>
+          <button type="button" class="btn-secondary" (click)="addSelectedSkill()" [disabled]="!selectedSkillName">Add</button>
+        </div>
+        <input type="hidden" formControlName="startingSkills">
       </div>
+
       <div class="stats-grid">
         <div class="form-group"><label>STR Mod</label><input type="number" formControlName="strengthMod"></div>
         <div class="form-group"><label>DEX Mod</label><input type="number" formControlName="dexterityMod"></div>
