@@ -38,6 +38,9 @@ public class CharacterClass {
 
     @Column("starting_items")
     private String startingItems;
+    
+    @Column("starting_skills")
+    private String startingSkills;
 
     @CreatedDate
     @Column("created_at")
@@ -80,5 +83,19 @@ public class CharacterClass {
             }
         }
         return items;
+    }
+    
+    public List<String> getStartingSkillNames() {
+        List<String> skills = new ArrayList<>();
+        if (startingSkills != null && !startingSkills.isEmpty()) {
+            String[] split = startingSkills.split(",");
+            for (String s : split) {
+                String trimmed = s.trim();
+                if (!trimmed.isEmpty()) {
+                    skills.add(trimmed);
+                }
+            }
+        }
+        return skills;
     }
 }

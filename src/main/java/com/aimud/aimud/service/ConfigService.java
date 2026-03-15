@@ -147,6 +147,7 @@ public class ConfigService {
                     existingClass.setWisdomMod(characterClass.getWisdomMod());
                     existingClass.setCharismaMod(characterClass.getCharismaMod());
                     existingClass.setStartingItems(characterClass.getStartingItems());
+                    existingClass.setStartingSkills(characterClass.getStartingSkills());
                     return characterClassRepository.save(existingClass);
                 });
     }

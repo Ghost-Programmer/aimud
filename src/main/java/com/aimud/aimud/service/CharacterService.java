@@ -2,9 +2,11 @@ package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Character;
 import com.aimud.aimud.model.Item;
+import com.aimud.aimud.model.Skill;
 import com.aimud.aimud.repository.CharacterClassRepository;
 import com.aimud.aimud.repository.CharacterEffectRepository;
 import com.aimud.aimud.repository.CharacterRepository;
+import com.aimud.aimud.repository.SkillRepository;
 import com.aimud.aimud.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.r2dbc.core.DatabaseClient;
@@ -31,11 +33,12 @@ public class CharacterService {
     private final CommunicationService communicationService;
     private final RoomService roomService;
     private final CharacterClassRepository characterClassRepository;
+    private final SkillRepository skillRepository;
 
     // In-memory storage for active/available characters
     private final ConcurrentHashMap<Long, Character> availableCharacters = new ConcurrentHashMap<>();
 
-    public CharacterService(CharacterRepository characterRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository, CommunicationService communicationService, RoomService roomService, CharacterClassRepository characterClassRepository) {
+    public CharacterService(CharacterRepository characterRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository, CommunicationService communicationService, RoomService roomService, CharacterClassRepository characterClassRepository, SkillRepository skillRepository) {
         this.characterRepository = characterRepository;
         this.userRepository = userRepository;
         this.statService = statService;
@@ -45,6 +48,7 @@ public class CharacterService {
         this.communicationService.setCharacterService(this);
         this.roomService = roomService;
         this.characterClassRepository = characterClassRepository;
+        this.skillRepository = skillRepository;
     }
 
     public List<Character> findAllByRoomId(Long roomId) {
@@ -94,22 +98,43 @@ public class CharacterService {
                     if (savedCharacter.getClassId() != null) {
                         return characterClassRepository.findById(savedCharacter.getClassId())
                                 .flatMap(characterClass -> {
+                                    Mono<Character> itemsMono = Mono.just(savedCharacter);
+                                    
                                     List<Long> startingItemIds = characterClass.getStartingItemIds();
-                                    if (startingItemIds.isEmpty()) {
-                                        return Mono.just(savedCharacter);
+                                    if (!startingItemIds.isEmpty()) {
+                                        itemsMono = Flux.fromIterable(startingItemIds)
+                                                .flatMap(itemId -> databaseClient.sql("INSERT INTO character_inventory (character_id, item_id) VALUES (:characterId, :itemId)")
+                                                        .bind("characterId", savedCharacter.getId())
+                                                        .bind("itemId", itemId)
+                                                        .fetch()
+                                                        .rowsUpdated()
+                                                        .onErrorResume(e -> {
+                                                            log.error("Failed to add starting item {} to character {}", itemId, savedCharacter.getId(), e);
+                                                            return Mono.just(0L);
+                                                        })
+                                                )
+                                                .then(Mono.just(savedCharacter));
                                     }
-                                    return Flux.fromIterable(startingItemIds)
-                                            .flatMap(itemId -> databaseClient.sql("INSERT INTO character_inventory (character_id, item_id) VALUES (:characterId, :itemId)")
-                                                    .bind("characterId", savedCharacter.getId())
-                                                    .bind("itemId", itemId)
-                                                    .fetch()
-                                                    .rowsUpdated()
-                                                    .onErrorResume(e -> {
-                                                        log.error("Failed to add starting item {} to character {}", itemId, savedCharacter.getId(), e);
-                                                        return Mono.just(0L);
-                                                    })
-                                            )
-                                            .then(Mono.just(savedCharacter));
+                                    
+                                    return itemsMono.flatMap(c -> {
+                                        List<String> startingSkills = characterClass.getStartingSkillNames();
+                                        if (startingSkills.isEmpty()) {
+                                            return Mono.just(c);
+                                        }
+                                        return Flux.fromIterable(startingSkills)
+                                                .flatMap(skillName -> {
+                                                    Skill skill = new Skill();
+                                                    skill.setCharacterId(c.getId());
+                                                    skill.setName(skillName);
+                                                    skill.setRank(1);
+                                                    return skillRepository.save(skill)
+                                                            .onErrorResume(e -> {
+                                                                log.error("Failed to add starting skill {} to character {}", skillName, c.getId(), e);
+                                                                return Mono.empty();
+                                                            });
+                                                })
+                                                .then(Mono.just(c));
+                                    });
                                 })
                                 .defaultIfEmpty(savedCharacter);
                     }

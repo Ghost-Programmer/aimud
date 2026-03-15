@@ -884,3 +884,7 @@ CREATE TABLE IF NOT EXISTS skills (
 --changeset jeff:48
 ALTER TABLE character_classes ADD COLUMN starting_items TEXT;
 UPDATE character_classes SET starting_items = '' WHERE starting_items IS NULL;
+
+--changeset jeff:49
+ALTER TABLE character_classes ADD COLUMN starting_skills TEXT;
+UPDATE character_classes SET starting_skills = '' WHERE starting_skills IS NULL;
