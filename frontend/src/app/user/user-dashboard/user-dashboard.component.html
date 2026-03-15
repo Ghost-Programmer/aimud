@@ -37,7 +37,10 @@
 
     <div class="tab-content">
       <ng-container *ngFor="let tab of tabs">
-        <div *ngIf="activeTabId === tab.id" [style.height]="(tab.type === 'play-character' || tab.type === 'config') ? '100%' : 'auto'">
+        <div
+          *ngIf="activeTabId === tab.id"
+          class="tab-pane"
+          [class.full-height-pane]="tab.type === 'play-character' || tab.type === 'config'">
           <div *ngIf="tab.type === 'create-character'">
             <h2>Create Character</h2>
             <app-create-character></app-create-character>
@@ -48,14 +51,14 @@
               (characterSelected)="onCharacterSelected($event, tab.id)">
             </app-character-select>
           </div>
-          <div *ngIf="tab.type === 'play-character'">
-            <app-character-play [character]="tab.data"></app-character-play>
+          <div *ngIf="tab.type === 'play-character'" class="play-pane">
+            <app-character-play class="play-screen" [character]="tab.data"></app-character-play>
           </div>
           <div *ngIf="tab.type === 'players'">
             <h2>Players Management</h2>
             <app-player-list></app-player-list>
           </div>
-          <div *ngIf="tab.type === 'config'" style="height: 100%">
+          <div *ngIf="tab.type === 'config'" class="config-pane">
             <app-config-dashboard></app-config-dashboard>
           </div>
           <div *ngIf="tab.type === 'world'">
