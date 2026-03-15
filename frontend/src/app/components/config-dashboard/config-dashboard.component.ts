@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { ConfigService } from '../../services/config.service';
+import { ItemService } from '../../services/item.service';
+import { Item } from '../../models/item.model';
 
 @Component({
   selector: 'app-config-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './config-dashboard.component.html',
   styleUrl: './config-dashboard.component.css'
 })
@@ -23,7 +25,16 @@ export class ConfigDashboardComponent implements OnInit {
   classForm: FormGroup;
   isClassFormVisible = false;
 
-  constructor(private fb: FormBuilder, private configService: ConfigService) {
+  // New logic for starting items selection
+  availableItems: Item[] = [];
+  selectedItemId: number | null = null;
+  currentClassStartingItems: Item[] = [];
+
+  constructor(
+    private fb: FormBuilder,
+    private configService: ConfigService,
+    private itemService: ItemService
+  ) {
     this.serverSettingsForm = this.fb.group({
       id: [null],
       serverName: ['', Validators.required],
@@ -64,6 +75,7 @@ export class ConfigDashboardComponent implements OnInit {
     this.loadServerSettings();
     this.loadRaces();
     this.loadClasses();
+    this.loadItems();
   }
 
   // Server Settings
@@ -131,6 +143,15 @@ export class ConfigDashboardComponent implements OnInit {
     }
   }
 
+  // Items for Class dropdown
+  loadItems() {
+    // We assume 1000 items is enough to load for the dropdown,
+    // like the implementation in effect-dialog
+    this.itemService.getItems(0, 1000, {}).subscribe(response => {
+      this.availableItems = response.items.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    });
+  }
+
   // Classes
   loadClasses() {
     this.configService.getAllCharacterClasses().subscribe(classes => {
@@ -140,8 +161,16 @@ export class ConfigDashboardComponent implements OnInit {
 
   openClassForm(cls: any = null) {
     this.selectedClass = cls;
+    this.currentClassStartingItems = [];
     if (cls) {
       this.classForm.patchValue(cls);
+      if (cls.startingItems) {
+        const itemIds = cls.startingItems.split(',')
+          .map((s: string) => parseInt(s.trim()))
+          .filter((n: number) => !isNaN(n));
+
+        this.currentClassStartingItems = this.availableItems.filter(i => itemIds.includes(i.id!));
+      }
     } else {
       this.classForm.reset({
         strengthMod: 0, intelligenceMod: 0, wisdomMod: 0,
@@ -155,6 +184,31 @@ export class ConfigDashboardComponent implements OnInit {
   closeClassForm() {
     this.isClassFormVisible = false;
     this.selectedClass = null;
+    this.currentClassStartingItems = [];
+  }
+
+  addSelectedItem() {
+    if (this.selectedItemId) {
+      // parse it just in case it is bound as a string from the select option
+      const itemId = Number(this.selectedItemId);
+      const itemToAdd = this.availableItems.find(i => i.id === itemId);
+      if (itemToAdd) {
+        // Allow duplicates, but typical use case might be unique starting items
+        this.currentClassStartingItems.push(itemToAdd);
+        this.updateStartingItemsFormValue();
+      }
+      this.selectedItemId = null;
+    }
+  }
+
+  removeStartingItem(index: number) {
+    this.currentClassStartingItems.splice(index, 1);
+    this.updateStartingItemsFormValue();
+  }
+
+  updateStartingItemsFormValue() {
+    const ids = this.currentClassStartingItems.map(i => i.id).join(',');
+    this.classForm.patchValue({ startingItems: ids });
   }
 
   saveClass() {
@@ -180,5 +234,10 @@ export class ConfigDashboardComponent implements OnInit {
         this.loadClasses();
       });
     }
+  }
+
+  onSelectItemIdChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.selectedItemId = target.value ? Number(target.value) : null;
   }
 }
