@@ -123,6 +123,6 @@ public class RoomController {
     public Mono<ResponseEntity<Void>> deleteRoom(@PathVariable Long id) {
         log.info("REST Request to delete room: {}", id);
         return roomService.deleteRoom(id)
-                .then(Mono.just(ResponseEntity.noContent().<Void>build()));
+                .then(Mono.just(ResponseEntity.noContent().build()));
     }
 }

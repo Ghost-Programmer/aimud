@@ -51,7 +51,7 @@ public class ConfigController {
     @DeleteMapping("/races/{id}")
     public Mono<ResponseEntity<Void>> deleteRace(@PathVariable Long id) {
         return configService.deleteRace(id)
-                .then(Mono.just(ResponseEntity.ok().<Void>build()));
+                .then(Mono.just(ResponseEntity.ok().build()));
     }
 
     // Character Classes
@@ -75,6 +75,6 @@ public class ConfigController {
     @DeleteMapping("/classes/{id}")
     public Mono<ResponseEntity<Void>> deleteCharacterClass(@PathVariable Long id) {
         return configService.deleteCharacterClass(id)
-                .then(Mono.just(ResponseEntity.ok().<Void>build()));
+                .then(Mono.just(ResponseEntity.ok().build()));
     }
 }

@@ -115,6 +115,6 @@ public class EffectController {
     public Mono<ResponseEntity<Void>> deleteEffect(@PathVariable Long id) {
         log.info("REST Request to delete effect: {}", id);
         return effectService.deleteEffect(id)
-                .then(Mono.just(ResponseEntity.noContent().<Void>build()));
+                .then(Mono.just(ResponseEntity.noContent().build()));
     }
 }

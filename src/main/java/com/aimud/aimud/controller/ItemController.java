@@ -109,6 +109,6 @@ public class ItemController {
     public Mono<ResponseEntity<Void>> deleteItem(@PathVariable Long id) {
         log.info("REST Request to delete item: {}", id);
         return itemService.deleteItem(id)
-                .then(Mono.just(ResponseEntity.noContent().<Void>build()));
+                .then(Mono.just(ResponseEntity.noContent().build()));
     }
 }

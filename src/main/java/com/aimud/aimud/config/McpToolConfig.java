@@ -13,6 +13,6 @@ public class McpToolConfig {
 
     @Bean
     public List<FunctionCallback> mcpTools(McpToolService mcpToolService) {
-        return List.of((FunctionCallback[]) ToolCallbacks.from(mcpToolService));
+        return List.of(ToolCallbacks.from(mcpToolService));
     }
 }

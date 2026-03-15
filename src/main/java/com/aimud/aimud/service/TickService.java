@@ -83,7 +83,7 @@ public class TickService {
 
         // Health Regeneration
         if (character.getCurrentHp() < character.getMaxHp()) {
-            int newHp = (int) Math.min(character.getCurrentHp() + character.getHpRegen(), character.getMaxHp());
+            int newHp = Math.min(character.getCurrentHp() + character.getHpRegen(), character.getMaxHp());
             if (newHp != character.getCurrentHp()) {
                 character.setCurrentHp(newHp);
                  updated = true;
@@ -92,7 +92,7 @@ public class TickService {
 
         // Mana Regeneration
         if (character.getCurrentMana() < character.getMaxMana()) {
-             int newMana = (int) Math.min(character.getCurrentMana() + character.getManaRegen(), character.getMaxMana());
+             int newMana = Math.min(character.getCurrentMana() + character.getManaRegen(), character.getMaxMana());
              if (newMana != character.getCurrentMana()) {
                  character.setCurrentMana(newMana);
                  updated = true;
