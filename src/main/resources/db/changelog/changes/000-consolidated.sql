@@ -71,13 +71,14 @@ CREATE TABLE IF NOT EXISTS character_classes (
     constitution_mod INT NOT NULL DEFAULT 0
 );
 
-INSERT INTO character_classes (name, description, strength_mod, intelligence_mod, wisdom_mod, charisma_mod, dexterity_mod, constitution_mod) VALUES
-('Cleric', 'A priestly champion who wields divine magic in service of a higher power.', 0, 0, 2, 0, 0, 0),
-('Druid', 'A priest of the Old Faith, wielding the powers of nature and adopting animal forms.', 0, 0, 2, 0, 0, 0),
-('Fighter', 'A master of martial combat, skilled with a variety of weapons and armor.', 2, 0, 0, 0, 0, 1),
-('Rogue', 'A scoundrel who uses stealth and trickery to overcome obstacles and enemies.', 0, 0, 0, 0, 2, 0),
-('Paladin', 'A holy warrior bound to a sacred oath.', 2, 0, 0, 1, 0, 0),
-('Wizard', 'A scholarly magic-user capable of manipulating the structures of reality.', 0, 2, 0, 0, 0, 0);
+INSERT INTO character_classes (id, name, description, strength_mod, intelligence_mod, wisdom_mod, charisma_mod, dexterity_mod, constitution_mod) VALUES
+(1,'Cleric', 'A priestly champion who wields divine magic in service of a higher power.', 0, 0, 2, 0, 0, 0),
+(2,'Druid', 'A priest of the Old Faith, wielding the powers of nature and adopting animal forms.', 0, 0, 2, 0, 0, 0),
+(3,'Fighter', 'A master of martial combat, skilled with a variety of weapons and armor.', 2, 0, 0, 0, 0, 1),
+(4,'Rogue', 'A scoundrel who uses stealth and trickery to overcome obstacles and enemies.', 0, 0, 0, 0, 2, 0),
+(5,'Paladin', 'A holy warrior bound to a sacred oath.', 2, 0, 0, 1, 0, 0),
+(6,'Ranger', 'A fighter that specializes in ranged combant.', 1, 0, 0, 1, 1, 0),
+(7,'Wizard', 'A scholarly magic-user capable of manipulating the structures of reality.', 0, 2, 0, 0, 0, 0);
 
 --changeset jeff:5
 ALTER TABLE races ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT false;
