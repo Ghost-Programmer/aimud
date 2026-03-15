@@ -15,11 +15,11 @@ import { Subscription } from 'rxjs';
 })
 export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
   @Input() character: any;
+  @Input() textMessages: string[] = [];
   @ViewChild('consoleTextarea') consoleTextarea!: ElementRef<HTMLTextAreaElement>;
   activeStatTab: string = 'stats';
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
-  textMessages: string[] = [];
   command: string = '';
 
   private wsSubscription: Subscription | null = null;
@@ -71,7 +71,7 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
                   // Apply updates in place to maintain reference for parent
                   Object.assign(this.character, update.data);
               } else if (update.type === 'text') {
-                  this.textMessages = [...this.textMessages, update.data];
+                  this.textMessages.push(update.data);
                   this.scrollToBottom();
               }
           },

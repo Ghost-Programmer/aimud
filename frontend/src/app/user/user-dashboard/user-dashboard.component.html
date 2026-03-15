@@ -52,7 +52,11 @@
             </app-character-select>
           </div>
           <div *ngIf="tab.type === 'play-character'" class="play-pane">
-            <app-character-play class="play-screen" [character]="tab.data"></app-character-play>
+            <app-character-play
+              class="play-screen"
+              [character]="tab.data.character"
+              [textMessages]="tab.data.messages">
+            </app-character-play>
           </div>
           <div *ngIf="tab.type === 'players'">
             <h2>Players Management</h2>

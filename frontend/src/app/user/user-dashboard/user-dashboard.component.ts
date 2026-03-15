@@ -21,6 +21,11 @@ interface Tab {
   data?: any;
 }
 
+interface PlayTabData {
+  character: any;
+  messages: string[];
+}
+
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
@@ -135,7 +140,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         id: `play-${character.id}`,
         label: character.name,
         type: 'play-character',
-        data: character
+        data: {
+          character,
+          messages: []
+        } as PlayTabData
       };
       this.activeTabId = this.tabs[tabIndex].id;
 
@@ -198,6 +206,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   getPlayingCharacterIds(): number[] {
     return this.tabs
       .filter(t => t.type === 'play-character')
-      .map(t => t.data.id);
+      .map(t => t.data.character.id);
   }
 }
