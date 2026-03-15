@@ -3,6 +3,8 @@ package com.aimud.aimud.service;
 import com.aimud.aimud.model.Room;
 import com.aimud.aimud.repository.RoomRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -19,21 +21,25 @@ public class RoomService {
         this.communicationService = communicationService;
     }
 
+    @Cacheable(value = "rooms")
     public Flux<Room> getAllRooms() {
         log.info("Fetching all rooms");
-        return roomRepository.findAll();
+        return roomRepository.findAll().cache();
     }
 
+    @Cacheable(value = "room", key = "#id")
     public Mono<Room> getRoom(Long id) {
         log.info("Fetching room with id: {}", id);
-        return roomRepository.findById(id);
+        return roomRepository.findById(id).cache();
     }
 
+    @CacheEvict(value = {"rooms", "room"}, allEntries = true)
     public Mono<Room> saveRoom(Room room) {
         log.info("Saving room: {} (id: {})", room.getName(), room.getId());
         return roomRepository.save(room);
     }
 
+    @CacheEvict(value = {"rooms", "room"}, allEntries = true)
     public Mono<Void> deleteRoom(Long id) {
         log.info("Deleting room with id: {}", id);
         return roomRepository.deleteById(id);

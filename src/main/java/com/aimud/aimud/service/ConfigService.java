@@ -8,6 +8,8 @@ import com.aimud.aimud.repository.CharacterClassRepository;
 import com.aimud.aimud.repository.RaceRepository;
 import com.aimud.aimud.repository.ServerSettingsRepository;
 import com.aimud.aimud.repository.SkillRegistryRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -61,11 +63,14 @@ public class ConfigService {
     }
 
     // Server Settings
+    @Cacheable(value = "serverSettings")
     public Mono<ServerSettings> getServerSettings() {
         return serverSettingsRepository.findById(1L)
-                .defaultIfEmpty(new ServerSettings(1L, "AI Mud", true, false, "Undergoing Maintenance", DEFAULT_AI_PROMPT, null, null, null, null));
+                .defaultIfEmpty(new ServerSettings(1L, "AI Mud", true, false, "Undergoing Maintenance", DEFAULT_AI_PROMPT, null, null, null, null))
+                .cache();
     }
 
+    @CacheEvict(value = "serverSettings", allEntries = true)
     public Mono<ServerSettings> updateServerSettings(ServerSettings settings) {
         return serverSettingsRepository.findById(1L)
                 .flatMap(existingSettings -> {
@@ -98,14 +103,17 @@ public class ConfigService {
     }
 
     // Races
+    @Cacheable(value = "races")
     public Flux<Race> getAllRaces() {
-        return raceRepository.findAll().filter(race -> !race.isDeleted());
+        return raceRepository.findAll().filter(race -> !race.isDeleted()).cache();
     }
 
+    @CacheEvict(value = "races", allEntries = true)
     public Mono<Race> createRace(Race race) {
         return raceRepository.save(race);
     }
 
+    @CacheEvict(value = "races", allEntries = true)
     public Mono<Race> updateRace(Long id, Race race) {
         return raceRepository.findById(id)
                 .flatMap(existingRace -> {
@@ -121,6 +129,7 @@ public class ConfigService {
                 });
     }
 
+    @CacheEvict(value = "races", allEntries = true)
     public Mono<Void> deleteRace(Long id) {
         return raceRepository.findById(id)
                 .flatMap(race -> {
@@ -131,14 +140,17 @@ public class ConfigService {
     }
 
     // Character Classes
+    @Cacheable(value = "characterClasses")
     public Flux<CharacterClass> getAllCharacterClasses() {
-        return characterClassRepository.findAll().filter(cc -> !cc.isDeleted());
+        return characterClassRepository.findAll().filter(cc -> !cc.isDeleted()).cache();
     }
 
+    @CacheEvict(value = "characterClasses", allEntries = true)
     public Mono<CharacterClass> createCharacterClass(CharacterClass characterClass) {
         return characterClassRepository.save(characterClass);
     }
 
+    @CacheEvict(value = "characterClasses", allEntries = true)
     public Mono<CharacterClass> updateCharacterClass(Long id, CharacterClass characterClass) {
         return characterClassRepository.findById(id)
                 .flatMap(existingClass -> {
@@ -156,6 +168,7 @@ public class ConfigService {
                 });
     }
 
+    @CacheEvict(value = "characterClasses", allEntries = true)
     public Mono<Void> deleteCharacterClass(Long id) {
         return characterClassRepository.findById(id)
                 .flatMap(cc -> {
@@ -166,7 +179,8 @@ public class ConfigService {
     }
 
     // Skills
+    @Cacheable(value = "skillsRegistry")
     public Flux<SkillRegistry> getAllSkills() {
-        return skillRegistryRepository.findAll();
+        return skillRegistryRepository.findAll().cache();
     }
 }
