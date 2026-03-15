@@ -880,3 +880,7 @@ CREATE TABLE IF NOT EXISTS skills (
     FOREIGN KEY (character_id) REFERENCES characters(id),
     UNIQUE (character_id, name)
 );
+
+--changeset jeff:48
+ALTER TABLE character_classes ADD COLUMN starting_items TEXT;
+UPDATE character_classes SET starting_items = '' WHERE starting_items IS NULL;

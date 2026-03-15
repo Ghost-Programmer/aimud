@@ -2,11 +2,17 @@ package com.aimud.aimud.model;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.*;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Setter
 @Getter
@@ -29,6 +35,9 @@ public class CharacterClass {
     @Column("constitution_mod")
     private int constitutionMod;
     private boolean deleted;
+
+    @Column("starting_items")
+    private String startingItems;
 
     @CreatedDate
     @Column("created_at")
@@ -60,4 +69,16 @@ public class CharacterClass {
         this.constitutionMod = constitutionMod;
     }
 
+    public List<Long> getStartingItemIds() {
+        List<Long> items = new ArrayList<>();
+        if (startingItems != null && !startingItems.isEmpty()) {
+            String[] split = startingItems.split(",");
+            for (String s : split) {
+                try {
+                    items.add(Long.parseLong(s.trim()));
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        return items;
+    }
 }

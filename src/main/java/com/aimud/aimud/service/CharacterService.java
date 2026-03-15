@@ -2,6 +2,7 @@ package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Character;
 import com.aimud.aimud.model.Item;
+import com.aimud.aimud.repository.CharacterClassRepository;
 import com.aimud.aimud.repository.CharacterEffectRepository;
 import com.aimud.aimud.repository.CharacterRepository;
 import com.aimud.aimud.repository.UserRepository;
@@ -29,11 +30,12 @@ public class CharacterService {
     private final Random random = new Random();
     private final CommunicationService communicationService;
     private final RoomService roomService;
+    private final CharacterClassRepository characterClassRepository;
 
     // In-memory storage for active/available characters
     private final ConcurrentHashMap<Long, Character> availableCharacters = new ConcurrentHashMap<>();
 
-    public CharacterService(CharacterRepository characterRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository, CommunicationService communicationService, RoomService roomService) {
+    public CharacterService(CharacterRepository characterRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository, CommunicationService communicationService, RoomService roomService, CharacterClassRepository characterClassRepository) {
         this.characterRepository = characterRepository;
         this.userRepository = userRepository;
         this.statService = statService;
@@ -42,6 +44,7 @@ public class CharacterService {
         this.communicationService = communicationService;
         this.communicationService.setCharacterService(this);
         this.roomService = roomService;
+        this.characterClassRepository = characterClassRepository;
     }
 
     public List<Character> findAllByRoomId(Long roomId) {
@@ -86,6 +89,31 @@ public class CharacterService {
                     character.setUserId(user.getId());
                     log.debug("Found user id: {} for username: {}", user.getId(), username);
                     return characterRepository.save(character);
+                })
+                .flatMap(savedCharacter -> {
+                    if (savedCharacter.getClassId() != null) {
+                        return characterClassRepository.findById(savedCharacter.getClassId())
+                                .flatMap(characterClass -> {
+                                    List<Long> startingItemIds = characterClass.getStartingItemIds();
+                                    if (startingItemIds.isEmpty()) {
+                                        return Mono.just(savedCharacter);
+                                    }
+                                    return Flux.fromIterable(startingItemIds)
+                                            .flatMap(itemId -> databaseClient.sql("INSERT INTO character_inventory (character_id, item_id) VALUES (:characterId, :itemId)")
+                                                    .bind("characterId", savedCharacter.getId())
+                                                    .bind("itemId", itemId)
+                                                    .fetch()
+                                                    .rowsUpdated()
+                                                    .onErrorResume(e -> {
+                                                        log.error("Failed to add starting item {} to character {}", itemId, savedCharacter.getId(), e);
+                                                        return Mono.just(0L);
+                                                    })
+                                            )
+                                            .then(Mono.just(savedCharacter));
+                                })
+                                .defaultIfEmpty(savedCharacter);
+                    }
+                    return Mono.just(savedCharacter);
                 })
                 .flatMap(statService::updateCurrentStats);
     }
