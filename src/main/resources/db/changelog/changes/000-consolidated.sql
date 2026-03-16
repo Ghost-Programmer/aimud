@@ -968,7 +968,7 @@ ON CONFLICT DO NOTHING;
 INSERT INTO items (id, item_type, wear_location, name, description) VALUES
 (13, 'RANGED_WEAPON', 'PRIMARY', 'Short Bow', 'A simple wooden short bow.'),
 (14, 'LIGHT_ARMOR', 'CHEST', 'Cloth Robe', 'A basic cloth robe offering minimal protection.'),
-(15, 'HEAVY_ARMOR', 'OFFHAND', 'Iron Shild', 'Heavy metal shield.'),
+(15, 'HEAVY_ARMOR', 'OFFHAND', 'Iron Shield', 'Heavy metal shield.'),
 (16, 'WEAPON', 'PRIMARY', 'Mace', 'A basic mace.')
 ON CONFLICT (id) DO NOTHING;
 
