@@ -28,17 +28,15 @@ export enum WearLocation {
   FEET = 'Feet',
   ARMS = 'Arms',
   HANDS = 'Hands',
-  RIGHT_FINGER = 'Right Finger',
-  LEFT_FINGER = 'Left Finger',
-  RIGHT_WRIST = 'Right Wrist',
-  LEFT_WRIST = 'Left Wrist',
+  FINGER = 'Finger',
+  WRIST = 'Wrist',
   NECK = 'Neck',
-  LEFT_EAR = 'Left Ear',
-  RIGHT_EAR = 'Right Ear',
+  EAR = 'Ear',
   FACE = 'Face',
   WAIST = 'Waist',
   PRIMARY = 'Primary',
-  OFFHAND = 'Offhand'
+  OFFHAND = 'Offhand',
+  NONE = 'None'
 }
 
 export interface Item {
