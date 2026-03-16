@@ -966,14 +966,20 @@ ON CONFLICT DO NOTHING;
 
 --changeset jeff:55
 INSERT INTO items (id, item_type, wear_location, name, description) VALUES
-(13, 'RANGED_WEAPON', 'PRIMARY', 'Short Bow', 'A simple wooden short bow.'),
-(14, 'LIGHT_ARMOR', 'CHEST', 'Cloth Robe', 'A basic cloth robe offering minimal protection.'),
-(15, 'HEAVY_ARMOR', 'OFFHAND', 'Iron Shield', 'Heavy metal shield.'),
-(16, 'WEAPON', 'PRIMARY', 'Mace', 'A basic mace.')
+(16, 'RANGED_WEAPON', 'PRIMARY', 'Short Bow', 'A simple wooden short bow.'),
+(17, 'LIGHT_ARMOR', 'CHEST', 'Cloth Robe', 'A basic cloth robe offering minimal protection.')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO item_effects (item_id, effect_id) VALUES
-(13, 154), -- Short Bow: Piercing Damage 1d6 (reusing dagger effect for 1d6 piercing)
-(14, 79),   -- Cloth Robe: Armor +1 (reusing armor +1 effect)
-(15, 81),    -- Iron Shield: Armor +3 (reusing armor +3 effect)
-(16, 153) -- Mace: Bashing Damage 1d6
+(16, 154), -- Short Bow: Piercing Damage 1d6 (reusing dagger effect for 1d6 piercing)
+(17, 79)   -- Cloth Robe: Armor +1 (reusing armor +1 effect)
+ON CONFLICT DO NOTHING;
+
+--changeset jeff:56
+UPDATE character_classes SET starting_items = '11,7,9,4,16' WHERE name = 'Druid';
+UPDATE character_classes SET starting_items = '2,5,11,7,9,1' WHERE name = 'Rogue';
+UPDATE character_classes SET starting_items = '14,2,11,7,9' WHERE name = 'Wizard';
+UPDATE character_classes SET starting_items = '5,11,7,9,13,1' WHERE name = 'Ranger';
+UPDATE character_classes SET starting_items = '12,10,8,16,6' WHERE name = 'Cleric';
+UPDATE character_classes SET starting_items = '12,10,8,6,3,1' WHERE name = 'Fighter';
+UPDATE character_classes SET starting_items = '12,10,8,15,6,3' WHERE name = 'Paladin';
