@@ -440,17 +440,6 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-width: 140px;
-}
-
-.left-column {
-  align-items: flex-end;
-  text-align: right;
-}
-
-.right-column {
-  align-items: flex-start;
-  text-align: left;
 }
 
 .equipment-slot {
@@ -488,55 +477,6 @@
   color: var(--primary);
   font-weight: 500;
 }
-
-.human-figure-container {
-  flex: 0 0 100px;
-  display: flex;
-  justify-content: center;
-  padding-top: 20px;
-}
-
-.human-figure {
-  position: relative;
-  width: 60px;
-  height: 180px;
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.human-figure div {
-  position: absolute;
-  background-color: rgba(255,255,255,.1);
-  border: 1px solid rgba(255,255,255,.2);
-}
-.figure-head { width: 24px; height: 24px; border-radius: 50%; top: 10px; left: 18px; }
-.figure-neck { width: 8px; height: 10px; top: 34px; left: 26px; }
-.figure-torso { width: 40px; height: 60px; top: 44px; left: 10px; border-radius: 4px; }
-.figure-arm-l { width: 10px; height: 50px; top: 44px; left: -2px; border-radius: 5px; }
-.figure-arm-r { width: 10px; height: 50px; top: 44px; right: -2px; border-radius: 5px; }
-.figure-waist { width: 40px; height: 10px; top: 104px; left: 10px; }
-.figure-leg-l { width: 12px; height: 60px; top: 114px; left: 10px; border-radius: 0 0 5px 5px; }
-.figure-leg-r { width: 12px; height: 60px; top: 114px; right: 10px; border-radius: 0 0 5px 5px; }
-
-.primary-offhand {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.weapon-slot {
-  margin-bottom: 8px;
-}
-
-/* Slot Pointers */
-.equipment-slot {
-  position: relative;
-}
-
-.left-column .equipment-slot::after { content: ''; position: absolute; top: 50%; right: -10px; width: 10px; height: 1px; background-color: rgba(255,255,255,.2); }
-.right-column .equipment-slot::after { content: ''; position: absolute; top: 50%; left: -10px; width: 10px; height: 1px; background-color: rgba(255,255,255,.2); }
-.primary-offhand::after { display: none; }
 
 /* Dragging Styles */
 .cdk-drag-preview {
