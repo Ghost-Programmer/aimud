@@ -8,7 +8,10 @@ import java.util.stream.Stream;
 public enum ItemType {
     WEAPON("Weapon"),
     TWO_HANDED_WEAPON("Two Handed Weapon"),
-    ARMOR("Armor"),
+    RANGED_WEAPON("Ranged Weapon"),
+    LIGHT_ARMOR("Light Armor"),
+    MEDIUM_ARMOR("Medium Armor"),
+    HEAVY_ARMOR("Heavy Armor"),
     FOOD("Food"),
     DRINK("Drink"),
     POTION("Potion"),

@@ -185,7 +185,7 @@ UPDATE server_settings SET ai_system_prompt = 'You are an Expert Multi-User Dung
 
 When creating rooms, use the following RoomTypes: INDOORS, CITY, FIELD, FOREST, HILLS, MOUNTAIN, DESERT, ARCTIC, SWAMP, WATER_SURFACE, UNDERWATER, AIR, UNDERGROUND_CAVE, UNDERGROUND_DUNGEON.
 
-When creating items, use the following ItemTypes: WEAPON, TWO_HANDED_WEAPON, ARMOR, FOOD, DRINK, POTION, SCROLL, MONEY, WAND, QUEST, KEY, LIGHT, CONTAINER, TRASH, MISC.
+When creating items, use the following ItemTypes: WEAPON, TWO_HANDED_WEAPON, RANGED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, FOOD, DRINK, POTION, SCROLL, MONEY, WAND, QUEST, KEY, LIGHT, CONTAINER, TRASH, MISC.
 For WearLocations, use: HEAD, CHEST, LEGS, FEET, ARMS, HANDS, RIGHT_FINGER, LEFT_FINGER, RIGHT_WRIST, LEFT_WRIST, NECK, LEFT_EAR, RIGHT_EAR, FACE, WAIST, PRIMARY, OFFHAND, NONE.
 
 When creating effects, use the following EffectTypes:
@@ -271,7 +271,7 @@ ALTER TABLE server_info ALTER COLUMN modified_at TYPE TIMESTAMP;
 
 -- changeset jeff:16
 UPDATE server_settings
-SET ai_system_prompt = 'You are an Expert Multi-User Dungeon World Builder.\n\nGUIDELINES:\n1. When a user asks to create something, use the appropriate MCP tools.\n2. To associate an effect with an item, first create the item using createItem to obtain its ID, then use createEffect setting the itemId field.\n3. Rooms have a name, description, and type (e.g., CITY, FIELD, FOREST, WATER, etc.).\n4. Items have a name, description, type (e.g., WEAPON, ARMOR, LIGHT, POTION), and wear location (e.g., HEAD, TORSO, ARMS, LEGS, etc.).\n5. Weapons MUST have damage effects. Use EffectTypes like SLASHING_DAMAGE, PIERCING_DAMAGE, or BASHING_DAMAGE. Set modifier1 to the number of dice and modifier2 to the size of the dice (e.g., 2d6 means modifier1=2, modifier2=6).\n6. Items can have stat modifiers. Use EffectTypes like STRENGTH, DEXTERITY, ARMOR, etc., and set modifier1 to the bonus amount.\n7. If you need more information to create an object, ask the user for clarification.\n8. Always check existing content if the user refers to it, using the retrieval tools.\n\nYou have access to the following tool categories:\n- Room Management: createRoom, updateRoom, getRoom, getAllRooms\n- Item Management: createItem, updateItem, getItem, getAllItems\n- Effect Management: createEffect, updateEffect, getEffect, getEffectsByItem\n\nBe creative but consistent with MUD conventions.'
+SET ai_system_prompt = 'You are an Expert Multi-User Dungeon World Builder.\n\nGUIDELINES:\n1. When a user asks to create something, use the appropriate MCP tools.\n2. To associate an effect with an item, first create the item using createItem to obtain its ID, then use createEffect setting the itemId field.\n3. Rooms have a name, description, and type (e.g., CITY, FIELD, FOREST, WATER, etc.).\n4. Items have a name, description, type (e.g., WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, LIGHT, POTION), and wear location (e.g., HEAD, TORSO, ARMS, LEGS, etc.).\n5. Weapons MUST have damage effects. Use EffectTypes like SLASHING_DAMAGE, PIERCING_DAMAGE, or BASHING_DAMAGE. Set modifier1 to the number of dice and modifier2 to the size of the dice (e.g., 2d6 means modifier1=2, modifier2=6).\n6. Items can have stat modifiers. Use EffectTypes like STRENGTH, DEXTERITY, ARMOR, etc., and set modifier1 to the bonus amount.\n7. If you need more information to create an object, ask the user for clarification.\n8. Always check existing content if the user refers to it, using the retrieval tools.\n\nYou have access to the following tool categories:\n- Room Management: createRoom, updateRoom, getRoom, getAllRooms\n- Item Management: createItem, updateItem, getItem, getAllItems\n- Effect Management: createEffect, updateEffect, getEffect, getEffectsByItem\n\nBe creative but consistent with MUD conventions.'
 WHERE id = 1;
 
 --changeset jeff:17
@@ -932,3 +932,48 @@ UPDATE character_classes SET starting_skills = 'Bandage,Dodge,Dual Wield,Hide,Li
 UPDATE character_classes SET starting_skills = 'Bandage,Say Prayer,Light Armor,Medium Armor,One Handed Weapon,Two Handed Weapon,Heavy Armor' WHERE name = 'Cleric';
 UPDATE character_classes SET starting_skills = 'Bandage,Bash,Dodge,Dual Wield,Light Armor,Medium Armor,One Handed Weapon,Parry,Shield Block,Two Handed Weapon,Heavy Armor' WHERE name = 'Fighter';
 UPDATE character_classes SET starting_skills = 'Bandage,Bash,Dodge,Dual Wield,Light Armor,Medium Armor,Parry,Say Prayer,Shield Block,Heavy Armor' WHERE name = 'Paladin';
+
+--changeset jeff:54
+INSERT INTO items (id, item_type, wear_location, name, description) VALUES
+(1, 'WEAPON', 'PRIMARY', 'Short Sword', 'A basic iron short sword.'),
+(2, 'WEAPON', 'PRIMARY', 'Dagger', 'A small, sharp dagger.'),
+(3, 'TWO_HANDED_WEAPON', 'PRIMARY', 'Longsword', 'A heavy, two-handed steel sword.'),
+(4, 'LIGHT_ARMOR', 'CHEST', 'Leather Tunic', 'A simple tunic made of cured leather.'),
+(5, 'MEDIUM_ARMOR', 'CHEST', 'Chainmail', 'Sturdy armor made of interlocking metal rings.'),
+(6, 'HEAVY_ARMOR', 'CHEST', 'Plate Mail', 'Heavy, protective steel plate armor.'),
+(7, 'LIGHT_ARMOR', 'HEAD', 'Leather Cap', 'A basic leather cap.'),
+(8, 'HEAVY_ARMOR', 'HEAD', 'Iron Helm', 'A solid iron helmet.'),
+(9, 'LIGHT_ARMOR', 'LEGS', 'Leather Leggings', 'Leather pants offering minimal protection.'),
+(10, 'HEAVY_ARMOR', 'LEGS', 'Iron Greaves', 'Heavy iron protection for the legs.'),
+(11, 'LIGHT_ARMOR', 'FEET', 'Leather Boots', 'Sturdy walking boots.'),
+(12, 'HEAVY_ARMOR', 'FEET', 'Iron Boots', 'Heavy metal boots.')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO item_effects (item_id, effect_id) VALUES
+(1, 153), -- Short Sword: Slashing Damage 1d6
+(2, 154), -- Dagger: Piercing Damage 1d6
+(3, 174), -- Longsword: Slashing Damage 1d8
+(4, 80),  -- Leather Tunic: Armor +2
+(5, 83),  -- Chainmail: Armor +5
+(6, 88),  -- Plate Mail: Armor +10
+(7, 79),  -- Leather Cap: Armor +1
+(8, 81),  -- Iron Helm: Armor +3
+(9, 79),  -- Leather Leggings: Armor +1
+(10, 81), -- Iron Greaves: Armor +3
+(11, 79), -- Leather Boots: Armor +1
+(12, 80)  -- Iron Boots: Armor +2
+ON CONFLICT DO NOTHING;
+
+--changeset jeff:55
+INSERT INTO items (id, item_type, wear_location, name, description) VALUES
+(13, 'RANGED_WEAPON', 'PRIMARY', 'Short Bow', 'A simple wooden short bow.'),
+(14, 'LIGHT_ARMOR', 'CHEST', 'Cloth Robe', 'A basic cloth robe offering minimal protection.'),
+(15, 'HEAVY_ARMOR', 'OFFHAND', 'Iron Shild', 'Heavy metal shield.'),
+(16, 'WEAPON', 'PRIMARY', 'Mace', 'A basic mace.')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO item_effects (item_id, effect_id) VALUES
+(13, 154), -- Short Bow: Piercing Damage 1d6 (reusing dagger effect for 1d6 piercing)
+(14, 79),   -- Cloth Robe: Armor +1 (reusing armor +1 effect)
+(15, 81),    -- Iron Shield: Armor +3 (reusing armor +3 effect)
+(16, 153) -- Mace: Bashing Damage 1d6
