@@ -48,6 +48,8 @@ class CharacterServiceTest {
     private CharacterClassRepository characterClassRepository;
     @Mock
     private SkillRepository skillRepository;
+    @Mock
+    private ItemService itemService;
 
     private CharacterService characterService;
 
@@ -62,7 +64,8 @@ class CharacterServiceTest {
                 communicationService,
                 roomService,
                 characterClassRepository,
-                skillRepository
+                skillRepository,
+                itemService
         );
     }
 
@@ -164,5 +167,37 @@ class CharacterServiceTest {
         assertThat(character.getRightFinger()).isEqualTo(newRing);
         assertThat(character.getLeftFinger()).isEqualTo(newRing3);
         assertThat(character.getInventory()).contains(newRing2);
+    }
+
+    @Test
+    void dropItem_ShouldRemoveFromInventoryAndAddToRoom() {
+        // Arrange
+        Character character = new Character();
+        character.setId(1L);
+        character.setName("TestHero");
+        character.setCurrentRoomId(101L);
+
+        Item itemToDrop = new Item();
+        itemToDrop.setId(55L);
+        itemToDrop.setName("Rusty Sword");
+
+        character.getInventory().add(itemToDrop);
+
+        when(roomService.addItemToRoom(eq(101L), eq(55L))).thenReturn(Mono.empty());
+        when(characterRepository.save(any(Character.class))).thenReturn(Mono.just(character));
+        when(statService.updateCurrentStats(any(Character.class))).thenReturn(Mono.just(character));
+        when(databaseClient.sql(anyString())).thenReturn(mock(DatabaseClient.GenericExecuteSpec.class, RETURNS_DEEP_STUBS));
+
+        // Act
+        StepVerifier.create(characterService.dropItem(character, 55L))
+                .assertNext(updatedChar -> {
+                    // Assert
+                    assertThat(updatedChar.getInventory()).isEmpty();
+                })
+                .verifyComplete();
+
+        verify(roomService).addItemToRoom(101L, 55L);
+        verify(communicationService).sendTextMessage(eq(character), contains("You drop Rusty Sword"));
+        verify(communicationService).roomMessage(eq(character), contains("TestHero drops Rusty Sword"));
     }
 }

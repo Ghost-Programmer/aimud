@@ -45,5 +45,20 @@ public class RoomService {
         return roomRepository.deleteById(id);
     }
 
+    @CacheEvict(value = {"rooms", "room"}, allEntries = true)
+    public Mono<Room> addItemToRoom(Long roomId, Long itemId) {
+        log.info("Adding item {} to room {}", itemId, roomId);
+        return this.getRoom(roomId)
+                .flatMap(room -> {
+                    String currentItems = room.getItems();
+                    if (currentItems == null || currentItems.isEmpty()) {
+                        room.setItems(String.valueOf(itemId));
+                    } else {
+                        room.setItems(currentItems + "," + itemId);
+                    }
+                    return this.saveRoom(room);
+                });
+    }
+
 
 }

@@ -353,6 +353,33 @@ public class CharacterService {
                 .flatMap(savedChar -> updateInventory(savedChar, currentInventory));
     }
 
+    public Mono<Character> dropItem(Character character, Long itemId) {
+        log.info("Dropping item {} for character {}", itemId, character.getName());
+        Item itemToDrop = character.getInventory().stream()
+                .filter(i -> i.getId().equals(itemId))
+                .findFirst()
+                .orElse(null);
+
+        if (itemToDrop == null) {
+            communicationService.sendTextMessage(character, "\n\nYou don't have that item in your inventory.");
+            return Mono.just(character);
+        }
+
+        List<Item> currentInventory = new ArrayList<>(character.getInventory());
+        currentInventory.remove(itemToDrop);
+        character.setInventory(currentInventory);
+
+        return this.roomService.addItemToRoom(character.getCurrentRoomId(), itemId)
+                .then(this.save(character))
+                .flatMap(savedChar -> updateInventory(savedChar, currentInventory))
+                .flatMap(savedChar -> getCharacterById(savedChar.getId()))
+                .doOnNext(savedChar -> {
+                    communicationService.sendTextMessage(savedChar, "\n\nYou drop " + itemToDrop.getName() + ".");
+                    communicationService.roomMessage(savedChar, "\n" + savedChar.getName() + " drops " + itemToDrop.getName() + ".");
+                    communicationService.sendCharacterUpdate(savedChar);
+                });
+    }
+
     public Mono<Character> generateCharacter(Character character) {
         if (character.getStrength() == 0) {
             character.setStrength(rollStat());

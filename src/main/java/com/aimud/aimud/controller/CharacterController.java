@@ -93,6 +93,15 @@ public class CharacterController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    @PostMapping("/{id}/drop/{itemId}")
+    public Mono<ResponseEntity<Character>> dropItem(@PathVariable Long id, @PathVariable Long itemId) {
+        log.info("REST Request to drop item {} for character: {}", itemId, id);
+        return characterService.getCharacterById(id)
+                .flatMap(character -> characterService.dropItem(character, itemId))
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/{id}/room")
     public Mono<ResponseEntity<Object>> getCharacterRoom(@PathVariable Long id) {
         log.info("REST Request to get room for character: {}", id);

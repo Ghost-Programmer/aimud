@@ -118,9 +118,12 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
       });
   }
 
-  onDrop(itemName: string) {
+  onDrop(itemId: number) {
       if (!this.character?.id) return;
-      this.characterService.sendCommand(this.character.id, `drop ${itemName}`).subscribe({
+      this.characterService.dropItem(this.character.id, itemId).subscribe({
+          next: (updatedChar) => {
+              Object.assign(this.character, updatedChar);
+          },
           error: (err) => console.error('Error dropping item', err)
       });
   }
