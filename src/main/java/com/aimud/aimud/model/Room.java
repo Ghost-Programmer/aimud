@@ -61,6 +61,8 @@ public class Room {
     private boolean downDoorOpen;
 
     private String items;
+    
+    private String mobiles;
 
     @CreatedDate
     @Column("created_at")
@@ -92,6 +94,19 @@ public class Room {
             }
         }
         return itemIds;
+    }
+    
+    public List<Long> getMobileIds() {
+        List<Long> mobileIds = new ArrayList<>();
+        if (mobiles != null && !mobiles.isEmpty()) {
+            String[] split = mobiles.split(",");
+            for (String s : split) {
+                try {
+                    mobileIds.add(Long.parseLong(s.trim()));
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        return mobileIds;
     }
 
 }

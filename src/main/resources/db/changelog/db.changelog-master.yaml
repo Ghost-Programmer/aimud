@@ -3,3 +3,5 @@ databaseChangeLog:
       file: db/changelog/changes/000-consolidated.sql
   - include:
       file: db/changelog/changes/001-add-room-items.sql
+  - include:
+      file: db/changelog/changes/002-add-mobiles.sql

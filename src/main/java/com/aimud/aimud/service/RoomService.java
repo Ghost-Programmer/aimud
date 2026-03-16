@@ -80,4 +80,36 @@ public class RoomService {
                 });
     }
 
+    @CacheEvict(value = {"rooms", "room"}, allEntries = true)
+    public Mono<Room> addMobileToRoom(Long roomId, Long mobileId) {
+        log.info("Adding mobile {} to room {}", mobileId, roomId);
+        return this.getRoom(roomId)
+                .flatMap(room -> {
+                    String currentMobiles = room.getMobiles();
+                    if (currentMobiles == null || currentMobiles.isEmpty()) {
+                        room.setMobiles(String.valueOf(mobileId));
+                    } else {
+                        room.setMobiles(currentMobiles + "," + mobileId);
+                    }
+                    return this.saveRoom(room);
+                });
+    }
+
+    @CacheEvict(value = {"rooms", "room"}, allEntries = true)
+    public Mono<Room> removeMobileFromRoom(Long roomId, Long mobileId) {
+        log.info("Removing mobile {} from room {}", mobileId, roomId);
+        return this.getRoom(roomId)
+                .flatMap(room -> {
+                    List<Long> mobileIds = room.getMobileIds();
+                    if (mobileIds.remove(mobileId)) {
+                        String newMobiles = mobileIds.stream()
+                                .map(String::valueOf)
+                                .collect(Collectors.joining(","));
+                        room.setMobiles(newMobiles.isEmpty() ? null : newMobiles);
+                        return this.saveRoom(room);
+                    }
+                    return Mono.just(room);
+                });
+    }
+
 }
