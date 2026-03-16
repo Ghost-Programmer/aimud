@@ -202,18 +202,24 @@ public class CharacterService {
     private Mono<Character> updateInventory(Character character, List<Item> inventory) {
         if (inventory == null) return Mono.just(character);
         log.debug("Updating inventory for character: {}", character.getId());
+
+        // Extract unique item IDs from the inventory list to prevent duplicate key exceptions
+        List<Long> uniqueItemIds = inventory.stream()
+                                            .map(Item::getId)
+                                            .filter(java.util.Objects::nonNull)
+                                            .distinct() // This ensures only unique item IDs are processed
+                                            .collect(Collectors.toList());
+
         return databaseClient.sql("DELETE FROM character_inventory WHERE character_id = :characterId")
                 .bind("characterId", character.getId())
                 .then()
-                .thenMany(Flux.fromIterable(inventory))
-                .flatMap(item -> {
-                    if (item.getId() == null) return Mono.empty();
-                    return databaseClient.sql("INSERT INTO character_inventory (character_id, item_id) VALUES (:characterId, :itemId)")
+                .thenMany(Flux.fromIterable(uniqueItemIds)) // Iterate over unique IDs
+                .flatMap(itemId -> databaseClient.sql("INSERT INTO character_inventory (character_id, item_id) VALUES (:characterId, :itemId)")
                             .bind("characterId", character.getId())
-                            .bind("itemId", item.getId())
+                            .bind("itemId", itemId)
                             .fetch()
-                            .rowsUpdated();
-                })
+                            .rowsUpdated()
+                )
                 .then(Mono.just(character));
     }
 
@@ -380,6 +386,27 @@ public class CharacterService {
                 });
     }
 
+    public Mono<Character> takeItem(Character character, Long itemId) {
+        log.info("Taking item {} for character {}", itemId, character.getName());
+
+        return this.itemService.getItem(itemId)
+                .flatMap(itemToTake -> {
+                    List<Item> currentInventory = new ArrayList<>(character.getInventory());
+                    currentInventory.add(itemToTake);
+                    character.setInventory(currentInventory);
+
+                    return this.roomService.removeItemFromRoom(character.getCurrentRoomId(), itemId)
+                            .then(this.save(character))
+                            .flatMap(savedChar -> updateInventory(savedChar, currentInventory))
+                            .flatMap(savedChar -> getCharacterById(savedChar.getId()))
+                            .doOnNext(savedChar -> {
+                                communicationService.sendTextMessage(savedChar, "\n\nYou take " + itemToTake.getName() + ".");
+                                communicationService.roomMessage(savedChar, "\n" + savedChar.getName() + " takes " + itemToTake.getName() + ".");
+                                communicationService.sendCharacterUpdate(savedChar);
+                            });
+                });
+    }
+
     public Mono<Character> generateCharacter(Character character) {
         if (character.getStrength() == 0) {
             character.setStrength(rollStat());
@@ -387,7 +414,7 @@ public class CharacterService {
             character.setConstitution(rollStat());
             character.setIntelligence(rollStat());
             character.setWisdom(rollStat());
-            character.setCharisma(rollStat());
+            character.setCharisma(character.getCharisma());
         }
         return statService.updateCurrentStats(character);
     }

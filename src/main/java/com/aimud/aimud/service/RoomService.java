@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @Slf4j
 public class RoomService {
@@ -60,5 +63,21 @@ public class RoomService {
                 });
     }
 
+    @CacheEvict(value = {"rooms", "room"}, allEntries = true)
+    public Mono<Room> removeItemFromRoom(Long roomId, Long itemId) {
+        log.info("Removing item {} from room {}", itemId, roomId);
+        return this.getRoom(roomId)
+                .flatMap(room -> {
+                    List<Long> itemIds = room.getItemIds();
+                    if (itemIds.remove(itemId)) {
+                        String newItems = itemIds.stream()
+                                .map(String::valueOf)
+                                .collect(Collectors.joining(","));
+                        room.setItems(newItems.isEmpty() ? null : newItems);
+                        return this.saveRoom(room);
+                    }
+                    return Mono.just(room);
+                });
+    }
 
 }
