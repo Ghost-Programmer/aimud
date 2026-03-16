@@ -38,6 +38,7 @@ export interface Room {
   westDoorOpen: boolean;
   upDoorOpen: boolean;
   downDoorOpen: boolean;
+  items?: string;
 }
 
 export interface PagedRooms {

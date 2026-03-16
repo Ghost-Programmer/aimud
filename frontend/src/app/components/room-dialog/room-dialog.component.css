@@ -144,3 +144,75 @@ h3 {
   border-radius: 4px;
   cursor: pointer;
 }
+
+.items-section {
+  margin-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1rem;
+}
+
+.item-selection {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.item-selection select {
+  flex: 1;
+}
+
+.add-btn {
+  background: #4a4ae2;
+  color: white;
+  border: none;
+  padding: 0 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.add-btn:disabled {
+  background: #333;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.items-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  min-height: 40px;
+}
+
+.item-tag {
+  background: rgba(74, 74, 226, 0.2);
+  border: 1px solid rgba(74, 74, 226, 0.4);
+  border-radius: 4px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: #ff4d4d;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-list {
+  color: #666;
+  font-style: italic;
+  font-size: 0.9rem;
+}

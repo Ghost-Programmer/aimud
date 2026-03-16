@@ -112,6 +112,7 @@ public class RoomController {
                     existingRoom.setWestDoorOpen(room.isWestDoorOpen());
                     existingRoom.setUpDoorOpen(room.isUpDoorOpen());
                     existingRoom.setDownDoorOpen(room.isDownDoorOpen());
+                    existingRoom.setItems(room.getItems());
                     
                     return roomService.saveRoom(existingRoom);
                 })

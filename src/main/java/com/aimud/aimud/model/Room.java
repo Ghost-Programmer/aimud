@@ -8,6 +8,8 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Setter
 @Getter
@@ -58,6 +60,8 @@ public class Room {
     @Column("down_door_open")
     private boolean downDoorOpen;
 
+    private String items;
+
     @CreatedDate
     @Column("created_at")
     private LocalDateTime createdAt;
@@ -75,6 +79,19 @@ public class Room {
     private String modifiedBy;
 
     public Room() {
+    }
+
+    public List<Long> getItemIds() {
+        List<Long> itemIds = new ArrayList<>();
+        if (items != null && !items.isEmpty()) {
+            String[] split = items.split(",");
+            for (String s : split) {
+                try {
+                    itemIds.add(Long.parseLong(s.trim()));
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        return itemIds;
     }
 
 }

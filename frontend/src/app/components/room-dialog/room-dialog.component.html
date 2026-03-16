@@ -79,6 +79,26 @@
           </div>
         </div>
       </div>
+
+      <div class="items-section">
+        <h3>Items in Room</h3>
+        <div class="item-selection">
+          <select [ngModel]="selectedItemId" (change)="onSelectItemIdChange($event)" class="form-input">
+            <option [value]="null">-- Select an item to add --</option>
+            <option *ngFor="let item of availableItems" [value]="item.id">
+              {{ item.name }} ({{ item.itemType }})
+            </option>
+          </select>
+          <button (click)="addSelectedItem()" [disabled]="!selectedItemId" class="add-btn">Add</button>
+        </div>
+        <div class="items-list">
+          <div *ngFor="let item of currentRoomItems; let i = index" class="item-tag">
+            <span>{{ item.name }}</span>
+            <button (click)="removeItem(i)" class="remove-btn">×</button>
+          </div>
+          <div *ngIf="currentRoomItems.length === 0" class="empty-list">No items in this room.</div>
+        </div>
+      </div>
     </div>
 
     <div class="actions">

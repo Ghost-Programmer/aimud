@@ -59,15 +59,21 @@ public class RoomControllerTest {
     }
 
     @Test
-    void testCreateRoom() {
-        when(roomRepository.save(any(Room.class))).thenReturn(Mono.just(testRoom));
+    void testUpdateRoom() {
+        Room updatedRoom = new Room();
+        updatedRoom.setName("Updated Room");
+        updatedRoom.setItems("1,2,3");
 
-        webTestClient.post().uri("/api/rooms")
+        when(roomRepository.findById(1L)).thenReturn(Mono.just(testRoom));
+        when(roomRepository.save(any(Room.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        webTestClient.put().uri("/api/rooms/1")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(testRoom)
+                .bodyValue(updatedRoom)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.name").isEqualTo("Test Room");
+                .jsonPath("$.name").isEqualTo("Updated Room")
+                .jsonPath("$.items").isEqualTo("1,2,3");
     }
 }
