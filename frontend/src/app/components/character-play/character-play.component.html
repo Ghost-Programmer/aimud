@@ -217,21 +217,13 @@
               <td (click)="onShowItemStats(item)">{{ item.wearLocation }}</td>
               <td class="item-value" (click)="onShowItemStats(item)">{{ item.value }}g</td>
               <td class="action-cell">
-                <div class="split-button">
-                  <button class="main-action-btn" (click)="onEquip(item.id)">Equip</button>
-                  <button class="dropdown-trigger-btn" [matMenuTriggerFor]="itemMenu">
-                    <mat-icon>arrow_drop_down</mat-icon>
+                <div class="action-buttons">
+                  <button mat-icon-button class="action-btn equip-btn" (click)="onEquip(item.id)" title="Equip">
+                    <mat-icon>checkroom</mat-icon>
                   </button>
-                  <mat-menu #itemMenu="matMenu" class="dark-menu">
-                    <button mat-menu-item (click)="onDrop(item.name)">
-                      <mat-icon>delete</mat-icon>
-                      <span>Drop</span>
-                    </button>
-                    <button mat-menu-item (click)="onExamine(item.name)">
-                      <mat-icon>info</mat-icon>
-                      <span>Examine</span>
-                    </button>
-                  </mat-menu>
+                  <button mat-icon-button class="action-btn drop-btn" (click)="onDrop(item.name)" title="Drop">
+                    <mat-icon>delete</mat-icon>
+                  </button>
                 </div>
               </td>
             </tr>

@@ -125,13 +125,6 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
       });
   }
 
-  onExamine(itemName: string) {
-      if (!this.character?.id) return;
-      this.characterService.sendCommand(this.character.id, `examine ${itemName}`).subscribe({
-          error: (err) => console.error('Error examining item', err)
-      });
-  }
-
   onShowItemStats(item: any) {
     if (!item) return;
     this.dialog.open(ItemStatsDialogComponent, {
