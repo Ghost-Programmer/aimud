@@ -93,35 +93,35 @@
     <div class="stat-content equipped-tab" *ngIf="activeStatTab === 'equipped'">
       <div class="equipment-layout">
         <div class="equipment-column left-column">
-          <div class="equipment-slot" [class.has-item]="character.head">
+          <div class="equipment-slot" [class.has-item]="character.head" (click)="onShowItemStats(character.head)">
             <span class="slot-label">Head:</span>
             <span class="slot-item">{{ character.head?.name || 'Empty' }}</span>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.face">
+          <div class="equipment-slot" [class.has-item]="character.face" (click)="onShowItemStats(character.face)">
             <span class="slot-label">Face:</span>
             <span class="slot-item">{{ character.face?.name || 'Empty' }}</span>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.neck">
+          <div class="equipment-slot" [class.has-item]="character.neck" (click)="onShowItemStats(character.neck)">
             <span class="slot-label">Neck:</span>
             <span class="slot-item">{{ character.neck?.name || 'Empty' }}</span>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.leftEar">
+          <div class="equipment-slot" [class.has-item]="character.leftEar" (click)="onShowItemStats(character.leftEar)">
             <span class="slot-label">Left Ear:</span>
             <span class="slot-item">{{ character.leftEar?.name || 'Empty' }}</span>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.leftFinger">
+          <div class="equipment-slot" [class.has-item]="character.leftFinger" (click)="onShowItemStats(character.leftFinger)">
             <span class="slot-label">L. Finger:</span>
             <span class="slot-item">{{ character.leftFinger?.name || 'Empty' }}</span>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.leftWrist">
+          <div class="equipment-slot" [class.has-item]="character.leftWrist" (click)="onShowItemStats(character.leftWrist)">
             <span class="slot-label">L. Wrist:</span>
             <span class="slot-item">{{ character.leftWrist?.name || 'Empty' }}</span>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.arms">
+          <div class="equipment-slot" [class.has-item]="character.arms" (click)="onShowItemStats(character.arms)">
             <span class="slot-label">Arms:</span>
             <span class="slot-item">{{ character.arms?.name || 'Empty' }}</span>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.hands">
+          <div class="equipment-slot" [class.has-item]="character.hands" (click)="onShowItemStats(character.hands)">
             <span class="slot-label">Hands:</span>
             <span class="slot-item">{{ character.hands?.name || 'Empty' }}</span>
           </div>
@@ -141,40 +141,40 @@
         </div>
 
         <div class="equipment-column right-column">
-          <div class="equipment-slot" [class.has-item]="character.chest">
+          <div class="equipment-slot" [class.has-item]="character.chest" (click)="onShowItemStats(character.chest)">
             <span class="slot-item">{{ character.chest?.name || 'Empty' }}</span>
             <span class="slot-label">:Chest</span>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.waist">
+          <div class="equipment-slot" [class.has-item]="character.waist" (click)="onShowItemStats(character.waist)">
             <span class="slot-item">{{ character.waist?.name || 'Empty' }}</span>
             <span class="slot-label">:Waist</span>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.legs">
+          <div class="equipment-slot" [class.has-item]="character.legs" (click)="onShowItemStats(character.legs)">
             <span class="slot-item">{{ character.legs?.name || 'Empty' }}</span>
             <span class="slot-label">:Legs</span>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.feet">
+          <div class="equipment-slot" [class.has-item]="character.feet" (click)="onShowItemStats(character.feet)">
             <span class="slot-item">{{ character.feet?.name || 'Empty' }}</span>
             <span class="slot-label">:Feet</span>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.rightEar">
+          <div class="equipment-slot" [class.has-item]="character.rightEar" (click)="onShowItemStats(character.rightEar)">
             <span class="slot-item">{{ character.rightEar?.name || 'Empty' }}</span>
             <span class="slot-label">:Right Ear</span>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.rightFinger">
+          <div class="equipment-slot" [class.has-item]="character.rightFinger" (click)="onShowItemStats(character.rightFinger)">
             <span class="slot-item">{{ character.rightFinger?.name || 'Empty' }}</span>
             <span class="slot-label">:R. Finger</span>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.rightWrist">
+          <div class="equipment-slot" [class.has-item]="character.rightWrist" (click)="onShowItemStats(character.rightWrist)">
             <span class="slot-item">{{ character.rightWrist?.name || 'Empty' }}</span>
             <span class="slot-label">:R. Wrist</span>
           </div>
-          <div class="equipment-slot primary-offhand" [class.has-item]="character.primary || character.offhand">
-            <div class="weapon-slot" [class.has-item]="character.primary">
+          <div class="equipment-slot primary-offhand">
+            <div class="weapon-slot" [class.has-item]="character.primary" (click)="onShowItemStats(character.primary)">
               <span class="slot-label">Primary:</span>
               <span class="slot-item">{{ character.primary?.name || 'Empty' }}</span>
             </div>
-            <div class="weapon-slot" [class.has-item]="character.offhand">
+            <div class="weapon-slot" [class.has-item]="character.offhand" (click)="onShowItemStats(character.offhand)">
               <span class="slot-label">Offhand:</span>
               <span class="slot-item">{{ character.offhand?.name || 'Empty' }}</span>
             </div>
@@ -217,10 +217,10 @@
           </thead>
           <tbody>
             <tr *ngFor="let item of sortedInventory">
-              <td class="item-name">{{ item.name }}</td>
-              <td>{{ item.itemType }}</td>
-              <td>{{ item.wearLocation }}</td>
-              <td class="item-value">{{ item.value }}g</td>
+              <td class="item-name" (click)="onShowItemStats(item)">{{ item.name }}</td>
+              <td (click)="onShowItemStats(item)">{{ item.itemType }}</td>
+              <td (click)="onShowItemStats(item)">{{ item.wearLocation }}</td>
+              <td class="item-value" (click)="onShowItemStats(item)">{{ item.value }}g</td>
               <td class="action-cell">
                 <div class="split-button">
                   <button class="main-action-btn" (click)="onEquip(item.id)">Equip</button>

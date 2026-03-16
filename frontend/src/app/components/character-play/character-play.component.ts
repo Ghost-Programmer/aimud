@@ -5,6 +5,8 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ItemStatsDialogComponent } from '../item-stats-dialog/item-stats-dialog.component';
 import { CharacterService } from '../../services/character.service';
 import { GameWebSocketService } from '../../services/game-websocket.service';
 import { Subscription } from 'rxjs';
@@ -12,7 +14,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-character-play',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule, MatMenuModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule, FormsModule, DragDropModule, MatMenuModule, MatButtonModule, MatIconModule, MatDialogModule],
   templateUrl: './character-play.component.html',
   styleUrl: './character-play.component.css'
 })
@@ -29,7 +31,8 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
       private characterService: CharacterService,
-      private gameWebSocketService: GameWebSocketService
+      private gameWebSocketService: GameWebSocketService,
+      private dialog: MatDialog
   ) {}
 
   ngOnInit() {
@@ -127,6 +130,15 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
       this.characterService.sendCommand(this.character.id, `examine ${itemName}`).subscribe({
           error: (err) => console.error('Error examining item', err)
       });
+  }
+
+  onShowItemStats(item: any) {
+    if (!item) return;
+    this.dialog.open(ItemStatsDialogComponent, {
+      data: { item },
+      width: '320px',
+      maxWidth: '90vw'
+    });
   }
 
   setActiveStatTab(tab: string) {

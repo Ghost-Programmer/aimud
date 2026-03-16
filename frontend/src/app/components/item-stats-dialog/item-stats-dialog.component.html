@@ -1,0 +1,56 @@
+<div class="item-dialog-container">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>{{ data.item.name }}</h2>
+    <button mat-icon-button (click)="onClose()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content>
+    <div class="item-info">
+      <div class="info-row">
+        <span class="info-label">Type:</span>
+        <span class="info-value">{{ data.item.itemType }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Wear Location:</span>
+        <span class="info-value">{{ data.item.wearLocation }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Value:</span>
+        <span class="info-value">{{ data.item.value }}g</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="effects-section" *ngIf="data.item.effects && data.item.effects.length > 0">
+      <h3 class="section-title">Effects</h3>
+      <div class="effects-list">
+        <div class="effect-item" *ngFor="let effect of data.item.effects">
+          {{ getEffectDescription(effect) }}
+        </div>
+      </div>
+      <div class="divider"></div>
+    </div>
+
+    <div class="stats-grid">
+      <ng-container *ngFor="let key of getStatKeys()">
+        <div class="stat-item" *ngIf="hasStat(key)">
+          <span class="stat-label">{{ getStatLabel(key) }}:</span>
+          <span class="stat-value" [class.positive]="data.item[key] > 0" [class.negative]="data.item[key] < 0">
+            {{ data.item[key] > 0 ? '+' : '' }}{{ data.item[key] }}
+          </span>
+        </div>
+      </ng-container>
+    </div>
+
+    <div class="no-stats" *ngIf="!getStatKeys().some(hasStat.bind(this))">
+      No additional stats.
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onClose()" class="ok-button">OK</button>
+  </mat-dialog-actions>
+</div>
