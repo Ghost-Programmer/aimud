@@ -2,6 +2,9 @@ import { Component, OnInit, OnChanges, Input, SimpleChanges, OnDestroy, ViewChil
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { CharacterService } from '../../services/character.service';
 import { GameWebSocketService } from '../../services/game-websocket.service';
 import { Subscription } from 'rxjs';
@@ -9,7 +12,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-character-play',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule],
+  imports: [CommonModule, FormsModule, DragDropModule, MatMenuModule, MatButtonModule, MatIconModule],
   templateUrl: './character-play.component.html',
   styleUrl: './character-play.component.css'
 })
@@ -99,6 +102,30 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
 
       this.characterService.sendCommand(this.character.id, cmd).subscribe({
           error: (err) => console.error('Error sending command', err)
+      });
+  }
+
+  onEquip(itemId: number) {
+      if (!this.character?.id) return;
+      this.characterService.equipItem(this.character.id, itemId).subscribe({
+          next: (updatedChar) => {
+              Object.assign(this.character, updatedChar);
+          },
+          error: (err) => console.error('Error equipping item', err)
+      });
+  }
+
+  onDrop(itemName: string) {
+      if (!this.character?.id) return;
+      this.characterService.sendCommand(this.character.id, `drop ${itemName}`).subscribe({
+          error: (err) => console.error('Error dropping item', err)
+      });
+  }
+
+  onExamine(itemName: string) {
+      if (!this.character?.id) return;
+      this.characterService.sendCommand(this.character.id, `examine ${itemName}`).subscribe({
+          error: (err) => console.error('Error examining item', err)
       });
   }
 

@@ -212,6 +212,7 @@
                   {{ sortDirection === 'asc' ? '▲' : '▼' }}
                 </span>
               </th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -220,9 +221,27 @@
               <td>{{ item.itemType }}</td>
               <td>{{ item.wearLocation }}</td>
               <td class="item-value">{{ item.value }}g</td>
+              <td class="action-cell">
+                <div class="split-button">
+                  <button class="main-action-btn" (click)="onEquip(item.id)">Equip</button>
+                  <button class="dropdown-trigger-btn" [matMenuTriggerFor]="itemMenu">
+                    <mat-icon>arrow_drop_down</mat-icon>
+                  </button>
+                  <mat-menu #itemMenu="matMenu" class="dark-menu">
+                    <button mat-menu-item (click)="onDrop(item.name)">
+                      <mat-icon>delete</mat-icon>
+                      <span>Drop</span>
+                    </button>
+                    <button mat-menu-item (click)="onExamine(item.name)">
+                      <mat-icon>info</mat-icon>
+                      <span>Examine</span>
+                    </button>
+                  </mat-menu>
+                </div>
+              </td>
             </tr>
             <tr *ngIf="!character.inventory || character.inventory.length === 0">
-              <td colspan="4" class="empty-inventory">Inventory is empty.</td>
+              <td colspan="5" class="empty-inventory">Inventory is empty.</td>
             </tr>
           </tbody>
         </table>
