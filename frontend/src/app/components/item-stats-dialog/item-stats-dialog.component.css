@@ -8,9 +8,6 @@
 }
 
 .dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 12px;
 }
 
@@ -18,10 +15,6 @@ h2[mat-dialog-title] {
   margin: 0;
   color: #ffd700;
   font-size: 1.25rem;
-}
-
-.close-button {
-  color: #888;
 }
 
 .item-info {
