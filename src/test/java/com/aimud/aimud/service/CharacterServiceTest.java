@@ -1,0 +1,168 @@
+package com.aimud.aimud.service;
+
+import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Item;
+import com.aimud.aimud.repository.CharacterClassRepository;
+import com.aimud.aimud.repository.CharacterEffectRepository;
+import com.aimud.aimud.repository.CharacterRepository;
+import com.aimud.aimud.repository.SkillRepository;
+import com.aimud.aimud.repository.UserRepository;
+import com.aimud.aimud.types.ItemType;
+import com.aimud.aimud.types.WearLocation;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.r2dbc.core.DatabaseClient;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class CharacterServiceTest {
+
+    @Mock
+    private CharacterRepository characterRepository;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private StatService statService;
+    @Mock
+    private DatabaseClient databaseClient;
+    @Mock
+    private CharacterEffectRepository characterEffectRepository;
+    @Mock
+    private CommunicationService communicationService;
+    @Mock
+    private RoomService roomService;
+    @Mock
+    private CharacterClassRepository characterClassRepository;
+    @Mock
+    private SkillRepository skillRepository;
+
+    private CharacterService characterService;
+
+    @BeforeEach
+    void setUp() {
+        characterService = new CharacterService(
+                characterRepository,
+                userRepository,
+                statService,
+                databaseClient,
+                characterEffectRepository,
+                communicationService,
+                roomService,
+                characterClassRepository,
+                skillRepository
+        );
+    }
+
+    @Test
+    void equipItem_ShouldEquipHeadItemAndReturnOldToInventory() {
+        // Arrange
+        Character character = new Character();
+        character.setId(1L);
+        character.setName("TestHero");
+        
+        Item oldHead = new Item();
+        oldHead.setId(10L);
+        oldHead.setName("Old Helmet");
+        character.setHead(oldHead);
+
+        Item newHead = new Item();
+        newHead.setId(11L);
+        newHead.setName("New Shiny Helmet");
+        newHead.setItemType(ItemType.HEAVY_ARMOR);
+        newHead.setWearLocation(WearLocation.HEAD);
+
+        List<Item> inventory = new ArrayList<>();
+        inventory.add(newHead);
+        character.setInventory(inventory);
+
+        when(characterRepository.save(any(Character.class))).thenReturn(Mono.just(character));
+        when(statService.updateCurrentStats(any(Character.class))).thenReturn(Mono.just(character));
+        
+        // Mocking databaseClient for updateInventory
+        when(databaseClient.sql(anyString())).thenReturn(mock(DatabaseClient.GenericExecuteSpec.class, RETURNS_DEEP_STUBS));
+
+        // Act
+        StepVerifier.create(characterService.equipItem(character, 11L))
+                .assertNext(updatedChar -> {
+                    // Assert
+                    assertThat(updatedChar.getHead()).isEqualTo(newHead);
+                    assertThat(updatedChar.getInventory()).contains(oldHead);
+                    assertThat(updatedChar.getInventory()).doesNotContain(newHead);
+                })
+                .verifyComplete();
+
+        verify(communicationService).sendTextMessage(eq(character), contains("You equip New Shiny Helmet"));
+    }
+
+    @Test
+    void equipItem_ShouldHandleFingerSlotsCorrectly() {
+        // Arrange
+        Character character = new Character();
+        character.setId(1L);
+        character.setName("TestHero");
+
+        Item ring1 = new Item();
+        ring1.setId(21L);
+        ring1.setName("Gold Ring");
+        ring1.setItemType(ItemType.MISC); // Initially MISC to avoid being equippable if we test that
+        ring1.setWearLocation(WearLocation.FINGER);
+        
+        // Equippable ring
+        Item newRing = new Item();
+        newRing.setId(22L);
+        newRing.setName("Magic Ring");
+        newRing.setItemType(ItemType.LIGHT_ARMOR); // Setting as armor to make it equippable per logic
+        newRing.setWearLocation(WearLocation.FINGER);
+
+        character.getInventory().add(newRing);
+
+        when(characterRepository.save(any(Character.class))).thenReturn(Mono.just(character));
+        when(statService.updateCurrentStats(any(Character.class))).thenReturn(Mono.just(character));
+        
+        // Mocks for DB
+        when(databaseClient.sql(anyString())).thenReturn(mock(DatabaseClient.GenericExecuteSpec.class, RETURNS_DEEP_STUBS));
+
+        // Test 1: Right finger empty -> goes to Right
+        characterService.equipItem(character, 22L).block();
+        assertThat(character.getRightFinger()).isEqualTo(newRing);
+        assertThat(character.getLeftFinger()).isNull();
+
+        // Test 2: Right full, Left empty -> goes to Left
+        Item newRing2 = new Item();
+        newRing2.setId(23L);
+        newRing2.setName("Power Ring");
+        newRing2.setItemType(ItemType.LIGHT_ARMOR);
+        newRing2.setWearLocation(WearLocation.FINGER);
+        character.getInventory().add(newRing2);
+        
+        characterService.equipItem(character, 23L).block();
+        assertThat(character.getRightFinger()).isEqualTo(newRing);
+        assertThat(character.getLeftFinger()).isEqualTo(newRing2);
+
+        // Test 3: Both full -> replaces Left
+        Item newRing3 = new Item();
+        newRing3.setId(24L);
+        newRing3.setName("Uber Ring");
+        newRing3.setItemType(ItemType.LIGHT_ARMOR);
+        newRing3.setWearLocation(WearLocation.FINGER);
+        character.getInventory().add(newRing3);
+
+        characterService.equipItem(character, 24L).block();
+        assertThat(character.getRightFinger()).isEqualTo(newRing);
+        assertThat(character.getLeftFinger()).isEqualTo(newRing3);
+        assertThat(character.getInventory()).contains(newRing2);
+    }
+}

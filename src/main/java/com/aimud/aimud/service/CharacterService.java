@@ -215,6 +215,142 @@ public class CharacterService {
                 .then(Mono.just(character));
     }
 
+    public Mono<Character> equipItem(Character character, Long itemId) {
+        log.info("Equipping item {} for character {}", itemId, character.getName());
+        Item itemToEquip = character.getInventory().stream()
+                .filter(i -> i.getId().equals(itemId))
+                .findFirst()
+                .orElse(null);
+
+        if (itemToEquip == null) {
+            communicationService.sendTextMessage(character, "\n\nYou don't have that item in your inventory.");
+            return Mono.just(character);
+        }
+
+        // Check if item is equippable
+        boolean isEquippable = switch (itemToEquip.getItemType()) {
+            case WEAPON, TWO_HANDED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR -> true;
+            default -> false;
+        };
+
+        if (!isEquippable) {
+            communicationService.sendTextMessage(character, "\n\nYou cannot equip " + itemToEquip.getName() + ".");
+            return Mono.just(character);
+        }
+
+        List<Item> currentInventory = new ArrayList<>(character.getInventory());
+        Item oldItem1 = null;
+        Item oldItem2 = null;
+
+        switch (itemToEquip.getWearLocation()) {
+            case HEAD -> {
+                oldItem1 = character.getHead();
+                character.setHead(itemToEquip);
+            }
+            case CHEST -> {
+                oldItem1 = character.getChest();
+                character.setChest(itemToEquip);
+            }
+            case LEGS -> {
+                oldItem1 = character.getLegs();
+                character.setLegs(itemToEquip);
+            }
+            case FEET -> {
+                oldItem1 = character.getFeet();
+                character.setFeet(itemToEquip);
+            }
+            case ARMS -> {
+                oldItem1 = character.getArms();
+                character.setArms(itemToEquip);
+            }
+            case HANDS -> {
+                oldItem1 = character.getHands();
+                character.setHands(itemToEquip);
+            }
+            case FINGER -> {
+                if (character.getRightFinger() == null) {
+                    character.setRightFinger(itemToEquip);
+                } else if (character.getLeftFinger() == null) {
+                    character.setLeftFinger(itemToEquip);
+                } else {
+                    oldItem1 = character.getLeftFinger();
+                    character.setLeftFinger(itemToEquip);
+                }
+            }
+            case WRIST -> {
+                if (character.getRightWrist() == null) {
+                    character.setRightWrist(itemToEquip);
+                } else if (character.getLeftWrist() == null) {
+                    character.setLeftWrist(itemToEquip);
+                } else {
+                    oldItem1 = character.getLeftWrist();
+                    character.setLeftWrist(itemToEquip);
+                }
+            }
+            case EAR -> {
+                if (character.getRightEar() == null) {
+                    character.setRightEar(itemToEquip);
+                } else if (character.getLeftEar() == null) {
+                    character.setLeftEar(itemToEquip);
+                } else {
+                    oldItem1 = character.getLeftEar();
+                    character.setLeftEar(itemToEquip);
+                }
+            }
+            case NECK -> {
+                oldItem1 = character.getNeck();
+                character.setNeck(itemToEquip);
+            }
+            case FACE -> {
+                oldItem1 = character.getFace();
+                character.setFace(itemToEquip);
+            }
+            case WAIST -> {
+                oldItem1 = character.getWaist();
+                character.setWaist(itemToEquip);
+            }
+            case PRIMARY -> {
+                oldItem1 = character.getPrimary();
+                character.setPrimary(itemToEquip);
+            }
+            case OFFHAND -> {
+                oldItem1 = character.getOffhand();
+                character.setOffhand(itemToEquip);
+            }
+            default -> {
+                communicationService.sendTextMessage(character, "\n\nThis item cannot be worn.");
+                return Mono.just(character);
+            }
+        }
+
+        // Special handling for 2H weapons: if it's a 2H weapon, it goes to primary and we might need to clear offhand
+        if (itemToEquip.getItemType() == com.aimud.aimud.types.ItemType.TWO_HANDED_WEAPON) {
+            // If it wasn't already assigned to primary (which it should be if wear location is PRIMARY)
+            if (character.getPrimary() != itemToEquip) {
+                oldItem1 = character.getPrimary();
+                character.setPrimary(itemToEquip);
+            }
+            if (character.getOffhand() != null) {
+                oldItem2 = character.getOffhand();
+                character.setOffhand(null);
+            }
+        }
+
+        currentInventory.remove(itemToEquip);
+        if (oldItem1 != null) {
+            currentInventory.add(oldItem1);
+        }
+        if (oldItem2 != null) {
+            currentInventory.add(oldItem2);
+        }
+        character.setInventory(currentInventory);
+
+        communicationService.sendTextMessage(character, "\n\nYou equip " + itemToEquip.getName() + ".");
+
+        return save(character)
+                .flatMap(savedChar -> updateInventory(savedChar, currentInventory));
+    }
+
     public Mono<Character> generateCharacter(Character character) {
         if (character.getStrength() == 0) {
             character.setStrength(rollStat());
