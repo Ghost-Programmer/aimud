@@ -10,7 +10,8 @@ import { ConfigDashboardComponent } from '../../components/config-dashboard/conf
 import { ItemCreatorComponent } from '../../components/item-creator/item-creator.component';
 import { RoomManagementComponent } from '../../components/room-management/room-management.component';
 import { AiDialogComponent } from '../../components/ai-dialog/ai-dialog.component';
-import {EffectDashboardComponent} from '../../components/effect-dashboard/effect-dashboard.component';
+import { EffectDashboardComponent } from '../../components/effect-dashboard/effect-dashboard.component';
+import { MobileEditorComponent } from '../../components/mobile-editor/mobile-editor.component';
 import { GameWebSocketService } from '../../services/game-websocket.service';
 import { Subscription } from 'rxjs';
 
@@ -29,7 +30,20 @@ interface PlayTabData {
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, DragDropModule, PlayerListComponent, CreateCharacterComponent, CharacterSelectComponent, CharacterPlayComponent, ConfigDashboardComponent, ItemCreatorComponent, RoomManagementComponent, AiDialogComponent, EffectDashboardComponent],
+  imports: [
+    CommonModule,
+    DragDropModule,
+    PlayerListComponent,
+    CreateCharacterComponent,
+    CharacterSelectComponent,
+    CharacterPlayComponent,
+    ConfigDashboardComponent,
+    ItemCreatorComponent,
+    RoomManagementComponent,
+    AiDialogComponent,
+    EffectDashboardComponent,
+    MobileEditorComponent
+  ],
   templateUrl: './user-dashboard.component.html',
   styleUrl: './user-dashboard.component.css'
 })

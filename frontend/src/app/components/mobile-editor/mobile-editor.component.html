@@ -1,0 +1,116 @@
+<div class="mobile-editor-container">
+
+  <!-- Left Panel: List of Mobiles -->
+  <div class="list-panel">
+    <div class="panel-header">
+      <h3>Mobiles</h3>
+      <button class="btn-create" (click)="createNew()">+ New</button>
+    </div>
+    <ul class="mobile-list">
+      <li *ngFor="let m of mobiles"
+          [class.selected]="selectedMobile?.id === m.id"
+          (click)="selectMobile(m)">
+        <span class="mobile-name">{{ m.name }}</span>
+        <button class="btn-delete" (click)="deleteMobile(m); $event.stopPropagation()">×</button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Right Panel: Editor -->
+  <div class="editor-panel" *ngIf="mobileForm">
+    <h3 *ngIf="!selectedMobile">Create New Mobile</h3>
+    <h3 *ngIf="selectedMobile">Edit {{ selectedMobile.name }}</h3>
+
+    <form [formGroup]="mobileForm" (ngSubmit)="save()">
+      <div class="editor-columns">
+        <!-- Column 1: Basic Info, Stats & Skills -->
+        <div class="editor-column">
+          <div class="form-section">
+            <h4>Basic Info</h4>
+            <div class="form-row">
+              <label>Name</label>
+              <input formControlName="name" />
+            </div>
+            <div class="form-row">
+              <label>Starting Room ID</label>
+              <input type="number" formControlName="currentRoomId" />
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4>Stats & Vitals</h4>
+            <div class="stats-grid">
+              <div><label>HP</label><input type="number" formControlName="currentHp" /></div>
+              <div><label>Mana</label><input type="number" formControlName="currentMana" /></div>
+              <div><label>STR</label><input type="number" formControlName="strength" /></div>
+              <div><label>DEX</label><input type="number" formControlName="dexterity" /></div>
+              <div><label>CON</label><input type="number" formControlName="constitution" /></div>
+              <div><label>INT</label><input type="number" formControlName="intelligence" /></div>
+              <div><label>WIS</label><input type="number" formControlName="wisdom" /></div>
+              <div><label>CHA</label><input type="number" formControlName="charisma" /></div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4>Skills</h4>
+            <div formArrayName="skills">
+              <div *ngFor="let skill of skillsControls.controls; let i=index" [formGroupName]="i" class="array-row">
+                <select formControlName="name">
+                  <option value="">Select Skill</option>
+                  <option *ngFor="let available of availableSkills" [value]="available.name">
+                    {{ available.name }}
+                  </option>
+                </select>
+                <input type="number" formControlName="rank" placeholder="Rank" min="1" />
+                <button type="button" class="btn-remove" (click)="removeSkill(i)">×</button>
+              </div>
+            </div>
+            <button type="button" class="btn-add" (click)="addSkill()">Add Skill</button>
+          </div>
+        </div>
+
+        <!-- Column 2: Equipment & Inventory -->
+        <div class="editor-column">
+          <div class="form-section">
+            <h4>Equipment</h4>
+            <div class="equipment-grid">
+              <div *ngFor="let loc of wearLocations" class="equip-row">
+                <label>{{ loc }}</label>
+                <div class="search-select-group">
+                  <input type="text" class="search-input" placeholder="Search..." [(ngModel)]="equipSearchTexts[loc]" [ngModelOptions]="{standalone: true}" />
+                  <select [formControlName]="loc.toLowerCase().replace('_', '') + 'Id'">
+                    <option [ngValue]="null">None</option>
+                    <option *ngFor="let item of getFilteredEquipItems(loc)" [ngValue]="item.id">
+                      {{ item.name }} ({{ item.id }})
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4>Inventory</h4>
+            <div formArrayName="inventory">
+              <div *ngFor="let inv of inventoryControls.controls; let i=index" [formGroupName]="i" class="array-row">
+                <input type="text" class="search-input" placeholder="Search item..." [(ngModel)]="invSearchTexts[i]" [ngModelOptions]="{standalone: true}" />
+                <select formControlName="id">
+                  <option [ngValue]="null">Select Item</option>
+                  <option *ngFor="let item of getFilteredInvItems(i)" [ngValue]="item.id">
+                    {{ item.name }} ({{ item.id }})
+                  </option>
+                </select>
+                <button type="button" class="btn-remove" (click)="removeInventoryItem(i)">×</button>
+              </div>
+            </div>
+            <button type="button" class="btn-add" (click)="addInventoryItem()">Add Item</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-save" [disabled]="mobileForm.invalid">Save Mobile</button>
+      </div>
+    </form>
+  </div>
+</div>

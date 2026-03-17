@@ -1,0 +1,33 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { Mobile } from '../models/mobile.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class MobileService {
+  private apiUrl = '/api/mobiles';
+
+  constructor(private http: HttpClient) {}
+
+  getAllMobiles(): Observable<Mobile[]> {
+    return this.http.get<Mobile[]>(this.apiUrl);
+  }
+
+  getMobile(id: number): Observable<Mobile> {
+    return this.http.get<Mobile>(`${this.apiUrl}/${id}`);
+  }
+
+  createMobile(mobile: Mobile): Observable<Mobile> {
+    return this.http.post<Mobile>(this.apiUrl, mobile);
+  }
+
+  updateMobile(id: number, mobile: Mobile): Observable<Mobile> {
+    return this.http.put<Mobile>(`${this.apiUrl}/${id}`, mobile);
+  }
+
+  deleteMobile(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+}

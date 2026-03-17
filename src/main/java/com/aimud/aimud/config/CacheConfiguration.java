@@ -23,7 +23,9 @@ public class CacheConfiguration {
             "items",
             "item",
             "rooms",
-            "room"
+            "room",
+            "mobiles",
+            "mobile"
         );
     }
 }

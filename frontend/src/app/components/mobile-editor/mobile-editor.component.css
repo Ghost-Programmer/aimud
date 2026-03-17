@@ -1,0 +1,231 @@
+.mobile-editor-container {
+  display: flex;
+  height: 100%;
+  gap: 20px;
+  background: var(--surface-bg, rgba(20, 25, 30, 0.6));
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.list-panel {
+  flex: 0 0 250px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #fff;
+}
+
+.mobile-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.mobile-list li {
+  padding: 10px 15px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.2s;
+}
+
+.mobile-list li:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-list li.selected {
+  background: rgba(64, 156, 255, 0.2);
+  border-left: 3px solid #409cff;
+}
+
+.btn-create, .btn-add {
+  background: #409cff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-create:hover, .btn-add:hover {
+  background: #2a80db;
+}
+
+.btn-delete, .btn-remove {
+  background: transparent;
+  color: #ff4d4d;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.btn-delete:hover, .btn-remove:hover {
+  color: #ff1a1a;
+}
+
+.editor-panel {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.editor-panel h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-section {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.form-section h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #aaa;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 5px;
+}
+
+.editor-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.editor-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-row, .equip-row {
+  display: flex;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.form-row label, .equip-row label {
+  flex: 0 0 120px;
+  color: #ccc;
+}
+
+.search-select-group {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+}
+
+.form-row input, .equip-row select, .search-input {
+  flex: 1;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 4px;
+}
+
+.search-input {
+  flex: 0 0 30%;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 15px;
+}
+
+.equipment-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.stats-grid div {
+  display: flex;
+  flex-direction: column;
+}
+
+.stats-grid label {
+  margin-bottom: 5px;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.stats-grid input {
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 4px;
+}
+
+.array-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.array-row select, .array-row input {
+  flex: 1;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 4px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-save {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-save:hover:not(:disabled) {
+  background: #218838;
+}
+
+.btn-save:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
