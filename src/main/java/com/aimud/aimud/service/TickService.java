@@ -1,12 +1,18 @@
 package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Effect;
+import com.aimud.aimud.model.Item;
 import com.aimud.aimud.model.Mobile;
+import com.aimud.aimud.model.Skill;
+import com.aimud.aimud.types.EffectType;
+import com.aimud.aimud.types.ItemType;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -67,11 +73,26 @@ public class TickService {
         // Process NPCs (Mobiles)
         List<Mobile> mobiles = mobileService.getActiveMobiles();
         for (Mobile mobile : mobiles) {
+            boolean save = false;
 
-            processSpellEffects(mobile);
-            processRegen(mobile);
-            processAttack(mobile);
+            boolean effectsChanged = processSpellEffects(mobile);
+            boolean statsChanged = processRegen(mobile);
+            boolean combatOccurred = processAttack(mobile);
 
+            if (effectsChanged || statsChanged || combatOccurred) {
+                save = true;
+            }
+
+            // Execute pending commands for the mobile if we ever add an AI decision loop queue
+            if (!mobile.getCommandQueue().isEmpty()) {
+                // Not implemented yet
+            } else {
+                mobile.setIdle(mobile.getIdle() + 1);
+            }
+
+            if(save) {
+                mobileService.saveMobile(mobile).subscribe();
+            }
         }
     }
 
@@ -98,59 +119,158 @@ public class TickService {
             }
         }
 
-        // Calculate damage (simplified for now)
-        int damage = calculateDamage(attacker, target);
-        target.setCurrentHp(target.getCurrentHp() - damage);
+        // Process Primary Attack
+        performSingleAttack(attacker, target, attacker.getPrimary(), "primary");
 
-        // Notify room of attack
-        String attackMsg = "\n" + attacker.getName() + " hits " + target.getName() + " for " + damage + " damage!";
-        if (attacker instanceof Character) {
-            communicationService.sendTextMessage((Character) attacker, "\n\nYou hit " + target.getName() + " for " + damage + " damage!");
-        }
-        if (target instanceof Character) {
-            communicationService.sendTextMessage((Character) target, "\n\n" + attacker.getName() + " hits you for " + damage + " damage!");
-        }
-        
-        // In a real implementation, you'd send this to the whole room using roomService/communicationService
-        // but excluding the attacker and target. For now, we handle basic combat logs.
-        if (attacker instanceof Character) {
-            communicationService.roomMessage((Character) attacker, attackMsg);
-        }
-
-        // Check for death
-        if (target.getCurrentHp() <= 0) {
-            target.setCurrentHp(0);
-            
-            String deathMsg = "\n" + target.getName() + " is DEAD!!";
-            if (attacker instanceof Character) {
-                communicationService.sendTextMessage((Character) attacker, deathMsg);
-                communicationService.roomMessage((Character) attacker, deathMsg);
+        // Check for Dual Wield
+        int dualWieldRank = getSkillRank(attacker, "Dual Wield");
+        if (dualWieldRank > 0 && attacker.getOffhand() != null && isWeapon(attacker.getOffhand())) {
+            if (target.getCurrentHp() > 0) {
+                performSingleAttack(attacker, target, attacker.getOffhand(), "offhand");
             }
-            if (target instanceof Character) {
-                communicationService.sendTextMessage((Character) target, "\n\nYou have died...");
-            }
-
-            createCorpse(target);
-
-            // Clear targeting
-            attacker.setTarget(null);
-            target.setTarget(null);
         }
 
         return true;
     }
 
-    private int calculateDamage(Mobile attacker, Mobile defender) {
-        // Base damage logic combining strength, weapons, etc.
-        // A placeholder simple calculation:
-        int baseDamage = random.nextInt(1 + (int) attacker.getPhysicalAttack());
-        int strBonus = attacker.getStrength() / 2;
-        int damage = baseDamage + strBonus;
+    private void performSingleAttack(Mobile attacker, Mobile target, Item weapon, String hand) {
+        if (target.getCurrentHp() <= 0) return;
+
+        // 1. Determine if we hit
+        int attackRoll = random.nextInt(20) + 1 + (int) attacker.getPhysicalAttack() + (attacker.getDexterity() / 2);
+        int defenseScore = 10 + (int) (target.getArmor() / 5) + (target.getDexterity() / 2);
+
+        if (attackRoll < defenseScore) {
+            sendCombatMessage(attacker, target, "You miss " + target.getName() + ".", attacker.getName() + " misses you.", attacker.getName() + " misses " + target.getName() + ".");
+            return;
+        }
+
+        // 2. Dodge Check
+        int dodgeRank = getSkillRank(target, "Dodge");
+        double dodgeChance = target.getDodgeChance() + (dodgeRank * 2) + (target.getDexterity() / 2.0);
+        if (random.nextInt(100) < dodgeChance) {
+            sendCombatMessage(attacker, target, target.getName() + " dodges your attack!", "You dodge " + attacker.getName() + "'s attack!", target.getName() + " dodges " + attacker.getName() + "'s attack!");
+            return;
+        }
+
+        // 3. Parry Check
+        int parryRank = getSkillRank(target, "Parry");
+        if (parryRank > 0 && target.getPrimary() != null && isWeapon(target.getPrimary())) {
+            double parryChance = (parryRank * 2.5) + (target.getDexterity() / 2.0);
+            if (random.nextInt(100) < parryChance) {
+                sendCombatMessage(attacker, target, target.getName() + " parries your attack!", "You parry " + attacker.getName() + "'s attack!", target.getName() + " parries " + attacker.getName() + "'s attack!");
+                return;
+            }
+        }
+
+        // 4. Shield Block Check
+        int shieldBlockRank = getSkillRank(target, "Shield Block");
+        if (shieldBlockRank > 0 && target.getOffhand() != null && isShield(target.getOffhand())) {
+            double blockChance = (shieldBlockRank * 3.0) + (target.getStrength() / 2.0);
+            if (random.nextInt(100) < blockChance) {
+                sendCombatMessage(attacker, target, target.getName() + " blocks your attack with their shield!", "You block " + attacker.getName() + "'s attack!", target.getName() + " blocks " + attacker.getName() + "'s attack!");
+                return;
+            }
+        }
+
+        // 5. Successful Hit - Calculate Damage
+        List<String> damageReports = new ArrayList<>();
+        int totalDamage = 0;
+
+        if (weapon != null && weapon.getEffects() != null) {
+            for (Effect effect : weapon.getEffects()) {
+                if (isDamageEffect(effect.getEffectType())) {
+                    int numDice = effect.getModifier1();
+                    int diceSize = effect.getModifier2();
+                    int dmg = 0;
+                    for (int i = 0; i < numDice; i++) {
+                        dmg += random.nextInt(diceSize) + 1;
+                    }
+                    // Apply strength bonus to physical damage types
+                    if (effect.getEffectType() == EffectType.BASHING_DAMAGE || effect.getEffectType() == EffectType.SLASHING_DAMAGE || effect.getEffectType() == EffectType.PIERCING_DAMAGE) {
+                        dmg += (attacker.getStrength() / 2);
+                    }
+                    totalDamage += dmg;
+                    damageReports.add(dmg + " " + effect.getEffectType().getLabel().toLowerCase());
+                }
+            }
+        }
+
+        // Default unarmed damage if no weapon or no damage effects
+        if (totalDamage == 0) {
+            int baseDamage = random.nextInt(4) + 1 + (attacker.getStrength() / 2);
+            totalDamage = baseDamage;
+            damageReports.add(baseDamage + " bashing damage");
+        }
+
+        // Apply armor mitigation (simplistic)
+        int mitigation = (int) (target.getArmor() / 4);
+        totalDamage -= mitigation;
+        if (totalDamage < 1) totalDamage = 1;
+
+        target.setCurrentHp(target.getCurrentHp() - totalDamage);
+
+        String damageString = String.join(", ", damageReports);
         
-        int armorMitigation = (int) defender.getArmor() / 4;
-        damage -= armorMitigation;
+        sendCombatMessage(attacker, target, 
+            "You hit " + target.getName() + " for " + damageString + "!",
+            attacker.getName() + " hits you for " + damageString + "!",
+            attacker.getName() + " hits " + target.getName() + " for " + damageString + "!");
+
+        // 6. Check Death
+        if (target.getCurrentHp() <= 0) {
+            target.setCurrentHp(0);
+            
+            String deathMsg = "\n" + target.getName() + " is DEAD!!";
+            sendCombatMessage(attacker, target, deathMsg, "\n\nYou have died...", deathMsg);
+
+            createCorpse(target);
+
+            attacker.setTarget(null);
+            target.setTarget(null);
+        }
+    }
+
+    private void sendCombatMessage(Mobile attacker, Mobile target, String attackerMsg, String targetMsg, String roomMsg) {
+        if (attacker instanceof Character) {
+            communicationService.sendTextMessage((Character) attacker, "\n" + attackerMsg);
+            communicationService.roomMessage((Character) attacker, "\n" + roomMsg);
+        } else if (target instanceof Character) {
+            // If attacker is NPC and target is PC, room message comes from target's perspective (excluding target)
+            communicationService.roomMessage((Character) target, "\n" + roomMsg);
+        }
         
-        return Math.max(1, damage); // Minimum 1 damage
+        if (target instanceof Character) {
+            communicationService.sendTextMessage((Character) target, "\n" + targetMsg);
+        }
+    }
+
+    private int getSkillRank(Mobile mobile, String skillName) {
+        if (mobile.getSkills() == null) return 0;
+        for (Skill skill : mobile.getSkills()) {
+            if (skill.getName().equalsIgnoreCase(skillName)) {
+                return skill.getRank();
+            }
+        }
+        return 0;
+    }
+
+    private boolean isWeapon(Item item) {
+        return item.getItemType() == ItemType.WEAPON || item.getItemType() == ItemType.TWO_HANDED_WEAPON || item.getItemType() == ItemType.RANGED_WEAPON;
+    }
+
+    private boolean isShield(Item item) {
+        // Typically a shield is MEDIUM_ARMOR or HEAVY_ARMOR worn in the OFFHAND.
+        // For simplicity, we check if it's armor in the offhand.
+        return item.getWearLocation() == com.aimud.aimud.types.WearLocation.OFFHAND && 
+               (item.getItemType() == ItemType.LIGHT_ARMOR || item.getItemType() == ItemType.MEDIUM_ARMOR || item.getItemType() == ItemType.HEAVY_ARMOR);
+    }
+
+    private boolean isDamageEffect(EffectType type) {
+        return type == EffectType.BASHING_DAMAGE || type == EffectType.SLASHING_DAMAGE || 
+               type == EffectType.PIERCING_DAMAGE || type == EffectType.FIRE_DAMAGE || 
+               type == EffectType.COLD_DAMAGE || type == EffectType.SONIC_DAMAGE || 
+               type == EffectType.POISON_DAMAGE || type == EffectType.ELECTRICAL_DAMAGE;
     }
 
     private void createCorpse(Mobile deceased) {
@@ -160,7 +280,7 @@ public class TickService {
         if (deceased instanceof Character character) {
             character.getCommandQueue().add("logout");
         } else {
-            mobileService.despawnMobile(deceased);
+            mobileService.deleteMobile(deceased.getId()).subscribe();
         }
     }
 
