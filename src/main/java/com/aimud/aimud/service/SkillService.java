@@ -44,10 +44,11 @@ public class SkillService {
     }
 
     /**
-     * Get Skill - Given a character and skill name, return the rank.
+     * Get Skill - Given a mobile and skill name, return the rank.
      */
-    public int getSkillRank(Character character, String skillName) {
-        return character.getSkills().stream()
+    public int getSkillRank(Mobile mobile, String skillName) {
+        if (mobile.getSkills() == null) return 0;
+        return mobile.getSkills().stream()
                 .filter(s -> s.getName().equalsIgnoreCase(skillName))
                 .map(Skill::getRank)
                 .findFirst()
