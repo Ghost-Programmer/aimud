@@ -81,7 +81,7 @@ public class MobileService {
                 log.info("Spawning mobile: {} (id: {}) into room {}", mobile.getName(), mobile.getId(), room.getId());
                 // Ensure the mobile knows which room it is in
                 mobile.setCurrentRoomId(room.getId());
-                activeMobiles.put(mobile.getId(), mobile);
+                activeMobiles.put(room.getId(), mobile);
                 log.info("Spawned mobile: {} (id: {}) into room {}", mobile.getName(), mobile.getId(), room.getId());
             } else {
                 log.info("Mobile already spawned in room: {} (id: {})", room.getName(), room.getId());

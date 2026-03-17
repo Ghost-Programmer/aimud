@@ -52,23 +52,23 @@ public class AttackCommand implements Command {
                     }
 
                     // Check for an NPC target
-                    List<Long> mobileIds = room.getMobileIds();
-                    if (mobileIds.isEmpty()) {
+                    List<Mobile> mobilesInRoom = mobileService.getMobilesInRoom(room.getId());
+                    if (mobilesInRoom.isEmpty()) {
+                        log.info("No mobiles found in room: {}", room.getName());
                         communicationService.sendTextMessage(character, "\n\nThey aren't here.");
                         return Mono.empty();
                     }
 
-                    return Flux.fromIterable(mobileIds)
-                            .flatMap(mobileService::getMobile)
+                    return mobilesInRoom.stream()
                             .filter(m -> m.getName().toLowerCase().contains(targetName))
-                            .next()
-                            .flatMap(npcTarget -> {
+                            .findFirst()
+                            .map(npcTarget -> {
                                 character.setTarget(npcTarget);
                                 communicationService.sendTextMessage(character, "\n\nYou charge towards " + npcTarget.getName() + " and attack!");
                                 communicationService.roomMessage(character, "\n" + character.getName() + " charges towards " + npcTarget.getName() + " and attacks!");
                                 return Mono.empty();
-                            })
-                            .switchIfEmpty(Mono.defer(() -> {
+                            }).orElse(Mono.defer(() -> {
+                                log.info("No mobiles found in room: {} by name: {}", room.getName(), targetName);
                                 communicationService.sendTextMessage(character, "\n\nThey aren't here.");
                                 return Mono.empty();
                             }));

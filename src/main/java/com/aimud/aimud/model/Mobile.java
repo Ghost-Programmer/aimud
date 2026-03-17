@@ -1,5 +1,6 @@
 package com.aimud.aimud.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.*;
@@ -180,6 +181,7 @@ public class Mobile {
     private List<CharacterEffect> spellEffects = new ArrayList<>();
 
     @Transient
+    @JsonIgnore
     private Mobile target;
 
     public Mobile() {
