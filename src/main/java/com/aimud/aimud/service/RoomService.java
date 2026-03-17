@@ -5,6 +5,7 @@ import com.aimud.aimud.repository.RoomRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -18,10 +19,12 @@ public class RoomService {
 
     private final RoomRepository roomRepository;
     private final CommunicationService communicationService;
+    private final MobileService mobileService;
 
-    public RoomService(RoomRepository roomRepository, CommunicationService communicationService) {
+    public RoomService(RoomRepository roomRepository, CommunicationService communicationService, @Lazy MobileService mobileService) {
         this.roomRepository = roomRepository;
         this.communicationService = communicationService;
+        this.mobileService = mobileService;
     }
 
     @Cacheable(value = "rooms")
@@ -33,7 +36,13 @@ public class RoomService {
     @Cacheable(value = "room", key = "#id")
     public Mono<Room> getRoom(Long id) {
         log.info("Fetching room with id: {}", id);
-        return roomRepository.findById(id).cache();
+        return roomRepository.findById(id)
+                .doOnNext(room -> {
+                    if (mobileService != null) {
+                        mobileService.spawnMobilesForRoom(room);
+                    }
+                })
+                .cache();
     }
 
     @CacheEvict(value = {"rooms", "room"}, allEntries = true)

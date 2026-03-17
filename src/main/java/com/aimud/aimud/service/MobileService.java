@@ -1,6 +1,7 @@
 package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Mobile;
+import com.aimud.aimud.model.Room;
 import com.aimud.aimud.repository.MobileRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -9,12 +10,24 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 @Service
 @Slf4j
 public class MobileService {
 
     private final MobileRepository mobileRepository;
     private final StatService statService;
+
+    // In-memory storage for active spawned mobiles
+    // Keys are UUIDs to allow multiple instances of the same mobile template, 
+    // but we map them to their template ID or assign them a unique runtime ID.
+    // For now, we'll key them by their DB ID, assuming 1 DB entry = 1 instance.
+    private final ConcurrentHashMap<Long, Mobile> activeMobiles = new ConcurrentHashMap<>();
 
     public MobileService(MobileRepository mobileRepository, StatService statService) {
         this.mobileRepository = mobileRepository;
@@ -36,12 +49,53 @@ public class MobileService {
     @CacheEvict(value = {"mobiles", "mobile"}, allEntries = true)
     public Mono<Mobile> saveMobile(Mobile mobile) {
         log.info("Saving mobile: {} (id: {})", mobile.getName(), mobile.getId());
-        return mobileRepository.save(mobile);
+        return mobileRepository.save(mobile)
+                .doOnNext(saved -> {
+                    // Update in-memory if it's currently active
+                    if (saved.getId() != null && activeMobiles.containsKey(saved.getId())) {
+                        activeMobiles.put(saved.getId(), saved);
+                    }
+                });
     }
 
     @CacheEvict(value = {"mobiles", "mobile"}, allEntries = true)
     public Mono<Void> deleteMobile(Long id) {
         log.info("Deleting mobile with id: {}", id);
-        return mobileRepository.deleteById(id);
+        return mobileRepository.deleteById(id)
+                .doOnSuccess(v -> activeMobiles.remove(id));
+    }
+
+    /**
+     * Scans the room for assigned mobile IDs, and loads them into memory if not already present.
+     */
+    public void spawnMobilesForRoom(Room room) {
+        List<Long> mobileIds = room.getMobileIds();
+        if (mobileIds == null || mobileIds.isEmpty()) return;
+
+        for (Long mobileId : mobileIds) {
+            if (!activeMobiles.containsKey(mobileId)) {
+                getMobile(mobileId).subscribe(mobile -> {
+                    if (mobile != null) {
+                        // Ensure the mobile knows which room it is in
+                        mobile.setCurrentRoomId(room.getId());
+                        activeMobiles.put(mobile.getId(), mobile);
+                        log.info("Spawned mobile: {} (id: {}) into room {}", mobile.getName(), mobile.getId(), room.getId());
+                    }
+                });
+            }
+        }
+    }
+
+    /**
+     * Gets all active mobiles currently located in a specific room.
+     */
+    public List<Mobile> getMobilesInRoom(Long roomId) {
+        return activeMobiles.values().stream()
+                .filter(m -> roomId.equals(m.getCurrentRoomId()))
+                .collect(Collectors.toList());
+    }
+
+    public List<Mobile> getActiveMobiles() {
+        return new ArrayList<>(activeMobiles.values());
     }
 }

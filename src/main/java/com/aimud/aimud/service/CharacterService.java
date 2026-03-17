@@ -35,11 +35,12 @@ public class CharacterService {
     private final CharacterClassRepository characterClassRepository;
     private final SkillRepository skillRepository;
     private final ItemService itemService;
+    private final MobileService mobileService;
 
     // In-memory storage for active/available characters
     private final ConcurrentHashMap<Long, Character> availableCharacters = new ConcurrentHashMap<>();
 
-    public CharacterService(CharacterRepository characterRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository, CommunicationService communicationService, RoomService roomService, CharacterClassRepository characterClassRepository, SkillRepository skillRepository, ItemService itemService) {
+    public CharacterService(CharacterRepository characterRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository, CommunicationService communicationService, RoomService roomService, CharacterClassRepository characterClassRepository, SkillRepository skillRepository, ItemService itemService, MobileService mobileService) {
         this.characterRepository = characterRepository;
         this.userRepository = userRepository;
         this.statService = statService;
@@ -47,6 +48,7 @@ public class CharacterService {
         this.characterEffectRepository = characterEffectRepository;
         this.communicationService = communicationService;
         this.itemService = itemService;
+        this.mobileService = mobileService;
         this.communicationService.setCharacterService(this);
         this.roomService = roomService;
         this.characterClassRepository = characterClassRepository;
@@ -479,6 +481,10 @@ public class CharacterService {
 
                                 this.findAllByRoomId(room.getId()).stream().filter(c -> !c.getId().equals(character.getId())).forEach(c -> {
                                     this.communicationService.sendTextMessage(character, "\nYou see " + c.getName() + " here.");
+                                });
+
+                                this.mobileService.getMobilesInRoom(room.getId()).forEach(m -> {
+                                    this.communicationService.sendTextMessage(character, "\nYou see " + m.getName() + " here.");
                                 });
 
                                 room.getItemIds().stream().forEach(itemId -> {
