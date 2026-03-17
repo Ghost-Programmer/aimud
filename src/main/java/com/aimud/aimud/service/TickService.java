@@ -7,6 +7,7 @@ import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Skill;
 import com.aimud.aimud.types.EffectType;
 import com.aimud.aimud.types.ItemType;
+import com.aimud.aimud.types.SkillsType;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,13 +25,15 @@ public class TickService {
     private final MobileService mobileService;
     private final CommandService commandService;
     private final CommunicationService communicationService;
+    private final SkillService skillService;
     private final Random random = new Random();
 
-    public TickService(CharacterService characterService, MobileService mobileService, CommandService commandService, CommunicationService communicationService) {
+    public TickService(CharacterService characterService, MobileService mobileService, CommandService commandService, CommunicationService communicationService, SkillService skillService) {
         this.characterService = characterService;
         this.mobileService = mobileService;
         this.commandService = commandService;
         this.communicationService = communicationService;
+        this.skillService = skillService;
     }
 
     @Scheduled(fixedRate = 2000)
@@ -123,9 +126,10 @@ public class TickService {
         performSingleAttack(attacker, target, attacker.getPrimary(), "primary");
 
         // Check for Dual Wield
-        int dualWieldRank = getSkillRank(attacker, "Dual Wield");
+        int dualWieldRank = getSkillRank(attacker, SkillsType.DUAL_WIELD);
         if (dualWieldRank > 0 && attacker.getOffhand() != null && isWeapon(attacker.getOffhand())) {
             if (target.getCurrentHp() > 0) {
+                checkSkillImprovement(attacker, SkillsType.DUAL_WIELD, target, true);
                 performSingleAttack(attacker, target, attacker.getOffhand(), "offhand");
             }
         }
@@ -136,9 +140,18 @@ public class TickService {
     private void performSingleAttack(Mobile attacker, Mobile target, Item weapon, String hand) {
         if (target.getCurrentHp() <= 0) return;
 
+        // Weapon Skill Improvement Check
+        if (weapon != null) {
+            if (weapon.getItemType() == ItemType.WEAPON) {
+                checkSkillImprovement(attacker, SkillsType.ONE_HANDED_WEAPON, target, true);
+            } else if (weapon.getItemType() == ItemType.TWO_HANDED_WEAPON) {
+                checkSkillImprovement(attacker, SkillsType.TWO_HANDED_WEAPON, target, true);
+            }
+        }
+
         // 1. Determine if we hit
-        int attackRoll = random.nextInt(20) + 1 + (int) attacker.getPhysicalAttack() + (attacker.getDexterity() / 2);
-        int defenseScore = 10 + (int) (target.getArmor() / 5) + (target.getDexterity() / 2);
+        int attackRoll = random.nextInt(20) + 1 + (int) attacker.getPhysicalAttack();
+        int defenseScore = 10 + (int) (target.getArmor() / 5);
 
         if (attackRoll < defenseScore) {
             sendCombatMessage(attacker, target, "You miss " + target.getName() + ".", attacker.getName() + " misses you.", attacker.getName() + " misses " + target.getName() + ".");
@@ -146,29 +159,30 @@ public class TickService {
         }
 
         // 2. Dodge Check
-        int dodgeRank = getSkillRank(target, "Dodge");
-        double dodgeChance = target.getDodgeChance() + (dodgeRank * 2) + (target.getDexterity() / 2.0);
+        double dodgeChance = target.getDodgeChance();
         if (random.nextInt(100) < dodgeChance) {
             sendCombatMessage(attacker, target, target.getName() + " dodges your attack!", "You dodge " + attacker.getName() + "'s attack!", target.getName() + " dodges " + attacker.getName() + "'s attack!");
             return;
         }
 
         // 3. Parry Check
-        int parryRank = getSkillRank(target, "Parry");
+        int parryRank = getSkillRank(target, SkillsType.PARRY);
         if (parryRank > 0 && target.getPrimary() != null && isWeapon(target.getPrimary())) {
-            double parryChance = (parryRank * 2.5) + (target.getDexterity() / 2.0);
+            double parryChance = parryRank * 2.5;
             if (random.nextInt(100) < parryChance) {
                 sendCombatMessage(attacker, target, target.getName() + " parries your attack!", "You parry " + attacker.getName() + "'s attack!", target.getName() + " parries " + attacker.getName() + "'s attack!");
+                checkSkillImprovement(target, SkillsType.PARRY, attacker, true);
                 return;
             }
         }
 
         // 4. Shield Block Check
-        int shieldBlockRank = getSkillRank(target, "Shield Block");
+        int shieldBlockRank = getSkillRank(target, SkillsType.SHIELD_BLOCK);
         if (shieldBlockRank > 0 && target.getOffhand() != null && isShield(target.getOffhand())) {
-            double blockChance = (shieldBlockRank * 3.0) + (target.getStrength() / 2.0);
+            double blockChance = shieldBlockRank * 3.0;
             if (random.nextInt(100) < blockChance) {
                 sendCombatMessage(attacker, target, target.getName() + " blocks your attack with their shield!", "You block " + attacker.getName() + "'s attack!", target.getName() + " blocks " + attacker.getName() + "'s attack!");
+                checkSkillImprovement(target, SkillsType.SHIELD_BLOCK, attacker, true);
                 return;
             }
         }
@@ -229,6 +243,16 @@ public class TickService {
             attacker.setTarget(null);
             target.setTarget(null);
         }
+    }
+
+    private void checkSkillImprovement(Mobile mobile, String skillName, Mobile target, boolean wasSuccess) {
+        skillService.checkSkill(mobile, skillName, (int) target.getChallengeRating(), wasSuccess)
+            .doOnNext(improvedSkill -> {
+                if (mobile instanceof Character character) {
+                    communicationService.sendTextMessage(character, "\n\nYour " + skillName + " skill has improved to " + improvedSkill.getRank() + "!");
+                }
+            })
+            .subscribe();
     }
 
     private void sendCombatMessage(Mobile attacker, Mobile target, String attackerMsg, String targetMsg, String roomMsg) {

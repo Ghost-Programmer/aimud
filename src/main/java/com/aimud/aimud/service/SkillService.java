@@ -1,12 +1,11 @@
 package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Skill;
 import com.aimud.aimud.repository.SkillRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -59,24 +58,29 @@ public class SkillService {
      * Check Skill - Test if skill value should be increased by 1.
      * This method evaluates if the skill should improve and increments it if so.
      *
-     * @param character   The character using the skill
+     * @param mobile      The mobile using the skill
      * @param skillName   The name of the skill
      * @param targetCr    The Challenge Rating of the target (NPC/Challenge)
      * @param wasSuccess  Whether the skill attempt succeeded in-game
-     * @return Mono<Skill> The updated or original skill
+     * @return Mono<Skill> The updated skill if it improved, or empty Mono if not.
      */
-    public Mono<Skill> checkSkill(Character character, String skillName, int targetCr, boolean wasSuccess) {
-        return character.getSkills().stream()
+    public Mono<Skill> checkSkill(Mobile mobile, String skillName, int targetCr, boolean wasSuccess) {
+        if (mobile.getSkills() == null) return Mono.empty();
+        
+        return mobile.getSkills().stream()
                 .filter(s -> s.getName().equalsIgnoreCase(skillName))
                 .findFirst()
                 .map(skill -> {
-                    int playerLevel = (int) character.getChallengeRating();
+                    int playerLevel = (int) mobile.getChallengeRating();
                     if (shouldSkillImprove(skill.getRank(), playerLevel, targetCr, wasSuccess)) {
                         skill.setRank(skill.getRank() + 1);
-                        log.info("Skill {} for character {} improved to rank {}", skillName, character.getId(), skill.getRank());
-                        return skillRepository.save(skill);
+                        log.info("Skill {} for mobile {} improved to rank {}", skillName, mobile.getName(), skill.getRank());
+                        if (mobile instanceof Character) {
+                            return skillRepository.save(skill);
+                        }
+                        return Mono.just(skill);
                     }
-                    return Mono.just(skill);
+                    return Mono.<Skill>empty();
                 })
                 .orElse(Mono.empty());
     }

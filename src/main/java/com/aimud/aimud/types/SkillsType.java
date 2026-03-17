@@ -11,7 +11,6 @@ public class SkillsType {
     public static final String TWO_HANDED_WEAPON = "Two Handed Weapon";
     public static final String BASH = "Bash";
     public static final String BANDAGE = "Bandage";
-    public static final String DODGE = "Dodge";
     public static final String DUAL_WIELD = "Dual Wield";
     public static final String PARRY = "Parry";
     public static final String SHIELD_BLOCK = "Shield Block";
