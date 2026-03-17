@@ -60,8 +60,10 @@ public class Room {
     @Column("down_door_open")
     private boolean downDoorOpen;
 
+    @Column("items")
     private String items;
     
+    @Column("mobiles")
     private String mobiles;
 
     @CreatedDate

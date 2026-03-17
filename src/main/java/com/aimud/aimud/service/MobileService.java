@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -46,7 +47,7 @@ public class MobileService {
         return mobileRepository.findById(id).cache();
     }
 
-    @CacheEvict(value = {"mobiles", "mobile"}, allEntries = true)
+    @CacheEvict(value = {"mobiles", "mobile","mobiles"}, allEntries = true)
     public Mono<Mobile> saveMobile(Mobile mobile) {
         log.info("Saving mobile: {} (id: {})", mobile.getName(), mobile.getId());
         return mobileRepository.save(mobile)
@@ -58,32 +59,34 @@ public class MobileService {
                 });
     }
 
-    @CacheEvict(value = {"mobiles", "mobile"}, allEntries = true)
+    @CacheEvict(value = {"mobiles", "mobile","mobiles" }, allEntries = true)
     public Mono<Void> deleteMobile(Long id) {
         log.info("Deleting mobile with id: {}", id);
         return mobileRepository.deleteById(id)
                 .doOnSuccess(v -> activeMobiles.remove(id));
     }
 
+    @Cacheable(value = "mobiles")
+    public Flux<Mobile> getMobilesByRoom(Long roomId) {
+        return mobileRepository.findByCurrentRoomId(roomId);
+    }
+
     /**
      * Scans the room for assigned mobile IDs, and loads them into memory if not already present.
      */
     public void spawnMobilesForRoom(Room room) {
-        List<Long> mobileIds = room.getMobileIds();
-        if (mobileIds == null || mobileIds.isEmpty()) return;
-
-        for (Long mobileId : mobileIds) {
-            if (!activeMobiles.containsKey(mobileId)) {
-                getMobile(mobileId).subscribe(mobile -> {
-                    if (mobile != null) {
-                        // Ensure the mobile knows which room it is in
-                        mobile.setCurrentRoomId(room.getId());
-                        activeMobiles.put(mobile.getId(), mobile);
-                        log.info("Spawned mobile: {} (id: {}) into room {}", mobile.getName(), mobile.getId(), room.getId());
-                    }
-                });
+        log.info("Spawning mobiles for room: {} (id: {})", room.getName(), room.getId());
+        this.getMobilesByRoom(room.getId()).subscribe(mobile -> {
+            if (!activeMobiles.containsKey(mobile.getId())) {
+                log.info("Spawning mobile: {} (id: {}) into room {}", mobile.getName(), mobile.getId(), room.getId());
+                // Ensure the mobile knows which room it is in
+                mobile.setCurrentRoomId(room.getId());
+                activeMobiles.put(mobile.getId(), mobile);
+                log.info("Spawned mobile: {} (id: {}) into room {}", mobile.getName(), mobile.getId(), room.getId());
+            } else {
+                log.info("Mobile already spawned in room: {} (id: {})", room.getName(), room.getId());
             }
-        }
+        });
     }
 
     /**
