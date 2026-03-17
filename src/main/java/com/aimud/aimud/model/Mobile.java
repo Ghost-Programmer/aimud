@@ -179,6 +179,9 @@ public class Mobile {
     @Transient
     private List<CharacterEffect> spellEffects = new ArrayList<>();
 
+    @Transient
+    private Mobile target;
+
     public Mobile() {
     }
 
