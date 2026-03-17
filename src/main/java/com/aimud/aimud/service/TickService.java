@@ -1,6 +1,7 @@
 package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -12,18 +13,20 @@ import java.util.List;
 public class TickService {
 
     private final CharacterService characterService;
+    private final MobileService mobileService;
     private final CommandService commandService;
     private final CommunicationService communicationService;
 
-    public TickService(CharacterService characterService, CommandService commandService, CommunicationService communicationService) {
+    public TickService(CharacterService characterService, MobileService mobileService, CommandService commandService, CommunicationService communicationService) {
         this.characterService = characterService;
+        this.mobileService = mobileService;
         this.commandService = commandService;
         this.communicationService = communicationService;
     }
 
-
     @Scheduled(fixedRate = 2000)
     public void processTick() {
+        // Process PCs
         List<Character> characters = characterService.getAvailableCharacters();
         for (Character character : characters) {
             boolean save = false;
@@ -56,16 +59,29 @@ public class TickService {
                 characterService.save(character).subscribe();
             }
         }
+
+        // Process NPCs (Mobiles)
+        List<Mobile> mobiles = mobileService.getActiveMobiles();
+        for (Mobile mobile : mobiles) {
+            boolean save = false;
+
+            boolean effectsChanged = processSpellEffects(mobile);
+            boolean statsChanged = processRegen(mobile);
+        }
     }
 
-    private boolean processSpellEffects(Character character) {
-        int initialSize = character.getSpellEffects().size();
-        character.setSpellEffects(character.getSpellEffects().stream()
+    private boolean processSpellEffects(Mobile mobile) {
+        if (mobile.getSpellEffects() == null || mobile.getSpellEffects().isEmpty()) {
+            return false;
+        }
+        
+        int initialSize = mobile.getSpellEffects().size();
+        mobile.setSpellEffects(mobile.getSpellEffects().stream()
                 .filter(effect -> {
                     if (effect.getTickCount() != -1) {
                         effect.setTickCount(effect.getTickCount() - 1);
                         if (effect.getTickCount() <= 0) {
-                            log.debug("Removing expired spell effect {} from {}", effect.getEffect().getName(), character.getName());
+                            log.debug("Removing expired spell effect {} from {}", effect.getEffect().getName(), mobile.getName());
                             return false; // Remove expired effect
                         }
                     }
@@ -73,37 +89,37 @@ public class TickService {
                 })
                 .toList()
         );
-        return character.getSpellEffects().size() != initialSize;
+        return mobile.getSpellEffects().size() != initialSize;
     }
 
-    private boolean processRegen(Character character) {
+    private boolean processRegen(Mobile mobile) {
         boolean updated = false;
-        int oldHp = character.getCurrentHp();
-        int oldMana = character.getCurrentMana();
+        int oldHp = mobile.getCurrentHp();
+        int oldMana = mobile.getCurrentMana();
 
         // Health Regeneration
-        if (character.getCurrentHp() < character.getMaxHp()) {
-            int newHp = Math.min(character.getCurrentHp() + character.getHpRegen(), character.getMaxHp());
-            if (newHp != character.getCurrentHp()) {
-                character.setCurrentHp(newHp);
-                 updated = true;
+        if (mobile.getCurrentHp() < mobile.getMaxHp()) {
+            int newHp = Math.min(mobile.getCurrentHp() + mobile.getHpRegen(), mobile.getMaxHp());
+            if (newHp != mobile.getCurrentHp()) {
+                mobile.setCurrentHp(newHp);
+                updated = true;
             }
         }
 
         // Mana Regeneration
-        if (character.getCurrentMana() < character.getMaxMana()) {
-             int newMana = Math.min(character.getCurrentMana() + character.getManaRegen(), character.getMaxMana());
-             if (newMana != character.getCurrentMana()) {
-                 character.setCurrentMana(newMana);
+        if (mobile.getCurrentMana() < mobile.getMaxMana()) {
+             int newMana = Math.min(mobile.getCurrentMana() + mobile.getManaRegen(), mobile.getMaxMana());
+             if (newMana != mobile.getCurrentMana()) {
+                 mobile.setCurrentMana(newMana);
                  updated = true;
              }
         }
 
         if (updated) {
             log.debug("Regenerated stats for {}: HP {}/{} (+{}), Mana {}/{} (+{})",
-                    character.getName(),
-                    character.getCurrentHp(), character.getMaxHp(), character.getCurrentHp() - oldHp,
-                    character.getCurrentMana(), character.getMaxMana(), character.getCurrentMana() - oldMana);
+                    mobile.getName(),
+                    mobile.getCurrentHp(), mobile.getMaxHp(), mobile.getCurrentHp() - oldHp,
+                    mobile.getCurrentMana(), mobile.getMaxMana(), mobile.getCurrentMana() - oldMana);
         }
         return updated;
     }
