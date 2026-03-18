@@ -76,25 +76,13 @@ public class TickService {
         // Process NPCs (Mobiles)
         List<Mobile> mobiles = mobileService.getActiveMobiles();
         for (Mobile mobile : mobiles) {
-            boolean save = false;
-
-            boolean effectsChanged = processSpellEffects(mobile);
-            boolean statsChanged = processRegen(mobile);
-            boolean combatOccurred = processAttack(mobile);
-
-            if (effectsChanged || statsChanged || combatOccurred) {
-                save = true;
-            }
+            processSpellEffects(mobile);
+            processRegen(mobile);
+            processAttack(mobile);
 
             // Execute pending commands for the mobile if we ever add an AI decision loop queue
             if (!mobile.getCommandQueue().isEmpty()) {
                 // Not implemented yet
-            } else {
-                mobile.setIdle(mobile.getIdle() + 1);
-            }
-
-            if(save) {
-                mobileService.saveMobile(mobile).subscribe();
             }
         }
     }
@@ -133,6 +121,8 @@ public class TickService {
                 performSingleAttack(attacker, target, attacker.getOffhand(), "offhand");
             }
         }
+
+
 
         return true;
     }
@@ -243,6 +233,13 @@ public class TickService {
             attacker.setTarget(null);
             target.setTarget(null);
         }
+
+        if(target instanceof Character) {
+            communicationService.sendCharacterUpdate((Character) target);
+        }
+        if(attacker instanceof Character) {
+            this.communicationService.sendCharacterUpdate((Character) attacker);
+        }
     }
 
     private void checkSkillImprovement(Mobile mobile, String skillName, Mobile target, boolean wasSuccess) {
@@ -259,13 +256,16 @@ public class TickService {
         if (attacker instanceof Character) {
             communicationService.sendTextMessage((Character) attacker, "\n" + attackerMsg);
             communicationService.roomMessage((Character) attacker, "\n" + roomMsg);
+            communicationService.sendCharacterUpdate((Character) attacker);
         } else if (target instanceof Character) {
             // If attacker is NPC and target is PC, room message comes from target's perspective (excluding target)
             communicationService.roomMessage((Character) target, "\n" + roomMsg);
+            communicationService.sendCharacterUpdate((Character) target);
         }
         
         if (target instanceof Character) {
             communicationService.sendTextMessage((Character) target, "\n" + targetMsg);
+            communicationService.sendCharacterUpdate((Character) target);
         }
     }
 
@@ -303,8 +303,6 @@ public class TickService {
         
         if (deceased instanceof Character character) {
             character.getCommandQueue().add("logout");
-        } else {
-            mobileService.deleteMobile(deceased.getId()).subscribe();
         }
     }
 
