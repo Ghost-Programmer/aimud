@@ -26,6 +26,7 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
   command: string = '';
+  target: any = null;
 
   private wsSubscription: Subscription | null = null;
 
@@ -82,6 +83,8 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
               } else if (update.type === 'text') {
                   this.textMessages.push(update.data);
                   this.scrollToBottom();
+              } else if (update.type === 'target') {
+                  this.target = update.data;
               }
           },
           error: (err) => console.error('WebSocket error', err)

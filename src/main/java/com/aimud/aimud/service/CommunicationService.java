@@ -1,6 +1,8 @@
 package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
+import com.aimud.aimud.model.TargetUpdate;
 import com.aimud.aimud.model.TextMessage;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,7 @@ public class CommunicationService {
     private final Sinks.Many<Character> characterUpdates = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<TextMessage> textMessages = Sinks.many().replay().limit(20);
     private final Sinks.Many<Character> logoutMessages = Sinks.many().replay().limit(10);
+    private final Sinks.Many<TargetUpdate> targetUpdates = Sinks.many().multicast().onBackpressureBuffer();
 
     @Setter
     private CharacterService characterService;
@@ -33,9 +36,18 @@ public class CommunicationService {
         return logoutMessages.asFlux();
     }
 
+    public Flux<TargetUpdate> getTargetUpdates() {
+        return targetUpdates.asFlux();
+    }
+
     public void sendCharacterUpdate(Character character) {
         log.info("Sending character update for {}", character.getName());
         characterUpdates.tryEmitNext(character);
+    }
+
+    public void sendTargetUpdate(Character character, Mobile target) {
+        log.info("Sending target update for {}", character.getName());
+        targetUpdates.tryEmitNext(new TargetUpdate(character, target));
     }
 
     public void sendLogout(Character character) {

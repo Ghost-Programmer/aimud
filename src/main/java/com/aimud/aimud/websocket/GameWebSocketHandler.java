@@ -12,6 +12,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
+import java.util.HashMap;
 
 @Component
 @RequiredArgsConstructor
@@ -69,8 +70,25 @@ public class GameWebSocketHandler implements WebSocketHandler {
                     }
                 });
 
+        Flux<String> targetUpdates = communicationService.getTargetUpdates()
+                .flatMap(targetUpdate -> {
+                    log.info("Preparing target update message for character: {}", targetUpdate.getCharacter().getName());
+                    try {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("type", "target");
+                        map.put("id", targetUpdate.getCharacter().getId());
+                        map.put("data", targetUpdate.getTarget());
+                        
+                        String json = objectMapper.writeValueAsString(map);
+                        return Mono.just(json);
+                    } catch (JsonProcessingException e) {
+                        log.error("Error serializing target update message", e);
+                        return Mono.empty();
+                    }
+                });
+
         return session.send(
-                Flux.merge(characterUpdates, textMessages, logoutMessages)
+                Flux.merge(characterUpdates, textMessages, logoutMessages, targetUpdates)
                         .map(session::textMessage)
         );
     }

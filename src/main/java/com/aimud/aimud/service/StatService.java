@@ -32,6 +32,52 @@ public class StatService {
         this.skillRepository = skillRepository;
     }
 
+    public void updateMobileStats(Mobile mobile) {
+        mobile.setCurrentStrength(mobile.getStrength());
+        mobile.setCurrentDexterity(mobile.getDexterity());
+        mobile.setCurrentConstitution(mobile.getConstitution());
+        mobile.setCurrentIntelligence(mobile.getIntelligence());
+        mobile.setCurrentWisdom(mobile.getWisdom());
+        mobile.setCurrentCharisma(mobile.getCharisma());
+
+        applyEquipmentBonuses(mobile);
+
+        int str = mobile.getCurrentStrength();
+        int dex = mobile.getCurrentDexterity();
+        int con = mobile.getCurrentConstitution();
+        int intel = mobile.getCurrentIntelligence();
+        int wis = mobile.getCurrentWisdom();
+        int cha = mobile.getCurrentCharisma();
+
+        mobile.setMaxHp(100 + (con * 15) + (str * 5));
+        mobile.setMaxMana(50 + (intel * 20));
+        mobile.setHpRegen(Math.max(1, (int) (0.5 + (con / 20.0) + (str / 100.0))));
+        mobile.setManaRegen(Math.max(1, (int) (1.0 + (wis / 25.0))));
+
+        if (mobile.getCurrentHp() > mobile.getMaxHp()) {
+            mobile.setCurrentHp(mobile.getMaxHp());
+        } else if (mobile.getCurrentHp() == 0) {
+            mobile.setCurrentHp(mobile.getMaxHp()); // initialize currentHp if it is 0
+        }
+        
+        if (mobile.getCurrentMana() > mobile.getMaxMana()) {
+            mobile.setCurrentMana(mobile.getMaxMana());
+        } else if (mobile.getCurrentMana() == 0) {
+            mobile.setCurrentMana(mobile.getMaxMana()); // initialize currentMana if it is 0
+        }
+
+        mobile.setDodgeChance((double) dex / (dex + 500));
+        mobile.setCritChance((dex + (intel / 2.0)) / (dex + intel + 1000));
+
+        mobile.setPhysicalAttack((str * 2) + (dex * 0.5));
+        mobile.setMagicAttack((intel * 2.5) + (wis * 0.5));
+        mobile.setArmor(str + (con * 1.5));
+        mobile.setMagicResist(wis + (intel * 0.5));
+        
+        float cr = calculateChallengeRating(mobile);
+        mobile.setChallengeRating(cr);
+    }
+
     public Mono<Character> updateCurrentStats(Character character) {
         Mono<Race> raceMono = character.getRaceId() != null ? raceRepository.findById(character.getRaceId()) : Mono.empty();
         Mono<CharacterClass> classMono = character.getClassId() != null ? characterClassRepository.findById(character.getClassId()) : Mono.empty();
@@ -110,7 +156,7 @@ public class StatService {
                 .flatMap(mono -> mono);
     }
     
-    private float calculateChallengeRating(Character c) {
+    private float calculateChallengeRating(Mobile c) {
         // Base stats contribution
         float statsScore = (c.getCurrentStrength() + c.getCurrentDexterity() + c.getCurrentConstitution() + 
                            c.getCurrentIntelligence() + c.getCurrentWisdom() + c.getCurrentCharisma()) / 6.0f;
@@ -129,7 +175,7 @@ public class StatService {
         return Math.round(cr * 10.0f) / 10.0f; // Round to 1 decimal place
     }
 
-    private void applyEquipmentBonuses(Character c) {
+    private void applyEquipmentBonuses(Mobile c) {
         Item[] equipment = {
                 c.getHead(), c.getChest(), c.getLegs(), c.getFeet(), c.getArms(), c.getHands(),
                 c.getRightFinger(), c.getLeftFinger(), c.getRightWrist(), c.getLeftWrist(),
@@ -156,7 +202,7 @@ public class StatService {
         }
     }
 
-    private void applyEffect(Character c, Effect effect) {
+    private void applyEffect(Mobile c, Effect effect) {
         if (effect.getEffectType() != null) {
             switch (effect.getEffectType()) {
                 case STRENGTH -> c.setCurrentStrength(c.getCurrentStrength() + effect.getModifier1());

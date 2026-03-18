@@ -122,9 +122,22 @@ public class TickService {
             }
         }
 
-
+        // Send target updates to characters in the room who have this target targeted
+        sendTargetUpdates(target);
 
         return true;
+    }
+    
+    private void sendTargetUpdates(Mobile target) {
+        if (target.getCurrentRoomId() == null) {
+            return;
+        }
+        List<Character> charsInRoom = characterService.findAllByRoomId(target.getCurrentRoomId());
+        for (Character character : charsInRoom) {
+            if (character.getTarget() != null && character.getTarget().getId().equals(target.getId())) {
+                communicationService.sendTargetUpdate(character, target);
+            }
+        }
     }
 
     private void performSingleAttack(Mobile attacker, Mobile target, Item weapon, String hand) {

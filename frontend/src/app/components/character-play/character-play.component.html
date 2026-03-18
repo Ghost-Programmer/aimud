@@ -88,6 +88,23 @@
       <div class="stat-row">
         <span class="stat-label">Crit:</span> <span class="stat-value">{{ character.critChance | number:'1.1-1' }}%</span>
       </div>
+
+      <ng-container *ngIf="target">
+        <div class="divider"></div>
+        <div class="stat-group-label">Target</div>
+        <div class="stat-row">
+          <span class="stat-label">Name:</span> <span class="stat-value">{{ target.name }}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Challenge Rating:</span> <span class="stat-value">{{ target.challengeRating }}</span>
+        </div>
+        <div class="resource-bars" style="margin-top: 8px;">
+          <div class="resource-bar hp-bar">
+            <div class="bar-fill" [style.width.%]="(target.currentHp / target.maxHp) * 100"></div>
+            <span class="bar-text">HP: {{ (target.currentHp / target.maxHp) * 100 | number:'1.0-0' }}%</span>
+          </div>
+        </div>
+      </ng-container>
     </div>
 
     <div class="stat-content equipped-tab" *ngIf="activeStatTab === 'equipped'">
