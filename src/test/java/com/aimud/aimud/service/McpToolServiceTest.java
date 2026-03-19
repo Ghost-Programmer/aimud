@@ -11,6 +11,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import reactor.test.StepVerifier;
 
 import java.util.List;
 
@@ -53,6 +55,25 @@ class McpToolServiceTest {
         assertThat(savedItem.getItemType()).isEqualTo(ItemType.LIGHT_ARMOR);
         assertThat(savedItem.getWearLocation()).isEqualTo(WearLocation.CHEST);
         verify(itemService).saveItem(any(Item.class));
+    }
+
+    @Test
+    void createItemSucceedsFromNonBlockingThread() {
+        when(itemService.saveItem(any(Item.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        StepVerifier.create(Mono.fromCallable(() -> mcpToolService.createItem(
+                        "Vorpal Blade",
+                        "A powerful sword with the ability to cleave through armor.",
+                        "WEAPON",
+                        "PRIMARY"
+                ))
+                .subscribeOn(Schedulers.parallel()))
+                .assertNext(savedItem -> {
+                    assertThat(savedItem.getName()).isEqualTo("Vorpal Blade");
+                    assertThat(savedItem.getItemType()).isEqualTo(ItemType.WEAPON);
+                    assertThat(savedItem.getWearLocation()).isEqualTo(WearLocation.PRIMARY);
+                })
+                .verifyComplete();
     }
 
     @Test

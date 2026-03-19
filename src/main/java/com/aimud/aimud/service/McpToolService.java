@@ -11,10 +11,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
+import java.time.Duration;
+import java.util.concurrent.ExecutionException;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Service providing MCP Tools for AI to manage Rooms, Items, and Effects in AIMUD.
@@ -22,6 +28,8 @@ import java.util.Locale;
 @Service
 @Slf4j
 public class McpToolService {
+
+    private static final Duration TOOL_TIMEOUT = Duration.ofSeconds(30);
 
     private final RoomService roomService;
     private final ItemService itemService;
@@ -51,7 +59,7 @@ public class McpToolService {
                 log.warn("Invalid roomType: {}", roomType);
             }
         }
-        return roomService.saveRoom(room).block();
+        return await(roomService.saveRoom(room), "create room");
     }
 
     @Tool(description = "Update an existing room")
@@ -72,19 +80,19 @@ public class McpToolService {
                 log.warn("Invalid roomType: {}", roomType);
             }
         }
-        return roomService.saveRoom(room).block();
+        return await(roomService.saveRoom(room), "update room");
     }
 
     @Tool(description = "Retrieve a room by its ID")
     public Room getRoom(@ToolParam(description = "The unique ID of the room") Long id) {
         log.info("MCP Tool: Getting room with id: {}", id);
-        return roomService.getRoom(id).block();
+        return await(roomService.getRoom(id), "get room");
     }
 
     @Tool(description = "Retrieve all rooms in the world")
     public List<Room> getAllRooms() {
         log.info("MCP Tool: Getting all rooms");
-        return roomService.getAllRooms().collectList().block();
+        return awaitList(roomService.getAllRooms(), "get all rooms");
     }
 
     // --- ITEM TOOLS ---
@@ -102,7 +110,7 @@ public class McpToolService {
         item.setDescription(description);
         item.setItemType(parseItemType(itemType));
         item.setWearLocation(parseWearLocation(wearLocation));
-        return itemService.saveItem(item).block();
+        return await(itemService.saveItem(item), "create item");
     }
 
     @Tool(description = "Update an existing item template")
@@ -123,7 +131,7 @@ public class McpToolService {
                     return item;
                 })
                 .flatMap(itemService::saveItem)
-                .block();
+                .as(mono -> await(mono, "update item"));
     }
 
     private ItemType parseItemType(String itemType) {
@@ -187,13 +195,13 @@ public class McpToolService {
     @Tool(description = "Retrieve an item template by its ID")
     public Item getItem(@ToolParam(description = "The unique ID of the item") Long id) {
         log.info("MCP Tool: Getting item with id: {}", id);
-        return itemService.getItem(id).block();
+        return await(itemService.getItem(id), "get item");
     }
 
     @Tool(description = "Retrieve all item templates")
     public List<Item> getAllItems() {
         log.info("MCP Tool: Getting all items");
-        return itemService.getAllItems().collectList().block();
+        return awaitList(itemService.getAllItems(), "get all items");
     }
 
     // --- EFFECT TOOLS ---
@@ -228,7 +236,7 @@ public class McpToolService {
                     }
                     return Mono.just(savedEffect);
                 })
-                .block();
+                .as(mono -> await(mono, "create effect"));
     }
 
     @Tool(description = "Update an existing effect")
@@ -264,18 +272,39 @@ public class McpToolService {
                      }
                      return Mono.just(savedEffect);
                  })
-                .block();
+                .as(mono -> await(mono, "update effect"));
     }
 
     @Tool(description = "Retrieve an effect by its ID")
     public Effect getEffect(@ToolParam(description = "The unique ID of the effect") Long id) {
         log.info("MCP Tool: Getting effect with id: {}", id);
-        return effectService.getEffect(id).block();
+        return await(effectService.getEffect(id), "get effect");
     }
 
     @Tool(description = "Retrieve all effects associated with a specific item")
     public List<Effect> getEffectsByItem(@ToolParam(description = "The ID of the item to retrieve effects for") Long itemId) {
         log.info("MCP Tool: Getting effects for item: {}", itemId);
-        return effectService.getEffectsByItem(itemId).collectList().block();
+        return awaitList(effectService.getEffectsByItem(itemId), "get effects by item");
+    }
+
+    private <T> T await(Mono<T> mono, String operation) {
+        try {
+            return mono.subscribeOn(Schedulers.boundedElastic())
+                    .toFuture()
+                    .get(TOOL_TIMEOUT.toSeconds(), TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("MCP tool operation interrupted while trying to " + operation, e);
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            log.error("MCP tool operation failed while trying to {}", operation, cause);
+            throw new IllegalStateException("MCP tool operation failed while trying to " + operation, cause);
+        } catch (TimeoutException e) {
+            throw new IllegalStateException("MCP tool operation timed out while trying to " + operation, e);
+        }
+    }
+
+    private <T> List<T> awaitList(Flux<T> flux, String operation) {
+        return await(flux.collectList(), operation);
     }
 }
