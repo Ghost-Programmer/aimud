@@ -999,3 +999,142 @@ UPDATE character_classes SET starting_items = '5,11,7,9,13,1' WHERE name = 'Rang
 UPDATE character_classes SET starting_items = '12,10,8,16,6' WHERE name = 'Cleric';
 UPDATE character_classes SET starting_items = '12,10,8,6,3,1' WHERE name = 'Fighter';
 UPDATE character_classes SET starting_items = '12,10,8,15,6,3' WHERE name = 'Paladin';
+
+-- changeset jeff:001-add-room-items
+ALTER TABLE rooms ADD COLUMN items TEXT;
+
+-- changeset jeff:002-add-mobiles
+CREATE TABLE IF NOT EXISTS mobiles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    strength INT NOT NULL DEFAULT 0,
+    dexterity INT NOT NULL DEFAULT 0,
+    constitution INT NOT NULL DEFAULT 0,
+    intelligence INT NOT NULL DEFAULT 0,
+    wisdom INT NOT NULL DEFAULT 0,
+    charisma INT NOT NULL DEFAULT 0,
+    race_id BIGINT,
+    class_id BIGINT,
+    current_room_id BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255) DEFAULT 'system',
+    modified_by VARCHAR(255) DEFAULT 'system',
+    current_hp INTEGER DEFAULT 0,
+    current_mana INTEGER DEFAULT 0,
+    head_id BIGINT REFERENCES items(id),
+    chest_id BIGINT REFERENCES items(id),
+    legs_id BIGINT REFERENCES items(id),
+    feet_id BIGINT REFERENCES items(id),
+    arms_id BIGINT REFERENCES items(id),
+    hands_id BIGINT REFERENCES items(id),
+    right_finger_id BIGINT REFERENCES items(id),
+    left_finger_id BIGINT REFERENCES items(id),
+    right_wrist_id BIGINT REFERENCES items(id),
+    left_wrist_id BIGINT REFERENCES items(id),
+    neck_id BIGINT REFERENCES items(id),
+    left_ear_id BIGINT REFERENCES items(id),
+    right_ear_id BIGINT REFERENCES items(id),
+    face_id BIGINT REFERENCES items(id),
+    waist_id BIGINT REFERENCES items(id),
+    primary_id BIGINT REFERENCES items(id),
+    offhand_id BIGINT REFERENCES items(id)
+);
+
+ALTER TABLE rooms ADD COLUMN mobiles TEXT;
+
+-- changeset jeff:003-remove-dodge-skill
+
+-- Remove Dodge from character_classes starting_skills
+UPDATE character_classes
+SET starting_skills = REPLACE(REPLACE(starting_skills, 'Dodge,', ''), ',Dodge', '')
+WHERE starting_skills LIKE '%Dodge%';
+
+-- Remove Dodge from skills_registry
+DELETE FROM skills_registry WHERE name = 'Dodge';
+
+-- Remove Dodge from any characters that might already have it
+DELETE FROM skills WHERE name = 'Dodge';
+
+--changeset jeff:57
+UPDATE server_settings
+SET ai_system_prompt = 'You are an Expert Multi-User Dungeon World Builder. You have access to MCP tools for creating rooms, items, and effects for items. Use these tools to help the user build their world.
+
+GUIDELINES:
+1. When a user asks to create something, use the appropriate MCP tools.
+2. When calling tools that accept enum values, use the exact uppercase enum constants listed below.
+3. To associate an effect with an item, first create the item using createItem to obtain its ID, then call createEffect with itemId set to that item ID.
+4. Rooms have a name, description, and type (e.g., CITY, FIELD, FOREST, WATER_SURFACE, etc.).
+5. Items have a name, description, type (e.g., WEAPON, RANGED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, LIGHT, POTION), and wear location (e.g., HEAD, CHEST, ARMS, LEGS, PRIMARY, OFFHAND, etc.).
+6. Weapons MUST have at least one damage effect. Use EffectTypes like SLASHING_DAMAGE, PIERCING_DAMAGE, or BASHING_DAMAGE. Set modifier1 to the number of dice and modifier2 to the size of the dice (e.g., 2d6 means modifier1=2 and modifier2=6).
+7. Armor and other equipment can have stat or combat modifiers. Use EffectTypes like STRENGTH, DEXTERITY, ARMOR, DODGE, MAGIC_RESIST, or CRITICAL_HIT, and set modifier1 to the bonus amount.
+8. If an effect does not use some modifier fields, pass 0 for the unused modifier values.
+9. If you need more information to create an object, ask the user for clarification.
+10. Always check existing content if the user refers to it, using the retrieval tools.
+
+You have access to the following tool categories:
+- Room Management: createRoom, updateRoom, getRoom, getAllRooms
+- Item Management: createItem, updateItem, getItem, getAllItems
+- Effect Management: createEffect, updateEffect, getEffect, getEffectsByItem
+
+When creating rooms, use the following RoomTypes: INDOORS, CITY, FIELD, FOREST, HILLS, MOUNTAIN, DESERT, ARCTIC, SWAMP, WATER_SURFACE, UNDERWATER, AIR, UNDERGROUND_CAVE, UNDERGROUND_DUNGEON.
+
+When creating items, use the following ItemTypes: WEAPON, TWO_HANDED_WEAPON, RANGED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, FOOD, DRINK, POTION, SCROLL, MONEY, WAND, QUEST, KEY, LIGHT, CONTAINER, TRASH, MISC, NONE.
+For WearLocations, use: HEAD, CHEST, LEGS, FEET, ARMS, HANDS, FINGER, WRIST, NECK, EAR, FACE, WAIST, PRIMARY, OFFHAND, NONE.
+
+When creating effects, use the following EffectTypes:
+- Damage: SLASHING_DAMAGE, BASHING_DAMAGE, PIERCING_DAMAGE, FIRE_DAMAGE, COLD_DAMAGE, SONIC_DAMAGE, POISON_DAMAGE, ELECTRICAL_DAMAGE (Modifiers: Number of Dice, Size of Dice)
+- Stats: STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA (Modifier: Amount)
+- Combat: PHYSICAL_ATTACK, MAGIC_ATTACK, MAGIC_RESIST, DODGE, CRITICAL_HIT, ARMOR (Modifier: Amount)
+- Regen: HP_REGEN, MANA_REGEN (Modifier: Amount)
+- Status: FLY, WATER_BREATHING, INVISIBLE (No modifiers)'
+WHERE id = 1;
+
+--changeset jeff:58
+-- Resynchronize PostgreSQL sequences after explicit seed inserts so new records get fresh IDs.
+SELECT setval(pg_get_serial_sequence('server_settings', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM server_settings;
+SELECT setval(pg_get_serial_sequence('character_classes', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM character_classes;
+SELECT setval(pg_get_serial_sequence('rooms', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM rooms;
+SELECT setval(pg_get_serial_sequence('effects', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM effects;
+SELECT setval(pg_get_serial_sequence('skills_registry', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM skills_registry;
+SELECT setval(pg_get_serial_sequence('items', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM items;
+
+--changeset jeff:59
+CREATE TABLE IF NOT EXISTS agents (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL
+);
+
+INSERT INTO agents (id, title, content) VALUES
+(1, 'Room Create or Update Instructions', 'Use createRoom to create a room and updateRoom to modify an existing room. For createRoom, provide name, description, and roomType. For updateRoom, provide id, name, description, and roomType. Always use exact RoomType enum values: INDOORS, CITY, FIELD, FOREST, HILLS, MOUNTAIN, DESERT, ARCTIC, SWAMP, WATER_SURFACE, UNDERWATER, AIR, UNDERGROUND_CAVE, UNDERGROUND_DUNGEON. If the user wants to update a room but does not provide the room id, first retrieve rooms and identify the correct id before updating.'),
+(2, 'Room List Instructions', 'Use getAllRooms when the user asks to list rooms, browse the world, inspect available rooms, or find candidate room ids. This tool takes no arguments. Summarize the returned rooms clearly and include ids when helpful for follow-up tool calls.'),
+(3, 'Specific Room Lookup Instructions', 'Use getRoom when the user asks for a specific room and the room id is known. The tool requires the unique room id. If the user names a room but does not know the id, first use getAllRooms to find the matching room, then call getRoom with the correct id.'),
+(4, 'Item Create or Update Instructions', 'Use createItem to create an item and updateItem to modify an existing item. For createItem, provide name, description, itemType, and wearLocation. For updateItem, provide id, name, description, itemType, and wearLocation. Always use exact ItemType enum values such as WEAPON, TWO_HANDED_WEAPON, RANGED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, FOOD, DRINK, POTION, SCROLL, MONEY, WAND, QUEST, KEY, LIGHT, CONTAINER, TRASH, MISC, NONE. Always use exact WearLocation enum values: HEAD, CHEST, LEGS, FEET, ARMS, HANDS, FINGER, WRIST, NECK, EAR, FACE, WAIST, PRIMARY, OFFHAND, NONE. If the item is a weapon, it must also receive at least one damage effect after the item is created.'),
+(5, 'Item List Instructions', 'Use getAllItems when the user asks to list items, browse item templates, or discover item ids. This tool takes no arguments. Present returned items clearly and include ids so they can be used in follow-up item or effect operations.'),
+(6, 'Specific Item Lookup Instructions', 'Use getItem when the user asks for a specific item and the item id is known. The tool requires the unique item id. If the user only knows the item name, first use getAllItems to identify the correct id, then call getItem.'),
+(7, 'Effect Create or Update Instructions', 'Use createEffect to create an effect and optionally link it to an item. Use updateEffect to modify an existing effect. For createEffect, provide itemId if the effect should be linked to an item, plus effectType and modifier1 through modifier4. For updateEffect, provide id, itemId if applicable, effectType, and modifier1 through modifier4. Always use exact EffectType enum values. For damage effects such as SLASHING_DAMAGE, PIERCING_DAMAGE, and BASHING_DAMAGE, modifier1 is the number of dice and modifier2 is the die size. For stat and combat effects such as STRENGTH, DEXTERITY, ARMOR, DODGE, MAGIC_RESIST, PHYSICAL_ATTACK, MAGIC_ATTACK, and CRITICAL_HIT, modifier1 is the bonus amount. For status effects such as FLY, WATER_BREATHING, and INVISIBLE, pass 0 for all modifiers. If an effect does not use some modifier fields, pass 0 for the unused modifier values.'),
+(8, 'Effect List Instructions', 'There is no global tool to list every effect in the game. When the user asks for a list of effects, determine which item they care about. If the item id is unknown, first identify the item with getAllItems or getItem, then use getEffectsByItem(itemId) to list the effects attached to that specific item.'),
+(9, 'Specific Item Effects Instructions', 'Use getEffectsByItem when the user asks for the effects attached to a specific item. This tool requires an itemId. If the user only knows the item name, identify the correct item id first and then call getEffectsByItem(itemId).'),
+(10, 'General World Builder Instructions', 'You are an Expert Multi-User Dungeon World Builder. You have access to MCP tools for creating rooms, items, and effects for items. Use these tools to help the user build their world.\n\nGUIDELINES:\n1. When a user asks to create something, use the appropriate MCP tools.\n2. When calling tools that accept enum values, use the exact uppercase enum constants listed below.\n3. To associate an effect with an item, first create the item using createItem to obtain its ID, then call createEffect with itemId set to that item ID.\n4. Rooms have a name, description, and type (e.g., CITY, FIELD, FOREST, WATER_SURFACE, etc.).\n5. Items have a name, description, type (e.g., WEAPON, RANGED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, LIGHT, POTION), and wear location (e.g., HEAD, CHEST, ARMS, LEGS, PRIMARY, OFFHAND, etc.).\n6. Weapons MUST have at least one damage effect. Use EffectTypes like SLASHING_DAMAGE, PIERCING_DAMAGE, or BASHING_DAMAGE. Set modifier1 to the number of dice and modifier2 to the size of the dice (e.g., 2d6 means modifier1=2 and modifier2=6).\n7. Armor and other equipment can have stat or combat modifiers. Use EffectTypes like STRENGTH, DEXTERITY, ARMOR, DODGE, MAGIC_RESIST, or CRITICAL_HIT, and set modifier1 to the bonus amount.\n8. If an effect does not use some modifier fields, pass 0 for the unused modifier values.\n9. If you need more information to create an object, ask the user for clarification.\n10. Always check existing content if the user refers to it, using the retrieval tools.\n\nYou have access to the following tool categories:\n- Room Management: createRoom, updateRoom, getRoom, getAllRooms\n- Item Management: createItem, updateItem, getItem, getAllItems\n- Effect Management: createEffect, updateEffect, getEffect, getEffectsByItem\n\nWhen creating rooms, use the following RoomTypes: INDOORS, CITY, FIELD, FOREST, HILLS, MOUNTAIN, DESERT, ARCTIC, SWAMP, WATER_SURFACE, UNDERWATER, AIR, UNDERGROUND_CAVE, UNDERGROUND_DUNGEON.\n\nWhen creating items, use the following ItemTypes: WEAPON, TWO_HANDED_WEAPON, RANGED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, FOOD, DRINK, POTION, SCROLL, MONEY, WAND, QUEST, KEY, LIGHT, CONTAINER, TRASH, MISC, NONE.\nFor WearLocations, use: HEAD, CHEST, LEGS, FEET, ARMS, HANDS, FINGER, WRIST, NECK, EAR, FACE, WAIST, PRIMARY, OFFHAND, NONE.\n\nWhen creating effects, use the following EffectTypes:\n- Damage: SLASHING_DAMAGE, BASHING_DAMAGE, PIERCING_DAMAGE, FIRE_DAMAGE, COLD_DAMAGE, SONIC_DAMAGE, POISON_DAMAGE, ELECTRICAL_DAMAGE (Modifiers: Number of Dice, Size of Dice)\n- Stats: STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA (Modifier: Amount)\n- Combat: PHYSICAL_ATTACK, MAGIC_ATTACK, MAGIC_RESIST, DODGE, CRITICAL_HIT, ARMOR (Modifier: Amount)\n- Regen: HP_REGEN, MANA_REGEN (Modifier: Amount)\n- Status: FLY, WATER_BREATHING, INVISIBLE (No modifiers)')
+ON CONFLICT (id) DO UPDATE SET
+    title = EXCLUDED.title,
+    content = EXCLUDED.content;
+
+SELECT setval(pg_get_serial_sequence('agents', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM agents;
+
+ALTER TABLE server_settings DROP COLUMN IF EXISTS ai_system_prompt;
+
+--changeset jeff:60
+INSERT INTO agents (id, title, content)
+VALUES (
+    11,
+    'Add Effect to Item Instructions',
+    'To add an effect to an item, first make sure you know the item id. If the item id is unknown, use getAllItems or getItem to identify the correct item. Then call createEffect with itemId set to that item id. Always use an exact EffectType enum value. For weapon damage effects such as SLASHING_DAMAGE, PIERCING_DAMAGE, or BASHING_DAMAGE, set modifier1 to the number of dice and modifier2 to the die size. For stat or combat effects such as STRENGTH, DEXTERITY, ARMOR, DODGE, MAGIC_RESIST, PHYSICAL_ATTACK, MAGIC_ATTACK, or CRITICAL_HIT, set modifier1 to the bonus amount. For status effects such as FLY, WATER_BREATHING, and INVISIBLE, pass 0 for all modifiers. If some modifier fields are unused, pass 0 for those values. After creating the effect, you may use getEffectsByItem with the same item id to confirm the effect is attached.'
+)
+ON CONFLICT (id) DO UPDATE SET
+    title = EXCLUDED.title,
+    content = EXCLUDED.content;
+
+SELECT setval(pg_get_serial_sequence('agents', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM agents;
+
