@@ -11,3 +11,7 @@ databaseChangeLog:
       file: db/changelog/changes/004-update-ai-system-prompt.sql
   - include:
       file: db/changelog/changes/005-sync-sequences.sql
+  - include:
+      file: db/changelog/changes/006-replace-ai-system-prompt-with-agents.sql
+  - include:
+      file: db/changelog/changes/007-add-agent-effect-to-item-instructions.sql

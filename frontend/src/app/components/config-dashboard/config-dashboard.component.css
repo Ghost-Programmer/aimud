@@ -168,6 +168,12 @@ tr:hover {
   gap: 10px;
 }
 
+.agent-content-cell {
+  max-width: 40rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .icon-btn {
   background: transparent;
   border: none;

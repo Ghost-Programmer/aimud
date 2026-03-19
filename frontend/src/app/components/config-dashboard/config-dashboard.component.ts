@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { ConfigService } from '../../services/config.service';
 import { ItemService } from '../../services/item.service';
+import { Agent } from '../../models/agent.model';
 import { Item } from '../../models/item.model';
 
 @Component({
@@ -14,8 +15,13 @@ import { Item } from '../../models/item.model';
 })
 export class ConfigDashboardComponent implements OnInit {
   serverSettingsForm: FormGroup;
+  agents: Agent[] = [];
   races: any[] = [];
   classes: any[] = [];
+
+  selectedAgent: Agent | null = null;
+  agentForm: FormGroup;
+  isAgentFormVisible = false;
 
   selectedRace: any = null;
   raceForm: FormGroup;
@@ -45,8 +51,13 @@ export class ConfigDashboardComponent implements OnInit {
       serverName: ['', Validators.required],
       allowNewUser: [true],
       maintenance: [false],
-      maintenanceText: [''],
-      aiSystemPrompt: ['']
+      maintenanceText: ['']
+    });
+
+    this.agentForm = this.fb.group({
+      id: [null],
+      title: ['', Validators.required],
+      content: ['', Validators.required]
     });
 
     this.raceForm = this.fb.group({
@@ -78,6 +89,7 @@ export class ConfigDashboardComponent implements OnInit {
 
   ngOnInit() {
     this.loadServerSettings();
+    this.loadAgents();
     this.loadRaces();
     this.loadClasses();
     this.loadItems();
@@ -95,6 +107,61 @@ export class ConfigDashboardComponent implements OnInit {
     if (this.serverSettingsForm.valid) {
       this.configService.updateServerSettings(this.serverSettingsForm.value).subscribe(() => {
         alert('Server settings updated');
+      });
+    }
+  }
+
+  // Agents
+  loadAgents() {
+    this.configService.getAllAgents().subscribe(agents => {
+      this.agents = [...agents].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+    });
+  }
+
+  openAgentForm(agent: Agent | null = null) {
+    this.selectedAgent = agent;
+    if (agent) {
+      this.agentForm.patchValue(agent);
+    } else {
+      this.agentForm.reset({
+        id: null,
+        title: '',
+        content: ''
+      });
+    }
+    this.isAgentFormVisible = true;
+  }
+
+  closeAgentForm() {
+    this.isAgentFormVisible = false;
+    this.selectedAgent = null;
+  }
+
+  saveAgent() {
+    if (this.agentForm.valid) {
+      const agent = this.agentForm.value as Agent;
+      if (this.selectedAgent?.id) {
+        this.configService.updateAgent(this.selectedAgent.id, agent).subscribe(() => {
+          this.loadAgents();
+          this.closeAgentForm();
+        });
+      } else {
+        this.configService.createAgent(agent).subscribe(() => {
+          this.loadAgents();
+          this.closeAgentForm();
+        });
+      }
+    }
+  }
+
+  deleteAgent(id: number | undefined) {
+    if (!id) {
+      return;
+    }
+
+    if (confirm('Are you sure you want to delete this agent?')) {
+      this.configService.deleteAgent(id).subscribe(() => {
+        this.loadAgents();
       });
     }
   }

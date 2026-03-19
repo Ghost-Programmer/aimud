@@ -14,6 +14,8 @@ public class CacheConfiguration {
     public CacheManager cacheManager() {
         return new ConcurrentMapCacheManager(
             "serverSettings",
+            "agents",
+            "agent",
             "races",
             "characterClasses",
             "skillsRegistry",

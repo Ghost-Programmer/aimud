@@ -1,7 +1,9 @@
 package com.aimud.aimud.service;
 
+import com.aimud.aimud.model.Agent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -11,6 +13,7 @@ import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -25,17 +28,22 @@ public class AiService {
     public Flux<String> processPrompt(String userPrompt) {
         log.info("Processing AI prompt: {}", userPrompt);
 
-        return configService.getServerSettings()
-                .flatMapMany(settings -> {
-                    String systemPrompt = settings.aiSystemPrompt();
-                    SystemMessage systemMessage = new SystemMessage(systemPrompt);
+        return configService.getAllAgents()
+                .collectList()
+                .flatMapMany(agents -> {
                     UserMessage userMessage = new UserMessage(userPrompt);
 
                     OllamaOptions options = new OllamaOptions();
                     options.setFunctionCallbacks(mcpTools);
                     options.setTruncate(false);
 
-                    Prompt prompt = new Prompt(List.of(systemMessage, userMessage), options);
+                    List<Message> messages = new ArrayList<>(agents.size() + 1);
+                    for (Agent agent : agents) {
+                        messages.add(new SystemMessage("Agent: " + agent.title() + "\n" + agent.content()));
+                    }
+                    messages.add(userMessage);
+
+                    Prompt prompt = new Prompt(messages, options);
 
                     return chatModel.stream(prompt)
                             .map(response -> {

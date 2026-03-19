@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Agent } from '../models/agent.model';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,23 @@ export class ConfigService {
 
   updateServerSettings(settings: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/settings`, settings);
+  }
+
+  // Agents
+  getAllAgents(): Observable<Agent[]> {
+    return this.http.get<Agent[]>(`${this.apiUrl}/agents`);
+  }
+
+  createAgent(agent: Agent): Observable<Agent> {
+    return this.http.post<Agent>(`${this.apiUrl}/agents`, agent);
+  }
+
+  updateAgent(id: number, agent: Agent): Observable<Agent> {
+    return this.http.put<Agent>(`${this.apiUrl}/agents/${id}`, agent);
+  }
+
+  deleteAgent(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/agents/${id}`);
   }
 
   // Races

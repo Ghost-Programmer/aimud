@@ -1,5 +1,6 @@
 package com.aimud.aimud.controller;
 
+import com.aimud.aimud.model.Agent;
 import com.aimud.aimud.model.CharacterClass;
 import com.aimud.aimud.model.Race;
 import com.aimud.aimud.model.ServerSettings;
@@ -29,6 +30,30 @@ public class ConfigController {
     @PutMapping("/settings")
     public Mono<ServerSettings> updateServerSettings(@RequestBody ServerSettings settings) {
         return configService.updateServerSettings(settings);
+    }
+
+    // Agents
+    @GetMapping("/agents")
+    public Flux<Agent> getAllAgents() {
+        return configService.getAllAgents();
+    }
+
+    @PostMapping("/agents")
+    public Mono<Agent> createAgent(@RequestBody Agent agent) {
+        return configService.createAgent(agent);
+    }
+
+    @PutMapping("/agents/{id}")
+    public Mono<ResponseEntity<Agent>> updateAgent(@PathVariable Long id, @RequestBody Agent agent) {
+        return configService.updateAgent(id, agent)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/agents/{id}")
+    public Mono<ResponseEntity<Void>> deleteAgent(@PathVariable Long id) {
+        return configService.deleteAgent(id)
+                .then(Mono.just(ResponseEntity.ok().build()));
     }
 
     // Races

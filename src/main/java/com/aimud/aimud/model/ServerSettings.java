@@ -13,7 +13,6 @@ public record ServerSettings(
         @Column("allow_new_user") boolean allowNewUser,
         @Column("maintenance") boolean maintenance,
         @Column("maintenance_text") String maintenanceText,
-        @Column("ai_system_prompt") String aiSystemPrompt,
         @CreatedDate @Column("created_at") LocalDateTime createdAt,
         @LastModifiedDate @Column("modified_at") LocalDateTime modifiedAt,
         @CreatedBy @Column("created_by") String createdBy,
