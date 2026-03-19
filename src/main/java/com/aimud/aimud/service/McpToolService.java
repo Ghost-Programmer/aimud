@@ -206,15 +206,14 @@ public class McpToolService {
 
     // --- EFFECT TOOLS ---
 
-    @Tool(description = "Create a new effect and optionally associate it with an item")
+    @Tool(description = "Create a new effect")
     public Effect createEffect(
-            @ToolParam(description = "The ID of the item to associate this effect with (optional)") Long itemId,
             @ToolParam(description = "The type of the effect (e.g. SLASHING_DAMAGE, STRENGTH, ARMOR, etc.)") String effectType,
             @ToolParam(description = "The first modifier value (e.g. number of dice, or bonus amount)") int modifier1,
             @ToolParam(description = "The second modifier value (e.g. size of dice)") int modifier2,
             @ToolParam(description = "The third modifier value") int modifier3,
             @ToolParam(description = "The fourth modifier value") int modifier4) {
-        log.info("MCP Tool: Creating effect: {} for item: {}", effectType, itemId);
+        log.info("MCP Tool: Creating effect: {}", effectType);
         Effect effect = new Effect();
         if (effectType != null) {
             try {
@@ -227,16 +226,19 @@ public class McpToolService {
         effect.setModifier2(modifier2);
         effect.setModifier3(modifier3);
         effect.setModifier4(modifier4);
-        
-        return effectService.saveEffect(effect)
-                .flatMap(savedEffect -> {
-                    if (itemId != null) {
-                        return effectService.linkItemAndEffect(itemId, savedEffect.getId())
-                                .thenReturn(savedEffect);
-                    }
-                    return Mono.just(savedEffect);
-                })
-                .as(mono -> await(mono, "create effect"));
+
+        return await(effectService.saveEffect(effect), "create effect");
+    }
+
+    @Tool(description = "Associate an existing effect with an existing item")
+    public Effect linkEffectToItem(
+            @ToolParam(description = "The ID of the item to associate this effect with") Long itemId,
+            @ToolParam(description = "The ID of the effect to associate with the item") Long effectId) {
+        log.info("MCP Tool: Linking effect {} to item {}", effectId, itemId);
+        return effectService.linkItemAndEffect(itemId, effectId)
+                .then(effectService.getEffect(effectId))
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Effect not found: " + effectId)))
+                .as(mono -> await(mono, "link effect to item"));
     }
 
     @Tool(description = "Update an existing effect")
