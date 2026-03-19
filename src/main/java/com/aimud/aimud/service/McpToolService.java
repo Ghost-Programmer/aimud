@@ -83,6 +83,83 @@ public class McpToolService {
         return await(roomService.saveRoom(room), "update room");
     }
 
+    @Tool(description = "Set a directional door and destination room for an existing room")
+    public Room setRoomDoor(
+            @ToolParam(description = "The ID of the source room") Long roomId,
+            @ToolParam(description = "The direction for the door (NORTH, SOUTH, EAST, WEST, UP, DOWN or N/S/E/W/U/D)") String direction,
+            @ToolParam(description = "The ID of the destination room") Long destinationRoomId,
+            @ToolParam(description = "Whether the door starts open") boolean doorOpen) {
+        String normalizedDirection = normalizeDoorDirection(direction);
+        log.info("MCP Tool: Setting {} door from room {} to room {} (open={})",
+                normalizedDirection, roomId, destinationRoomId, doorOpen);
+
+        return roomService.getRoom(roomId)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Room not found: " + roomId)))
+                .flatMap(room -> roomService.getRoom(destinationRoomId)
+                        .switchIfEmpty(Mono.error(new IllegalArgumentException("Destination room not found: " + destinationRoomId)))
+                        .thenReturn(room))
+                .map(room -> {
+                    applyDoorSettings(room, normalizedDirection, destinationRoomId, doorOpen);
+                    return room;
+                })
+                .flatMap(roomService::saveRoom)
+                .as(mono -> await(mono, "set room door"));
+    }
+
+    private String normalizeDoorDirection(String direction) {
+        if (direction == null || direction.isBlank()) {
+            throw new IllegalArgumentException("Direction is required");
+        }
+
+        String normalizedValue = normalizeEnumValue(direction);
+
+        return switch (normalizedValue) {
+            case "N", "NORTH" -> "NORTH";
+            case "S", "SOUTH" -> "SOUTH";
+            case "E", "EAST" -> "EAST";
+            case "W", "WEST" -> "WEST";
+            case "U", "UP" -> "UP";
+            case "D", "DOWN" -> "DOWN";
+            default -> throw new IllegalArgumentException("Invalid direction: " + direction);
+        };
+    }
+
+    private void applyDoorSettings(Room room, String direction, Long destinationRoomId, boolean doorOpen) {
+        switch (direction) {
+            case "NORTH" -> {
+                room.setNorthId(destinationRoomId);
+                room.setNorthDoor(true);
+                room.setNorthDoorOpen(doorOpen);
+            }
+            case "SOUTH" -> {
+                room.setSouthId(destinationRoomId);
+                room.setSouthDoor(true);
+                room.setSouthDoorOpen(doorOpen);
+            }
+            case "EAST" -> {
+                room.setEastId(destinationRoomId);
+                room.setEastDoor(true);
+                room.setEastDoorOpen(doorOpen);
+            }
+            case "WEST" -> {
+                room.setWestId(destinationRoomId);
+                room.setWestDoor(true);
+                room.setWestDoorOpen(doorOpen);
+            }
+            case "UP" -> {
+                room.setUpId(destinationRoomId);
+                room.setUpDoor(true);
+                room.setUpDoorOpen(doorOpen);
+            }
+            case "DOWN" -> {
+                room.setDownId(destinationRoomId);
+                room.setDownDoor(true);
+                room.setDownDoorOpen(doorOpen);
+            }
+            default -> throw new IllegalArgumentException("Invalid direction: " + direction);
+        }
+    }
+
     @Tool(description = "Retrieve a room by its ID")
     public Room getRoom(@ToolParam(description = "The unique ID of the room") Long id) {
         log.info("MCP Tool: Getting room with id: {}", id);

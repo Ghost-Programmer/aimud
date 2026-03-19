@@ -2,6 +2,7 @@ package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Effect;
 import com.aimud.aimud.model.Item;
+import com.aimud.aimud.model.Room;
 import com.aimud.aimud.types.ItemType;
 import com.aimud.aimud.types.WearLocation;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +18,7 @@ import reactor.test.StepVerifier;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -114,5 +116,33 @@ class McpToolServiceTest {
         assertThat(mcpToolService.getAllItems()).isEmpty();
         assertThat(mcpToolService.getAllRooms()).isEmpty();
     }
-}
 
+    @Test
+    void setRoomDoorUpdatesDirectionalDoorFields() {
+        Room source = new Room();
+        source.setId(10L);
+        source.setName("Hall");
+
+        Room destination = new Room();
+        destination.setId(11L);
+        destination.setName("Armory");
+
+        when(roomService.getRoom(10L)).thenReturn(Mono.just(source));
+        when(roomService.getRoom(11L)).thenReturn(Mono.just(destination));
+        when(roomService.saveRoom(any(Room.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        Room updated = mcpToolService.setRoomDoor(10L, "n", 11L, true);
+
+        assertThat(updated.getNorthId()).isEqualTo(11L);
+        assertThat(updated.isNorthDoor()).isTrue();
+        assertThat(updated.isNorthDoorOpen()).isTrue();
+        verify(roomService).saveRoom(source);
+    }
+
+    @Test
+    void setRoomDoorRejectsInvalidDirection() {
+        assertThatThrownBy(() -> mcpToolService.setRoomDoor(10L, "sideways", 11L, false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid direction");
+    }
+}
