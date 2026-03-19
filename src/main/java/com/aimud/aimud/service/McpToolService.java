@@ -95,6 +95,7 @@ public class McpToolService {
             @ToolParam(description = "The type of the item (e.g. WEAPON, ARMOR, POTION, etc.)") String itemType,
             @ToolParam(description = "The wear location of the item (e.g. HEAD, TORSO, PRIMARY, etc.)") String wearLocation) {
         log.info("MCP Tool: Creating item: {}", name);
+        log.info("Item details - Description: {}, Type: {}, Wear Location: {}", description, itemType, wearLocation);
         Item item = new Item();
         item.setName(name);
         item.setDescription(description);

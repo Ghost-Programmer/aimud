@@ -57,11 +57,12 @@ public class ItemService {
         List<Effect> effects = item.getEffects();
         return itemRepository.save(item)
                 .flatMap(savedItem -> {
+                    log.info("Item saved with id: {}. Processing effects...", savedItem.getId());
                     if (effects == null) {
                         return Mono.just(savedItem);
                     }
                     
-                    log.debug("Saving {} effects for item: {}", effects.size(), savedItem.getId());
+                    log.info("Saving {} effects for item: {}", effects.size(), savedItem.getId());
                     return effectService.deleteByItemId(savedItem.getId())
                             .thenMany(Flux.fromIterable(effects))
                             .flatMap(effect -> {
