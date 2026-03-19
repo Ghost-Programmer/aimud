@@ -38,7 +38,10 @@ export class AiService {
             const lines = chunk.split('\n');
             for (const line of lines) {
               if (line.startsWith('data:')) {
-                const data = line.slice(5).trim();
+                let data = line.slice(5);
+                if (data.endsWith('\r')) {
+                  data = data.slice(0, -1);
+                }
                 if (data) {
                   observer.next(data);
                 }
