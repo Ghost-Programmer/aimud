@@ -50,6 +50,8 @@ class CharacterServiceTest {
     private SkillRepository skillRepository;
     @Mock
     private ItemService itemService;
+    @Mock
+    private MobileService mobileService;
 
     private CharacterService characterService;
 
@@ -65,7 +67,8 @@ class CharacterServiceTest {
                 roomService,
                 characterClassRepository,
                 skillRepository,
-                itemService
+                itemService,
+                mobileService
         );
     }
 

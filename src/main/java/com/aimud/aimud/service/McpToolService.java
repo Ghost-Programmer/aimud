@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Service providing MCP Tools for AI to manage Rooms, Items, and Effects in AIMUD.
@@ -92,27 +93,15 @@ public class McpToolService {
     public Item createItem(
             @ToolParam(description = "The name of the item") String name,
             @ToolParam(description = "The description of the item") String description,
-            @ToolParam(description = "The type of the item (e.g. WEAPON, ARMOR, POTION, etc.)") String itemType,
-            @ToolParam(description = "The wear location of the item (e.g. HEAD, TORSO, PRIMARY, etc.)") String wearLocation) {
+            @ToolParam(description = "The type of the item (e.g. WEAPON, TWO_HANDED_WEAPON, RANGED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, POTION, etc.)") String itemType,
+            @ToolParam(description = "The wear location of the item (e.g. HEAD, CHEST, LEGS, FEET, PRIMARY, OFFHAND, etc.)") String wearLocation) {
         log.info("MCP Tool: Creating item: {}", name);
         log.info("Item details - Description: {}, Type: {}, Wear Location: {}", description, itemType, wearLocation);
         Item item = new Item();
         item.setName(name);
         item.setDescription(description);
-        if (itemType != null) {
-            try {
-                item.setItemType(ItemType.valueOf(itemType.toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid itemType: {}", itemType);
-            }
-        }
-        if (wearLocation != null) {
-            try {
-                item.setWearLocation(WearLocation.valueOf(wearLocation.toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid wearLocation: {}", wearLocation);
-            }
-        }
+        item.setItemType(parseItemType(itemType));
+        item.setWearLocation(parseWearLocation(wearLocation));
         return itemService.saveItem(item).block();
     }
 
@@ -124,25 +113,75 @@ public class McpToolService {
             @ToolParam(description = "The type of the item") String itemType,
             @ToolParam(description = "The wear location of the item") String wearLocation) {
         log.info("MCP Tool: Updating item: {} (id: {})", name, id);
-        Item item = new Item();
-        item.setId(id);
-        item.setName(name);
-        item.setDescription(description);
-        if (itemType != null) {
-            try {
-                item.setItemType(ItemType.valueOf(itemType.toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid itemType: {}", itemType);
-            }
+        return itemService.getItem(id)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Item not found: " + id)))
+                .map(item -> {
+                    item.setName(name);
+                    item.setDescription(description);
+                    item.setItemType(parseItemType(itemType));
+                    item.setWearLocation(parseWearLocation(wearLocation));
+                    return item;
+                })
+                .flatMap(itemService::saveItem)
+                .block();
+    }
+
+    private ItemType parseItemType(String itemType) {
+        if (itemType == null || itemType.isBlank()) {
+            return ItemType.NONE;
         }
-        if (wearLocation != null) {
-            try {
-                item.setWearLocation(WearLocation.valueOf(wearLocation.toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid wearLocation: {}", wearLocation);
+
+        String normalizedValue = normalizeEnumValue(itemType);
+
+        return switch (normalizedValue) {
+            case "ARMOR" -> {
+                log.info("Mapping generic itemType '{}' to LIGHT_ARMOR", itemType);
+                yield ItemType.LIGHT_ARMOR;
             }
+            case "ONE_HANDED_WEAPON", "ONE_HANDED", "MELEE_WEAPON" -> ItemType.WEAPON;
+            case "TWO_HANDED", "TWO_HANDER", "TWOHAND" -> ItemType.TWO_HANDED_WEAPON;
+            case "RANGED", "BOW", "CROSSBOW" -> ItemType.RANGED_WEAPON;
+            default -> {
+                ItemType parsedType = ItemType.fromString(itemType);
+                if (parsedType != ItemType.NONE || "NONE".equals(normalizedValue)) {
+                    yield parsedType;
+                }
+                log.warn("Invalid itemType: {}. Defaulting to NONE.", itemType);
+                yield ItemType.NONE;
+            }
+        };
+    }
+
+    private WearLocation parseWearLocation(String wearLocation) {
+        if (wearLocation == null || wearLocation.isBlank()) {
+            return WearLocation.NONE;
         }
-        return itemService.saveItem(item).block();
+
+        String normalizedValue = normalizeEnumValue(wearLocation);
+
+        return switch (normalizedValue) {
+            case "TORSO", "BODY" -> WearLocation.CHEST;
+            case "RIGHT_FINGER", "LEFT_FINGER", "FINGERS", "RING" -> WearLocation.FINGER;
+            case "RIGHT_WRIST", "LEFT_WRIST", "WRISTS" -> WearLocation.WRIST;
+            case "RIGHT_EAR", "LEFT_EAR", "EARS" -> WearLocation.EAR;
+            case "MAIN_HAND", "MAINHAND", "RIGHT_HAND", "WEAPON_HAND" -> WearLocation.PRIMARY;
+            case "LEFT_HAND", "OFF_HAND", "SHIELD_HAND" -> WearLocation.OFFHAND;
+            default -> {
+                WearLocation parsedLocation = WearLocation.fromString(wearLocation);
+                if (parsedLocation != WearLocation.NONE || "NONE".equals(normalizedValue)) {
+                    yield parsedLocation;
+                }
+                log.warn("Invalid wearLocation: {}. Defaulting to NONE.", wearLocation);
+                yield WearLocation.NONE;
+            }
+        };
+    }
+
+    private String normalizeEnumValue(String value) {
+        return value.trim()
+                .replace('-', '_')
+                .replace(' ', '_')
+                .toUpperCase(Locale.ROOT);
     }
 
     @Tool(description = "Retrieve an item template by its ID")

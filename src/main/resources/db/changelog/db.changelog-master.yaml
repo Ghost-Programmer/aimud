@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changes/002-add-mobiles.sql
   - include:
       file: db/changelog/changes/003-remove-dodge-skill.sql
+  - include:
+      file: db/changelog/changes/004-update-ai-system-prompt.sql
