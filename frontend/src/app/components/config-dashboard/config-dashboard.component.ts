@@ -16,6 +16,8 @@ import { Item } from '../../models/item.model';
 export class ConfigDashboardComponent implements OnInit {
   serverSettingsForm: FormGroup;
   agents: Agent[] = [];
+  readonly agentPageSize = 5;
+  currentAgentPage = 1;
   races: any[] = [];
   classes: any[] = [];
 
@@ -115,7 +117,47 @@ export class ConfigDashboardComponent implements OnInit {
   loadAgents() {
     this.configService.getAllAgents().subscribe(agents => {
       this.agents = [...agents].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+      this.clampAgentPage();
     });
+  }
+
+  get totalAgentPages(): number {
+    return Math.max(1, Math.ceil(this.agents.length / this.agentPageSize));
+  }
+
+  get paginatedAgents(): Agent[] {
+    const startIndex = (this.currentAgentPage - 1) * this.agentPageSize;
+    return this.agents.slice(startIndex, startIndex + this.agentPageSize);
+  }
+
+  get agentRangeStart(): number {
+    if (this.agents.length === 0) {
+      return 0;
+    }
+    return (this.currentAgentPage - 1) * this.agentPageSize + 1;
+  }
+
+  get agentRangeEnd(): number {
+    if (this.agents.length === 0) {
+      return 0;
+    }
+    return Math.min(this.currentAgentPage * this.agentPageSize, this.agents.length);
+  }
+
+  previousAgentPage() {
+    if (this.currentAgentPage > 1) {
+      this.currentAgentPage--;
+    }
+  }
+
+  nextAgentPage() {
+    if (this.currentAgentPage < this.totalAgentPages) {
+      this.currentAgentPage++;
+    }
+  }
+
+  private clampAgentPage() {
+    this.currentAgentPage = Math.min(Math.max(1, this.currentAgentPage), this.totalAgentPages);
   }
 
   openAgentForm(agent: Agent | null = null) {
@@ -147,6 +189,7 @@ export class ConfigDashboardComponent implements OnInit {
         });
       } else {
         this.configService.createAgent(agent).subscribe(() => {
+          this.currentAgentPage = this.totalAgentPages + 1;
           this.loadAgents();
           this.closeAgentForm();
         });

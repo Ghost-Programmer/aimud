@@ -40,7 +40,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let agent of agents">
+          <tr *ngFor="let agent of paginatedAgents">
             <td>{{ agent.id }}</td>
             <td>{{ agent.title }}</td>
             <td class="agent-content-cell">{{ agent.content }}</td>
@@ -59,6 +59,16 @@
           </tr>
         </tbody>
       </table>
+    </div>
+    <div class="pagination-bar" *ngIf="agents.length > 0">
+      <div class="pagination-summary">
+        Showing {{ agentRangeStart }}-{{ agentRangeEnd }} of {{ agents.length }} agents
+      </div>
+      <div class="pagination-controls">
+        <button type="button" class="btn-secondary" (click)="previousAgentPage()" [disabled]="currentAgentPage === 1">Previous</button>
+        <span class="page-indicator">Page {{ currentAgentPage }} of {{ totalAgentPages }}</span>
+        <button type="button" class="btn-secondary" (click)="nextAgentPage()" [disabled]="currentAgentPage === totalAgentPages">Next</button>
+      </div>
     </div>
   </section>
 
