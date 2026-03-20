@@ -96,7 +96,14 @@ public class CharacterService {
                 .flatMap(user -> {
                     character.setUserId(user.getId());
                     log.debug("Found user id: {} for username: {}", user.getId(), username);
-                    return characterRepository.save(character);
+
+                    return statService.updateCurrentStats(character)
+                            .map(preparedCharacter -> {
+                                preparedCharacter.setCurrentHp(preparedCharacter.getMaxHp());
+                                preparedCharacter.setCurrentMana(preparedCharacter.getMaxMana());
+                                return preparedCharacter;
+                            })
+                            .flatMap(characterRepository::save);
                 })
                 .flatMap(savedCharacter -> {
                     if (savedCharacter.getClassId() != null) {

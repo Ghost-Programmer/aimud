@@ -2,6 +2,7 @@ package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Character;
 import com.aimud.aimud.model.Item;
+import com.aimud.aimud.model.User;
 import com.aimud.aimud.repository.CharacterClassRepository;
 import com.aimud.aimud.repository.CharacterEffectRepository;
 import com.aimud.aimud.repository.CharacterRepository;
@@ -70,6 +71,85 @@ class CharacterServiceTest {
                 itemService,
                 mobileService
         );
+    }
+
+    @Test
+    void createCharacter_ShouldInitializeCurrentHpAndManaToMaxValues() {
+        Character newCharacter = new Character();
+        newCharacter.setName("FreshHero");
+        newCharacter.setStrength(10);
+        newCharacter.setDexterity(8);
+        newCharacter.setConstitution(12);
+        newCharacter.setIntelligence(9);
+        newCharacter.setWisdom(7);
+        newCharacter.setCharisma(6);
+
+        User user = new User();
+        user.setId(42L);
+        user.setUsername("jeff");
+
+        Character derivedCharacter = new Character();
+        derivedCharacter.setName("FreshHero");
+        derivedCharacter.setStrength(10);
+        derivedCharacter.setDexterity(8);
+        derivedCharacter.setConstitution(12);
+        derivedCharacter.setIntelligence(9);
+        derivedCharacter.setWisdom(7);
+        derivedCharacter.setCharisma(6);
+        derivedCharacter.setUserId(42L);
+        derivedCharacter.setMaxHp(330);
+        derivedCharacter.setMaxMana(230);
+
+        Character savedCharacter = new Character();
+        savedCharacter.setId(100L);
+        savedCharacter.setName("FreshHero");
+        savedCharacter.setStrength(10);
+        savedCharacter.setDexterity(8);
+        savedCharacter.setConstitution(12);
+        savedCharacter.setIntelligence(9);
+        savedCharacter.setWisdom(7);
+        savedCharacter.setCharisma(6);
+        savedCharacter.setUserId(42L);
+        savedCharacter.setCurrentHp(330);
+        savedCharacter.setCurrentMana(230);
+        savedCharacter.setMaxHp(330);
+        savedCharacter.setMaxMana(230);
+
+        when(userRepository.findByUsername("jeff")).thenReturn(Mono.just(user));
+        when(statService.updateCurrentStats(any(Character.class)))
+                .thenReturn(Mono.just(derivedCharacter))
+                .thenReturn(Mono.just(savedCharacter));
+        when(characterRepository.save(any(Character.class))).thenAnswer(invocation -> {
+            Character characterToSave = invocation.getArgument(0);
+            Character persistedCharacter = new Character();
+            persistedCharacter.setId(100L);
+            persistedCharacter.setName(characterToSave.getName());
+            persistedCharacter.setStrength(characterToSave.getStrength());
+            persistedCharacter.setDexterity(characterToSave.getDexterity());
+            persistedCharacter.setConstitution(characterToSave.getConstitution());
+            persistedCharacter.setIntelligence(characterToSave.getIntelligence());
+            persistedCharacter.setWisdom(characterToSave.getWisdom());
+            persistedCharacter.setCharisma(characterToSave.getCharisma());
+            persistedCharacter.setUserId(characterToSave.getUserId());
+            persistedCharacter.setCurrentHp(characterToSave.getCurrentHp());
+            persistedCharacter.setCurrentMana(characterToSave.getCurrentMana());
+            return Mono.just(persistedCharacter);
+        });
+
+        StepVerifier.create(characterService.createCharacter("jeff", newCharacter))
+                .assertNext(createdCharacter -> {
+                    assertThat(createdCharacter.getCurrentHp()).isEqualTo(createdCharacter.getMaxHp());
+                    assertThat(createdCharacter.getCurrentMana()).isEqualTo(createdCharacter.getMaxMana());
+                    assertThat(createdCharacter.getCurrentHp()).isEqualTo(330);
+                    assertThat(createdCharacter.getCurrentMana()).isEqualTo(230);
+                })
+                .verifyComplete();
+
+        ArgumentCaptor<Character> savedCharacterCaptor = ArgumentCaptor.forClass(Character.class);
+        verify(characterRepository).save(savedCharacterCaptor.capture());
+        Character persistedCharacter = savedCharacterCaptor.getValue();
+        assertThat(persistedCharacter.getCurrentHp()).isEqualTo(330);
+        assertThat(persistedCharacter.getCurrentMana()).isEqualTo(230);
     }
 
     @Test
