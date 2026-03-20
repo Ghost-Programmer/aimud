@@ -1364,3 +1364,90 @@ CREATE TABLE IF NOT EXISTS mobile_inventory (
 
 CREATE INDEX IF NOT EXISTS idx_mobile_skills_mobile_id ON mobile_skills(mobile_id);
 CREATE INDEX IF NOT EXISTS idx_mobile_inventory_mobile_id ON mobile_inventory(mobile_id);
+
+--changeset jeff:60
+-- Expand the starter area around the Mud Entrance with a fully connected set of seeded rooms.
+UPDATE rooms
+SET north_id = 2,
+    south_id = 6,
+    east_id = 7,
+    west_id = 8,
+    up_id = 9,
+    down_id = 10,
+    north_door = true,
+    south_door = true,
+    east_door = true,
+    west_door = true,
+    up_door = true,
+    down_door = true,
+    north_door_open = true,
+    south_door_open = true,
+    east_door_open = true,
+    west_door_open = true,
+    up_door_open = true,
+    down_door_open = true
+WHERE id = 1;
+
+INSERT INTO rooms (
+    id,
+    name,
+    description,
+    room_type,
+    north_id,
+    south_id,
+    east_id,
+    west_id,
+    up_id,
+    down_id,
+    north_door,
+    south_door,
+    east_door,
+    west_door,
+    up_door,
+    down_door,
+    north_door_open,
+    south_door_open,
+    east_door_open,
+    west_door_open,
+    up_door_open,
+    down_door_open
+) VALUES
+(2, 'The Great Hall', 'A vast, echoing hall with marble floors and high vaulted ceilings. Archways branch toward the library, workshop, portal wing, and a stair toward the cartographer''s perch.', 'INDOORS', 3, 1, 5, 4, 11, NULL, true, true, true, true, true, false, true, true, true, true, true, false),
+(3, 'Library of Ancient Wisdom', 'Rows of dusty bookshelves line the walls of this quiet chamber, where old maps and forgotten lore rest in careful order.', 'INDOORS', NULL, 2, NULL, NULL, NULL, NULL, false, true, false, false, false, false, false, true, false, false, false, false),
+(4, 'The Alchemist''s Workshop', 'The air is thick with the smell of strange chemicals and bubbling potions. Benches of glassware crowd the western annex.', 'INDOORS', NULL, NULL, 2, NULL, NULL, NULL, false, false, true, false, false, false, false, false, true, false, false, false),
+(5, 'Portal Gallery', 'A humming arch of pale light dominates this eastern chamber, its frame etched with old travel sigils and city markers.', 'INDOORS', NULL, NULL, NULL, 2, NULL, NULL, false, false, false, true, false, false, false, false, false, true, false, false),
+(6, 'South Gate Courtyard', 'Weathered flagstones open into a quiet courtyard beyond the entrance, with a training path leading farther south.', 'CITY', 1, 12, NULL, NULL, NULL, NULL, true, true, false, false, false, false, true, true, false, false, false, false),
+(7, 'East Market Arcade', 'Canvas awnings shade a row of empty vendor stalls, and the scent of spice still lingers in the air.', 'CITY', NULL, NULL, 13, 1, NULL, NULL, false, false, true, true, false, false, false, false, true, true, false, false),
+(8, 'West Watch Barracks', 'Racks of practice spears and neatly made cots line this guard post overlooking the entrance approach.', 'CITY', NULL, NULL, 1, 14, NULL, NULL, false, false, true, true, false, false, false, false, true, true, false, false),
+(9, 'Skybridge Landing', 'A wind-brushed stone platform hangs above the entrance, with iron rails and stairs climbing toward an observatory.', 'AIR', NULL, NULL, NULL, NULL, 15, 1, false, false, false, false, true, true, false, false, false, false, true, true),
+(10, 'Undercrypt Stairs', 'Cold stone steps descend beneath the entrance into a torchlit vault where every sound seems swallowed by the earth.', 'UNDERGROUND_DUNGEON', NULL, NULL, NULL, NULL, 1, NULL, false, false, false, false, true, false, false, false, false, false, true, false),
+(11, 'Hall of Maps', 'Lanterns glow over wall-sized charts of kingdoms, trade roads, and shifting frontiers above the great hall.', 'INDOORS', NULL, NULL, NULL, NULL, NULL, 2, false, false, false, false, false, true, false, false, false, false, false, true),
+(12, 'Lantern Garden', 'A pocket garden blooms behind the southern courtyard, where paper lanterns sway over clipped hedges and a stone bench.', 'FIELD', 6, NULL, NULL, NULL, NULL, NULL, true, false, false, false, false, false, true, false, false, false, false, false),
+(13, 'Trader''s Ledger Room', 'Shelves of account books and lockboxes fill this private counting room tucked behind the market arcade.', 'INDOORS', NULL, NULL, NULL, 7, NULL, NULL, false, false, false, true, false, false, false, false, false, true, false, false),
+(14, 'Armory Annex', 'Polished helms and reserve shields hang in disciplined rows beside a scarred table used for watch briefings.', 'INDOORS', NULL, NULL, 8, NULL, NULL, NULL, false, false, true, false, false, false, false, false, true, false, false, false),
+(15, 'Observatory Apex', 'A domed chamber of brass lenses and star charts crowns the skybridge, offering a sweeping view over the whole district.', 'AIR', NULL, 9, NULL, NULL, NULL, NULL, false, true, false, false, false, false, false, true, false, false, false, false)
+ON CONFLICT (id) DO UPDATE SET
+    name = EXCLUDED.name,
+    description = EXCLUDED.description,
+    room_type = EXCLUDED.room_type,
+    north_id = EXCLUDED.north_id,
+    south_id = EXCLUDED.south_id,
+    east_id = EXCLUDED.east_id,
+    west_id = EXCLUDED.west_id,
+    up_id = EXCLUDED.up_id,
+    down_id = EXCLUDED.down_id,
+    north_door = EXCLUDED.north_door,
+    south_door = EXCLUDED.south_door,
+    east_door = EXCLUDED.east_door,
+    west_door = EXCLUDED.west_door,
+    up_door = EXCLUDED.up_door,
+    down_door = EXCLUDED.down_door,
+    north_door_open = EXCLUDED.north_door_open,
+    south_door_open = EXCLUDED.south_door_open,
+    east_door_open = EXCLUDED.east_door_open,
+    west_door_open = EXCLUDED.west_door_open,
+    up_door_open = EXCLUDED.up_door_open,
+    down_door_open = EXCLUDED.down_door_open;
+
+SELECT setval(pg_get_serial_sequence('rooms', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM rooms;
+
