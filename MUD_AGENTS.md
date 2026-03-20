@@ -15,6 +15,7 @@ Primary goals:
 - `createRoom(name, description, roomType)`
 - `updateRoom(id, name, description, roomType)`
 - `setRoomDoor(roomId, direction, destinationRoomId, doorOpen)`
+- `addItemToRoom(roomId, itemId)`
 - `getRoom(id)`
 - `getAllRooms()`
 
@@ -200,16 +201,14 @@ Weapon rule:
 - Weapon-like items (`WEAPON`, `TWO_HANDED_WEAPON`, `RANGED_WEAPON`) should have at least one damage effect.
 
 ## 5) Adding items to a room
-There is no dedicated MCP method in `McpToolService` for room inventory assignment.
-
-Use backend API fallback:
-1. Read room via `GET /api/rooms/{id}`.
-2. Append item ID to room `items` CSV string (do not remove existing IDs).
-3. Save using `PUT /api/rooms/{id}` with updated room payload.
-4. Verify with `GET /api/rooms/{id}`.
+Use the MCP room-item assignment method directly:
+1. Ensure room exists with `getRoom(roomId)`.
+2. Ensure item exists with `getItem(itemId)`.
+3. Call `addItemToRoom(roomId, itemId)`.
+4. Verify with `getRoom(roomId)` and confirm the room `items` contains the item ID.
 
 Practical rule:
-- Keep `items` as comma-separated numeric IDs, no spaces required.
+- Use the MCP tool for room item assignment instead of manual CSV updates through REST.
 
 ## 6) Adding items to a mobile inventory
 1. Ensure item exists (`getItem(itemId)`) and mobile exists (`getMobile(mobileId)`).

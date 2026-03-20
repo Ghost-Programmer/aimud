@@ -180,6 +180,19 @@ public class McpToolService {
         return awaitList(roomService.getAllRooms(), "get all rooms");
     }
 
+    @Tool(description = "Add an item to a room's item list")
+    public Room addItemToRoom(
+            @ToolParam(description = "The ID of the room") Long roomId,
+            @ToolParam(description = "The ID of the item to add") Long itemId) {
+        log.info("MCP Tool: Adding item {} to room {}", itemId, roomId);
+        return roomService.getRoom(roomId)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Room not found: " + roomId)))
+                .then(itemService.getItem(itemId)
+                        .switchIfEmpty(Mono.error(new IllegalArgumentException("Item not found: " + itemId))))
+                .then(roomService.addItemToRoom(roomId, itemId))
+                .as(mono -> await(mono, "add item to room"));
+    }
+
     // --- ITEM TOOLS ---
 
     @Tool(description = "Create a new item template")
@@ -508,10 +521,13 @@ public class McpToolService {
     }
 
     private <T> T await(Mono<T> mono, String operation) {
+        log.info("MCP Tool call started: {}", operation);
         try {
-            return mono.subscribeOn(Schedulers.boundedElastic())
+            T result = mono.subscribeOn(Schedulers.boundedElastic())
                     .toFuture()
                     .get(TOOL_TIMEOUT.toSeconds(), TimeUnit.SECONDS);
+            log.info("MCP Tool call completed: {}", operation);
+            return result;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("MCP tool operation interrupted while trying to " + operation, e);
@@ -525,6 +541,8 @@ public class McpToolService {
     }
 
     private <T> List<T> awaitList(Flux<T> flux, String operation) {
-        return await(flux.collectList(), operation);
+        List<T> results = await(flux.collectList(), operation);
+        log.info("MCP Tool call returned {} records for {}", results.size(), operation);
+        return results;
     }
 }
