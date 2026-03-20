@@ -180,7 +180,8 @@ The MCP layer normalizes case, spaces, and hyphens (for example `north`, `North`
 1. Check existing catalog with `getAllItems()` to avoid duplicates.
 2. Create with `createItem(...)` or edit with `updateItem(...)`.
 3. Choose correct `itemType` and `wearLocation` from enum lists.
-4. Verify created/updated item with `getItem(id)`.
+4. If `itemType` is `WEAPON` or `TWO_HANDED_WEAPON`, create and attach at least one damage effect before considering the item complete.
+5. Verify created/updated item with `getItem(id)` and validate with `getEffectsByItem(itemId)`.
 
 ## 4) Creating effects and applying them to items
 Always prefer reuse before create.
@@ -198,7 +199,8 @@ Update workflow:
 3. If needed, pass `itemId` in `updateEffect(...)` to ensure association.
 
 Weapon rule:
-- Weapon-like items (`WEAPON`, `TWO_HANDED_WEAPON`, `RANGED_WEAPON`) should have at least one damage effect.
+- Items with type `WEAPON` or `TWO_HANDED_WEAPON` must have at least one attached damage effect.
+- Damage effects include: `SLASHING_DAMAGE`, `BASHING_DAMAGE`, `PIERCING_DAMAGE`, `FIRE_DAMAGE`, `COLD_DAMAGE`, `SONIC_DAMAGE`, `POISON_DAMAGE`, `ELECTRICAL_DAMAGE`.
 
 ## 5) Adding items to a room
 Use the MCP room-item assignment method directly:
