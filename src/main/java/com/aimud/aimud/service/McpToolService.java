@@ -2,7 +2,10 @@ package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Effect;
 import com.aimud.aimud.model.Item;
+import com.aimud.aimud.model.Mobile;
+import com.aimud.aimud.model.MobileSkill;
 import com.aimud.aimud.model.Room;
+import com.aimud.aimud.model.SkillRegistry;
 import com.aimud.aimud.types.EffectType;
 import com.aimud.aimud.types.ItemType;
 import com.aimud.aimud.types.RoomType;
@@ -34,11 +37,16 @@ public class McpToolService {
     private final RoomService roomService;
     private final ItemService itemService;
     private final EffectService effectService;
+    private final MobileService mobileService;
+    private final ConfigService configService;
 
-    public McpToolService(RoomService roomService, ItemService itemService, EffectService effectService) {
+    public McpToolService(RoomService roomService, ItemService itemService, EffectService effectService,
+                          MobileService mobileService, ConfigService configService) {
         this.roomService = roomService;
         this.itemService = itemService;
         this.effectService = effectService;
+        this.mobileService = mobileService;
+        this.configService = configService;
     }
 
     // --- ROOM TOOLS ---
@@ -364,6 +372,139 @@ public class McpToolService {
     public List<Effect> getEffectsByItem(@ToolParam(description = "The ID of the item to retrieve effects for") Long itemId) {
         log.info("MCP Tool: Getting effects for item: {}", itemId);
         return awaitList(effectService.getEffectsByItem(itemId), "get effects by item");
+    }
+
+    // --- MOBILE / NPC TOOLS ---
+
+    @Tool(description = "Create a new NPC (mobile) with base stats")
+    public Mobile createMobile(
+            @ToolParam(description = "The name of the NPC") String name,
+            @ToolParam(description = "The race ID of the NPC (optional)") Long raceId,
+            @ToolParam(description = "The class ID of the NPC (optional)") Long classId,
+            @ToolParam(description = "Strength stat") int strength,
+            @ToolParam(description = "Dexterity stat") int dexterity,
+            @ToolParam(description = "Constitution stat") int constitution,
+            @ToolParam(description = "Intelligence stat") int intelligence,
+            @ToolParam(description = "Wisdom stat") int wisdom,
+            @ToolParam(description = "Charisma stat") int charisma) {
+        log.info("MCP Tool: Creating mobile: {}", name);
+        Mobile mobile = new Mobile();
+        mobile.setName(name);
+        mobile.setRaceId(raceId);
+        mobile.setClassId(classId);
+        mobile.setStrength(strength);
+        mobile.setDexterity(dexterity);
+        mobile.setConstitution(constitution);
+        mobile.setIntelligence(intelligence);
+        mobile.setWisdom(wisdom);
+        mobile.setCharisma(charisma);
+        return await(mobileService.saveMobile(mobile), "create mobile");
+    }
+
+    @Tool(description = "Update an existing NPC's base stats")
+    public Mobile updateMobileStats(
+            @ToolParam(description = "The ID of the NPC to update") Long id,
+            @ToolParam(description = "The name of the NPC") String name,
+            @ToolParam(description = "The race ID of the NPC (optional)") Long raceId,
+            @ToolParam(description = "The class ID of the NPC (optional)") Long classId,
+            @ToolParam(description = "Strength stat") int strength,
+            @ToolParam(description = "Dexterity stat") int dexterity,
+            @ToolParam(description = "Constitution stat") int constitution,
+            @ToolParam(description = "Intelligence stat") int intelligence,
+            @ToolParam(description = "Wisdom stat") int wisdom,
+            @ToolParam(description = "Charisma stat") int charisma) {
+        log.info("MCP Tool: Updating mobile stats: {} (id: {})", name, id);
+        return mobileService.getMobile(id)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Mobile not found: " + id)))
+                .map(mobile -> {
+                    mobile.setName(name);
+                    mobile.setRaceId(raceId);
+                    mobile.setClassId(classId);
+                    mobile.setStrength(strength);
+                    mobile.setDexterity(dexterity);
+                    mobile.setConstitution(constitution);
+                    mobile.setIntelligence(intelligence);
+                    mobile.setWisdom(wisdom);
+                    mobile.setCharisma(charisma);
+                    return mobile;
+                })
+                .flatMap(mobileService::saveMobile)
+                .as(mono -> await(mono, "update mobile stats"));
+    }
+
+    @Tool(description = "Retrieve an NPC by its ID")
+    public Mobile getMobile(
+            @ToolParam(description = "The unique ID of the NPC") Long id) {
+        log.info("MCP Tool: Getting mobile with id: {}", id);
+        return await(mobileService.getMobile(id), "get mobile");
+    }
+
+    @Tool(description = "Assign the current room for an NPC")
+    public Mobile setMobileRoom(
+            @ToolParam(description = "The ID of the NPC") Long mobileId,
+            @ToolParam(description = "The ID of the room to place the NPC in") Long roomId) {
+        log.info("MCP Tool: Setting room {} for mobile {}", roomId, mobileId);
+        return roomService.getRoom(roomId)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Room not found: " + roomId)))
+                .then(mobileService.setMobileRoom(mobileId, roomId))
+                .as(mono -> await(mono, "set mobile room"));
+    }
+
+    @Tool(description = "Assign a skill to an NPC, or update its rank if the skill already exists")
+    public MobileSkill assignSkillToMobile(
+            @ToolParam(description = "The ID of the NPC") Long mobileId,
+            @ToolParam(description = "The name of the skill (e.g. 'One Handed Weapon', 'Bandage')") String skillName,
+            @ToolParam(description = "The rank of the skill (1-100)") int rank) {
+        log.info("MCP Tool: Assigning skill '{}' rank {} to mobile {}", skillName, rank, mobileId);
+        return mobileService.getMobile(mobileId)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Mobile not found: " + mobileId)))
+                .then(mobileService.assignSkill(mobileId, skillName, rank))
+                .as(mono -> await(mono, "assign skill to mobile"));
+    }
+
+    @Tool(description = "Get all skills assigned to an NPC")
+    public List<MobileSkill> getMobileSkills(
+            @ToolParam(description = "The ID of the NPC") Long mobileId) {
+        log.info("MCP Tool: Getting skills for mobile {}", mobileId);
+        return awaitList(mobileService.getMobileSkills(mobileId), "get mobile skills");
+    }
+
+    @Tool(description = "Get all available skills from the global skill registry")
+    public List<SkillRegistry> getAllSkills() {
+        log.info("MCP Tool: Getting all skills from registry");
+        return awaitList(configService.getAllSkills(), "get all skills");
+    }
+
+    @Tool(description = "Assign an item to a specific wear location on an NPC. For FINGER, fills right then left; for WRIST, fills right then left; for EAR, fills left then right.")
+    public Mobile assignItemToMobileWearLocation(
+            @ToolParam(description = "The ID of the NPC") Long mobileId,
+            @ToolParam(description = "The ID of the item to equip") Long itemId,
+            @ToolParam(description = "The wear location (HEAD, CHEST, LEGS, FEET, ARMS, HANDS, FINGER, WRIST, NECK, EAR, FACE, WAIST, PRIMARY, OFFHAND)") String wearLocation) {
+        log.info("MCP Tool: Assigning item {} to wear location {} on mobile {}", itemId, wearLocation, mobileId);
+        WearLocation loc = parseWearLocation(wearLocation);
+        return await(mobileService.assignItemToWearLocation(mobileId, itemId, loc), "assign item to mobile wear location");
+    }
+
+    @Tool(description = "Add an item to an NPC's inventory (carried but not worn)")
+    public Mobile addItemToMobileInventory(
+            @ToolParam(description = "The ID of the NPC") Long mobileId,
+            @ToolParam(description = "The ID of the item to add") Long itemId) {
+        log.info("MCP Tool: Adding item {} to inventory of mobile {}", itemId, mobileId);
+        return await(mobileService.addItemToInventory(mobileId, itemId), "add item to mobile inventory");
+    }
+
+    @Tool(description = "Get all items currently worn/equipped by an NPC")
+    public List<Item> getMobileWornItems(
+            @ToolParam(description = "The ID of the NPC") Long mobileId) {
+        log.info("MCP Tool: Getting worn items for mobile {}", mobileId);
+        return awaitList(mobileService.getMobileWornItems(mobileId), "get mobile worn items");
+    }
+
+    @Tool(description = "Get the inventory (carried items) of an NPC")
+    public List<Item> getMobileInventory(
+            @ToolParam(description = "The ID of the NPC") Long mobileId) {
+        log.info("MCP Tool: Getting inventory for mobile {}", mobileId);
+        return awaitList(mobileService.getMobileInventory(mobileId), "get mobile inventory");
     }
 
     private <T> T await(Mono<T> mono, String operation) {

@@ -1138,3 +1138,20 @@ ON CONFLICT (id) DO UPDATE SET
 
 SELECT setval(pg_get_serial_sequence('agents', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM agents;
 
+--changeset jeff:61
+CREATE TABLE IF NOT EXISTS mobile_skills (
+    id SERIAL PRIMARY KEY,
+    mobile_id BIGINT NOT NULL REFERENCES mobiles(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    rank INT NOT NULL DEFAULT 1,
+    UNIQUE (mobile_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS mobile_inventory (
+    mobile_id BIGINT NOT NULL REFERENCES mobiles(id) ON DELETE CASCADE,
+    item_id BIGINT NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    PRIMARY KEY (mobile_id, item_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_mobile_skills_mobile_id ON mobile_skills(mobile_id);
+CREATE INDEX IF NOT EXISTS idx_mobile_inventory_mobile_id ON mobile_inventory(mobile_id);
