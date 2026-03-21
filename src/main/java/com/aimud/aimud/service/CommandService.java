@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -43,7 +44,7 @@ public class CommandService {
             }
         }
 
-        log.info("Registered {} commands", taskMap.size());
+        log.info("Registered {} commands: {}", taskMap.size(), taskMap.keySet().stream().collect(Collectors.joining(", ")));
     }
 
     public Command getTask(String name) {

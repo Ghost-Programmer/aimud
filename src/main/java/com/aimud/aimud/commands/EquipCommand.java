@@ -44,4 +44,14 @@ public class EquipCommand implements Command {
         return characterService.equipItem(character, itemToEquip.get().getId())
                 .then();
     }
+
+    @Override
+    public String getDescription() {
+        return "Equip an item from your inventory.";
+    }
+
+    @Override
+    public String getDetailedDescription() {
+        return "Syntax: equip <item>\n\nEquips the specified item from your inventory. If you already have an item equipped in that slot, it will be replaced.";
+    }
 }

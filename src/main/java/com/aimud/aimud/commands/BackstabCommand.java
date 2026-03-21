@@ -19,4 +19,14 @@ public class BackstabCommand implements Command {
         communicationService.sendTextMessage(character, "\n\nYou try to backstab your target.");
         return Mono.empty();
     }
+
+    @Override
+    public String getDescription() {
+        return "Attempt to backstab an enemy.";
+    }
+
+    @Override
+    public String getDetailedDescription() {
+        return "Syntax: backstab <target>\n\nAttempt to sneak up on a target and deliver a deadly blow to their back.";
+    }
 }

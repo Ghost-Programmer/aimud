@@ -19,4 +19,14 @@ public class HideCommand implements Command {
         communicationService.sendTextMessage(character, "\n\nYou attempt to hide in the shadows.");
         return Mono.empty();
     }
+
+    @Override
+    public String getDescription() {
+        return "Attempt to hide in the shadows.";
+    }
+
+    @Override
+    public String getDetailedDescription() {
+        return "Syntax: hide\n\nAttempt to conceal yourself from others in the room.";
+    }
 }

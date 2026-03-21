@@ -19,4 +19,14 @@ public class PrayCommand implements Command {
         communicationService.sendTextMessage(character, "\n\nYou close your eyes and pray.");
         return Mono.empty();
     }
+
+    @Override
+    public String getDescription() {
+        return "Pray to the gods.";
+    }
+
+    @Override
+    public String getDetailedDescription() {
+        return "Syntax: pray\n\nOffer a prayer to the gods. May result in divine intervention or simply peace of mind.";
+    }
 }

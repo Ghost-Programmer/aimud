@@ -58,4 +58,14 @@ public class LookCommand implements Command {
                     return Mono.empty();
                 });
     }
+
+    @Override
+    public String getDescription() {
+        return "Look around your current room.";
+    }
+
+    @Override
+    public String getDetailedDescription() {
+        return "Syntax: look\n\nShows you the description of your current location, including other characters, monsters, items, and available exits.";
+    }
 }

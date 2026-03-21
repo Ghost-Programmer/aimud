@@ -53,4 +53,14 @@ public class AssistCommand implements Command {
         
         return Mono.empty();
     }
+
+    @Override
+    public String getDescription() {
+        return "Assist another character in combat.";
+    }
+
+    @Override
+    public String getDetailedDescription() {
+        return "Syntax: assist <character>\n\nJoins the fight of the specified character by targeting whoever they are fighting.";
+    }
 }

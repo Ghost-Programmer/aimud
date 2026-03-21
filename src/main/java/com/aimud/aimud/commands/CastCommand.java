@@ -19,4 +19,14 @@ public class CastCommand implements Command {
         communicationService.sendTextMessage(character, "\n\nYou chant magical words, but nothing happens yet.");
         return Mono.empty();
     }
+
+    @Override
+    public String getDescription() {
+        return "Cast a magical spell.";
+    }
+
+    @Override
+    public String getDetailedDescription() {
+        return "Syntax: cast <spell> [target]\n\nCasts a magic spell at a target or yourself. Requires magical ability and mana.";
+    }
 }

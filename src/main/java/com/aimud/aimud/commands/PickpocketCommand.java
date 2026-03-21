@@ -137,4 +137,13 @@ public class PickpocketCommand implements Command {
                 .then(saveTargetMono);
     }
 
+    @Override
+    public String getDescription() {
+        return "Attempt to steal an item from someone.";
+    }
+
+    @Override
+    public String getDetailedDescription() {
+        return "Syntax: pick <target>\n\nAttempts to steal a random item from the target's inventory. Requires the Pickpocket skill. Failure may result in combat.";
+    }
 }

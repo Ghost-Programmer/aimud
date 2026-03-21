@@ -168,4 +168,14 @@ public class BashCommand implements Command {
                 offhand.getItemType() == ItemType.MEDIUM_ARMOR || 
                 offhand.getItemType() == ItemType.HEAVY_ARMOR);
     }
+
+    @Override
+    public String getDescription() {
+        return "Bash an opponent with your shield.";
+    }
+
+    @Override
+    public String getDetailedDescription() {
+        return "Syntax: bash [target]\n\nSlam your shield into an enemy, dealing damage. Requires a shield to be equipped and the Bash skill.";
+    }
 }

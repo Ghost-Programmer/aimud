@@ -42,4 +42,14 @@ public class DropCommand implements Command {
         return characterService.dropItem(character, itemToDrop.get().getId())
                 .then();
     }
+
+    @Override
+    public String getDescription() {
+        return "Drop an item from your inventory.";
+    }
+
+    @Override
+    public String getDetailedDescription() {
+        return "Syntax: drop <item>\n\nDrops the specified item from your inventory into the room you are currently in.";
+    }
 }

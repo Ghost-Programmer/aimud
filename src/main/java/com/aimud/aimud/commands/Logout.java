@@ -23,4 +23,14 @@ public class Logout implements Command{
         return Mono.fromRunnable(() -> communicationService.sendLogout(character))
                 .then(characterService.deselectCharacter(character.getId()));
     }
+
+    @Override
+    public String getDescription() {
+        return "Log out of the game.";
+    }
+
+    @Override
+    public String getDetailedDescription() {
+        return "Syntax: logout\n\nSafely log out of the game, saving your character data and disconnecting.";
+    }
 }

@@ -6,4 +6,8 @@ import reactor.core.publisher.Mono;
 public interface Command {
 
     Mono<Void> execute(Character character, String commandLine);
+
+    String getDescription();
+
+    String getDetailedDescription();
 }

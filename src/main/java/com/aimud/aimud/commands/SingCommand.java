@@ -19,4 +19,14 @@ public class SingCommand implements Command {
         communicationService.sendTextMessage(character, "\n\nYou sing a beautiful song.");
         return Mono.empty();
     }
+
+    @Override
+    public String getDescription() {
+        return "Sing a song.";
+    }
+
+    @Override
+    public String getDetailedDescription() {
+        return "Syntax: sing [song]\n\nSing a song. If you know magical songs, this might affect those who hear it.";
+    }
 }

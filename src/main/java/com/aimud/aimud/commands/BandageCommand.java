@@ -19,4 +19,14 @@ public class BandageCommand implements Command {
         communicationService.sendTextMessage(character, "\n\nYou start applying a bandage.");
         return Mono.empty();
     }
+
+    @Override
+    public String getDescription() {
+        return "Apply a bandage to heal wounds.";
+    }
+
+    @Override
+    public String getDetailedDescription() {
+        return "Syntax: bandage [target]\n\nApplies a bandage to yourself or a target to slowly heal wounds over time.";
+    }
 }

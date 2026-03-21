@@ -74,4 +74,14 @@ public class AttackCommand implements Command {
                             }));
                 }).then();
     }
+
+    @Override
+    public String getDescription() {
+        return "Initiates combat with a target.";
+    }
+
+    @Override
+    public String getDetailedDescription() {
+        return "Syntax: attack <target>\n\nStarts fighting the specified target in the room.";
+    }
 }

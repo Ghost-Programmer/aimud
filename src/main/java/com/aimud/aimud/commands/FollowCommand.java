@@ -19,4 +19,14 @@ public class FollowCommand implements Command {
         communicationService.sendTextMessage(character, "\n\nYou start following them.");
         return Mono.empty();
     }
+
+    @Override
+    public String getDescription() {
+        return "Follow another character.";
+    }
+
+    @Override
+    public String getDetailedDescription() {
+        return "Syntax: follow <character>\n\nStart following the specified character. You will automatically follow them when they move.";
+    }
 }

@@ -54,4 +54,14 @@ public class TakeCommand implements Command {
                             }));
                 }).then();
     }
+
+    @Override
+    public String getDescription() {
+        return "Take an item from the room.";
+    }
+
+    @Override
+    public String getDetailedDescription() {
+        return "Syntax: take <item>\n\nPicks up an item from the ground in your current room and adds it to your inventory.";
+    }
 }

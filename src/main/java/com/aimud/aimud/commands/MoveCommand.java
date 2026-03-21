@@ -33,4 +33,14 @@ public abstract class MoveCommand implements Command {
             }
         }).then();
     }
+
+    @Override
+    public String getDescription() {
+        return "Move " + getDirectionName() + ".";
+    }
+
+    @Override
+    public String getDetailedDescription() {
+        return "Syntax: " + getDirectionName() + "\n\nMoves your character in the " + getDirectionName() + " direction, if an exit exists.";
+    }
 }
