@@ -35,11 +35,17 @@ class McpToolServiceTest {
     @Mock
     private EffectService effectService;
 
+    @Mock
+    private MobileService mobileService;
+
+    @Mock
+    private ConfigService configService;
+
     private McpToolService mcpToolService;
 
     @BeforeEach
     void setUp() {
-        mcpToolService = new McpToolService(roomService, itemService, effectService);
+        mcpToolService = new McpToolService(roomService, itemService, effectService, mobileService, configService);
     }
 
     @Test
