@@ -1,10 +1,10 @@
 package com.aimud.aimud.spells;
 
-public interface Spell {
+public abstract class Spell {
 
-    String getSpellName();
-    Long getSpellId();
-    Integer getSpellLevel();
+    abstract public String getSpellName();
+    abstract public Long getSpellId();
+    abstract public Integer getSpellLevel();
 
 }
 

@@ -3,7 +3,7 @@ package com.aimud.aimud.spells;
 import com.aimud.aimud.annontation.MagicSpell;
 
 @MagicSpell(name = "missile")
-public class MagicMissile implements Spell {
+public class MagicMissile extends Spell {
     @Override
     public String getSpellName() {
         return "Magic Missile";
