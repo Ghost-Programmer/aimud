@@ -3,24 +3,35 @@ package com.aimud.aimud.service;
 import com.aimud.aimud.model.Character;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Skill;
+import com.aimud.aimud.repository.SkillRegistryRepository;
 import com.aimud.aimud.repository.SkillRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
+import java.time.Duration;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class SkillService {
     private final SkillRepository skillRepository;
+    private final SkillRegistryRepository skillRegistryRepository;
     private final Random random = new Random();
 
     private static final double GLOBAL_GROWTH_RATE = 0.05; // Base chance multiplier
     private static final int MIN_CR_DELTA = -5;            // Too easy to learn from
     private static final double FAIL_LEARN_BONUS = 1.2;    // Learn faster from failure
+    private final DatabaseClient databaseClient;
+
+    private static final Duration SKILL_LOOKUP_TIMEOUT = Duration.ofSeconds(5);
 
     /**
      * Add skill - Create a new skill assigned to a character with a value of 1,
@@ -138,5 +149,39 @@ public class SkillService {
         if (skillLevel < 75) return 1.0;
         if (skillLevel < 90) return 0.5;
         return 0.1; // Hardest to gain from 90 to 100
+    }
+
+    public void createSkill(String spellSkillName, Long skillId) {
+        Long rowsUpdated = await(databaseClient.sql("""
+                        INSERT INTO skills_registry (id, name)
+                        VALUES (:id, :name)
+                        ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name
+                        """)
+                .bind("id", skillId)
+                .bind("name", spellSkillName)
+                .fetch()
+                .rowsUpdated(), "register skill in registry");
+
+        log.info("Registered or updated skill in registry: {} (id={}, rowsUpdated={})", spellSkillName, skillId, rowsUpdated);
+    }
+
+    public boolean existsSkill(String spellSkillName) {
+        return Boolean.TRUE.equals(await(skillRegistryRepository.existsByName(spellSkillName), "check skill existence"));
+    }
+
+    private <T> T await(Mono<T> mono, String operation) {
+        try {
+            return mono.subscribeOn(Schedulers.boundedElastic())
+                    .toFuture()
+                    .get(SKILL_LOOKUP_TIMEOUT.toSeconds(), TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Skill operation interrupted while trying to " + operation, e);
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            throw new IllegalStateException("Skill operation failed while trying to " + operation, cause);
+        } catch (TimeoutException e) {
+            throw new IllegalStateException("Skill operation timed out while trying to " + operation, e);
+        }
     }
 }
