@@ -76,14 +76,14 @@ public class SkillService {
      * @param wasSuccess  Whether the skill attempt succeeded in-game
      * @return Mono<Skill> The updated skill if it improved, or empty Mono if not.
      */
-    public Mono<Skill> checkSkill(Mobile mobile, String skillName, int targetCr, boolean wasSuccess) {
+    public Mono<Skill> checkSkill(Mobile mobile, String skillName, float targetCr, boolean wasSuccess) {
         if (mobile.getSkills() == null) return Mono.empty();
-        
+
         return mobile.getSkills().stream()
                 .filter(s -> s.getName().equalsIgnoreCase(skillName))
                 .findFirst()
                 .map(skill -> {
-                    int playerLevel = (int) mobile.getChallengeRating();
+                    float playerLevel =  mobile.getChallengeRating();
                     if (shouldSkillImprove(skill.getRank(), playerLevel, targetCr, wasSuccess)) {
                         skill.setRank(skill.getRank() + 1);
                         log.info("Skill {} for mobile {} improved to rank {}", skillName, mobile.getName(), skill.getRank());
@@ -106,7 +106,7 @@ public class SkillService {
      * @param wasSuccess        Whether the skill attempt actually succeeded in-game
      * @return true if the skill improved by 1%
      */
-    public boolean shouldSkillImprove(int currentSkillLevel, int playerLevel, int targetCr, boolean wasSuccess) {
+    public boolean shouldSkillImprove(int currentSkillLevel, float playerLevel, float targetCr, boolean wasSuccess) {
         // 1. Trivial Challenge Check
         // If the target is too weak relative to the player, no growth occurs.
         if (targetCr < (playerLevel + MIN_CR_DELTA)) {

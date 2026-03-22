@@ -51,18 +51,14 @@ public class SpellService {
                 }
 
                 log.info("Registered spell: {}", spellName);
-                if (!skillService.existsSkill(getSpellSkillName(bean))) {
-                    skillService.createSkill(getSpellSkillName(bean), bean.getSpellId());
+                if (!skillService.existsSkill(bean.getSpellSkillName())) {
+                    skillService.createSkill(bean.getSpellSkillName(), bean.getSpellId());
                 }
             }
         }
 
         log.info("Registered {} spells: {}", spellMap.size(),
                 spellMap.keySet().stream().collect(Collectors.joining(", ")));
-    }
-
-    private String getSpellSkillName(Spell spell) {
-        return "Spell: " + spell.getSpellName();
     }
 
     public Spell getSpell(String name) {
