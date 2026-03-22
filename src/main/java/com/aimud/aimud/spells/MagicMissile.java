@@ -13,4 +13,9 @@ public class MagicMissile implements Spell {
     public Long getSpellId() {
         return 1000L;
     }
+
+    @Override
+    public Integer getSpellLevel() {
+        return 1;
+    }
 }

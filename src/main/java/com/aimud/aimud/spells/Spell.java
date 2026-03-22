@@ -4,6 +4,7 @@ public interface Spell {
 
     String getSpellName();
     Long getSpellId();
+    Integer getSpellLevel();
 
 }
 
