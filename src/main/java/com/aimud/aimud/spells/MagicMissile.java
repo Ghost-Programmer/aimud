@@ -2,13 +2,16 @@ package com.aimud.aimud.spells;
 
 import com.aimud.aimud.annontation.MagicSpell;
 import com.aimud.aimud.model.Mobile;
+import com.aimud.aimud.service.CharacterService;
+import com.aimud.aimud.service.MobileService;
+import com.aimud.aimud.service.RoomService;
 import com.aimud.aimud.service.SkillService;
 
 @MagicSpell(name = "missile")
 public class MagicMissile extends Spell {
 
-    protected MagicMissile(SkillService skillService) {
-        super(skillService);
+    protected MagicMissile(SkillService skillService, MobileService mopbileService, CharacterService characterService) {
+        super(skillService, mopbileService, characterService);
     }
 
     @Override
@@ -29,11 +32,6 @@ public class MagicMissile extends Spell {
     @Override
     public String getDescription() {
         return "Fires a bolt of magic at your target dealing <skill> d 6 damage + bonus damage. Damage increases at higher levels. Usage: cast missle <target>";
-    }
-
-    @Override
-    public Mobile getTarget(Mobile mobile, String[] parts) {
-        return null;
     }
 
     @Override

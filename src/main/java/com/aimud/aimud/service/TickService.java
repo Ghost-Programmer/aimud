@@ -57,6 +57,7 @@ public class TickService {
                         .doOnError(error -> log.error("Error processing command for {}", character.getName(), error))
                         .onErrorResume(error -> Mono.empty())
                         .subscribe();
+                save = true;
             } else {
                 character.setIdle(character.getIdle() + 1);
 

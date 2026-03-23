@@ -1,22 +1,29 @@
 package com.aimud.aimud.spells;
 
 import com.aimud.aimud.model.Mobile;
+import com.aimud.aimud.service.CharacterService;
+import com.aimud.aimud.service.MobileService;
+import com.aimud.aimud.service.RoomService;
 import com.aimud.aimud.service.SkillService;
 import com.aimud.aimud.types.SkillsType;
 
 public abstract class Spell {
 
     private final SkillService skillService;
+    private final MobileService mopbileService;
+    private final CharacterService characterService;
 
-    protected Spell(SkillService skillService) {
+    protected Spell(SkillService skillService, MobileService mopbileService, CharacterService characterService) {
         this.skillService = skillService;
+        this.mopbileService = mopbileService;
+        this.characterService = characterService;
     }
+
 
     abstract public String getSpellName();
     abstract public Long getSpellId();
     abstract public Integer getSpellLevel();
     abstract public String getDescription();
-    abstract public Mobile getTarget(Mobile mobile, String[] parts);
     abstract public boolean cast(Mobile mobile, Spell spell, Mobile target);
 
 
@@ -29,6 +36,36 @@ public abstract class Spell {
         int spellSkill = skillService.getSkillRank(mobile, getSpellSkillName());
 
         return 9 + spellSkill + (castSkill - getSpellLevel()) * 2;
+    }
+
+    public Mobile getDefaultTarget(Mobile mobile) {
+        return mobile.getTarget();
+    }
+
+    public Mobile getTarget(Mobile mobile, String[] parts) {
+        if (parts.length == 2) {
+            return this.getDefaultTarget(mobile);
+        }
+        if (parts.length > 3) {
+
+            String name =  parts[2].toLowerCase();
+
+            Mobile target = mopbileService.getMobilesInRoom(mobile.getCurrentRoomId()).stream()
+                    .filter(m -> m.getName().toLowerCase().contains(name))
+                    .findFirst()
+                    .orElse(null);
+
+            if(target != null) {
+                return target;
+            }
+
+            return characterService.findAllByRoomId(mobile.getCurrentRoomId()).stream()
+                    .filter(c -> c.getName().toLowerCase().contains(name))
+                    .findFirst()
+                    .orElse(null);
+
+        }
+        return null;
     }
 }
 
