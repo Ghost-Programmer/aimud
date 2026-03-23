@@ -1,5 +1,6 @@
 package com.aimud.aimud.spells;
 
+import com.aimud.aimud.Dice;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.*;
 import com.aimud.aimud.types.SkillsType;
@@ -65,6 +66,15 @@ public abstract class Spell {
 
         }
         return null;
+    }
+
+    int getDamage(Mobile mobile) {
+        int castSkill = skillService.getSkillRank(mobile, SkillsType.CAST_MAGIC);
+        int spellSkill = skillService.getSkillRank(mobile, getSpellSkillName());
+
+        int dice = (9 + spellSkill + (castSkill - getSpellLevel())) / 6;
+
+       return new Dice(dice, 6).getTotal() + (9 + spellSkill + (castSkill - getSpellLevel())) % 6;
     }
 }
 

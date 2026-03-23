@@ -37,12 +37,8 @@ public class MagicMissile extends Spell {
 
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile target) {
-        int castSkill = skillService.getSkillRank(mobile, SkillsType.CAST_MAGIC);
-        int spellSkill = skillService.getSkillRank(mobile, getSpellSkillName());
 
-        int dice = (9 + spellSkill + (castSkill - getSpellLevel())) / 6;
-
-        int damage = new Dice(dice, 6).getTotal() + (9 + spellSkill + (castSkill - getSpellLevel())) % 6;
+        int damage = this.getDamage(mobile);
 
         boolean resist = false;
 
