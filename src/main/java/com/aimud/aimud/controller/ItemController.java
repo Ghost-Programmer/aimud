@@ -97,6 +97,10 @@ public class ItemController {
                     existingItem.setDescription(item.getDescription());
                     existingItem.setItemType(item.getItemType());
                     existingItem.setWearLocation(item.getWearLocation());
+                    existingItem.setProperty1(item.getProperty1());
+                    existingItem.setProperty2(item.getProperty2());
+                    existingItem.setProperty3(item.getProperty3());
+                    existingItem.setProperty4(item.getProperty4());
                     existingItem.setEffects(item.getEffects());
                     
                     return itemService.saveItem(existingItem);

@@ -200,7 +200,11 @@ public class McpToolService {
             @ToolParam(description = "The name of the item") String name,
             @ToolParam(description = "The description of the item") String description,
             @ToolParam(description = "The type of the item (e.g. WEAPON, TWO_HANDED_WEAPON, RANGED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, POTION, etc.)") String itemType,
-            @ToolParam(description = "The wear location of the item (e.g. HEAD, CHEST, LEGS, FEET, PRIMARY, OFFHAND, etc.)") String wearLocation) {
+            @ToolParam(description = "The wear location of the item (e.g. HEAD, CHEST, LEGS, FEET, PRIMARY, OFFHAND, etc.)") String wearLocation,
+            @ToolParam(description = "Optional item property 1 (defaults to 0)") Integer property1,
+            @ToolParam(description = "Optional item property 2 (defaults to 0)") Integer property2,
+            @ToolParam(description = "Optional item property 3 (defaults to 0)") Integer property3,
+            @ToolParam(description = "Optional item property 4 (defaults to 0)") Integer property4) {
         log.info("MCP Tool: Creating item: {}", name);
         log.info("Item details - Description: {}, Type: {}, Wear Location: {}", description, itemType, wearLocation);
         Item item = new Item();
@@ -208,6 +212,10 @@ public class McpToolService {
         item.setDescription(description);
         item.setItemType(parseItemType(itemType));
         item.setWearLocation(parseWearLocation(wearLocation));
+        item.setProperty1(resolveNewPropertyValue(property1));
+        item.setProperty2(resolveNewPropertyValue(property2));
+        item.setProperty3(resolveNewPropertyValue(property3));
+        item.setProperty4(resolveNewPropertyValue(property4));
         return await(itemService.saveItem(item), "create item");
     }
 
@@ -217,7 +225,11 @@ public class McpToolService {
             @ToolParam(description = "The name of the item") String name,
             @ToolParam(description = "The description of the item") String description,
             @ToolParam(description = "The type of the item") String itemType,
-            @ToolParam(description = "The wear location of the item") String wearLocation) {
+            @ToolParam(description = "The wear location of the item") String wearLocation,
+            @ToolParam(description = "Optional item property 1") Integer property1,
+            @ToolParam(description = "Optional item property 2") Integer property2,
+            @ToolParam(description = "Optional item property 3") Integer property3,
+            @ToolParam(description = "Optional item property 4") Integer property4) {
         log.info("MCP Tool: Updating item: {} (id: {})", name, id);
         return itemService.getItem(id)
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Item not found: " + id)))
@@ -226,10 +238,22 @@ public class McpToolService {
                     item.setDescription(description);
                     item.setItemType(parseItemType(itemType));
                     item.setWearLocation(parseWearLocation(wearLocation));
+                    item.setProperty1(resolveExistingPropertyValue(item.getProperty1(), property1));
+                    item.setProperty2(resolveExistingPropertyValue(item.getProperty2(), property2));
+                    item.setProperty3(resolveExistingPropertyValue(item.getProperty3(), property3));
+                    item.setProperty4(resolveExistingPropertyValue(item.getProperty4(), property4));
                     return item;
                 })
                 .flatMap(itemService::saveItem)
                 .as(mono -> await(mono, "update item"));
+    }
+
+    private int resolveNewPropertyValue(Integer incomingValue) {
+        return incomingValue == null ? 0 : incomingValue;
+    }
+
+    private int resolveExistingPropertyValue(int existingValue, Integer incomingValue) {
+        return incomingValue == null ? existingValue : incomingValue;
     }
 
     private ItemType parseItemType(String itemType) {

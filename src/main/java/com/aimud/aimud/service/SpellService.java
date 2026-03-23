@@ -5,15 +5,16 @@ import com.aimud.aimud.spells.Spell;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.support.AopUtils;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -51,14 +52,23 @@ public class SpellService {
                 }
 
                 log.info("Registered spell: {}", spellName);
-                if (!skillService.existsSkill(bean.getSpellSkillName())) {
-                    skillService.createSkill(bean.getSpellSkillName(), bean.getSpellId());
-                }
             }
         }
 
         log.info("Registered {} spells: {}", spellMap.size(),
-                spellMap.keySet().stream().collect(Collectors.joining(", ")));
+                String.join(", ", spellMap.keySet()));
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void syncSpellSkills() {
+        for (Spell spell : spellMap.values()) {
+            try {
+                skillService.createSkill(spell.getSpellSkillName(), spell.getSpellId());
+            } catch (IllegalStateException ex) {
+                log.warn("Unable to synchronize spell skill '{}' during startup. Continuing without failing application initialization.",
+                        spell.getSpellSkillName(), ex);
+            }
+        }
     }
 
     public Spell getSpell(String name) {

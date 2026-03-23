@@ -46,6 +46,10 @@ export interface Item {
   wearLocation: WearLocation;
   name: string;
   description: string;
+  property1: number;
+  property2: number;
+  property3: number;
+  property4: number;
   effects: Effect[];
   value?: number;
 }

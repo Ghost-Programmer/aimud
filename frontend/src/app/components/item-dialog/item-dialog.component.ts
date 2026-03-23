@@ -22,6 +22,10 @@ export class ItemDialogComponent implements OnInit {
     description: '',
     itemType: ItemType.MISCELLANEOUS,
     wearLocation: WearLocation.FACE,
+    property1: 0,
+    property2: 0,
+    property3: 0,
+    property4: 0,
     effects: []
   };
 

@@ -1061,6 +1061,12 @@ DELETE FROM skills WHERE name = 'Dodge';
 SELECT setval(pg_get_serial_sequence('server_settings', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM server_settings;
 SELECT setval(pg_get_serial_sequence('character_classes', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM character_classes;
 SELECT setval(pg_get_serial_sequence('rooms', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM rooms;
+
+--changeset jeff:add-item-properties
+ALTER TABLE items ADD COLUMN IF NOT EXISTS property_1 INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE items ADD COLUMN IF NOT EXISTS property_2 INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE items ADD COLUMN IF NOT EXISTS property_3 INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE items ADD COLUMN IF NOT EXISTS property_4 INTEGER NOT NULL DEFAULT 0;
 SELECT setval(pg_get_serial_sequence('effects', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM effects;
 SELECT setval(pg_get_serial_sequence('skills_registry', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM skills_registry;
 SELECT setval(pg_get_serial_sequence('items', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM items;

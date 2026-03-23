@@ -56,7 +56,11 @@ class McpToolServiceTest {
                 "Chain Shirt",
                 "A simple protective shirt made from linked rings.",
                 "ARMOR",
-                "TORSO"
+                "TORSO",
+                null,
+                null,
+                null,
+                null
         );
 
         assertThat(savedItem).isNotNull();
@@ -73,13 +77,21 @@ class McpToolServiceTest {
                         "Vorpal Blade",
                         "A powerful sword with the ability to cleave through armor.",
                         "WEAPON",
-                        "PRIMARY"
+                        "PRIMARY",
+                        11,
+                        22,
+                        33,
+                        44
                 ))
                 .subscribeOn(Schedulers.parallel()))
                 .assertNext(savedItem -> {
                     assertThat(savedItem.getName()).isEqualTo("Vorpal Blade");
                     assertThat(savedItem.getItemType()).isEqualTo(ItemType.WEAPON);
                     assertThat(savedItem.getWearLocation()).isEqualTo(WearLocation.PRIMARY);
+                    assertThat(savedItem.getProperty1()).isEqualTo(11);
+                    assertThat(savedItem.getProperty2()).isEqualTo(22);
+                    assertThat(savedItem.getProperty3()).isEqualTo(33);
+                    assertThat(savedItem.getProperty4()).isEqualTo(44);
                 })
                 .verifyComplete();
     }
@@ -92,12 +104,20 @@ class McpToolServiceTest {
                 "Book of Lore",
                 "A dusty tome containing old guild techniques.",
                 "Book",
-                "NONE"
+                "NONE",
+                null,
+                null,
+                null,
+                null
         );
 
         assertThat(savedItem).isNotNull();
         assertThat(savedItem.getItemType()).isEqualTo(ItemType.BOOK);
         assertThat(savedItem.getWearLocation()).isEqualTo(WearLocation.NONE);
+        assertThat(savedItem.getProperty1()).isZero();
+        assertThat(savedItem.getProperty2()).isZero();
+        assertThat(savedItem.getProperty3()).isZero();
+        assertThat(savedItem.getProperty4()).isZero();
     }
 
     @Test
@@ -108,6 +128,10 @@ class McpToolServiceTest {
         existingItem.setDescription("Old description");
         existingItem.setItemType(ItemType.WEAPON);
         existingItem.setWearLocation(WearLocation.PRIMARY);
+        existingItem.setProperty1(1);
+        existingItem.setProperty2(2);
+        existingItem.setProperty3(3);
+        existingItem.setProperty4(4);
         Effect effect = new Effect();
         existingItem.setEffects(List.of(effect));
 
@@ -119,12 +143,20 @@ class McpToolServiceTest {
                 "New Sword",
                 "New description",
                 "WEAPON",
-                "PRIMARY"
+                "PRIMARY",
+                101,
+                102,
+                null,
+                null
         );
 
         assertThat(savedItem).isNotNull();
         assertThat(savedItem.getName()).isEqualTo("New Sword");
         assertThat(savedItem.getDescription()).isEqualTo("New description");
+        assertThat(savedItem.getProperty1()).isEqualTo(101);
+        assertThat(savedItem.getProperty2()).isEqualTo(102);
+        assertThat(savedItem.getProperty3()).isEqualTo(3);
+        assertThat(savedItem.getProperty4()).isEqualTo(4);
         assertThat(savedItem.getEffects()).containsExactly(effect);
         verify(itemService).getItem(42L);
         verify(itemService).saveItem(existingItem);

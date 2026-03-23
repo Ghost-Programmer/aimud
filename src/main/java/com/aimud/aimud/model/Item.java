@@ -34,6 +34,18 @@ public class Item {
     private String name;
     private String description;
 
+    @Column("property_1")
+    private int property1 = 0;
+
+    @Column("property_2")
+    private int property2 = 0;
+
+    @Column("property_3")
+    private int property3 = 0;
+
+    @Column("property_4")
+    private int property4 = 0;
+
     @CreatedDate
     @Column("created_at")
     private LocalDateTime createdAt;
