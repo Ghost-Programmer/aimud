@@ -1,22 +1,21 @@
 package com.aimud.aimud.spells;
 
 import com.aimud.aimud.model.Mobile;
-import com.aimud.aimud.service.CharacterService;
-import com.aimud.aimud.service.MobileService;
-import com.aimud.aimud.service.RoomService;
-import com.aimud.aimud.service.SkillService;
+import com.aimud.aimud.service.*;
 import com.aimud.aimud.types.SkillsType;
 
 public abstract class Spell {
 
-    private final SkillService skillService;
-    private final MobileService mopbileService;
-    private final CharacterService characterService;
+    protected final SkillService skillService;
+    protected final MobileService mopbileService;
+    protected final CharacterService characterService;
+    protected final CommunicationService communicationService;
 
-    protected Spell(SkillService skillService, MobileService mopbileService, CharacterService characterService) {
+    protected Spell(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService) {
         this.skillService = skillService;
         this.mopbileService = mopbileService;
         this.characterService = characterService;
+        this.communicationService = communicationService;
     }
 
 
@@ -35,7 +34,7 @@ public abstract class Spell {
         int castSkill = skillService.getSkillRank(mobile, SkillsType.CAST_MAGIC);
         int spellSkill = skillService.getSkillRank(mobile, getSpellSkillName());
 
-        return 9 + spellSkill + (castSkill - getSpellLevel()) * 2;
+        return 9 + spellSkill + (castSkill - getSpellLevel());
     }
 
     public Mobile getDefaultTarget(Mobile mobile) {
