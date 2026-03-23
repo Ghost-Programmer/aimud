@@ -15,6 +15,7 @@ public enum ItemType {
     FOOD("Food"),
     DRINK("Drink"),
     POTION("Potion"),
+    BOOK("Book"),
     SCROLL("Scroll"),
     MONEY("Money"),
     WAND("Wand"),

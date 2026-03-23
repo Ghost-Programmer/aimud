@@ -85,6 +85,22 @@ class McpToolServiceTest {
     }
 
     @Test
+    void createItemAcceptsBookItemType() {
+        when(itemService.saveItem(any(Item.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        Item savedItem = mcpToolService.createItem(
+                "Book of Lore",
+                "A dusty tome containing old guild techniques.",
+                "Book",
+                "NONE"
+        );
+
+        assertThat(savedItem).isNotNull();
+        assertThat(savedItem.getItemType()).isEqualTo(ItemType.BOOK);
+        assertThat(savedItem.getWearLocation()).isEqualTo(WearLocation.NONE);
+    }
+
+    @Test
     void updateItemPreservesExistingEffectsWhenSaving() {
         Item existingItem = new Item();
         existingItem.setId(42L);

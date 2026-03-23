@@ -54,6 +54,16 @@ public class SkillService {
                 });
     }
 
+    public Mono<String> getSkillNameById(Long skillId) {
+        if (skillId == null) {
+            return Mono.empty();
+        }
+
+        return skillRegistryRepository.findById(skillId)
+                .map(com.aimud.aimud.model.SkillRegistry::getName);
+    }
+
+
     /**
      * Get Skill - Given a mobile and skill name, return the rank.
      */

@@ -201,7 +201,7 @@ You have access to the following tool categories:
 
 When creating rooms, use the following RoomTypes: INDOORS, CITY, FIELD, FOREST, HILLS, MOUNTAIN, DESERT, ARCTIC, SWAMP, WATER_SURFACE, UNDERWATER, AIR, UNDERGROUND_CAVE, UNDERGROUND_DUNGEON.
 
-WWhen creating items, use the following ItemTypes: WEAPON, TWO_HANDED_WEAPON, RANGED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, FOOD, DRINK, POTION, SCROLL, MONEY, WAND, QUEST, KEY, LIGHT, CONTAINER, TRASH, MISC.
+WWhen creating items, use the following ItemTypes: WEAPON, TWO_HANDED_WEAPON, RANGED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, FOOD, DRINK, POTION, BOOK, SCROLL, MONEY, WAND, QUEST, KEY, LIGHT, CONTAINER, TRASH, MISC.
  For WearLocations, use: HEAD, CHEST, LEGS, FEET, ARMS, HANDS, FINGER, WRIST, NECK, EAR, FACE, WAIST, PRIMARY, OFFHAND, NONE.
 
 When creating effects, use the following EffectTypes:
@@ -1154,6 +1154,7 @@ Primary goals:
 - `FOOD`: Consumable food.
 - `DRINK`: Consumable drink.
 - `POTION`: Consumable potion.
+- `BOOK`: Readable skill-training book.
 - `SCROLL`: Read/use magic scroll.
 - `MONEY`: Currency item.
 - `WAND`: Charged magical focus.

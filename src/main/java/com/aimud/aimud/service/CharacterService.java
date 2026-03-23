@@ -395,6 +395,27 @@ public class CharacterService {
                 });
     }
 
+    public Mono<Character> destroyInventoryItem(Character character, Long itemId) {
+        log.info("Destroying item {} for character {}", itemId, character.getName());
+        Item itemToDestroy = character.getInventory().stream()
+                .filter(i -> i.getId().equals(itemId))
+                .findFirst()
+                .orElse(null);
+
+        if (itemToDestroy == null) {
+            communicationService.sendTextMessage(character, "\n\nYou don't have that item in your inventory.");
+            return Mono.just(character);
+        }
+
+        List<Item> currentInventory = new ArrayList<>(character.getInventory());
+        currentInventory.remove(itemToDestroy);
+        character.setInventory(currentInventory);
+
+        return this.save(character)
+                .flatMap(savedChar -> updateInventory(savedChar, currentInventory))
+                .flatMap(savedChar -> getCharacterById(savedChar.getId()));
+    }
+
     public Mono<Character> takeItem(Character character, Long itemId) {
         log.info("Taking item {} for character {}", itemId, character.getName());
 
