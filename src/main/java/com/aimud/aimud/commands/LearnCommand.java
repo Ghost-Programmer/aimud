@@ -44,12 +44,7 @@ public class LearnCommand implements Command {
         }
 
         Item book = bookToRead.get();
-        if (book.getEffects() == null || book.getEffects().isEmpty()) {
-            communicationService.sendTextMessage(character, "\n\nThat book is blank and teaches you nothing.");
-            return Mono.empty();
-        }
-
-        long skillId = book.getEffects().getFirst().getModifier1();
+        long skillId = book.getProperty1();
         if (skillId <= 0) {
             communicationService.sendTextMessage(character, "\n\nThat book has no valid skill encoded in it.");
             return Mono.empty();

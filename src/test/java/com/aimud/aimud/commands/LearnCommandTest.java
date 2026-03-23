@@ -1,7 +1,6 @@
 package com.aimud.aimud.commands;
 
 import com.aimud.aimud.model.Character;
-import com.aimud.aimud.model.Effect;
 import com.aimud.aimud.model.Item;
 import com.aimud.aimud.model.Skill;
 import com.aimud.aimud.service.CharacterService;
@@ -49,14 +48,11 @@ class LearnCommandTest {
         character.setId(1L);
         character.setName("Learner");
 
-        Effect effect = new Effect();
-        effect.setModifier1(1000);
-
         Item book = new Item();
         book.setId(10L);
         book.setName("Book of Arcane Basics");
         book.setItemType(ItemType.BOOK);
-        book.setEffects(List.of(effect));
+        book.setProperty1(1000);
         character.setInventory(List.of(book));
 
         Skill learnedSkill = Skill.builder()
@@ -99,14 +95,11 @@ class LearnCommandTest {
         character.setId(1L);
         character.setName("Learner");
 
-        Effect effect = new Effect();
-        effect.setModifier1(1000);
-
         Item book = new Item();
         book.setId(10L);
         book.setName("Book of Arcane Basics");
         book.setItemType(ItemType.BOOK);
-        book.setEffects(List.of(effect));
+        book.setProperty1(1000);
         character.setInventory(List.of(book));
 
         when(skillService.getSkillNameById(1000L)).thenReturn(Mono.just("Spell: Magic Missile"));
