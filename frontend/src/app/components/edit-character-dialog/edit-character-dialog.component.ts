@@ -58,13 +58,13 @@ export class EditCharacterDialogComponent {
 
   loadRaces() {
     this.configService.getPlayableRaces().subscribe(races => {
-      this.races = races;
+      this.races = [...races].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
     });
   }
 
   loadClasses() {
     this.configService.getPlayableCharacterClasses().subscribe(classes => {
-      this.classes = classes;
+      this.classes = [...classes].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
     });
   }
 

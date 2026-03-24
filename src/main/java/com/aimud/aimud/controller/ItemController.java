@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,7 @@ public class ItemController {
                 })
                 .collectList()
                 .map(items -> {
+                    items.sort(Comparator.comparing(item -> item.getName().toLowerCase()));
                     int totalItems = items.size();
                     int fromIndex = page * size;
                     int toIndex = Math.min(fromIndex + size, totalItems);

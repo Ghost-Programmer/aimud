@@ -68,8 +68,8 @@ export class CreateCharacterComponent implements OnInit {
       races: this.configService.getPlayableRaces(),
       classes: this.configService.getPlayableCharacterClasses()
     }).subscribe(({ races, classes }) => {
-      this.races = races;
-      this.classes = classes;
+      this.races = [...races].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+      this.classes = [...classes].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
 
       // Default to Human Cleric
       const human = this.races.find(r => r.name === 'Human');

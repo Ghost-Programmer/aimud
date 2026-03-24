@@ -34,9 +34,9 @@ export class CharacterSelectComponent implements OnInit {
       classes: this.configService.getAllCharacterClasses()
     }).subscribe({
       next: ({ characters, races, classes }) => {
-        this.characters = characters;
-        this.races = races;
-        this.classes = classes;
+        this.characters = [...characters].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+        this.races = [...races].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+        this.classes = [...classes].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
       },
       error: (error) => {
         console.error('Error loading data', error);

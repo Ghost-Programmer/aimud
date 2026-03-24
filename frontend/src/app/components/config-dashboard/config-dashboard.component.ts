@@ -122,7 +122,7 @@ export class ConfigDashboardComponent implements OnInit {
   // Agents
   loadAgents() {
     this.configService.getAllAgents().subscribe(agents => {
-      this.agents = [...agents].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+      this.agents = [...agents].sort((a, b) => (a.title ?? '').localeCompare(b.title ?? ''));
       this.clampAgentPage();
     });
   }
@@ -220,7 +220,7 @@ export class ConfigDashboardComponent implements OnInit {
   // Races
   loadRaces() {
     this.configService.getAllRaces().subscribe(races => {
-      this.races = races;
+      this.races = [...races].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
     });
   }
 
@@ -290,7 +290,7 @@ export class ConfigDashboardComponent implements OnInit {
   // Classes
   loadClasses() {
     this.configService.getAllCharacterClasses().subscribe(classes => {
-      this.classes = classes;
+      this.classes = [...classes].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
     });
   }
 

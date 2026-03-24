@@ -23,7 +23,7 @@ export class PlayerListComponent implements OnInit {
   loadUsers() {
     this.userService.getAllUsers().subscribe({
       next: (data) => {
-        this.users = data;
+        this.users = [...data].sort((a, b) => (a.username ?? '').localeCompare(b.username ?? ''));
       },
       error: (error) => {
         console.error('Error fetching users', error);

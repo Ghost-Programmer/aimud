@@ -89,7 +89,7 @@ export class MobileEditorComponent implements OnInit {
 
   loadMobiles() {
     this.mobileService.getAllMobiles().subscribe({
-      next: (data) => this.mobiles = data,
+      next: (data) => this.mobiles = [...data].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
       error: (err) => console.error('Error loading mobiles', err)
     });
   }
@@ -98,7 +98,7 @@ export class MobileEditorComponent implements OnInit {
     // Fetch a large enough page
     this.itemService.getItems(0, 1000, {}).subscribe({
       next: (data) => {
-        this.availableItems = data.items;
+        this.availableItems = [...data.items].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
 
         // Group by wear location for the dropdowns
         this.wearLocations.forEach(loc => {
@@ -117,7 +117,7 @@ export class MobileEditorComponent implements OnInit {
 
   loadSkills() {
     this.configService.getAllSkills().subscribe({
-      next: (data) => this.availableSkills = data,
+      next: (data) => this.availableSkills = [...data].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
       error: (err) => console.error('Error loading skills', err)
     });
   }
