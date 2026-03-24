@@ -197,7 +197,9 @@ export class ConfigDashboardComponent implements OnInit {
     }
   }
 
-  deleteAgent(id: number | undefined) {
+  deleteAgent(id: number | undefined, event?: Event) {
+    event?.stopPropagation();
+
     if (!id) {
       return;
     }
@@ -251,7 +253,9 @@ export class ConfigDashboardComponent implements OnInit {
     }
   }
 
-  deleteRace(id: number) {
+  deleteRace(id: number, event?: Event) {
+    event?.stopPropagation();
+
     if (confirm('Are you sure you want to delete this race?')) {
       this.configService.deleteRace(id).subscribe(() => {
         this.loadRaces();
@@ -390,7 +394,9 @@ export class ConfigDashboardComponent implements OnInit {
     }
   }
 
-  deleteClass(id: number) {
+  deleteClass(id: number, event?: Event) {
+    event?.stopPropagation();
+
     if (confirm('Are you sure you want to delete this class?')) {
       this.configService.deleteCharacterClass(id).subscribe(() => {
         this.loadClasses();

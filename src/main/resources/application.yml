@@ -13,6 +13,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/aimud
     user: aimud
     password: aimud_password
+    clear-checksums: true
   docker:
     compose:
       enabled: true
