@@ -68,12 +68,13 @@ select option {
 
 .stats-table th {
   background-color: rgba(255, 255, 255, 0.05);
-  color: var(--text-muted);
+  color: #ffd700;
   font-weight: 600;
+  border-bottom: 2px solid rgba(255, 215, 0, 0.3);
 }
 
 .stats-table tr:hover {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: rgba(255, 215, 0, 0.1);
 }
 
 .derived-stats-container {
@@ -138,8 +139,8 @@ select option {
 }
 
 .save-btn {
-  background-color: var(--primary);
-  color: white;
+  background-color: #ffd700;
+  color: #000;
   border: none;
   padding: 10px 20px;
   border-radius: 4px;
@@ -149,10 +150,11 @@ select option {
 }
 
 .save-btn:hover {
-  background-color: var(--primary-hover);
+  background-color: #ffea00;
 }
 
 .save-btn:disabled {
   background-color: var(--glass-border);
+  color: rgba(255, 255, 255, 0.3);
   cursor: not-allowed;
 }

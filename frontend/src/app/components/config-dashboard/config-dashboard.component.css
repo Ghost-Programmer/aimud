@@ -153,14 +153,15 @@ th, td {
 
 th {
   background-color: rgba(255, 255, 255, 0.05);
-  color: var(--text-muted);
+  color: #ffd700;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.85rem;
+  border-bottom: 2px solid rgba(255, 215, 0, 0.3);
 }
 
 tr:hover {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: rgba(255, 215, 0, 0.1);
 }
 
 .clickable-row {
@@ -169,7 +170,7 @@ tr:hover {
 }
 
 .clickable-row:hover {
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: rgba(255, 215, 0, 0.1);
 }
 
 .actions-cell {
@@ -315,4 +316,16 @@ tr:hover {
 
 .remove-btn:hover {
   color: var(--error);
+}
+
+.section-header .btn-secondary {
+  background-color: #ffd700;
+  color: #000;
+  border-color: #ffd700;
+  font-weight: bold;
+}
+
+.section-header .btn-secondary:hover {
+  background-color: #ffea00;
+  border-color: #ffea00;
 }
