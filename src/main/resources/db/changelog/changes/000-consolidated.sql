@@ -994,7 +994,7 @@ ON CONFLICT DO NOTHING;
 --changeset jeff:56
 UPDATE character_classes SET starting_items = '11,7,9,4,16' WHERE name = 'Druid';
 UPDATE character_classes SET starting_items = '2,5,11,7,9,1' WHERE name = 'Rogue';
-UPDATE character_classes SET starting_items = '14,2,11,7,9' WHERE name = 'Wizard';
+UPDATE character_classes SET starting_items = '2,11,7,9,17' WHERE name = 'Wizard';
 UPDATE character_classes SET starting_items = '5,11,7,9,13,1' WHERE name = 'Ranger';
 UPDATE character_classes SET starting_items = '12,10,8,16,6' WHERE name = 'Cleric';
 UPDATE character_classes SET starting_items = '12,10,8,6,3,1' WHERE name = 'Fighter';
