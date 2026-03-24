@@ -114,11 +114,19 @@ public class CharacterService {
                                     List<Long> startingItemIds = characterClass.getStartingItemIds();
                                     if (!startingItemIds.isEmpty()) {
                                         itemsMono = Flux.fromIterable(startingItemIds)
-                                                .flatMap(itemId -> databaseClient.sql("INSERT INTO character_inventory (character_id, item_id) VALUES (:characterId, :itemId)")
+                                                .flatMap(itemId -> databaseClient.sql("INSERT INTO character_inventory (character_id, item_id) " +
+                                                                "SELECT :characterId, :itemId " +
+                                                                "WHERE EXISTS (SELECT 1 FROM items WHERE id = :itemIdCheck)")
                                                         .bind("characterId", savedCharacter.getId())
                                                         .bind("itemId", itemId)
+                                                        .bind("itemIdCheck", itemId)
                                                         .fetch()
                                                         .rowsUpdated()
+                                                        .doOnNext(rowsUpdated -> {
+                                                            if (rowsUpdated == 0) {
+                                                                log.warn("Skipping missing starting item {} for character {}", itemId, savedCharacter.getId());
+                                                            }
+                                                        })
                                                         .onErrorResume(e -> {
                                                             log.error("Failed to add starting item {} to character {}", itemId, savedCharacter.getId(), e);
                                                             return Mono.just(0L);
