@@ -96,7 +96,7 @@
 }
 
 .console-textarea::-webkit-scrollbar-thumb {
-  background-color: var(--primary);
+  background-color: #ffd700;
   border-radius: 4px;
   border: 2px solid transparent;
   background-clip: content-box;
@@ -134,8 +134,8 @@
 }
 
 .command-submit {
-  background-color: var(--primary);
-  color: white;
+  background-color: #ffd700;
+  color: #000;
   border: none;
   border-radius: 4px;
   padding: 0 20px;
@@ -145,7 +145,7 @@
 }
 
 .command-submit:hover {
-  filter: brightness(1.2);
+  background-color: #ffea00;
 }
 
 .command-submit:active {
@@ -178,8 +178,8 @@
 }
 
 .stat-tab-btn.active {
-  color: var(--primary);
-  border-bottom: 2px solid var(--primary);
+  color: #ffd700;
+  border-bottom: 2px solid #ffd700;
 }
 
 .stat-content {
@@ -254,7 +254,7 @@
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
-  color: var(--primary);
+  color: #ffd700;
   margin-bottom: 10px;
   opacity: 0.8;
 }
@@ -287,8 +287,8 @@
 .inventory-table th {
   text-align: left;
   padding: 8px;
-  border-bottom: 2px solid var(--glass-border);
-  color: var(--primary);
+  border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+  color: #ffd700;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;
@@ -298,7 +298,7 @@
 }
 
 .inventory-table th:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 215, 0, 0.08);
 }
 
 .inventory-table th.sorted {
@@ -326,7 +326,7 @@
 }
 
 .inventory-table tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 215, 0, 0.1);
 }
 
 .item-name {
@@ -354,8 +354,8 @@
 }
 
 .main-action-btn {
-  background: var(--primary);
-  color: white;
+  background: #ffd700;
+  color: #000;
   border: none;
   padding: 4px 10px;
   font-size: 0.75rem;
@@ -365,7 +365,7 @@
 }
 
 .main-action-btn:hover {
-  background: var(--primary-light);
+  background: #ffea00;
 }
 
 .dropdown-trigger-btn {
@@ -474,7 +474,7 @@
 }
 
 .has-item .slot-item {
-  color: var(--primary);
+  color: #ffd700;
   font-weight: 500;
 }
 
