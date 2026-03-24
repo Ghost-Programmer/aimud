@@ -34,6 +34,8 @@ public class CharacterClass {
     private int dexterityMod;
     @Column("constitution_mod")
     private int constitutionMod;
+    @Column("npc_only")
+    private boolean npcOnly;
     private boolean deleted;
 
     @Column("starting_items")

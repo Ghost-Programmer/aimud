@@ -42,6 +42,10 @@ export class ConfigService {
     return this.http.get<any[]>(`${this.apiUrl}/races`);
   }
 
+  getPlayableRaces(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/races`, { params: { playableOnly: 'true' } });
+  }
+
   createRace(race: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/races`, race);
   }
@@ -57,6 +61,10 @@ export class ConfigService {
   // Character Classes
   getAllCharacterClasses(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/classes`);
+  }
+
+  getPlayableCharacterClasses(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/classes`, { params: { playableOnly: 'true' } });
   }
 
   createCharacterClass(characterClass: any): Observable<any> {

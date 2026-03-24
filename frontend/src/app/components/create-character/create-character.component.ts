@@ -65,8 +65,8 @@ export class CreateCharacterComponent implements OnInit {
 
   loadData() {
     forkJoin({
-      races: this.configService.getAllRaces(),
-      classes: this.configService.getAllCharacterClasses()
+      races: this.configService.getPlayableRaces(),
+      classes: this.configService.getPlayableCharacterClasses()
     }).subscribe(({ races, classes }) => {
       this.races = races;
       this.classes = classes;

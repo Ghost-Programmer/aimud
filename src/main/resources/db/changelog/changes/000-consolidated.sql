@@ -1062,6 +1062,13 @@ SELECT setval(pg_get_serial_sequence('server_settings', 'id'), COALESCE(MAX(id),
 SELECT setval(pg_get_serial_sequence('character_classes', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM character_classes;
 SELECT setval(pg_get_serial_sequence('rooms', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM rooms;
 
+--changeset jeff:62
+ALTER TABLE races ADD COLUMN npc_only BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE character_classes ADD COLUMN npc_only BOOLEAN NOT NULL DEFAULT false;
+
+UPDATE races SET npc_only = false;
+UPDATE character_classes SET npc_only = false;
+
 --changeset jeff:61
 ALTER TABLE character_effects ADD COLUMN IF NOT EXISTS name VARCHAR(255);
 

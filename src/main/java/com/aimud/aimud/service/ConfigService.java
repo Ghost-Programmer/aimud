@@ -103,6 +103,11 @@ public class ConfigService {
         return raceRepository.findAll().filter(race -> !race.isDeleted()).cache();
     }
 
+    public Flux<Race> getPlayableRaces() {
+        return raceRepository.findAll()
+                .filter(race -> !race.isDeleted() && !race.isNpcOnly());
+    }
+
     @CacheEvict(value = "races", allEntries = true)
     public Mono<Race> createRace(Race race) {
         return raceRepository.save(race);
@@ -114,6 +119,7 @@ public class ConfigService {
                 .flatMap(existingRace -> {
                     existingRace.setName(race.getName());
                     existingRace.setDescription(race.getDescription());
+                    existingRace.setNpcOnly(race.isNpcOnly());
                     existingRace.setStrengthMod(race.getStrengthMod());
                     existingRace.setDexterityMod(race.getDexterityMod());
                     existingRace.setConstitutionMod(race.getConstitutionMod());
@@ -140,6 +146,11 @@ public class ConfigService {
         return characterClassRepository.findAll().filter(cc -> !cc.isDeleted()).cache();
     }
 
+    public Flux<CharacterClass> getPlayableCharacterClasses() {
+        return characterClassRepository.findAll()
+                .filter(cc -> !cc.isDeleted() && !cc.isNpcOnly());
+    }
+
     @CacheEvict(value = "characterClasses", allEntries = true)
     public Mono<CharacterClass> createCharacterClass(CharacterClass characterClass) {
         return characterClassRepository.save(characterClass);
@@ -151,6 +162,7 @@ public class ConfigService {
                 .flatMap(existingClass -> {
                     existingClass.setName(characterClass.getName());
                     existingClass.setDescription(characterClass.getDescription());
+                    existingClass.setNpcOnly(characterClass.isNpcOnly());
                     existingClass.setStrengthMod(characterClass.getStrengthMod());
                     existingClass.setDexterityMod(characterClass.getDexterityMod());
                     existingClass.setConstitutionMod(characterClass.getConstitutionMod());

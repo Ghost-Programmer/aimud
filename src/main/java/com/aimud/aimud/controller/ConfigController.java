@@ -58,8 +58,8 @@ public class ConfigController {
 
     // Races
     @GetMapping("/races")
-    public Flux<Race> getAllRaces() {
-        return configService.getAllRaces();
+    public Flux<Race> getAllRaces(@RequestParam(defaultValue = "false") boolean playableOnly) {
+        return playableOnly ? configService.getPlayableRaces() : configService.getAllRaces();
     }
 
     @PostMapping("/races")
@@ -82,8 +82,8 @@ public class ConfigController {
 
     // Character Classes
     @GetMapping("/classes")
-    public Flux<CharacterClass> getAllCharacterClasses() {
-        return configService.getAllCharacterClasses();
+    public Flux<CharacterClass> getAllCharacterClasses(@RequestParam(defaultValue = "false") boolean playableOnly) {
+        return playableOnly ? configService.getPlayableCharacterClasses() : configService.getAllCharacterClasses();
     }
 
     @PostMapping("/classes")

@@ -68,6 +68,7 @@ export class ConfigDashboardComponent implements OnInit {
       id: [null],
       name: ['', Validators.required],
       description: ['', Validators.required],
+      npcOnly: [false],
       strengthMod: [0],
       intelligenceMod: [0],
       wisdomMod: [0],
@@ -80,6 +81,7 @@ export class ConfigDashboardComponent implements OnInit {
       id: [null],
       name: ['', Validators.required],
       description: ['', Validators.required],
+      npcOnly: [false],
       strengthMod: [0],
       intelligenceMod: [0],
       wisdomMod: [0],
@@ -228,6 +230,10 @@ export class ConfigDashboardComponent implements OnInit {
       this.raceForm.patchValue(race);
     } else {
       this.raceForm.reset({
+        id: null,
+        name: '',
+        description: '',
+        npcOnly: false,
         strengthMod: 0, intelligenceMod: 0, wisdomMod: 0,
         charismaMod: 0, dexterityMod: 0, constitutionMod: 0
       });
@@ -311,6 +317,10 @@ export class ConfigDashboardComponent implements OnInit {
       }
     } else {
       this.classForm.reset({
+        id: null,
+        name: '',
+        description: '',
+        npcOnly: false,
         strengthMod: 0, intelligenceMod: 0, wisdomMod: 0,
         charismaMod: 0, dexterityMod: 0, constitutionMod: 0,
         startingItems: '', startingSkills: ''

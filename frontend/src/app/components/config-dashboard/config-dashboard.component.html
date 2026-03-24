@@ -166,6 +166,10 @@
         <label for="raceDesc">Description</label>
         <textarea id="raceDesc" formControlName="description"></textarea>
       </div>
+      <div class="form-group checkbox-group">
+        <input type="checkbox" id="raceNpcOnly" formControlName="npcOnly">
+        <label for="raceNpcOnly">NPC Only</label>
+      </div>
       <div class="stats-grid">
         <div class="form-group"><label>STR Mod</label><input type="number" formControlName="strengthMod"></div>
         <div class="form-group"><label>DEX Mod</label><input type="number" formControlName="dexterityMod"></div>
@@ -194,6 +198,10 @@
       <div class="form-group">
         <label for="classDesc">Description</label>
         <textarea id="classDesc" formControlName="description"></textarea>
+      </div>
+      <div class="form-group checkbox-group">
+        <input type="checkbox" id="classNpcOnly" formControlName="npcOnly">
+        <label for="classNpcOnly">NPC Only</label>
       </div>
 
       <!-- Starting Items UI -->

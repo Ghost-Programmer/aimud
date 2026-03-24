@@ -28,6 +28,8 @@ public class Race {
     private int dexterityMod;
     @Column("constitution_mod")
     private int constitutionMod;
+    @Column("npc_only")
+    private boolean npcOnly;
     private boolean deleted;
 
     @CreatedDate

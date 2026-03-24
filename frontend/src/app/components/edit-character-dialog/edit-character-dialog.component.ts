@@ -57,13 +57,13 @@ export class EditCharacterDialogComponent {
   }
 
   loadRaces() {
-    this.configService.getAllRaces().subscribe(races => {
+    this.configService.getPlayableRaces().subscribe(races => {
       this.races = races;
     });
   }
 
   loadClasses() {
-    this.configService.getAllCharacterClasses().subscribe(classes => {
+    this.configService.getPlayableCharacterClasses().subscribe(classes => {
       this.classes = classes;
     });
   }
