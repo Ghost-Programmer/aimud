@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { Title } from '@angular/platform-browser';
 import { ConfigService } from '../../services/config.service';
 import { ItemService } from '../../services/item.service';
 import { Agent } from '../../models/agent.model';
@@ -46,7 +47,8 @@ export class ConfigDashboardComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private configService: ConfigService,
-    private itemService: ItemService
+    private itemService: ItemService,
+    private titleService: Title
   ) {
     this.serverSettingsForm = this.fb.group({
       id: [null],
@@ -108,6 +110,8 @@ export class ConfigDashboardComponent implements OnInit {
   saveServerSettings() {
     if (this.serverSettingsForm.valid) {
       this.configService.updateServerSettings(this.serverSettingsForm.value).subscribe(() => {
+        const serverName = this.serverSettingsForm.get('serverName')?.value;
+        this.titleService.setTitle(serverName || 'AI Mud');
         alert('Server settings updated');
       });
     }

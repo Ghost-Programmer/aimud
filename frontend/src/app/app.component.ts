@@ -4,6 +4,7 @@ import { RegisterDialogComponent } from './components/register-dialog/register-d
 import { LoginDialogComponent } from './components/login-dialog/login-dialog.component';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { Title } from '@angular/platform-browser';
 import { StatusService, SystemStatus } from './services/status.service';
 
 @Component({
@@ -41,9 +42,16 @@ export class AppComponent implements OnInit {
     this.isLoginDialogOpen = false;
   }
 
-  constructor(private http: HttpClient, public router: Router, private statusService: StatusService) { }
+  constructor(
+    private http: HttpClient,
+    public router: Router,
+    private statusService: StatusService,
+    private titleService: Title
+  ) { }
 
   ngOnInit() {
+    this.titleService.setTitle(this.serverName);
+
     this.statusService.getSystemStatus().subscribe({
       next: (data) => {
         this.systemStatus = data;
@@ -64,6 +72,7 @@ export class AppComponent implements OnInit {
     this.http.get<{ serverName: string, allowNewUser: boolean, maintenance: boolean, maintenanceText: string }>('/api/settings').subscribe({
       next: (data) => {
         this.serverName = data.serverName;
+        this.titleService.setTitle(this.serverName || 'AI Mud');
         this.allowNewUser = data.allowNewUser;
         this.maintenance = data.maintenance;
         this.maintenanceText = data.maintenanceText;
@@ -71,6 +80,7 @@ export class AppComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error fetching server settings:', error);
+        this.titleService.setTitle(this.serverName || 'AI Mud');
         this.settingsLoaded = true;
       }
     });
