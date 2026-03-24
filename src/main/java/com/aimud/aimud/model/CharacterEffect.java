@@ -24,6 +24,9 @@ public class CharacterEffect {
     @Column("tick_count")
     private int tickCount;
 
+    @Column("name")
+    private String name;
+
     @Transient
     private Effect effect;
 

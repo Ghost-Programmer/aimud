@@ -11,8 +11,8 @@ import com.aimud.aimud.types.SkillsType;
 public class MagicMissile extends Spell {
 
 
-    protected MagicMissile(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService) {
-        super(skillService, mopbileService, characterService, communicationService);
+    protected MagicMissile(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
+        super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
     @Override

@@ -1062,6 +1062,9 @@ SELECT setval(pg_get_serial_sequence('server_settings', 'id'), COALESCE(MAX(id),
 SELECT setval(pg_get_serial_sequence('character_classes', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM character_classes;
 SELECT setval(pg_get_serial_sequence('rooms', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM rooms;
 
+--changeset jeff:61
+ALTER TABLE character_effects ADD COLUMN IF NOT EXISTS name VARCHAR(255);
+
 --changeset jeff:add-item-properties
 ALTER TABLE items ADD COLUMN IF NOT EXISTS property_1 INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE items ADD COLUMN IF NOT EXISTS property_2 INTEGER NOT NULL DEFAULT 0;

@@ -9,6 +9,9 @@ import reactor.core.publisher.Mono;
 
 @Repository
 public interface EffectRepository extends ReactiveCrudRepository<Effect, Long> {
+    @Query("SELECT * FROM effects WHERE LOWER(name) = LOWER(:name) LIMIT 1")
+    Mono<Effect> findByName(String name);
+
     @Query("SELECT e.* FROM effects e JOIN item_effects ie ON e.id = ie.effect_id WHERE ie.item_id = :itemId")
     Flux<Effect> findByItemId(Long itemId);
     
