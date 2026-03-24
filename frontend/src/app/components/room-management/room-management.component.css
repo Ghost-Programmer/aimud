@@ -104,18 +104,32 @@
   background: rgba(255, 215, 0, 0.1);
 }
 
-.delete-btn {
-  background: rgba(244, 67, 54, 0.2);
-  color: #e57373;
-  border: 1px solid #f44336;
-  padding: 0.3rem 0.6rem;
-  border-radius: 4px;
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #aaa);
   cursor: pointer;
-  font-size: 0.8rem;
+  padding: 5px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:hover {
+  color: var(--primary, #ffd700);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .delete-btn:hover {
-  background: rgba(244, 67, 54, 0.4);
+  color: #e57373;
+  background-color: rgba(244, 67, 54, 0.15);
+}
+
+.icon-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 .no-results {
