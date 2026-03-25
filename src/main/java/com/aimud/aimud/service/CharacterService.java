@@ -373,7 +373,9 @@ public class CharacterService {
         communicationService.sendTextMessage(character, "\n\nYou equip " + itemToEquip.getName() + ".");
 
         return save(character)
-                .flatMap(savedChar -> updateInventory(savedChar, currentInventory));
+                .flatMap(savedChar -> updateInventory(savedChar, currentInventory))
+                .flatMap(savedChar -> getCharacterById(savedChar.getId()))
+                .doOnNext(savedChar -> communicationService.sendCharacterUpdate(savedChar));
     }
 
     public Mono<Character> dropItem(Character character, Long itemId) {
