@@ -32,7 +32,7 @@ public class MagicMissile extends Spell {
 
     @Override
     public String getDescription() {
-        return "Fires a bolt of magic at your target dealing <skill> d 6 damage + bonus damage. Damage increases at higher levels. Usage: cast missle <target>";
+        return "Fires a bolt of magic at your target dealing <skill> d 6 damage + bonus damage. Damage increases at higher levels. Usage: cast missile <target>";
     }
 
     @Override
