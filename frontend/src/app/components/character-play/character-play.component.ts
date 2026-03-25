@@ -23,7 +23,7 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
   @Input() textMessages: string[] = [];
   @ViewChild('consoleTextarea') consoleTextarea!: ElementRef<HTMLTextAreaElement>;
   activeStatTab: string = 'stats';
-  sortColumn: string = '';
+  sortColumn: string = 'name';
   sortDirection: 'asc' | 'desc' = 'asc';
   command: string = '';
   target: any = null;
@@ -167,6 +167,13 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
       if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
+  }
+
+  get sortedSkills() {
+    if (!this.character || !this.character.skills) return [];
+    return [...this.character.skills].sort((a, b) =>
+      (a.name?.toLowerCase() || '').localeCompare(b.name?.toLowerCase() || '')
+    );
   }
 
   private getSortValue(item: any, column: string): any {
