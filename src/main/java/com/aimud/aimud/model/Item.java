@@ -31,6 +31,12 @@ public class Item {
     @Transient
     private int value;
 
+    @Transient
+    private List<Item> inventory = new ArrayList<>();
+
+    @Column("no_pickup")
+    private boolean noPickup = false;
+
     private String name;
     private String description;
 

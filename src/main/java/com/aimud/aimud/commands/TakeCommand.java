@@ -2,6 +2,7 @@ package com.aimud.aimud.commands;
 
 import com.aimud.aimud.annontation.MudCommand;
 import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Item;
 import com.aimud.aimud.service.CharacterService;
 import com.aimud.aimud.service.CommunicationService;
 import com.aimud.aimud.service.ItemService;
@@ -12,6 +13,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -25,7 +27,7 @@ public class TakeCommand implements Command {
     @Override
     public Mono<Void> execute(Character character, String commandLine) {
         log.info("Executing take command for character: {}", character.getName());
-        
+
         String[] parts = commandLine.trim().split("\\s+", 2);
         if (parts.length < 2) {
             communicationService.sendTextMessage(character, "\n\nTake what?");
@@ -36,18 +38,37 @@ public class TakeCommand implements Command {
 
         return roomService.getRoom(character.getCurrentRoomId())
                 .flatMap(room -> {
+                    // Check transient items first (corpses, etc.)
+                    Optional<Item> transientMatch = roomService.getTransientItemsInRoom(room.getId()).stream()
+                            .filter(i -> i.getName().toLowerCase().contains(itemName))
+                            .findFirst();
+
+                    if (transientMatch.isPresent()) {
+                        if (transientMatch.get().isNoPickup()) {
+                            communicationService.sendTextMessage(character, "\n\nYou cannot pick that up.");
+                        }
+                        // Even if noPickup is false for a transient item, picking up
+                        // transient items is not yet implemented — treat as not allowed.
+                        return Mono.empty();
+                    }
+
                     List<Long> itemIds = room.getItemIds();
                     if (itemIds.isEmpty()) {
                         communicationService.sendTextMessage(character, "\n\nYou don't see that here.");
                         return Mono.empty();
                     }
 
-                    // Look up all items in the room to see if any match the name
                     return Flux.fromIterable(itemIds)
                             .flatMap(itemService::getItem)
                             .filter(item -> item.getName().toLowerCase().contains(itemName))
-                            .next() // Get the first matching item
-                            .flatMap(itemToTake -> characterService.takeItem(character, itemToTake.getId()))
+                            .next()
+                            .flatMap(itemToTake -> {
+                                if (itemToTake.isNoPickup()) {
+                                    communicationService.sendTextMessage(character, "\n\nYou cannot pick that up.");
+                                    return Mono.<Void>empty();
+                                }
+                                return characterService.takeItem(character, itemToTake.getId()).then();
+                            })
                             .switchIfEmpty(Mono.defer(() -> {
                                 communicationService.sendTextMessage(character, "\n\nYou don't see that here.");
                                 return Mono.empty();

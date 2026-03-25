@@ -26,14 +26,16 @@ public class TickService {
     private final CommandService commandService;
     private final CommunicationService communicationService;
     private final SkillService skillService;
+    private final RoomService roomService;
     private final Random random = new Random();
 
-    public TickService(CharacterService characterService, MobileService mobileService, CommandService commandService, CommunicationService communicationService, SkillService skillService) {
+    public TickService(CharacterService characterService, MobileService mobileService, CommandService commandService, CommunicationService communicationService, SkillService skillService, RoomService roomService) {
         this.characterService = characterService;
         this.mobileService = mobileService;
         this.commandService = commandService;
         this.communicationService = communicationService;
         this.skillService = skillService;
+        this.roomService = roomService;
     }
 
     @Scheduled(fixedRate = 2000)
@@ -313,10 +315,58 @@ public class TickService {
 
     private void createCorpse(Mobile deceased) {
         log.info("Creating corpse for {}", deceased.getName());
-        // TODO: Move inventory to corpse item, spawn corpse item in room
-        
+
+        // Collect all in-memory inventory items
+        List<Item> contents = new ArrayList<>(deceased.getInventory());
+
+        // Collect all equipped items that are loaded in memory
+        addIfPresent(contents, deceased.getHead());
+        addIfPresent(contents, deceased.getChest());
+        addIfPresent(contents, deceased.getLegs());
+        addIfPresent(contents, deceased.getFeet());
+        addIfPresent(contents, deceased.getArms());
+        addIfPresent(contents, deceased.getHands());
+        addIfPresent(contents, deceased.getRightFinger());
+        addIfPresent(contents, deceased.getLeftFinger());
+        addIfPresent(contents, deceased.getRightWrist());
+        addIfPresent(contents, deceased.getLeftWrist());
+        addIfPresent(contents, deceased.getNeck());
+        addIfPresent(contents, deceased.getLeftEar());
+        addIfPresent(contents, deceased.getRightEar());
+        addIfPresent(contents, deceased.getFace());
+        addIfPresent(contents, deceased.getWaist());
+        addIfPresent(contents, deceased.getPrimary());
+        addIfPresent(contents, deceased.getOffhand());
+
+        // Build the corpse item (transient — never saved to the DB)
+        Item corpse = new Item();
+        corpse.setName(deceased.getName() + "'s Corpse");
+        corpse.setDescription("The corpse of " + deceased.getName() + " lies here.");
+        corpse.setItemType(ItemType.CORPSE);
+        corpse.setNoPickup(true);
+        corpse.setInventory(contents);
+
+        // Place corpse in the room
+        if (deceased.getCurrentRoomId() != null) {
+            roomService.addTransientItemToRoom(deceased.getCurrentRoomId(), corpse);
+            characterService.findAllByRoomId(deceased.getCurrentRoomId())
+                    .forEach(c -> communicationService.sendTextMessage(c,
+                            "\nThe corpse of " + deceased.getName() + " lies here."));
+        }
+
         if (deceased instanceof Character character) {
+            // Strip PC's inventory/equipment from DB so they log back in empty
+            characterService.clearInventoryAndEquipment(character).subscribe();
             character.getCommandQueue().add("logout");
+        } else {
+            // Remove the dead NPC from the active mobile pool
+            mobileService.removeActiveMobile(deceased.getId());
+        }
+    }
+
+    private void addIfPresent(List<Item> list, Item item) {
+        if (item != null && item.getId() != null) {
+            list.add(item);
         }
     }
 

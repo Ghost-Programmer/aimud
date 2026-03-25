@@ -1,5 +1,6 @@
 package com.aimud.aimud.service;
 
+import com.aimud.aimud.model.Item;
 import com.aimud.aimud.model.Room;
 import com.aimud.aimud.repository.RoomRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,6 +23,9 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final CommunicationService communicationService;
     private final MobileService mobileService;
+
+    // In-memory storage for transient room items (e.g., corpses) — never persisted to DB
+    private final ConcurrentHashMap<Long, CopyOnWriteArrayList<Item>> transientRoomItems = new ConcurrentHashMap<>();
 
     public RoomService(RoomRepository roomRepository, CommunicationService communicationService, @Lazy MobileService mobileService) {
         this.roomRepository = roomRepository;
@@ -121,4 +127,20 @@ public class RoomService {
                 });
     }
 
+    public void addTransientItemToRoom(Long roomId, Item item) {
+        transientRoomItems.computeIfAbsent(roomId, k -> new CopyOnWriteArrayList<>()).add(item);
+        log.info("Added transient item '{}' to room {}", item.getName(), roomId);
+    }
+
+    public List<Item> getTransientItemsInRoom(Long roomId) {
+        return transientRoomItems.getOrDefault(roomId, new CopyOnWriteArrayList<>());
+    }
+
+    public void removeTransientItemFromRoom(Long roomId, Item item) {
+        CopyOnWriteArrayList<Item> items = transientRoomItems.get(roomId);
+        if (items != null) {
+            items.remove(item);
+            log.info("Removed transient item '{}' from room {}", item.getName(), roomId);
+        }
+    }
 }

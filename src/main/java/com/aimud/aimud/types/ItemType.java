@@ -25,6 +25,7 @@ public enum ItemType {
     CONTAINER("Container"),
     TRASH("Trash"),
     MISC("Miscellaneous"),
+    CORPSE("Corpse"),
     NONE("None");
 
     private final String label;

@@ -26,7 +26,8 @@ export class ItemDialogComponent implements OnInit {
     property2: 0,
     property3: 0,
     property4: 0,
-    effects: []
+    effects: [],
+    noPickup: false
   };
 
   itemTypes = Object.values(ItemType);

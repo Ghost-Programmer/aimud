@@ -46,6 +46,9 @@ public class LookCommand implements Command {
                                 .subscribe();
                     });
 
+                    roomService.getTransientItemsInRoom(room.getId()).forEach(item ->
+                        communicationService.sendTextMessage(character, "\nYou see " + item.getName() + " laying here."));
+
                     List<String> exits = new ArrayList<>();
                     if (room.getNorthId() != null) exits.add("North");
                     if (room.getEastId() != null) exits.add("East");

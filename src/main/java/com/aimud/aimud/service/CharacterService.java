@@ -493,6 +493,30 @@ public class CharacterService {
                 });
     }
 
+    public Mono<Character> clearInventoryAndEquipment(Character character) {
+        log.info("Clearing inventory and equipment for character: {}", character.getName());
+        character.setHead(null);
+        character.setChest(null);
+        character.setLegs(null);
+        character.setFeet(null);
+        character.setArms(null);
+        character.setHands(null);
+        character.setRightFinger(null);
+        character.setLeftFinger(null);
+        character.setRightWrist(null);
+        character.setLeftWrist(null);
+        character.setNeck(null);
+        character.setLeftEar(null);
+        character.setRightEar(null);
+        character.setFace(null);
+        character.setWaist(null);
+        character.setPrimary(null);
+        character.setOffhand(null);
+        character.setInventory(new ArrayList<>());
+        return save(character)
+                .flatMap(savedChar -> updateInventory(savedChar, new ArrayList<>()));
+    }
+
     public Mono<Character> generateCharacter(Character character) {
         if (character.getStrength() == 0) {
             character.setStrength(rollStat());

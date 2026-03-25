@@ -193,3 +193,24 @@ h3 {
   border-radius: 4px;
   cursor: pointer;
 }
+
+.checkbox-group {
+  width: 100%;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--text-main, #e0e0e0);
+  font-size: 0.9rem;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #ffd700;
+  cursor: pointer;
+  flex-shrink: 0;
+}

@@ -1355,6 +1355,12 @@ Slot fill behavior for grouped locations:
 4. `setRoomDoor(roomB, "WEST", roomA, true)`
 5. `getRoom(roomA)` and `getRoom(roomB)`
 
+### Add an effect to an existing item
+1. `getItem(itemId)`  -- Ensure the item exists
+2. `createEffect("FIRE_DAMAGE", 1, 6, 0, 0)`  -- Create a new fire damage effect
+3. `linkEffectToItem(itemId, effectId)`  -- Link the new effect to the item
+4. `getEffectsByItem(itemId)`  -- Verify the effect is linked
+
 '
 WHERE id = 2;
 
@@ -1429,9 +1435,9 @@ INSERT INTO rooms (
     up_door_open,
     down_door_open
 ) VALUES
-(2, 'The Great Hall', 'A vast, echoing hall with marble floors and high vaulted ceilings. Archways branch toward the library, workshop, portal wing, and a stair toward the cartographer''s perch.', 'INDOORS', 3, 1, 5, 4, 11, NULL, true, true, true, true, true, false, true, true, true, true, true, false),
-(3, 'Library of Ancient Wisdom', 'Rows of dusty bookshelves line the walls of this quiet chamber, where old maps and forgotten lore rest in careful order.', 'INDOORS', NULL, 2, NULL, NULL, NULL, NULL, false, true, false, false, false, false, false, true, false, false, false, false),
-(4, 'The Alchemist''s Workshop', 'The air is thick with the smell of strange chemicals and bubbling potions. Benches of glassware crowd the western annex.', 'INDOORS', NULL, NULL, 2, NULL, NULL, NULL, false, false, true, false, false, false, false, false, true, false, false, false),
+(2, 'The Great Hall', 'A vast, echoing hall with marble floors and high vaulted ceilings. Archways branch toward the library, workshop, portal wing, and a stair toward the cartographer''s perch.', 'INDOORS', 3, 4, 5, 1),
+(3, 'Library of Ancient Wisdom', 'Rows of dusty bookshelves line the walls of this quiet chamber, where old maps and forgotten lore rest in careful order.', 'INDOORS', NULL, 2, NULL, NULL),
+(4, 'The Alchemist''s Workshop', 'The air is thick with the smell of strange chemicals and bubbling potions. Benches of glassware crowd the western annex.', 'INDOORS', NULL, NULL, 2, NULL),
 (5, 'Portal Gallery', 'A humming arch of pale light dominates this eastern chamber, its frame etched with old travel sigils and city markers.', 'INDOORS', NULL, NULL, NULL, 2, NULL, NULL, false, false, false, true, false, false, false, false, false, true, false, false),
 (6, 'South Gate Courtyard', 'Weathered flagstones open into a quiet courtyard beyond the entrance, with a training path leading farther south.', 'CITY', 1, 12, NULL, NULL, NULL, NULL, true, true, false, false, false, false, true, true, false, false, false, false),
 (7, 'East Market Arcade', 'Canvas awnings shade a row of empty vendor stalls, and the scent of spice still lingers in the air.', 'CITY', NULL, NULL, 13, 1, NULL, NULL, false, false, true, true, false, false, false, false, true, true, false, false),
@@ -1468,3 +1474,5 @@ ON CONFLICT (id) DO UPDATE SET
 
 SELECT setval(pg_get_serial_sequence('rooms', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM rooms;
 
+--changeset jeff:add-item-no-pickup
+ALTER TABLE items ADD COLUMN IF NOT EXISTS no_pickup BOOLEAN NOT NULL DEFAULT false;

@@ -19,7 +19,8 @@ export enum ItemType {
   LIGHT = 'Light',
   CONTAINER = 'Container',
   TRASH = 'Trash',
-  MISCELLANEOUS = 'Miscellaneous'
+  MISCELLANEOUS = 'Miscellaneous',
+  CORPSE = 'Corpse'
 }
 
 export enum WearLocation {
@@ -52,6 +53,8 @@ export interface Item {
   property4: number;
   effects: Effect[];
   value?: number;
+  noPickup?: boolean;
+  inventory?: Item[];
 }
 
 export interface PagedItems {

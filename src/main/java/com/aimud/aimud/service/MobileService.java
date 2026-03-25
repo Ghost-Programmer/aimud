@@ -114,6 +114,11 @@ public class MobileService {
         return new ArrayList<>(activeMobiles.values());
     }
 
+    public void removeActiveMobile(Long mobileId) {
+        activeMobiles.remove(mobileId);
+        log.info("Removed mobile {} from active list", mobileId);
+    }
+
     // --- SKILL MANAGEMENT ---
 
     public Flux<MobileSkill> getMobileSkills(Long mobileId) {
