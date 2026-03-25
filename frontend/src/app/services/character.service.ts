@@ -46,6 +46,10 @@ export class CharacterService {
     return this.http.post<any>(`${this.apiUrl}/${characterId}/equip/${itemId}`, {});
   }
 
+  unequipItem(characterId: number, slot: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${characterId}/unequip/${slot}`, {});
+  }
+
   dropItem(characterId: number, itemId: number): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${characterId}/drop/${itemId}`, {});
   }

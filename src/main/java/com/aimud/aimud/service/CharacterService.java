@@ -426,6 +426,52 @@ public class CharacterService {
                 .flatMap(savedChar -> getCharacterById(savedChar.getId()));
     }
 
+    public Mono<Character> unequipItem(Character character, String slot) {
+        log.info("Unequipping slot '{}' for character {}", slot, character.getName());
+
+        Item itemToUnequip;
+        switch (slot.toLowerCase()) {
+            case "head"         -> { itemToUnequip = character.getHead();        character.setHead(null); }
+            case "chest"        -> { itemToUnequip = character.getChest();       character.setChest(null); }
+            case "legs"         -> { itemToUnequip = character.getLegs();        character.setLegs(null); }
+            case "feet"         -> { itemToUnequip = character.getFeet();        character.setFeet(null); }
+            case "arms"         -> { itemToUnequip = character.getArms();        character.setArms(null); }
+            case "hands"        -> { itemToUnequip = character.getHands();       character.setHands(null); }
+            case "rightfinger"  -> { itemToUnequip = character.getRightFinger(); character.setRightFinger(null); }
+            case "leftfinger"   -> { itemToUnequip = character.getLeftFinger();  character.setLeftFinger(null); }
+            case "rightwrist"   -> { itemToUnequip = character.getRightWrist();  character.setRightWrist(null); }
+            case "leftwrist"    -> { itemToUnequip = character.getLeftWrist();   character.setLeftWrist(null); }
+            case "neck"         -> { itemToUnequip = character.getNeck();        character.setNeck(null); }
+            case "leftear"      -> { itemToUnequip = character.getLeftEar();     character.setLeftEar(null); }
+            case "rightear"     -> { itemToUnequip = character.getRightEar();    character.setRightEar(null); }
+            case "face"         -> { itemToUnequip = character.getFace();        character.setFace(null); }
+            case "waist"        -> { itemToUnequip = character.getWaist();       character.setWaist(null); }
+            case "primary"      -> { itemToUnequip = character.getPrimary();     character.setPrimary(null); }
+            case "offhand"      -> { itemToUnequip = character.getOffhand();     character.setOffhand(null); }
+            default -> {
+                communicationService.sendTextMessage(character, "\n\nUnknown equipment slot: " + slot);
+                return Mono.just(character);
+            }
+        }
+
+        if (itemToUnequip == null || itemToUnequip.getId() == null) {
+            communicationService.sendTextMessage(character, "\n\nThat slot is empty.");
+            return Mono.just(character);
+        }
+
+        final Item unequipped = itemToUnequip;
+        List<Item> currentInventory = new ArrayList<>(character.getInventory());
+        currentInventory.add(unequipped);
+        character.setInventory(currentInventory);
+
+        communicationService.sendTextMessage(character, "\n\nYou unequip " + unequipped.getName() + ".");
+
+        return save(character)
+                .flatMap(savedChar -> updateInventory(savedChar, currentInventory))
+                .flatMap(savedChar -> getCharacterById(savedChar.getId()))
+                .doOnNext(communicationService::sendCharacterUpdate);
+    }
+
     public Mono<Character> takeItem(Character character, Long itemId) {
         log.info("Taking item {} for character {}", itemId, character.getName());
 

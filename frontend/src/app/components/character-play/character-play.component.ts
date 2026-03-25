@@ -121,6 +121,16 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
       });
   }
 
+  onUnequip(slot: string) {
+      if (!this.character?.id) return;
+      this.characterService.unequipItem(this.character.id, slot).subscribe({
+          next: (updatedChar) => {
+              Object.assign(this.character, updatedChar);
+          },
+          error: (err) => console.error('Error unequipping item', err)
+      });
+  }
+
   onDrop(itemId: number) {
       if (!this.character?.id) return;
       this.characterService.dropItem(this.character.id, itemId).subscribe({
