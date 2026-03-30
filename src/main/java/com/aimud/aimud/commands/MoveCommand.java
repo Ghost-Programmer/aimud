@@ -1,6 +1,6 @@
 package com.aimud.aimud.commands;
 
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Room;
 import com.aimud.aimud.service.CharacterService;
 import com.aimud.aimud.service.CommunicationService;
@@ -20,15 +20,15 @@ public abstract class MoveCommand implements Command {
     protected abstract String getDirectionName();
 
     @Override
-    public Mono<Void> execute(Character character, String commandLine) {
-        log.info("Executing move {} command for character: {} in room id {}.", getDirectionName(), character.getName(), character.getCurrentRoomId());
+    public Mono<Void> execute(Mobile Mobile, String commandLine) {
+        log.info("Executing move {} command for Mobile: {} in room id {}.", getDirectionName(), Mobile.getName(), Mobile.getCurrentRoomId());
 
-        return this.roomService.getRoom(character.getCurrentRoomId()).flatMap(room -> {
+        return this.roomService.getRoom(Mobile.getCurrentRoomId()).flatMap(room -> {
             Long nextRoomId = getNextRoomId(room);
             if (nextRoomId != null) {
-                return this.characterService.enterRoom(character, nextRoomId);
+                return this.characterService.enterRoom(Mobile, nextRoomId);
             } else {
-                communicationService.sendTextMessage(character, "\n\nYou can't go " + getDirectionName() + " from here.");
+                communicationService.sendTextMessage(Mobile, "\n\nYou can't go " + getDirectionName() + " from here.");
                 return Mono.empty();
             }
         }).then();
@@ -41,6 +41,7 @@ public abstract class MoveCommand implements Command {
 
     @Override
     public String getDetailedDescription() {
-        return "Syntax: " + getDirectionName() + "\n\nMoves your character in the " + getDirectionName() + " direction, if an exit exists.";
+        return "Syntax: " + getDirectionName() + "\n\nMoves your Mobile in the " + getDirectionName() + " direction, if an exit exists.";
     }
 }
+

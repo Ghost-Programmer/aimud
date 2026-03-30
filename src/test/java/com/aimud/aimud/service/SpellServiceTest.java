@@ -86,7 +86,7 @@ class SpellServiceTest {
     @MagicSpell(name = "missile")
     private static class TestMagicMissile extends Spell {
         private TestMagicMissile() {
-            super(null, null, null, null);
+            super(null, null, null, null, null);
         }
 
         @Override
@@ -117,7 +117,7 @@ class SpellServiceTest {
 
     private static class PlainSpell extends Spell {
         private PlainSpell() {
-            super(null, null, null, null);
+            super(null, null, null, null, null);
         }
 
         @Override
@@ -149,7 +149,7 @@ class SpellServiceTest {
     @MagicSpell(name = "duplicate")
     private static class DuplicateSpell extends Spell {
         private DuplicateSpell() {
-            super(null, null, null, null);
+            super(null, null, null, null, null);
         }
 
         @Override

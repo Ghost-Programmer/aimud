@@ -1,7 +1,7 @@
 package com.aimud.aimud.commands;
 
 import com.aimud.aimud.annontation.MudCommand;
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Item;
 import com.aimud.aimud.service.CharacterService;
 import com.aimud.aimud.service.CommunicationService;
@@ -19,27 +19,27 @@ public class DropCommand implements Command {
     private final CommunicationService communicationService;
 
     @Override
-    public Mono<Void> execute(Character character, String commandLine) {
-        log.info("Executing drop command for character: {}", character.getName());
+    public Mono<Void> execute(Mobile Mobile, String commandLine) {
+        log.info("Executing drop command for Mobile: {}", Mobile.getName());
         
         String[] parts = commandLine.trim().split("\\s+", 2);
         if (parts.length < 2) {
-            communicationService.sendTextMessage(character, "\n\nDrop what?");
+            communicationService.sendTextMessage(Mobile, "\n\nDrop what?");
             return Mono.empty();
         }
 
         String itemName = parts[1].toLowerCase();
         
-        Optional<Item> itemToDrop = character.getInventory().stream()
+        Optional<Item> itemToDrop = Mobile.getInventory().stream()
                 .filter(i -> i.getName().toLowerCase().contains(itemName))
                 .findFirst();
 
         if (itemToDrop.isEmpty()) {
-            communicationService.sendTextMessage(character, "\n\nYou don't have that item in your inventory.");
+            communicationService.sendTextMessage(Mobile, "\n\nYou don't have that item in your inventory.");
             return Mono.empty();
         }
 
-        return characterService.dropItem(character, itemToDrop.get().getId())
+        return characterService.dropItem(Mobile, itemToDrop.get().getId())
                 .then();
     }
 
@@ -53,3 +53,4 @@ public class DropCommand implements Command {
         return "Syntax: drop <item>\n\nDrops the specified item from your inventory into the room you are currently in.";
     }
 }
+

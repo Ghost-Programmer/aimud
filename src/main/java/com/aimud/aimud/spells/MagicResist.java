@@ -1,7 +1,7 @@
 package com.aimud.aimud.spells;
 
 import com.aimud.aimud.annontation.MagicSpell;
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Effect;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.CharacterService;
@@ -71,20 +71,20 @@ public class MagicResist extends Spell {
 
         Effect magicResistEffect = effectService.getEffectByName(effectName).block();
         if (magicResistEffect == null) {
-            if (mobile instanceof Character) {
-                communicationService.sendTextMessage((Character) mobile, "\n\nYour warding chant fades before it forms.");
+            if (mobile instanceof Mobile) {
+                communicationService.sendTextMessage((Mobile) mobile, "\n\nYour warding chant fades before it forms.");
             }
             return false;
         }
 
         if (applyEffect(mobile, getSpellSkillName(), magicResistEffect, tickCount)) {
-            if (mobile instanceof Character) {
-                communicationService.sendTextMessage((Character) mobile,
+            if (mobile instanceof Mobile) {
+                communicationService.sendTextMessage((Mobile) mobile,
                         String.format("\n\nA shimmering ward settles over %s.", mobile == target ? "you" : target.getName()));
             }
 
-            if (target instanceof Character && mobile != target) {
-                communicationService.sendTextMessage((Character) target,
+            if (target instanceof Mobile && mobile != target) {
+                communicationService.sendTextMessage((Mobile) target,
                         String.format("\n\n%s wraps you in a ward against magic!", mobile.getName()));
             }
 
@@ -96,4 +96,5 @@ public class MagicResist extends Spell {
         return false;
     }
 }
+
 

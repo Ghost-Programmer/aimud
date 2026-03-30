@@ -2,7 +2,7 @@ package com.aimud.aimud.spells;
 
 import com.aimud.aimud.Dice;
 import com.aimud.aimud.annontation.MagicSpell;
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.*;
 import com.aimud.aimud.types.SkillsType;
@@ -47,20 +47,20 @@ public class MagicMissile extends Spell {
             resist = true;
         }
 
-        if(mobile instanceof Character) {
-            Character character = (Character) mobile;
+        if(mobile instanceof Mobile) {
+            Mobile Mobile = (Mobile) mobile;
             if(resist) {
-                this.communicationService.sendTextMessage(character, String.format("\n\n%s resists your magic missile for half damage!", target.getName()));
+                this.communicationService.sendTextMessage(Mobile, String.format("\n\n%s resists your magic missile for half damage!", target.getName()));
             }
-            this.communicationService.sendTextMessage(character, String.format("\n\nYou fire a magic missile at %s for %d damage!", target.getName(), damage));
+            this.communicationService.sendTextMessage(Mobile, String.format("\n\nYou fire a magic missile at %s for %d damage!", target.getName(), damage));
         }
 
-        if(target instanceof Character) {
-            Character character = (Character) target;
+        if(target instanceof Mobile) {
+            Mobile Mobile = (Mobile) target;
             if(resist){
-                this.communicationService.sendTextMessage(character, String.format("\n\nYou resist %s's magic missile  for half damage!", mobile.getName()));
+                this.communicationService.sendTextMessage(Mobile, String.format("\n\nYou resist %s's magic missile  for half damage!", mobile.getName()));
             }
-            this.communicationService.sendTextMessage(character,String.format("\n\n%s fires a magic missile at you for %d damage!", mobile.getName(), damage));
+            this.communicationService.sendTextMessage(Mobile,String.format("\n\n%s fires a magic missile at you for %d damage!", mobile.getName(), damage));
         }
         if(resist) {
             this.communicationService.roomMessage(mobile, String.format("\n\n%s's magic missile is resisted for half damage as it hits %s!", mobile.getName(), target.getName()));
@@ -72,3 +72,4 @@ public class MagicMissile extends Spell {
         return !resist;
     }
 }
+

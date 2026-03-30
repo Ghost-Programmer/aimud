@@ -1,7 +1,7 @@
 package com.aimud.aimud.spells;
 
 import com.aimud.aimud.annontation.MagicSpell;
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Effect;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.CharacterService;
@@ -75,20 +75,20 @@ public class ManaRegen extends Spell {
 
         Effect manaRegenEffect = effectService.getEffectByName(effectName).block();
         if (manaRegenEffect == null) {
-            if (mobile instanceof Character) {
-                communicationService.sendTextMessage((Character) mobile, "\n\nThe weave fizzles. No matching mana regeneration effect exists.");
+            if (mobile instanceof Mobile) {
+                communicationService.sendTextMessage((Mobile) mobile, "\n\nThe weave fizzles. No matching mana regeneration effect exists.");
             }
             return false;
         }
 
         if (applyEffect(mobile, getSpellSkillName(), manaRegenEffect, tickCount)) {
-            if (mobile instanceof Character) {
-                communicationService.sendTextMessage((Character) mobile,
+            if (mobile instanceof Mobile) {
+                communicationService.sendTextMessage((Mobile) mobile,
                         String.format("\n\nA calm pulse of arcane energy settles over %s.", mobile == target ? "you" : target.getName()));
             }
 
-            if (target instanceof Character && mobile != target) {
-                communicationService.sendTextMessage((Character) target,
+            if (target instanceof Mobile && mobile != target) {
+                communicationService.sendTextMessage((Mobile) target,
                         String.format("\n\n%s blesses you with flowing mana!", mobile.getName()));
             }
 
@@ -100,4 +100,5 @@ public class ManaRegen extends Spell {
         return false;
     }
 }
+
 

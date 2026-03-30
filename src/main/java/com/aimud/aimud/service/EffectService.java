@@ -1,6 +1,5 @@
 package com.aimud.aimud.service;
 
-import com.aimud.aimud.model.Character;
 import com.aimud.aimud.model.CharacterEffect;
 import com.aimud.aimud.model.Effect;
 import com.aimud.aimud.model.Mobile;
@@ -58,7 +57,7 @@ public class EffectService {
         characterEffect.setName(name);
         mobile.getSpellEffects().add(characterEffect);
 
-        if(mobile instanceof Character) {
+        if(mobile.getUserId() != null) {
             log.info("Attaching effect {} to character {} for {} ticks", effect.getId(), mobile.getId(), tickCount);
             return characterEffectRepository.save(characterEffect);
         } else {
@@ -80,7 +79,7 @@ public class EffectService {
                     && effect.getTickCount() == characterEffect.getTickCount();
         });
 
-        if (mobile instanceof Character && characterEffect.getId() != null) {
+        if (mobile.getUserId() != null && characterEffect.getId() != null) {
             log.info("Removing character effect {} from character {}", characterEffect.getId(), mobile.getId());
             return characterEffectRepository.deleteById(characterEffect.getId());
         }

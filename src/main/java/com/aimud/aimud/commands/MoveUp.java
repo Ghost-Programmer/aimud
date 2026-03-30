@@ -23,3 +23,4 @@ public class MoveUp extends MoveCommand {
         return "up";
     }
 }
+

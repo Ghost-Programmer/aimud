@@ -1,5 +1,6 @@
 export interface Mobile {
     id?: number;
+    userId?: number;
     name: string;
     strength: number;
     dexterity: number;

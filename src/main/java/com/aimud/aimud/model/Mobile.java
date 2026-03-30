@@ -17,6 +17,9 @@ import java.util.List;
 public class Mobile {
     @Id
     private Long id;
+
+    @Column("user_id")
+    private Long userId;
     
     private String name;
     private int strength;

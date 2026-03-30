@@ -1,7 +1,7 @@
 package com.aimud.aimud.commands;
 
 import com.aimud.aimud.annontation.MudCommand;
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.CommandService;
 import com.aimud.aimud.service.CommunicationService;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ public class HelpCommand implements Command {
     }
 
     @Override
-    public Mono<Void> execute(Character character, String commandLine) {
+    public Mono<Void> execute(Mobile Mobile, String commandLine) {
         String[] parts = commandLine.trim().split("\\s+", 2);
         
         if (parts.length < 2) {
@@ -38,16 +38,16 @@ public class HelpCommand implements Command {
             }
             
             sb.append("\nType 'help <command>' for more detailed information.");
-            communicationService.sendTextMessage(character, sb.toString());
+            communicationService.sendTextMessage(Mobile, sb.toString());
         } else {
             // Detailed help for a specific command
             String cmdName = parts[1].toLowerCase();
             Command cmd = commandService.getTask(cmdName);
             
             if (cmd != null) {
-                communicationService.sendTextMessage(character, "\n\nHelp for '" + cmdName + "':\n" + cmd.getDetailedDescription());
+                communicationService.sendTextMessage(Mobile, "\n\nHelp for '" + cmdName + "':\n" + cmd.getDetailedDescription());
             } else {
-                communicationService.sendTextMessage(character, "\n\nNo such command: " + cmdName);
+                communicationService.sendTextMessage(Mobile, "\n\nNo such command: " + cmdName);
             }
         }
         
@@ -64,3 +64,4 @@ public class HelpCommand implements Command {
         return "Syntax: help [command]\n\nLists all available commands and their descriptions. If a command is specified, provides detailed usage information for that command.";
     }
 }
+

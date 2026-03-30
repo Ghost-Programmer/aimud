@@ -2,7 +2,7 @@ package com.aimud.aimud.service;
 
 import com.aimud.aimud.annontation.MudCommand;
 import com.aimud.aimud.commands.Command;
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -55,7 +55,7 @@ public class CommandService {
         return new HashMap<>(taskMap); // Return a copy for immutability
     }
 
-    public Mono<Void> processCommand(Character character) {
+    public Mono<Void> processCommand(Mobile character) {
         String command = character.getCommandQueue().remove(0);
         String[] commands = command.trim().split("\\s+");
         log.info("Processing command '{}' for character '{}'", command, character.getName());

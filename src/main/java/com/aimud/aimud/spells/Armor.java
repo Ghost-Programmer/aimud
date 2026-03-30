@@ -1,7 +1,7 @@
 package com.aimud.aimud.spells;
 
 import com.aimud.aimud.annontation.MagicSpell;
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.CharacterEffect;
 import com.aimud.aimud.model.Effect;
 import com.aimud.aimud.model.Mobile;
@@ -82,13 +82,13 @@ public class Armor extends Spell {
 
         if( this.applyEffect(mobile, this.getSpellSkillName(), armorEffect, tickCount)){
 
-            if (mobile instanceof Character) {
-                this.communicationService.sendTextMessage((Character) mobile, String.format("\n\nYou feel a shimmering field of force surround %s.",
+            if (mobile instanceof Mobile) {
+                this.communicationService.sendTextMessage((Mobile) mobile, String.format("\n\nYou feel a shimmering field of force surround %s.",
                         mobile == target ? "you" : target.getName()));
             }
 
-            if (target instanceof Character && mobile != target) {
-                this.communicationService.sendTextMessage((Character) target, String.format("\n\n%s protects you with a magical suit of armor!", mobile.getName()));
+            if (target instanceof Mobile && mobile != target) {
+                this.communicationService.sendTextMessage((Mobile) target, String.format("\n\n%s protects you with a magical suit of armor!", mobile.getName()));
             }
 
             this.communicationService.roomMessage(mobile, String.format("\n\n%s's skin shimmers briefly as a magical field of armor forms around %s.",
@@ -98,3 +98,4 @@ public class Armor extends Spell {
         return true;
     }
 }
+

@@ -23,3 +23,4 @@ public class MoveWest extends MoveCommand {
         return "west";
     }
 }
+

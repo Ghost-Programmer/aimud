@@ -1,7 +1,7 @@
 package com.aimud.aimud.commands;
 
 import com.aimud.aimud.annontation.MudCommand;
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Item;
 import com.aimud.aimud.service.CharacterService;
 import com.aimud.aimud.service.CommunicationService;
@@ -25,18 +25,18 @@ public class TakeCommand implements Command {
     private final ItemService itemService;
 
     @Override
-    public Mono<Void> execute(Character character, String commandLine) {
-        log.info("Executing take command for character: {}", character.getName());
+    public Mono<Void> execute(Mobile Mobile, String commandLine) {
+        log.info("Executing take command for Mobile: {}", Mobile.getName());
 
         String[] parts = commandLine.trim().split("\\s+", 2);
         if (parts.length < 2) {
-            communicationService.sendTextMessage(character, "\n\nTake what?");
+            communicationService.sendTextMessage(Mobile, "\n\nTake what?");
             return Mono.empty();
         }
 
         String itemName = parts[1].toLowerCase();
 
-        return roomService.getRoom(character.getCurrentRoomId())
+        return roomService.getRoom(Mobile.getCurrentRoomId())
                 .flatMap(room -> {
                     // Check transient items first (corpses, etc.)
                     Optional<Item> transientMatch = roomService.getTransientItemsInRoom(room.getId()).stream()
@@ -45,16 +45,16 @@ public class TakeCommand implements Command {
 
                     if (transientMatch.isPresent()) {
                         if (transientMatch.get().isNoPickup()) {
-                            communicationService.sendTextMessage(character, "\n\nYou cannot pick that up.");
+                            communicationService.sendTextMessage(Mobile, "\n\nYou cannot pick that up.");
                         }
                         // Even if noPickup is false for a transient item, picking up
-                        // transient items is not yet implemented — treat as not allowed.
+                        // transient items is not yet implemented ??? treat as not allowed.
                         return Mono.empty();
                     }
 
                     List<Long> itemIds = room.getItemIds();
                     if (itemIds.isEmpty()) {
-                        communicationService.sendTextMessage(character, "\n\nYou don't see that here.");
+                        communicationService.sendTextMessage(Mobile, "\n\nYou don't see that here.");
                         return Mono.empty();
                     }
 
@@ -64,13 +64,13 @@ public class TakeCommand implements Command {
                             .next()
                             .flatMap(itemToTake -> {
                                 if (itemToTake.isNoPickup()) {
-                                    communicationService.sendTextMessage(character, "\n\nYou cannot pick that up.");
+                                    communicationService.sendTextMessage(Mobile, "\n\nYou cannot pick that up.");
                                     return Mono.<Void>empty();
                                 }
-                                return characterService.takeItem(character, itemToTake.getId()).then();
+                                return characterService.takeItem(Mobile, itemToTake.getId()).then();
                             })
                             .switchIfEmpty(Mono.defer(() -> {
-                                communicationService.sendTextMessage(character, "\n\nYou don't see that here.");
+                                communicationService.sendTextMessage(Mobile, "\n\nYou don't see that here.");
                                 return Mono.empty();
                             }));
                 }).then();
@@ -86,3 +86,4 @@ public class TakeCommand implements Command {
         return "Syntax: take <item>\n\nPicks up an item from the ground in your current room and adds it to your inventory.";
     }
 }
+

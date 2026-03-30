@@ -1,7 +1,7 @@
 package com.aimud.aimud.commands;
 
 import com.aimud.aimud.annontation.MudCommand;
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.CharacterService;
 import com.aimud.aimud.service.CommunicationService;
@@ -19,48 +19,49 @@ public class AssistCommand implements Command {
     private final CharacterService characterService;
 
     @Override
-    public Mono<Void> execute(Character character, String commandLine) {
-        log.info("Executing assist command for character: {}", character.getName());
+    public Mono<Void> execute(Mobile Mobile, String commandLine) {
+        log.info("Executing assist command for Mobile: {}", Mobile.getName());
         
         String[] parts = commandLine.trim().split("\\s+", 2);
         if (parts.length < 2) {
-            communicationService.sendTextMessage(character, "\n\nAssist who?");
+            communicationService.sendTextMessage(Mobile, "\n\nAssist who?");
             return Mono.empty();
         }
 
         String targetName = parts[1].toLowerCase();
 
-        List<Character> charactersInRoom = characterService.findAllByRoomId(character.getCurrentRoomId());
-        Character assistTarget = charactersInRoom.stream()
-                .filter(c -> !c.getId().equals(character.getId()) && c.getName().toLowerCase().contains(targetName))
+        List<Mobile> charactersInRoom = characterService.findAllByRoomId(Mobile.getCurrentRoomId());
+        Mobile assistTarget = charactersInRoom.stream()
+                .filter(c -> !c.getId().equals(Mobile.getId()) && c.getName().toLowerCase().contains(targetName))
                 .findFirst()
                 .orElse(null);
 
         if (assistTarget == null) {
-            communicationService.sendTextMessage(character, "\n\nThey aren't here.");
+            communicationService.sendTextMessage(Mobile, "\n\nThey aren't here.");
             return Mono.empty();
         }
 
         Mobile targetOfTarget = assistTarget.getTarget();
         if (targetOfTarget == null) {
-            communicationService.sendTextMessage(character, "\n\n" + assistTarget.getName() + " is not fighting anyone.");
+            communicationService.sendTextMessage(Mobile, "\n\n" + assistTarget.getName() + " is not fighting anyone.");
             return Mono.empty();
         }
 
-        character.setTarget(targetOfTarget);
-        communicationService.sendTextMessage(character, "\n\nYou jump in to assist " + assistTarget.getName() + " in the fight!");
-        communicationService.roomMessage(character, "\n" + character.getName() + " jumps in to assist " + assistTarget.getName() + "!");
+        Mobile.setTarget(targetOfTarget);
+        communicationService.sendTextMessage(Mobile, "\n\nYou jump in to assist " + assistTarget.getName() + " in the fight!");
+        communicationService.roomMessage(Mobile, "\n" + Mobile.getName() + " jumps in to assist " + assistTarget.getName() + "!");
         
         return Mono.empty();
     }
 
     @Override
     public String getDescription() {
-        return "Assist another character in combat.";
+        return "Assist another Mobile in combat.";
     }
 
     @Override
     public String getDetailedDescription() {
-        return "Syntax: assist <character>\n\nJoins the fight of the specified character by targeting whoever they are fighting.";
+        return "Syntax: assist <Mobile>\n\nJoins the fight of the specified Mobile by targeting whoever they are fighting.";
     }
 }
+

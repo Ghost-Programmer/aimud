@@ -1,6 +1,6 @@
 package com.aimud.aimud.controller;
 
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.CharacterService;
 import com.aimud.aimud.service.RoomService;
 import lombok.extern.slf4j.Slf4j;
@@ -31,13 +31,13 @@ public class CharacterController {
     }
 
     @GetMapping("/available")
-    public Flux<Character> getAvailableCharacters() {
+    public Flux<Mobile> getAvailableCharacters() {
         log.info("REST Request to get available characters");
         return Flux.fromIterable(characterService.getAvailableCharacters());
     }
 
     @PostMapping
-    public Mono<ResponseEntity<Character>> createCharacter(@RequestBody Character character) {
+    public Mono<ResponseEntity<Mobile>> createCharacter(@RequestBody Mobile character) {
         log.info("REST Request to create character: {}", character.getName());
         return ReactiveSecurityContextHolder.getContext()
                 .map(ctx -> ctx.getAuthentication().getName())
@@ -46,7 +46,7 @@ public class CharacterController {
     }
 
     @GetMapping
-    public Flux<Character> getCharacters() {
+    public Flux<Mobile> getCharacters() {
         log.info("REST Request to get characters for current user");
         return ReactiveSecurityContextHolder.getContext()
                 .map(ctx -> ctx.getAuthentication().getName())
@@ -55,7 +55,7 @@ public class CharacterController {
     }
 
     @PutMapping("/{id}")
-    public Mono<ResponseEntity<Object>> updateCharacter(@PathVariable Long id, @RequestBody Character character) {
+    public Mono<ResponseEntity<Object>> updateCharacter(@PathVariable Long id, @RequestBody Mobile character) {
         log.info("REST Request to update character: {}", id);
         return characterService.updateCharacter(id, character)
                 .map(updated -> ResponseEntity.ok((Object)updated))
@@ -63,7 +63,7 @@ public class CharacterController {
     }
 
     @PostMapping("/generate")
-    public Mono<ResponseEntity<Character>> generateCharacter(@RequestBody Character character) {
+    public Mono<ResponseEntity<Mobile>> generateCharacter(@RequestBody Mobile character) {
         log.info("REST Request to generate character: {}", character.getName());
         return characterService.generateCharacter(character)
                 .map(ResponseEntity::ok);
@@ -85,7 +85,7 @@ public class CharacterController {
     }
 
     @PostMapping("/{id}/equip/{itemId}")
-    public Mono<ResponseEntity<Character>> equipItem(@PathVariable Long id, @PathVariable Long itemId) {
+    public Mono<ResponseEntity<Mobile>> equipItem(@PathVariable Long id, @PathVariable Long itemId) {
         log.info("REST Request to equip item {} for character: {}", itemId, id);
         return characterService.getCharacterById(id)
                 .flatMap(character -> characterService.equipItem(character, itemId))
@@ -94,7 +94,7 @@ public class CharacterController {
     }
 
     @PostMapping("/{id}/unequip/{slot}")
-    public Mono<ResponseEntity<Character>> unequipItem(@PathVariable Long id, @PathVariable String slot) {
+    public Mono<ResponseEntity<Mobile>> unequipItem(@PathVariable Long id, @PathVariable String slot) {
         log.info("REST Request to unequip slot '{}' for character: {}", slot, id);
         return characterService.getCharacterById(id)
                 .flatMap(character -> characterService.unequipItem(character, slot))
@@ -103,7 +103,7 @@ public class CharacterController {
     }
 
     @PostMapping("/{id}/drop/{itemId}")
-    public Mono<ResponseEntity<Character>> dropItem(@PathVariable Long id, @PathVariable Long itemId) {
+    public Mono<ResponseEntity<Mobile>> dropItem(@PathVariable Long id, @PathVariable Long itemId) {
         log.info("REST Request to drop item {} for character: {}", itemId, id);
         return characterService.getCharacterById(id)
                 .flatMap(character -> characterService.dropItem(character, itemId))

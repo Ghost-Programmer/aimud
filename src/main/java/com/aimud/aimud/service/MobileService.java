@@ -49,7 +49,7 @@ public class MobileService {
     @Cacheable(value = "mobiles")
     public Flux<Mobile> getAllMobiles() {
         log.info("Fetching all mobiles");
-        return mobileRepository.findAll().cache();
+        return mobileRepository.findByUserIdIsNull().cache();
     }
 
     @Cacheable(value = "mobile", key = "#id")
@@ -79,7 +79,7 @@ public class MobileService {
 
     @Cacheable(value = "mobiles")
     public Flux<Mobile> getMobilesByRoom(Long roomId) {
-        return mobileRepository.findByCurrentRoomId(roomId);
+        return mobileRepository.findByCurrentRoomIdAndUserIdIsNull(roomId);
     }
 
     /**
@@ -92,8 +92,9 @@ public class MobileService {
                 log.info("Spawning mobile: {} (id: {}) into room {}", mobile.getName(), mobile.getId(), room.getId());
                 // Ensure the mobile knows which room it is in
                 mobile.setCurrentRoomId(room.getId());
+                mobile.setUserId(null);
                 statService.updateMobileStats(mobile);
-                activeMobiles.put(room.getId(), mobile);
+                activeMobiles.put(mobile.getId(), mobile);
                 log.info("Spawned mobile: {} (id: {}) into room {}", mobile.getName(), mobile.getId(), room.getId());
             } else {
                 log.info("Mobile already spawned in room: {} (id: {})", room.getName(), room.getId());

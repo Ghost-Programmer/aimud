@@ -1,6 +1,5 @@
 package com.aimud.aimud.service;
 
-import com.aimud.aimud.model.Character;
 import com.aimud.aimud.model.Effect;
 import com.aimud.aimud.model.Item;
 import com.aimud.aimud.model.Mobile;
@@ -41,8 +40,8 @@ public class TickService {
     @Scheduled(fixedRate = 2000)
     public void processTick() {
         // Process PCs
-        List<Character> characters = characterService.getAvailableCharacters();
-        for (Character character : characters) {
+        List<Mobile> characters = characterService.getAvailableCharacters();
+        for (Mobile character : characters) {
             boolean save = false;
 
             boolean effectsChanged = processSpellEffects(character);
@@ -98,8 +97,8 @@ public class TickService {
 
         // Ensure target is in the same room
         if (!attacker.getCurrentRoomId().equals(target.getCurrentRoomId())) {
-            if (attacker instanceof Character) {
-                communicationService.sendTextMessage((Character) attacker, "\n\nYour target is no longer here.");
+            if (attacker.getUserId() != null) {
+                communicationService.sendTextMessage(attacker, "\n\nYour target is no longer here.");
             }
             attacker.setTarget(null);
             return true;
@@ -108,8 +107,8 @@ public class TickService {
         // Auto-retaliate if target doesn't have a target
         if (target.getTarget() == null) {
             target.setTarget(attacker);
-            if (target instanceof Character) {
-                communicationService.sendTextMessage((Character) target, "\n\n" + attacker.getName() + " is attacking you!");
+            if (target.getUserId() != null) {
+                communicationService.sendTextMessage(target, "\n\n" + attacker.getName() + " is attacking you!");
             }
         }
 
@@ -135,8 +134,8 @@ public class TickService {
         if (target.getCurrentRoomId() == null) {
             return;
         }
-        List<Character> charsInRoom = characterService.findAllByRoomId(target.getCurrentRoomId());
-        for (Character character : charsInRoom) {
+        List<Mobile> charsInRoom = characterService.findAllByRoomId(target.getCurrentRoomId());
+        for (Mobile character : charsInRoom) {
             if (character.getTarget() != null && character.getTarget().getId().equals(target.getId())) {
                 communicationService.sendTargetUpdate(character, target);
             }
@@ -250,38 +249,38 @@ public class TickService {
             target.setTarget(null);
         }
 
-        if(target instanceof Character) {
-            communicationService.sendCharacterUpdate((Character) target);
+        if(target.getUserId() != null) {
+            communicationService.sendCharacterUpdate(target);
         }
-        if(attacker instanceof Character) {
-            this.communicationService.sendCharacterUpdate((Character) attacker);
+        if(attacker.getUserId() != null) {
+            this.communicationService.sendCharacterUpdate(attacker);
         }
     }
 
     private void checkSkillImprovement(Mobile mobile, String skillName, Mobile target, boolean wasSuccess) {
         skillService.checkSkill(mobile, skillName, (int) target.getChallengeRating(), wasSuccess)
             .doOnNext(improvedSkill -> {
-                if (mobile instanceof Character character) {
-                    communicationService.sendTextMessage(character, "\n\nYour " + skillName + " skill has improved to " + improvedSkill.getRank() + "!");
+                if (mobile.getUserId() != null) {
+                    communicationService.sendTextMessage(mobile, "\n\nYour " + skillName + " skill has improved to " + improvedSkill.getRank() + "!");
                 }
             })
             .subscribe();
     }
 
     private void sendCombatMessage(Mobile attacker, Mobile target, String attackerMsg, String targetMsg, String roomMsg) {
-        if (attacker instanceof Character) {
-            communicationService.sendTextMessage((Character) attacker, "\n" + attackerMsg);
-            communicationService.roomMessage((Character) attacker, "\n" + roomMsg);
-            communicationService.sendCharacterUpdate((Character) attacker);
-        } else if (target instanceof Character) {
+        if (attacker.getUserId() != null) {
+            communicationService.sendTextMessage(attacker, "\n" + attackerMsg);
+            communicationService.roomMessage(attacker, "\n" + roomMsg);
+            communicationService.sendCharacterUpdate(attacker);
+        } else if (target.getUserId() != null) {
             // If attacker is NPC and target is PC, room message comes from target's perspective (excluding target)
-            communicationService.roomMessage((Character) target, "\n" + roomMsg);
-            communicationService.sendCharacterUpdate((Character) target);
+            communicationService.roomMessage(target, "\n" + roomMsg);
+            communicationService.sendCharacterUpdate(target);
         }
         
-        if (target instanceof Character) {
-            communicationService.sendTextMessage((Character) target, "\n" + targetMsg);
-            communicationService.sendCharacterUpdate((Character) target);
+        if (target.getUserId() != null) {
+            communicationService.sendTextMessage(target, "\n" + targetMsg);
+            communicationService.sendCharacterUpdate(target);
         }
     }
 
@@ -354,10 +353,10 @@ public class TickService {
                             "\nThe corpse of " + deceased.getName() + " lies here."));
         }
 
-        if (deceased instanceof Character character) {
+        if (deceased.getUserId() != null) {
             // Strip PC's inventory/equipment from DB so they log back in empty
-            characterService.clearInventoryAndEquipment(character).subscribe();
-            character.getCommandQueue().add("logout");
+            characterService.clearInventoryAndEquipment(deceased).subscribe();
+            deceased.getCommandQueue().add("logout");
         } else {
             // Remove the dead NPC from the active mobile pool
             mobileService.removeActiveMobile(deceased.getId());

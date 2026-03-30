@@ -1,11 +1,11 @@
 package com.aimud.aimud.service;
 
-import com.aimud.aimud.model.Character;
 import com.aimud.aimud.model.Item;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Skill;
 import com.aimud.aimud.repository.CharacterClassRepository;
 import com.aimud.aimud.repository.CharacterEffectRepository;
-import com.aimud.aimud.repository.CharacterRepository;
+import com.aimud.aimud.repository.MobileRepository;
 import com.aimud.aimud.repository.SkillRepository;
 import com.aimud.aimud.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CharacterService {
 
-    private final CharacterRepository characterRepository;
+    private final MobileRepository mobileRepository;
     private final UserRepository userRepository;
     private final StatService statService;
     private final DatabaseClient databaseClient;
@@ -38,10 +38,10 @@ public class CharacterService {
     private final MobileService mobileService;
 
     // In-memory storage for active/available characters
-    private final ConcurrentHashMap<Long, Character> availableCharacters = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, Mobile> availableCharacters = new ConcurrentHashMap<>();
 
-    public CharacterService(CharacterRepository characterRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository, CommunicationService communicationService, RoomService roomService, CharacterClassRepository characterClassRepository, SkillRepository skillRepository, ItemService itemService, MobileService mobileService) {
-        this.characterRepository = characterRepository;
+    public CharacterService(MobileRepository mobileRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository, CommunicationService communicationService, RoomService roomService, CharacterClassRepository characterClassRepository, SkillRepository skillRepository, ItemService itemService, MobileService mobileService) {
+        this.mobileRepository = mobileRepository;
         this.userRepository = userRepository;
         this.statService = statService;
         this.databaseClient = databaseClient;
@@ -55,7 +55,7 @@ public class CharacterService {
         this.skillRepository = skillRepository;
     }
 
-    public List<Character> findAllByRoomId(Long roomId) {
+    public List<Mobile> findAllByRoomId(Long roomId) {
         return availableCharacters.values().stream()
                 .filter(character -> character.getCurrentRoomId().equals(roomId))
                 .collect(Collectors.toList());
@@ -74,7 +74,7 @@ public class CharacterService {
 
     public Mono<Void> deselectCharacter(Long characterId) {
         log.info("Deselecting character with id: {}", characterId);
-        Character character = availableCharacters.get(characterId);
+        Mobile character = availableCharacters.get(characterId);
         if (character != null) {
             this.communicationService.roomMessage(character, "\n" + character.getName() + " has left the game.");
             availableCharacters.remove(characterId);
@@ -82,7 +82,7 @@ public class CharacterService {
         return Mono.empty();
     }
 
-    public List<Character> getAvailableCharacters() {
+    public List<Mobile> getAvailableCharacters() {
         return new ArrayList<>(availableCharacters.values());
     }
     
@@ -90,11 +90,12 @@ public class CharacterService {
         availableCharacters.remove(characterId);
     }
 
-    public Mono<Character> createCharacter(String username, Character character) {
+    public Mono<Mobile> createCharacter(String username, Mobile character) {
         log.info("Creating character for user: {}", username);
         return userRepository.findByUsername(username)
                 .flatMap(user -> {
                     character.setUserId(user.getId());
+                    character.setCurrentRoomId(1L);
                     log.debug("Found user id: {} for username: {}", user.getId(), username);
 
                     return statService.updateCurrentStats(character)
@@ -103,14 +104,14 @@ public class CharacterService {
                                 preparedCharacter.setCurrentMana(preparedCharacter.getMaxMana());
                                 return preparedCharacter;
                             })
-                            .flatMap(characterRepository::save);
+                            .flatMap(mobileRepository::save);
                 })
                 .flatMap(savedCharacter -> {
                     if (savedCharacter.getClassId() != null) {
                         return characterClassRepository.findById(savedCharacter.getClassId())
                                 .flatMap(characterClass -> {
-                                    Mono<Character> itemsMono = Mono.just(savedCharacter);
-                                    
+                                    Mono<Mobile> itemsMono = Mono.just(savedCharacter);
+
                                     List<Long> startingItemIds = characterClass.getStartingItemIds();
                                     if (!startingItemIds.isEmpty()) {
                                         itemsMono = Flux.fromIterable(startingItemIds)
@@ -162,17 +163,17 @@ public class CharacterService {
                 .flatMap(statService::updateCurrentStats);
     }
 
-    public Mono<List<Character>> getCharactersByUser(String username) {
+    public Mono<List<Mobile>> getCharactersByUser(String username) {
         log.info("Fetching characters for user: {}", username);
         return userRepository.findByUsername(username)
-                .flatMapMany(user -> characterRepository.findByUserId(user.getId()))
+                .flatMapMany(user -> mobileRepository.findByUserId(user.getId()))
                 .flatMap(statService::updateCurrentStats)
                 .collectList();
     }
 
-    public Mono<Character> updateCharacter(Long id, Character character) {
+    public Mono<Mobile> updateCharacter(Long id, Mobile character) {
         log.info("Updating character with id: {}", id);
-        return characterRepository.findById(id)
+        return mobileRepository.findById(id)
                 .flatMap(existingCharacter -> {
                     log.debug("Merging character data for id: {}", id);
                     existingCharacter.setName(character.getName());
@@ -204,7 +205,7 @@ public class CharacterService {
                     if (character.getCurrentRoomId() != null) {
                         existingCharacter.setCurrentRoomId(character.getCurrentRoomId());
                     }
-                    return characterRepository.save(existingCharacter)
+                    return mobileRepository.save(existingCharacter)
                             .flatMap(savedCharacter -> updateInventory(savedCharacter, character.getInventory()));
                 })
                 .flatMap(updatedCharacter -> statService.updateCurrentStats(updatedCharacter)
@@ -216,7 +217,7 @@ public class CharacterService {
                         }));
     }
 
-    private Mono<Character> updateInventory(Character character, List<Item> inventory) {
+    private Mono<Mobile> updateInventory(Mobile character, List<Item> inventory) {
         if (inventory == null) return Mono.just(character);
         log.debug("Updating inventory for character: {}", character.getId());
 
@@ -240,7 +241,7 @@ public class CharacterService {
                 .then(Mono.just(character));
     }
 
-    public Mono<Character> equipItem(Character character, Long itemId) {
+    public Mono<Mobile> equipItem(Mobile character, Long itemId) {
         log.info("Equipping item {} for character {}", itemId, character.getName());
         Item itemToEquip = character.getInventory().stream()
                 .filter(i -> i.getId().equals(itemId))
@@ -378,7 +379,7 @@ public class CharacterService {
                 .doOnNext(savedChar -> communicationService.sendCharacterUpdate(savedChar));
     }
 
-    public Mono<Character> dropItem(Character character, Long itemId) {
+    public Mono<Mobile> dropItem(Mobile character, Long itemId) {
         log.info("Dropping item {} for character {}", itemId, character.getName());
         Item itemToDrop = character.getInventory().stream()
                 .filter(i -> i.getId().equals(itemId))
@@ -405,7 +406,7 @@ public class CharacterService {
                 });
     }
 
-    public Mono<Character> destroyInventoryItem(Character character, Long itemId) {
+    public Mono<Mobile> destroyInventoryItem(Mobile character, Long itemId) {
         log.info("Destroying item {} for character {}", itemId, character.getName());
         Item itemToDestroy = character.getInventory().stream()
                 .filter(i -> i.getId().equals(itemId))
@@ -426,7 +427,7 @@ public class CharacterService {
                 .flatMap(savedChar -> getCharacterById(savedChar.getId()));
     }
 
-    public Mono<Character> unequipItem(Character character, String slot) {
+    public Mono<Mobile> unequipItem(Mobile character, String slot) {
         log.info("Unequipping slot '{}' for character {}", slot, character.getName());
 
         Item itemToUnequip;
@@ -472,7 +473,7 @@ public class CharacterService {
                 .doOnNext(communicationService::sendCharacterUpdate);
     }
 
-    public Mono<Character> takeItem(Character character, Long itemId) {
+    public Mono<Mobile> takeItem(Mobile character, Long itemId) {
         log.info("Taking item {} for character {}", itemId, character.getName());
 
         return this.itemService.getItem(itemId)
@@ -493,7 +494,7 @@ public class CharacterService {
                 });
     }
 
-    public Mono<Character> clearInventoryAndEquipment(Character character) {
+    public Mono<Mobile> clearInventoryAndEquipment(Mobile character) {
         log.info("Clearing inventory and equipment for character: {}", character.getName());
         character.setHead(null);
         character.setChest(null);
@@ -517,7 +518,7 @@ public class CharacterService {
                 .flatMap(savedChar -> updateInventory(savedChar, new ArrayList<>()));
     }
 
-    public Mono<Character> generateCharacter(Character character) {
+    public Mono<Mobile> generateCharacter(Mobile character) {
         if (character.getStrength() == 0) {
             character.setStrength(rollStat());
             character.setDexterity(rollStat());
@@ -529,9 +530,10 @@ public class CharacterService {
         return statService.updateCurrentStats(character);
     }
 
-    public Mono<Character> getCharacterById(Long id) {
+    public Mono<Mobile> getCharacterById(Long id) {
         log.info("Fetching character by id: {}", id);
-        return characterRepository.findById(id)
+        return mobileRepository.findById(id)
+                .filter(mobile -> mobile.getUserId() != null)
                 .flatMap(statService::updateCurrentStats);
     }
 
@@ -546,9 +548,9 @@ public class CharacterService {
                 });
     }
 
-    public Mono<Character> save(Character character) {
+    public Mono<Mobile> save(Mobile character) {
         log.info("Saving character: {}", character.getName());
-        return characterRepository.save(character)
+        return mobileRepository.save(character)
                 .flatMap(savedCharacter -> {
                     log.debug("Updating spell effects for character: {}", savedCharacter.getId());
                     return characterEffectRepository.deleteByCharacterId(savedCharacter.getId())
@@ -571,7 +573,7 @@ public class CharacterService {
         return random.nextInt(4) + 1;
     }
 
-    public Mono<Void> enterRoom(Character character, Long roomId) {
+    public Mono<Void> enterRoom(Mobile character, Long roomId) {
         log.info("Entering room {} for character {}", roomId, character.getName());
         return this.roomService.getRoom(roomId)
                 .flatMap(room -> {

@@ -1,7 +1,7 @@
 package com.aimud.aimud.spells;
 
 import com.aimud.aimud.annontation.MagicSpell;
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Effect;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.CharacterService;
@@ -75,20 +75,20 @@ public class HpRegen extends Spell {
 
         Effect hpRegenEffect = effectService.getEffectByName(effectName).block();
         if (hpRegenEffect == null) {
-            if (mobile instanceof Character) {
-                communicationService.sendTextMessage((Character) mobile, "\n\nYour healing prayer fails to find form.");
+            if (mobile instanceof Mobile) {
+                communicationService.sendTextMessage((Mobile) mobile, "\n\nYour healing prayer fails to find form.");
             }
             return false;
         }
 
         if (applyEffect(mobile, getSpellSkillName(), hpRegenEffect, tickCount)) {
-            if (mobile instanceof Character) {
-                communicationService.sendTextMessage((Character) mobile,
+            if (mobile instanceof Mobile) {
+                communicationService.sendTextMessage((Mobile) mobile,
                         String.format("\n\nWarm vitality begins mending %s.", mobile == target ? "you" : target.getName()));
             }
 
-            if (target instanceof Character && mobile != target) {
-                communicationService.sendTextMessage((Character) target,
+            if (target instanceof Mobile && mobile != target) {
+                communicationService.sendTextMessage((Mobile) target,
                         String.format("\n\n%s surrounds you with restorative magic!", mobile.getName()));
             }
 
@@ -100,4 +100,5 @@ public class HpRegen extends Spell {
         return false;
     }
 }
+
 

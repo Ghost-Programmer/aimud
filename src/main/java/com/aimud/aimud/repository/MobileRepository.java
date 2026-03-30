@@ -9,4 +9,10 @@ import reactor.core.publisher.Flux;
 public interface MobileRepository extends ReactiveCrudRepository<Mobile, Long> {
 
     Flux<Mobile> findByCurrentRoomId(Long roomId);
+
+    Flux<Mobile> findByUserId(Long userId);
+
+    Flux<Mobile> findByUserIdIsNull();
+
+    Flux<Mobile> findByCurrentRoomIdAndUserIdIsNull(Long roomId);
 }

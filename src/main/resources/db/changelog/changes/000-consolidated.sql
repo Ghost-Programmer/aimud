@@ -1435,9 +1435,9 @@ INSERT INTO rooms (
     up_door_open,
     down_door_open
 ) VALUES
-(2, 'The Great Hall', 'A vast, echoing hall with marble floors and high vaulted ceilings. Archways branch toward the library, workshop, portal wing, and a stair toward the cartographer''s perch.', 'INDOORS', 3, 4, 5, 1),
-(3, 'Library of Ancient Wisdom', 'Rows of dusty bookshelves line the walls of this quiet chamber, where old maps and forgotten lore rest in careful order.', 'INDOORS', NULL, 2, NULL, NULL),
-(4, 'The Alchemist''s Workshop', 'The air is thick with the smell of strange chemicals and bubbling potions. Benches of glassware crowd the western annex.', 'INDOORS', NULL, NULL, 2, NULL),
+(2, 'The Great Hall', 'A vast, echoing hall with marble floors and high vaulted ceilings. Archways branch toward the library, workshop, portal wing, and a stair toward the cartographer''s perch.', 'INDOORS', 3, 4, 5, 1, NULL, NULL, false, false, false, false, false, false, false, false, false, false, false, false),
+(3, 'Library of Ancient Wisdom', 'Rows of dusty bookshelves line the walls of this quiet chamber, where old maps and forgotten lore rest in careful order.', 'INDOORS', NULL, 2, NULL, NULL, NULL, NULL, false, false, false, false, false, false, false, false, false, false, false, false),
+(4, 'The Alchemist''s Workshop', 'The air is thick with the smell of strange chemicals and bubbling potions. Benches of glassware crowd the western annex.', 'INDOORS', NULL, NULL, 2, NULL, NULL, NULL, false, false, false, false, false, false, false, false, false, false, false, false),
 (5, 'Portal Gallery', 'A humming arch of pale light dominates this eastern chamber, its frame etched with old travel sigils and city markers.', 'INDOORS', NULL, NULL, NULL, 2, NULL, NULL, false, false, false, true, false, false, false, false, false, true, false, false),
 (6, 'South Gate Courtyard', 'Weathered flagstones open into a quiet courtyard beyond the entrance, with a training path leading farther south.', 'CITY', 1, 12, NULL, NULL, NULL, NULL, true, true, false, false, false, false, true, true, false, false, false, false),
 (7, 'East Market Arcade', 'Canvas awnings shade a row of empty vendor stalls, and the scent of spice still lingers in the air.', 'CITY', NULL, NULL, 13, 1, NULL, NULL, false, false, true, true, false, false, false, false, true, true, false, false),
@@ -1476,3 +1476,152 @@ SELECT setval(pg_get_serial_sequence('rooms', 'id'), COALESCE(MAX(id), 1), MAX(i
 
 --changeset jeff:add-item-no-pickup
 ALTER TABLE items ADD COLUMN IF NOT EXISTS no_pickup BOOLEAN NOT NULL DEFAULT false;
+
+--changeset jeff:63-mobile-player-unification splitStatements:false
+ALTER TABLE mobiles ADD COLUMN IF NOT EXISTS user_id BIGINT;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'fk_mobiles_user'
+          AND conrelid = 'mobiles'::regclass
+    ) THEN
+        ALTER TABLE mobiles
+            ADD CONSTRAINT fk_mobiles_user
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;
+    END IF;
+END $$;
+
+CREATE INDEX IF NOT EXISTS idx_mobiles_user_id ON mobiles(user_id);
+
+INSERT INTO mobiles (
+    id,
+    user_id,
+    name,
+    strength,
+    dexterity,
+    constitution,
+    intelligence,
+    wisdom,
+    charisma,
+    race_id,
+    class_id,
+    current_room_id,
+    created_at,
+    modified_at,
+    created_by,
+    modified_by,
+    current_hp,
+    current_mana,
+    head_id,
+    chest_id,
+    legs_id,
+    feet_id,
+    arms_id,
+    hands_id,
+    right_finger_id,
+    left_finger_id,
+    right_wrist_id,
+    left_wrist_id,
+    neck_id,
+    left_ear_id,
+    right_ear_id,
+    face_id,
+    waist_id,
+    primary_id,
+    offhand_id
+)
+SELECT
+    c.id,
+    c.user_id,
+    c.name,
+    c.strength,
+    c.dexterity,
+    c.constitution,
+    c.intelligence,
+    c.wisdom,
+    c.charisma,
+    c.race_id,
+    c.class_id,
+    c.current_room_id,
+    c.created_at,
+    c.modified_at,
+    c.created_by,
+    c.modified_by,
+    c.current_hp,
+    c.current_mana,
+    c.head_id,
+    c.chest_id,
+    c.legs_id,
+    c.feet_id,
+    c.arms_id,
+    c.hands_id,
+    c.right_finger_id,
+    c.left_finger_id,
+    c.right_wrist_id,
+    c.left_wrist_id,
+    c.neck_id,
+    c.left_ear_id,
+    c.right_ear_id,
+    c.face_id,
+    c.waist_id,
+    c.primary_id,
+    c.offhand_id
+FROM characters c
+ON CONFLICT (id) DO UPDATE SET
+    user_id = EXCLUDED.user_id,
+    name = EXCLUDED.name,
+    strength = EXCLUDED.strength,
+    dexterity = EXCLUDED.dexterity,
+    constitution = EXCLUDED.constitution,
+    intelligence = EXCLUDED.intelligence,
+    wisdom = EXCLUDED.wisdom,
+    charisma = EXCLUDED.charisma,
+    race_id = EXCLUDED.race_id,
+    class_id = EXCLUDED.class_id,
+    current_room_id = EXCLUDED.current_room_id,
+    created_at = EXCLUDED.created_at,
+    modified_at = EXCLUDED.modified_at,
+    created_by = EXCLUDED.created_by,
+    modified_by = EXCLUDED.modified_by,
+    current_hp = EXCLUDED.current_hp,
+    current_mana = EXCLUDED.current_mana,
+    head_id = EXCLUDED.head_id,
+    chest_id = EXCLUDED.chest_id,
+    legs_id = EXCLUDED.legs_id,
+    feet_id = EXCLUDED.feet_id,
+    arms_id = EXCLUDED.arms_id,
+    hands_id = EXCLUDED.hands_id,
+    right_finger_id = EXCLUDED.right_finger_id,
+    left_finger_id = EXCLUDED.left_finger_id,
+    right_wrist_id = EXCLUDED.right_wrist_id,
+    left_wrist_id = EXCLUDED.left_wrist_id,
+    neck_id = EXCLUDED.neck_id,
+    left_ear_id = EXCLUDED.left_ear_id,
+    right_ear_id = EXCLUDED.right_ear_id,
+    face_id = EXCLUDED.face_id,
+    waist_id = EXCLUDED.waist_id,
+    primary_id = EXCLUDED.primary_id,
+    offhand_id = EXCLUDED.offhand_id;
+
+ALTER TABLE character_inventory DROP CONSTRAINT IF EXISTS character_inventory_character_id_fkey;
+ALTER TABLE character_effects DROP CONSTRAINT IF EXISTS fk_character_effects_character;
+ALTER TABLE character_effects DROP CONSTRAINT IF EXISTS character_effects_character_id_fkey;
+ALTER TABLE skills DROP CONSTRAINT IF EXISTS skills_character_id_fkey;
+
+ALTER TABLE character_inventory
+    ADD CONSTRAINT fk_character_inventory_mobile
+    FOREIGN KEY (character_id) REFERENCES mobiles(id) ON DELETE CASCADE;
+
+ALTER TABLE character_effects
+    ADD CONSTRAINT fk_character_effects_mobile
+    FOREIGN KEY (character_id) REFERENCES mobiles(id) ON DELETE CASCADE;
+
+ALTER TABLE skills
+    ADD CONSTRAINT fk_skills_mobile
+    FOREIGN KEY (character_id) REFERENCES mobiles(id) ON DELETE CASCADE;
+
+SELECT setval(pg_get_serial_sequence('mobiles', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM mobiles;
+

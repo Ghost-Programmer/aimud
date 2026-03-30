@@ -1,7 +1,7 @@
 package com.aimud.aimud.commands;
 
 import com.aimud.aimud.annontation.MudCommand;
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.CharacterService;
 import com.aimud.aimud.service.CommunicationService;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +18,10 @@ public class Logout implements Command{
     private final CommunicationService communicationService;
 
     @Override
-    public Mono<Void> execute(Character character, String commandLine) {
-        log.info("Executing logout command for character: {}", character.getName());
-        return Mono.fromRunnable(() -> communicationService.sendLogout(character))
-                .then(characterService.deselectCharacter(character.getId()));
+    public Mono<Void> execute(Mobile Mobile, String commandLine) {
+        log.info("Executing logout command for Mobile: {}", Mobile.getName());
+        return Mono.fromRunnable(() -> communicationService.sendLogout(Mobile))
+                .then(characterService.deselectCharacter(Mobile.getId()));
     }
 
     @Override
@@ -31,6 +31,7 @@ public class Logout implements Command{
 
     @Override
     public String getDetailedDescription() {
-        return "Syntax: logout\n\nSafely log out of the game, saving your character data and disconnecting.";
+        return "Syntax: logout\n\nSafely log out of the game, saving your Mobile data and disconnecting.";
     }
 }
+

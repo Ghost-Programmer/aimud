@@ -1,11 +1,11 @@
 package com.aimud.aimud.service;
 
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Item;
 import com.aimud.aimud.model.User;
 import com.aimud.aimud.repository.CharacterClassRepository;
 import com.aimud.aimud.repository.CharacterEffectRepository;
-import com.aimud.aimud.repository.CharacterRepository;
+import com.aimud.aimud.repository.MobileRepository;
 import com.aimud.aimud.repository.SkillRepository;
 import com.aimud.aimud.repository.UserRepository;
 import com.aimud.aimud.types.ItemType;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.*;
 class CharacterServiceTest {
 
     @Mock
-    private CharacterRepository characterRepository;
+    private MobileRepository mobileRepository;
     @Mock
     private UserRepository userRepository;
     @Mock
@@ -59,7 +59,7 @@ class CharacterServiceTest {
     @BeforeEach
     void setUp() {
         characterService = new CharacterService(
-                characterRepository,
+                mobileRepository,
                 userRepository,
                 statService,
                 databaseClient,
@@ -75,7 +75,7 @@ class CharacterServiceTest {
 
     @Test
     void createCharacter_ShouldInitializeCurrentHpAndManaToMaxValues() {
-        Character newCharacter = new Character();
+        Mobile newCharacter = new Mobile();
         newCharacter.setName("FreshHero");
         newCharacter.setStrength(10);
         newCharacter.setDexterity(8);
@@ -88,7 +88,7 @@ class CharacterServiceTest {
         user.setId(42L);
         user.setUsername("jeff");
 
-        Character derivedCharacter = new Character();
+        Mobile derivedCharacter = new Mobile();
         derivedCharacter.setName("FreshHero");
         derivedCharacter.setStrength(10);
         derivedCharacter.setDexterity(8);
@@ -100,7 +100,7 @@ class CharacterServiceTest {
         derivedCharacter.setMaxHp(330);
         derivedCharacter.setMaxMana(230);
 
-        Character savedCharacter = new Character();
+        Mobile savedCharacter = new Mobile();
         savedCharacter.setId(100L);
         savedCharacter.setName("FreshHero");
         savedCharacter.setStrength(10);
@@ -116,12 +116,12 @@ class CharacterServiceTest {
         savedCharacter.setMaxMana(230);
 
         when(userRepository.findByUsername("jeff")).thenReturn(Mono.just(user));
-        when(statService.updateCurrentStats(any(Character.class)))
+        when(statService.updateCurrentStats(any(Mobile.class)))
                 .thenReturn(Mono.just(derivedCharacter))
                 .thenReturn(Mono.just(savedCharacter));
-        when(characterRepository.save(any(Character.class))).thenAnswer(invocation -> {
-            Character characterToSave = invocation.getArgument(0);
-            Character persistedCharacter = new Character();
+        when(mobileRepository.save(any(Mobile.class))).thenAnswer(invocation -> {
+            Mobile characterToSave = invocation.getArgument(0);
+            Mobile persistedCharacter = new Mobile();
             persistedCharacter.setId(100L);
             persistedCharacter.setName(characterToSave.getName());
             persistedCharacter.setStrength(characterToSave.getStrength());
@@ -145,9 +145,9 @@ class CharacterServiceTest {
                 })
                 .verifyComplete();
 
-        ArgumentCaptor<Character> savedCharacterCaptor = ArgumentCaptor.forClass(Character.class);
-        verify(characterRepository).save(savedCharacterCaptor.capture());
-        Character persistedCharacter = savedCharacterCaptor.getValue();
+        ArgumentCaptor<Mobile> savedCharacterCaptor = ArgumentCaptor.forClass(Mobile.class);
+        verify(mobileRepository).save(savedCharacterCaptor.capture());
+        Mobile persistedCharacter = savedCharacterCaptor.getValue();
         assertThat(persistedCharacter.getCurrentHp()).isEqualTo(330);
         assertThat(persistedCharacter.getCurrentMana()).isEqualTo(230);
     }
@@ -155,8 +155,9 @@ class CharacterServiceTest {
     @Test
     void equipItem_ShouldEquipHeadItemAndReturnOldToInventory() {
         // Arrange
-        Character character = new Character();
+        Mobile character = new Mobile();
         character.setId(1L);
+        character.setUserId(99L);
         character.setName("TestHero");
         
         Item oldHead = new Item();
@@ -174,8 +175,9 @@ class CharacterServiceTest {
         inventory.add(newHead);
         character.setInventory(inventory);
 
-        when(characterRepository.save(any(Character.class))).thenReturn(Mono.just(character));
-        when(statService.updateCurrentStats(any(Character.class))).thenReturn(Mono.just(character));
+        when(mobileRepository.save(any(Mobile.class))).thenReturn(Mono.just(character));
+        when(mobileRepository.findById(1L)).thenReturn(Mono.just(character));
+        when(statService.updateCurrentStats(any(Mobile.class))).thenReturn(Mono.just(character));
         
         // Mocking databaseClient for updateInventory
         when(databaseClient.sql(anyString())).thenReturn(mock(DatabaseClient.GenericExecuteSpec.class, RETURNS_DEEP_STUBS));
@@ -196,8 +198,9 @@ class CharacterServiceTest {
     @Test
     void equipItem_ShouldHandleFingerSlotsCorrectly() {
         // Arrange
-        Character character = new Character();
+        Mobile character = new Mobile();
         character.setId(1L);
+        character.setUserId(99L);
         character.setName("TestHero");
 
         Item ring1 = new Item();
@@ -215,8 +218,9 @@ class CharacterServiceTest {
 
         character.getInventory().add(newRing);
 
-        when(characterRepository.save(any(Character.class))).thenReturn(Mono.just(character));
-        when(statService.updateCurrentStats(any(Character.class))).thenReturn(Mono.just(character));
+        when(mobileRepository.save(any(Mobile.class))).thenReturn(Mono.just(character));
+        when(mobileRepository.findById(1L)).thenReturn(Mono.just(character));
+        when(statService.updateCurrentStats(any(Mobile.class))).thenReturn(Mono.just(character));
         
         // Mocks for DB
         when(databaseClient.sql(anyString())).thenReturn(mock(DatabaseClient.GenericExecuteSpec.class, RETURNS_DEEP_STUBS));
@@ -255,8 +259,9 @@ class CharacterServiceTest {
     @Test
     void dropItem_ShouldRemoveFromInventoryAndAddToRoom() {
         // Arrange
-        Character character = new Character();
+        Mobile character = new Mobile();
         character.setId(1L);
+        character.setUserId(99L);
         character.setName("TestHero");
         character.setCurrentRoomId(101L);
 
@@ -267,8 +272,9 @@ class CharacterServiceTest {
         character.getInventory().add(itemToDrop);
 
         when(roomService.addItemToRoom(eq(101L), eq(55L))).thenReturn(Mono.empty());
-        when(characterRepository.save(any(Character.class))).thenReturn(Mono.just(character));
-        when(statService.updateCurrentStats(any(Character.class))).thenReturn(Mono.just(character));
+        when(mobileRepository.save(any(Mobile.class))).thenReturn(Mono.just(character));
+        when(mobileRepository.findById(1L)).thenReturn(Mono.just(character));
+        when(statService.updateCurrentStats(any(Mobile.class))).thenReturn(Mono.just(character));
         when(databaseClient.sql(anyString())).thenReturn(mock(DatabaseClient.GenericExecuteSpec.class, RETURNS_DEEP_STUBS));
 
         // Act
@@ -284,3 +290,5 @@ class CharacterServiceTest {
         verify(communicationService).roomMessage(eq(character), contains("TestHero drops Rusty Sword"));
     }
 }
+
+

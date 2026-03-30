@@ -1,7 +1,7 @@
 package com.aimud.aimud.commands;
 
 import com.aimud.aimud.annontation.MudCommand;
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Item;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.CharacterService;
@@ -31,28 +31,28 @@ public class PickpocketCommand implements Command {
     private final Random random = new Random();
 
     @Override
-    public Mono<Void> execute(Character character, String commandLine) {
-        log.info("Executing pickpocket command for character: {}", character.getName());
+    public Mono<Void> execute(Mobile Mobile, String commandLine) {
+        log.info("Executing pickpocket command for Mobile: {}", Mobile.getName());
         
-        int pickRank = skillService.getSkillRank(character, SkillsType.PICKPOCKET);
+        int pickRank = skillService.getSkillRank(Mobile, SkillsType.PICKPOCKET);
         if (pickRank <= 0) {
-            communicationService.sendTextMessage(character, "\n\nYou don't know how to pickpocket.");
+            communicationService.sendTextMessage(Mobile, "\n\nYou don't know how to pickpocket.");
             return Mono.empty();
         }
 
         String[] parts = commandLine.trim().split("\\s+", 2);
         if (parts.length < 2) {
-            communicationService.sendTextMessage(character, "\n\nPickpocket who?");
+            communicationService.sendTextMessage(Mobile, "\n\nPickpocket who?");
             return Mono.empty();
         }
 
         String targetName = parts[1].toLowerCase();
 
-        return roomService.getRoom(character.getCurrentRoomId())
+        return roomService.getRoom(Mobile.getCurrentRoomId())
                 .flatMap(room -> {
                     List<Long> mobileIds = room.getMobileIds();
                     if (mobileIds.isEmpty()) {
-                        communicationService.sendTextMessage(character, "\n\nThey aren't here.");
+                        communicationService.sendTextMessage(Mobile, "\n\nThey aren't here.");
                         return Mono.empty();
                     }
 
@@ -60,26 +60,26 @@ public class PickpocketCommand implements Command {
                             .flatMap(mobileService::getMobile)
                             .filter(m -> m.getName().toLowerCase().contains(targetName))
                             .next()
-                            .flatMap(npcTarget -> executePickpocket(character, npcTarget, pickRank))
+                            .flatMap(npcTarget -> executePickpocket(Mobile, npcTarget, pickRank))
                             .switchIfEmpty(Mono.defer(() -> {
                                 // Also check if target is a PC
-                                List<Character> pcs = characterService.findAllByRoomId(room.getId());
-                                Character pcTarget = pcs.stream()
-                                    .filter(c -> !c.getId().equals(character.getId()) && c.getName().toLowerCase().contains(targetName))
+                                List<Mobile> pcs = characterService.findAllByRoomId(room.getId());
+                                Mobile pcTarget = pcs.stream()
+                                    .filter(c -> !c.getId().equals(Mobile.getId()) && c.getName().toLowerCase().contains(targetName))
                                     .findFirst()
                                     .orElse(null);
                                     
                                 if (pcTarget != null) {
-                                    return executePickpocket(character, pcTarget, pickRank);
+                                    return executePickpocket(Mobile, pcTarget, pickRank);
                                 }
                                 
-                                communicationService.sendTextMessage(character, "\n\nThey aren't here.");
+                                communicationService.sendTextMessage(Mobile, "\n\nThey aren't here.");
                                 return Mono.empty();
                             }));
                 });
     }
 
-    private Mono<Void> executePickpocket(Character thief, Mobile target, int pickRank) {
+    private Mono<Void> executePickpocket(Mobile thief, Mobile target, int pickRank) {
 
         boolean success = random.nextInt(100) < pickRank;
 
@@ -91,8 +91,8 @@ public class PickpocketCommand implements Command {
 
         if (!success) {
             communicationService.sendTextMessage(thief, "\n\nYou fail to pickpocket " + target.getName() + " and are caught!");
-            if (target instanceof Character) {
-                communicationService.sendTextMessage((Character) target, "\n\n" + thief.getName() + " tried to pick your pocket!");
+            if (target instanceof Mobile) {
+                communicationService.sendTextMessage((Mobile) target, "\n\n" + thief.getName() + " tried to pick your pocket!");
             }
             communicationService.roomMessage(thief, "\n" + thief.getName() + " tried to pickpocket " + target.getName() + "!");
             
@@ -127,7 +127,7 @@ public class PickpocketCommand implements Command {
         
         // Save both entities
         Mono<Void> saveTargetMono;
-        if (target instanceof Character pcTarget) {
+        if (target instanceof Mobile pcTarget) {
             saveTargetMono = characterService.save(pcTarget).then();
         } else {
             saveTargetMono = mobileService.saveMobile(target).then();
@@ -147,3 +147,4 @@ public class PickpocketCommand implements Command {
         return "Syntax: pick <target>\n\nAttempts to steal a random item from the target's inventory. Requires the Pickpocket skill. Failure may result in combat.";
     }
 }
+

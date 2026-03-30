@@ -1,7 +1,7 @@
 package com.aimud.aimud.commands;
 
 import com.aimud.aimud.annontation.MudCommand;
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.CharacterService;
 import com.aimud.aimud.service.CommunicationService;
@@ -24,30 +24,30 @@ public class AttackCommand implements Command {
     private final MobileService mobileService;
 
     @Override
-    public Mono<Void> execute(Character character, String commandLine) {
-        log.info("Executing attack command for character: {}", character.getName());
+    public Mono<Void> execute(Mobile Mobile, String commandLine) {
+        log.info("Executing attack command for Mobile: {}", Mobile.getName());
         
         String[] parts = commandLine.trim().split("\\s+", 2);
         if (parts.length < 2) {
-            communicationService.sendTextMessage(character, "\n\nAttack who?");
+            communicationService.sendTextMessage(Mobile, "\n\nAttack who?");
             return Mono.empty();
         }
 
         String targetName = parts[1].toLowerCase();
 
-        return roomService.getRoom(character.getCurrentRoomId())
+        return roomService.getRoom(Mobile.getCurrentRoomId())
                 .flatMap(room -> {
                     // Check for a PC target first
-                    List<Character> charactersInRoom = characterService.findAllByRoomId(room.getId());
-                    Character pcTarget = charactersInRoom.stream()
-                            .filter(c -> !c.getId().equals(character.getId()) && c.getName().toLowerCase().contains(targetName))
+                    List<Mobile> charactersInRoom = characterService.findAllByRoomId(room.getId());
+                    Mobile pcTarget = charactersInRoom.stream()
+                            .filter(c -> !c.getId().equals(Mobile.getId()) && c.getName().toLowerCase().contains(targetName))
                             .findFirst()
                             .orElse(null);
 
                     if (pcTarget != null) {
-                        character.setTarget(pcTarget);
-                        communicationService.sendTextMessage(character, "\n\nYou charge towards " + pcTarget.getName() + " and attack!");
-                        communicationService.roomMessage(character, "\n" + character.getName() + " charges towards " + pcTarget.getName() + " and attacks!");
+                        Mobile.setTarget(pcTarget);
+                        communicationService.sendTextMessage(Mobile, "\n\nYou charge towards " + pcTarget.getName() + " and attack!");
+                        communicationService.roomMessage(Mobile, "\n" + Mobile.getName() + " charges towards " + pcTarget.getName() + " and attacks!");
                         return Mono.empty();
                     }
 
@@ -55,7 +55,7 @@ public class AttackCommand implements Command {
                     List<Mobile> mobilesInRoom = mobileService.getMobilesInRoom(room.getId());
                     if (mobilesInRoom.isEmpty()) {
                         log.info("No mobiles found in room: {}", room.getName());
-                        communicationService.sendTextMessage(character, "\n\nThey aren't here.");
+                        communicationService.sendTextMessage(Mobile, "\n\nThey aren't here.");
                         return Mono.empty();
                     }
 
@@ -63,13 +63,13 @@ public class AttackCommand implements Command {
                             .filter(m -> m.getName().toLowerCase().contains(targetName))
                             .findFirst()
                             .map(npcTarget -> {
-                                character.setTarget(npcTarget);
-                                communicationService.sendTextMessage(character, "\n\nYou charge towards " + npcTarget.getName() + " and attack!");
-                                communicationService.roomMessage(character, "\n" + character.getName() + " charges towards " + npcTarget.getName() + " and attacks!");
+                                Mobile.setTarget(npcTarget);
+                                communicationService.sendTextMessage(Mobile, "\n\nYou charge towards " + npcTarget.getName() + " and attack!");
+                                communicationService.roomMessage(Mobile, "\n" + Mobile.getName() + " charges towards " + npcTarget.getName() + " and attacks!");
                                 return Mono.empty();
                             }).orElse(Mono.defer(() -> {
                                 log.info("No mobiles found in room: {} by name: {}", room.getName(), targetName);
-                                communicationService.sendTextMessage(character, "\n\nThey aren't here.");
+                                communicationService.sendTextMessage(Mobile, "\n\nThey aren't here.");
                                 return Mono.empty();
                             }));
                 }).then();
@@ -85,3 +85,4 @@ public class AttackCommand implements Command {
         return "Syntax: attack <target>\n\nStarts fighting the specified target in the room.";
     }
 }
+

@@ -1,7 +1,6 @@
 package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.*;
-import com.aimud.aimud.model.Character;
 import com.aimud.aimud.repository.*;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -78,7 +77,7 @@ public class StatService {
         mobile.setChallengeRating(cr);
     }
 
-    public Mono<Character> updateCurrentStats(Character character) {
+    public Mono<Mobile> updateCurrentStats(Mobile character) {
         Mono<Race> raceMono = character.getRaceId() != null ? raceRepository.findById(character.getRaceId()) : Mono.empty();
         Mono<CharacterClass> classMono = character.getClassId() != null ? characterClassRepository.findById(character.getClassId()) : Mono.empty();
 
@@ -223,7 +222,7 @@ public class StatService {
         }
     }
 
-    private Mono<Character> loadEquipment(Character character) {
+    private Mono<Mobile> loadEquipment(Mobile character) {
         List<Mono<Item>> monos = new ArrayList<>();
         monos.add(loadItemWithEffects(character.getHeadId()).doOnNext(character::setHead).defaultIfEmpty(new Item()));
         monos.add(loadItemWithEffects(character.getChestId()).doOnNext(character::setChest).defaultIfEmpty(new Item()));
@@ -249,7 +248,7 @@ public class StatService {
                 .flatMap(results -> loadSkills(character));
     }
 
-    private Mono<Character> loadSkills(Character character) {
+    private Mono<Mobile> loadSkills(Mobile character) {
         if (character.getId() == null) return Mono.just(character);
 
         return skillRepository.findByCharacterId(character.getId())
@@ -260,7 +259,7 @@ public class StatService {
                 });
     }
 
-    private Mono<Character> loadSpellEffects(Character character) {
+    private Mono<Mobile> loadSpellEffects(Mobile character) {
         if (character.getId() == null) return Mono.just(character);
 
         return characterEffectRepository.findByCharacterId(character.getId())
@@ -276,7 +275,7 @@ public class StatService {
                 });
     }
 
-    private Mono<Character> loadInventory(Character character) {
+    private Mono<Mobile> loadInventory(Mobile character) {
         if (character.getId() == null) return Mono.just(character);
 
         return itemRepository.findAllByCharacterId(character.getId())

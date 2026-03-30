@@ -1,6 +1,5 @@
 package com.aimud.aimud.service;
 
-import com.aimud.aimud.model.Character;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.TargetUpdate;
 import com.aimud.aimud.model.TextMessage;
@@ -16,15 +15,15 @@ import java.util.List;
 @Slf4j
 public class CommunicationService {
 
-    private final Sinks.Many<Character> characterUpdates = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<Mobile> characterUpdates = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<TextMessage> textMessages = Sinks.many().replay().limit(20);
-    private final Sinks.Many<Character> logoutMessages = Sinks.many().replay().limit(10);
+    private final Sinks.Many<Mobile> logoutMessages = Sinks.many().replay().limit(10);
     private final Sinks.Many<TargetUpdate> targetUpdates = Sinks.many().multicast().onBackpressureBuffer();
 
     @Setter
     private CharacterService characterService;
 
-    public Flux<Character> getCharacterUpdates() {
+    public Flux<Mobile> getCharacterUpdates() {
         return characterUpdates.asFlux();
     }
 
@@ -32,7 +31,7 @@ public class CommunicationService {
         return textMessages.asFlux();
     }
 
-    public Flux<Character> getLogoutMessages() {
+    public Flux<Mobile> getLogoutMessages() {
         return logoutMessages.asFlux();
     }
 
@@ -40,17 +39,26 @@ public class CommunicationService {
         return targetUpdates.asFlux();
     }
 
-    public void sendCharacterUpdate(Character character) {
+    public void sendCharacterUpdate(Mobile character) {
+        if (character.getUserId() == null) {
+            return;
+        }
         log.info("Sending character update for {}", character.getName());
         characterUpdates.tryEmitNext(character);
     }
 
-    public void sendTargetUpdate(Character character, Mobile target) {
+    public void sendTargetUpdate(Mobile character, Mobile target) {
+        if (character.getUserId() == null) {
+            return;
+        }
         log.info("Sending target update for {}", character.getName());
         targetUpdates.tryEmitNext(new TargetUpdate(character, target));
     }
 
-    public void sendLogout(Character character) {
+    public void sendLogout(Mobile character) {
+        if (character.getUserId() == null) {
+            return;
+        }
         log.info("Sending logout message for {}", character.getName());
         logoutMessages.tryEmitNext(character);
     }
@@ -60,8 +68,8 @@ public class CommunicationService {
         textMessages.tryEmitNext(new TextMessage(null, message));
     }
 
-    public void sendTextMessage(Character character, String message) {
-        if (character == null || character.getId() == null) {
+    public void sendTextMessage(Mobile character, String message) {
+        if (character == null || character.getId() == null || character.getUserId() == null) {
             sendTextMessage(message);
             return;
         }

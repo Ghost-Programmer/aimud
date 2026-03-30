@@ -1,7 +1,7 @@
 package com.aimud.aimud.commands;
 
 import com.aimud.aimud.annontation.MudCommand;
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Item;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.CharacterService;
@@ -32,17 +32,17 @@ public class BashCommand implements Command {
     private final Random random = new Random();
 
     @Override
-    public Mono<Void> execute(Character character, String commandLine) {
-        log.info("Executing bash command for character: {}", character.getName());
+    public Mono<Void> execute(Mobile Mobile, String commandLine) {
+        log.info("Executing bash command for Mobile: {}", Mobile.getName());
         
-        int bashRank = skillService.getSkillRank(character, SkillsType.BASH);
+        int bashRank = skillService.getSkillRank(Mobile, SkillsType.BASH);
         if (bashRank <= 0) {
-            communicationService.sendTextMessage(character, "\n\nYou don't know how to bash.");
+            communicationService.sendTextMessage(Mobile, "\n\nYou don't know how to bash.");
             return Mono.empty();
         }
 
-        if (!hasShieldEquipped(character)) {
-            communicationService.sendTextMessage(character, "\n\nYou must have a shield equipped to bash.");
+        if (!hasShieldEquipped(Mobile)) {
+            communicationService.sendTextMessage(Mobile, "\n\nYou must have a shield equipped to bash.");
             return Mono.empty();
         }
 
@@ -51,33 +51,33 @@ public class BashCommand implements Command {
         
         if (parts.length < 2) {
             // No target specified, use current target if any
-            if (character.getTarget() != null) {
-                target = character.getTarget();
+            if (Mobile.getTarget() != null) {
+                target = Mobile.getTarget();
             } else {
-                communicationService.sendTextMessage(character, "\n\nBash who?");
+                communicationService.sendTextMessage(Mobile, "\n\nBash who?");
                 return Mono.empty();
             }
-            return executeBash(character, target);
+            return executeBash(Mobile, target);
         } else {
             // Find target by name
             String targetName = parts[1].toLowerCase();
-            return roomService.getRoom(character.getCurrentRoomId())
+            return roomService.getRoom(Mobile.getCurrentRoomId())
                 .flatMap(room -> {
                     // Check for PC target
-                    List<Character> charactersInRoom = characterService.findAllByRoomId(room.getId());
-                    Character pcTarget = charactersInRoom.stream()
-                            .filter(c -> !c.getId().equals(character.getId()) && c.getName().toLowerCase().contains(targetName))
+                    List<Mobile> charactersInRoom = characterService.findAllByRoomId(room.getId());
+                    Mobile pcTarget = charactersInRoom.stream()
+                            .filter(c -> !c.getId().equals(Mobile.getId()) && c.getName().toLowerCase().contains(targetName))
                             .findFirst()
                             .orElse(null);
 
                     if (pcTarget != null) {
-                        return executeBash(character, pcTarget);
+                        return executeBash(Mobile, pcTarget);
                     }
 
                     // Check for NPC target
                     List<Long> mobileIds = room.getMobileIds();
                     if (mobileIds.isEmpty()) {
-                        communicationService.sendTextMessage(character, "\n\nThey aren't here.");
+                        communicationService.sendTextMessage(Mobile, "\n\nThey aren't here.");
                         return Mono.empty();
                     }
 
@@ -85,16 +85,16 @@ public class BashCommand implements Command {
                             .flatMap(mobileService::getMobile)
                             .filter(m -> m.getName().toLowerCase().contains(targetName))
                             .next()
-                            .flatMap(npcTarget -> executeBash(character, npcTarget))
+                            .flatMap(npcTarget -> executeBash(Mobile, npcTarget))
                             .switchIfEmpty(Mono.defer(() -> {
-                                communicationService.sendTextMessage(character, "\n\nThey aren't here.");
+                                communicationService.sendTextMessage(Mobile, "\n\nThey aren't here.");
                                 return Mono.empty();
                             }));
                 });
         }
     }
 
-    private Mono<Void> executeBash(Character attacker, Mobile target) {
+    private Mono<Void> executeBash(Mobile attacker, Mobile target) {
         if (!attacker.getCurrentRoomId().equals(target.getCurrentRoomId())) {
             communicationService.sendTextMessage(attacker, "\n\nThey aren't here.");
             return Mono.empty();
@@ -106,8 +106,8 @@ public class BashCommand implements Command {
         }
         if (target.getTarget() == null) {
             target.setTarget(attacker);
-            if (target instanceof Character) {
-                communicationService.sendTextMessage((Character) target, "\n\n" + attacker.getName() + " is attacking you!");
+            if (target instanceof Mobile) {
+                communicationService.sendTextMessage((Mobile) target, "\n\n" + attacker.getName() + " is attacking you!");
             }
         }
 
@@ -127,8 +127,8 @@ public class BashCommand implements Command {
 
         if (!isSuccess) {
             communicationService.sendTextMessage(attacker, "\n\nYou try to bash " + target.getName() + " but miss!");
-            if (target instanceof Character) {
-                communicationService.sendTextMessage((Character) target, "\n\n" + attacker.getName() + " tries to bash you but misses!");
+            if (target instanceof Mobile) {
+                communicationService.sendTextMessage((Mobile) target, "\n\n" + attacker.getName() + " tries to bash you but misses!");
             }
             communicationService.roomMessage(attacker, "\n" + attacker.getName() + " tries to bash " + target.getName() + " but misses!");
             return Mono.empty();
@@ -145,8 +145,8 @@ public class BashCommand implements Command {
         target.setCurrentHp(target.getCurrentHp() - damage);
 
         communicationService.sendTextMessage(attacker, "\n\nYou slam your shield into " + target.getName() + " for " + damage + " damage!");
-        if (target instanceof Character) {
-            communicationService.sendTextMessage((Character) target, "\n\n" + attacker.getName() + " slams their shield into you for " + damage + " damage!");
+        if (target instanceof Mobile) {
+            communicationService.sendTextMessage((Mobile) target, "\n\n" + attacker.getName() + " slams their shield into you for " + damage + " damage!");
         }
         communicationService.roomMessage(attacker, "\n" + attacker.getName() + " slams their shield into " + target.getName() + " for " + damage + " damage!");
 
@@ -159,8 +159,8 @@ public class BashCommand implements Command {
         return Mono.empty();
     }
 
-    private boolean hasShieldEquipped(Character character) {
-        Item offhand = character.getOffhand();
+    private boolean hasShieldEquipped(Mobile Mobile) {
+        Item offhand = Mobile.getOffhand();
         if (offhand == null) return false;
         
         return offhand.getWearLocation() == WearLocation.OFFHAND && 
@@ -179,3 +179,4 @@ public class BashCommand implements Command {
         return "Syntax: bash [target]\n\nSlam your shield into an enemy, dealing damage. Requires a shield to be equipped and the Bash skill.";
     }
 }
+

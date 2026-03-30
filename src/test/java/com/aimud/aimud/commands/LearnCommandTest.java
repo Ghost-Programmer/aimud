@@ -1,6 +1,6 @@
 package com.aimud.aimud.commands;
 
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Item;
 import com.aimud.aimud.model.Skill;
 import com.aimud.aimud.service.CharacterService;
@@ -44,16 +44,16 @@ class LearnCommandTest {
 
     @Test
     void execute_whenBookMatches_learnsSkillAndConsumesBook() {
-        Character character = new Character();
-        character.setId(1L);
-        character.setName("Learner");
+        Mobile Mobile = new Mobile();
+        Mobile.setId(1L);
+        Mobile.setName("Learner");
 
         Item book = new Item();
         book.setId(10L);
         book.setName("Book of Arcane Basics");
         book.setItemType(ItemType.BOOK);
         book.setProperty1(1000);
-        character.setInventory(List.of(book));
+        Mobile.setInventory(List.of(book));
 
         Skill learnedSkill = Skill.builder()
                 .name("Spell: Magic Missile")
@@ -62,54 +62,55 @@ class LearnCommandTest {
                 .build();
 
         when(skillService.getSkillNameById(1000L)).thenReturn(Mono.just("Spell: Magic Missile"));
-        when(skillService.getSkillRank(character, "Spell: Magic Missile")).thenReturn(0);
-        when(skillService.addSkill(character, "Spell: Magic Missile")).thenReturn(Mono.just(learnedSkill));
-        when(characterService.destroyInventoryItem(character, 10L)).thenReturn(Mono.just(character));
+        when(skillService.getSkillRank(Mobile, "Spell: Magic Missile")).thenReturn(0);
+        when(skillService.addSkill(Mobile, "Spell: Magic Missile")).thenReturn(Mono.just(learnedSkill));
+        when(characterService.destroyInventoryItem(Mobile, 10L)).thenReturn(Mono.just(Mobile));
 
-        StepVerifier.create(learnCommand.execute(character, "learn arcane"))
+        StepVerifier.create(learnCommand.execute(Mobile, "learn arcane"))
                 .verifyComplete();
 
-        verify(skillService).addSkill(character, "Spell: Magic Missile");
-        verify(characterService).destroyInventoryItem(character, 10L);
-        verify(communicationService).sendTextMessage(eq(character), contains("learn Spell: Magic Missile"));
-        verify(communicationService).sendCharacterUpdate(character);
+        verify(skillService).addSkill(Mobile, "Spell: Magic Missile");
+        verify(characterService).destroyInventoryItem(Mobile, 10L);
+        verify(communicationService).sendTextMessage(eq(Mobile), contains("learn Spell: Magic Missile"));
+        verify(communicationService).sendCharacterUpdate(Mobile);
     }
 
     @Test
     void execute_whenNoMatchingBook_sendsFeedback() {
-        Character character = new Character();
-        character.setId(1L);
-        character.setName("Learner");
-        character.setInventory(List.of());
+        Mobile Mobile = new Mobile();
+        Mobile.setId(1L);
+        Mobile.setName("Learner");
+        Mobile.setInventory(List.of());
 
-        StepVerifier.create(learnCommand.execute(character, "learn arcane"))
+        StepVerifier.create(learnCommand.execute(Mobile, "learn arcane"))
                 .verifyComplete();
 
-        verify(communicationService).sendTextMessage(eq(character), contains("don't have a book"));
-        verify(skillService, never()).addSkill(character, "Spell: Magic Missile");
+        verify(communicationService).sendTextMessage(eq(Mobile), contains("don't have a book"));
+        verify(skillService, never()).addSkill(Mobile, "Spell: Magic Missile");
     }
 
     @Test
     void execute_whenAlreadyKnowsSkill_doesNotConsumeBook() {
-        Character character = new Character();
-        character.setId(1L);
-        character.setName("Learner");
+        Mobile Mobile = new Mobile();
+        Mobile.setId(1L);
+        Mobile.setName("Learner");
 
         Item book = new Item();
         book.setId(10L);
         book.setName("Book of Arcane Basics");
         book.setItemType(ItemType.BOOK);
         book.setProperty1(1000);
-        character.setInventory(List.of(book));
+        Mobile.setInventory(List.of(book));
 
         when(skillService.getSkillNameById(1000L)).thenReturn(Mono.just("Spell: Magic Missile"));
-        when(skillService.getSkillRank(character, "Spell: Magic Missile")).thenReturn(5);
+        when(skillService.getSkillRank(Mobile, "Spell: Magic Missile")).thenReturn(5);
 
-        StepVerifier.create(learnCommand.execute(character, "learn arcane"))
+        StepVerifier.create(learnCommand.execute(Mobile, "learn arcane"))
                 .verifyComplete();
 
-        verify(characterService, never()).destroyInventoryItem(character, 10L);
-        verify(communicationService).sendTextMessage(eq(character), contains("already know"));
+        verify(characterService, never()).destroyInventoryItem(Mobile, 10L);
+        verify(communicationService).sendTextMessage(eq(Mobile), contains("already know"));
     }
 }
+
 

@@ -1,7 +1,7 @@
 package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.User;
-import com.aimud.aimud.repository.CharacterRepository;
+import com.aimud.aimud.repository.MobileRepository;
 import com.aimud.aimud.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,14 +14,14 @@ import java.util.Map;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final CharacterRepository characterRepository;
+    private final MobileRepository mobileRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final StatService statService;
 
-    public UserService(UserRepository userRepository, CharacterRepository characterRepository, PasswordEncoder passwordEncoder, JwtService jwtService, StatService statService) {
+    public UserService(UserRepository userRepository, MobileRepository mobileRepository, PasswordEncoder passwordEncoder, JwtService jwtService, StatService statService) {
         this.userRepository = userRepository;
-        this.characterRepository = characterRepository;
+        this.mobileRepository = mobileRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.statService = statService;
@@ -58,7 +58,7 @@ public class UserService {
 
     public Flux<Map<String, Object>> getAllUsersWithCharacters() {
         return userRepository.findAll()
-                .flatMap(user -> characterRepository.findByUserId(user.getId())
+                .flatMap(user -> mobileRepository.findByUserId(user.getId())
                         .flatMap(statService::updateCurrentStats)
                         .collectList()
                         .map(characters -> Map.of(

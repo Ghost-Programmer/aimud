@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TargetUpdate {
-    private Character character;
+    private Mobile character;
     private Mobile target;
 }

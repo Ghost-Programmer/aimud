@@ -1,6 +1,5 @@
 package com.aimud.aimud.service;
 
-import com.aimud.aimud.model.Character;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Skill;
 import com.aimud.aimud.repository.SkillRegistryRepository;
@@ -37,7 +36,7 @@ public class SkillService {
      * Add skill - Create a new skill assigned to a character with a value of 1,
      * if the character does not have the skill.
      */
-    public Mono<Skill> addSkill(Character character, String skillName) {
+    public Mono<Skill> addSkill(Mobile character, String skillName) {
         return character.getSkills().stream()
                 .filter(s -> s.getName().equalsIgnoreCase(skillName))
                 .findFirst()
@@ -97,7 +96,7 @@ public class SkillService {
                     if (shouldSkillImprove(skill.getRank(), playerLevel, targetCr, wasSuccess)) {
                         skill.setRank(skill.getRank() + 1);
                         log.info("Skill {} for mobile {} improved to rank {}", skillName, mobile.getName(), skill.getRank());
-                        if (mobile instanceof Character) {
+                        if (mobile.getUserId() != null) {
                             return skillRepository.save(skill);
                         }
                         return Mono.just(skill);

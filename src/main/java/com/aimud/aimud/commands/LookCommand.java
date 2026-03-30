@@ -1,7 +1,7 @@
 package com.aimud.aimud.commands;
 
 import com.aimud.aimud.annontation.MudCommand;
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.CharacterService;
 import com.aimud.aimud.service.CommunicationService;
@@ -26,28 +26,28 @@ public class LookCommand implements Command {
     private final MobileService mobileService;
 
     @Override
-    public Mono<Void> execute(Character character, String commandLine) {
-        log.info("Executing look command for character: {}", character.getName());
-        return roomService.getRoom(character.getCurrentRoomId())
+    public Mono<Void> execute(Mobile Mobile, String commandLine) {
+        log.info("Executing look command for Mobile: {}", Mobile.getName());
+        return roomService.getRoom(Mobile.getCurrentRoomId())
                 .flatMap(room -> {
-                    communicationService.sendTextMessage(character, "\n\n" + room.getName() + "\n" + room.getDescription());
+                    communicationService.sendTextMessage(Mobile, "\n\n" + room.getName() + "\n" + room.getDescription());
                     
                     characterService.findAllByRoomId(room.getId()).stream()
-                            .filter(c -> !c.getId().equals(character.getId()))
-                            .forEach(c -> communicationService.sendTextMessage(character, "\nYou see " + c.getName() + " here."));
+                            .filter(c -> !c.getId().equals(Mobile.getId()))
+                            .forEach(c -> communicationService.sendTextMessage(Mobile, "\nYou see " + c.getName() + " here."));
 
                     mobileService.getMobilesInRoom(room.getId()).forEach(m -> {
-                        communicationService.sendTextMessage(character, "\nYou see " + m.getName() + " here.");
+                        communicationService.sendTextMessage(Mobile, "\nYou see " + m.getName() + " here.");
                     });
 
                     room.getItemIds().forEach(itemId -> {
                         itemService.getItem(itemId)
-                                .doOnNext(item -> communicationService.sendTextMessage(character, "\nYou see " + item.getName() + " laying here."))
+                                .doOnNext(item -> communicationService.sendTextMessage(Mobile, "\nYou see " + item.getName() + " laying here."))
                                 .subscribe();
                     });
 
                     roomService.getTransientItemsInRoom(room.getId()).forEach(item ->
-                        communicationService.sendTextMessage(character, "\nYou see " + item.getName() + " laying here."));
+                        communicationService.sendTextMessage(Mobile, "\nYou see " + item.getName() + " laying here."));
 
                     List<String> exits = new ArrayList<>();
                     if (room.getNorthId() != null) exits.add("North");
@@ -56,7 +56,7 @@ public class LookCommand implements Command {
                     if (room.getWestId() != null) exits.add("West");
                     if (room.getUpId() != null) exits.add("Up");
                     if (room.getDownId() != null) exits.add("Down");
-                    communicationService.sendTextMessage(character, "\n\nExits: " + String.join(", ", exits));
+                    communicationService.sendTextMessage(Mobile, "\n\nExits: " + String.join(", ", exits));
 
                     return Mono.empty();
                 });
@@ -72,3 +72,4 @@ public class LookCommand implements Command {
         return "Syntax: look\n\nShows you the description of your current location, including other characters, monsters, items, and available exits.";
     }
 }
+

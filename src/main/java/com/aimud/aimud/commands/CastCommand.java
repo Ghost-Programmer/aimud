@@ -1,7 +1,7 @@
 package com.aimud.aimud.commands;
 
 import com.aimud.aimud.annontation.MudCommand;
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.*;
 import com.aimud.aimud.spells.Spell;
@@ -21,11 +21,11 @@ public class CastCommand implements Command {
 
 
     @Override
-    public Mono<Void> execute(Character character, String commandLine) {
-        log.info("Executing cast command for character: {}", character.getName());
+    public Mono<Void> execute(Mobile Mobile, String commandLine) {
+        log.info("Executing cast command for Mobile: {}", Mobile.getName());
 
-        if(this.skillService.getSkillRank(character, SkillsType.CAST_MAGIC) <= 0) {
-            communicationService.sendTextMessage(character, "\n\nYou don't know how to cast spells.");
+        if(this.skillService.getSkillRank(Mobile, SkillsType.CAST_MAGIC) <= 0) {
+            communicationService.sendTextMessage(Mobile, "\n\nYou don't know how to cast spells.");
             return Mono.empty();
         }
 
@@ -35,7 +35,7 @@ public class CastCommand implements Command {
             this.communicationService.sendTextMessage("\n\nSpells you can cast: \n\n");
             this.spellService.getSpellMap().forEach((key,spell) -> {
 
-                if(this.skillService.getSkillRank(character, spell.getSpellSkillName()) > 0) {
+                if(this.skillService.getSkillRank(Mobile, spell.getSpellSkillName()) > 0) {
                     this.communicationService.sendTextMessage(String.format("%-15s - %s\n", key, spell.getDescription()));
                 }
             });
@@ -47,36 +47,36 @@ public class CastCommand implements Command {
         Spell spell = this.spellService.getSpell(spellName);
 
         if(spell == null) {
-            communicationService.sendTextMessage(character, "\n\nYou don't know any spell by that name.");
+            communicationService.sendTextMessage(Mobile, "\n\nYou don't know any spell by that name.");
             return Mono.empty();
         }
 
-        if(spell.getSpellLevel() > this.skillService.getSkillRank(character, SkillsType.CAST_MAGIC)) {
-            communicationService.sendTextMessage(character, "\n\nYou don't have the magical ability to cast that spell yet.");
+        if(spell.getSpellLevel() > this.skillService.getSkillRank(Mobile, SkillsType.CAST_MAGIC)) {
+            communicationService.sendTextMessage(Mobile, "\n\nYou don't have the magical ability to cast that spell yet.");
         }
 
-        if(spell.getManaCost(character) > character.getCurrentMana()) {
-            communicationService.sendTextMessage(character, "\n\nYou don't have enough mana to cast that spell.");
+        if(spell.getManaCost(Mobile) > Mobile.getCurrentMana()) {
+            communicationService.sendTextMessage(Mobile, "\n\nYou don't have enough mana to cast that spell.");
         }
 
-        Mobile target = spell.getTarget(character, parts);
+        Mobile target = spell.getTarget(Mobile, parts);
 
-        boolean success = spell.cast(character, spell, target);
+        boolean success = spell.cast(Mobile, spell, target);
 
-        character.setCurrentMana(character.getCurrentMana() - spell.getManaCost(character));
+        Mobile.setCurrentMana(Mobile.getCurrentMana() - spell.getManaCost(Mobile));
 
-        this.skillService.checkSkill(character, spell.getSpellSkillName(), target == null ? 0: target.getChallengeRating(), success)
+        this.skillService.checkSkill(Mobile, spell.getSpellSkillName(), target == null ? 0: target.getChallengeRating(), success)
             .doOnNext(improvedSkill -> {
-                communicationService.sendTextMessage(character, "\n\nYour " + spell.getSpellSkillName() + " skill has improved to " + improvedSkill.getRank() + "!");
+                communicationService.sendTextMessage(Mobile, "\n\nYour " + spell.getSpellSkillName() + " skill has improved to " + improvedSkill.getRank() + "!");
             })
             .subscribe();
-        this.skillService.checkSkill(character, SkillsType.CAST_MAGIC, target == null ? 0: target.getChallengeRating(), success)
+        this.skillService.checkSkill(Mobile, SkillsType.CAST_MAGIC, target == null ? 0: target.getChallengeRating(), success)
             .doOnNext(improvedSkill -> {
-                communicationService.sendTextMessage(character, "\n\nYour " +SkillsType.CAST_MAGIC + " skill has improved to " + improvedSkill.getRank() + "!");
+                communicationService.sendTextMessage(Mobile, "\n\nYour " +SkillsType.CAST_MAGIC + " skill has improved to " + improvedSkill.getRank() + "!");
             })
             .subscribe();
 
-        characterService.save(character).subscribe();
+        characterService.save(Mobile).subscribe();
 
         return Mono.empty();
     }
@@ -91,3 +91,4 @@ public class CastCommand implements Command {
         return "Syntax: cast <spell> [target]\n\nCasts a magic spell at a target or yourself. Requires magical ability and mana.";
     }
 }
+

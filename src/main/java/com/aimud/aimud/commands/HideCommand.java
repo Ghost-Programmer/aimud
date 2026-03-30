@@ -1,7 +1,7 @@
 package com.aimud.aimud.commands;
 
 import com.aimud.aimud.annontation.MudCommand;
-import com.aimud.aimud.model.Character;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.CommunicationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +14,9 @@ public class HideCommand implements Command {
     private final CommunicationService communicationService;
 
     @Override
-    public Mono<Void> execute(Character character, String commandLine) {
-        log.info("Executing hide command for character: {}", character.getName());
-        communicationService.sendTextMessage(character, "\n\nYou attempt to hide in the shadows.");
+    public Mono<Void> execute(Mobile Mobile, String commandLine) {
+        log.info("Executing hide command for Mobile: {}", Mobile.getName());
+        communicationService.sendTextMessage(Mobile, "\n\nYou attempt to hide in the shadows.");
         return Mono.empty();
     }
 
@@ -30,3 +30,4 @@ public class HideCommand implements Command {
         return "Syntax: hide\n\nAttempt to conceal yourself from others in the room.";
     }
 }
+
