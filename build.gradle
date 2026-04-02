@@ -3,6 +3,7 @@ plugins {
 	id 'org.springframework.boot' version '3.4.3'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id "com.github.node-gradle.node" version "7.1.0"
+	id 'org.liquibase.gradle' version '2.2.2'
 }
 
 group = 'com.aimud'
@@ -47,12 +48,30 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testCompileOnly 'org.projectlombok:lombok'
 	testAnnotationProcessor 'org.projectlombok:lombok'
+
+	// Liquibase plugin dependencies
+	liquibaseRuntime 'org.liquibase:liquibase-core:4.29.2'
+	liquibaseRuntime 'org.postgresql:postgresql'
+	liquibaseRuntime 'info.picocli:picocli:4.7.6'
 }
 
 dependencyManagement {
 	imports {
 		mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
 	}
+}
+
+liquibase {
+	activities {
+		main {
+			changelogFile 'src/main/resources/db/changelog/master.xml'
+			url 'jdbc:postgresql://localhost:5432/aimud'
+			username 'aimud'
+			password 'aimud_password'
+			driver 'org.postgresql.Driver'
+		}
+	}
+	runList = 'main'
 }
 
 tasks.named('test') {
