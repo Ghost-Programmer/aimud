@@ -46,7 +46,7 @@ public class Lullaby extends Song {
         }
 
         int skillRank = skillService.getSkillRank(mobile, getSongSkillName());
-        int tickCount = skillService.getSkillRank(mobile, SkillsType.SING_SONG) + 5;
+        int tickCount = Math.min(5, 1 + (skillService.getSkillRank(mobile, SkillsType.SING_SONG) / 20));
 
         // Note: Actual Sleep/Calm effect mechanics would require specific handling in a complete MUD logic
         // We'll mimic the HpRegen approach for demonstration, providing a generic "Calmed" effect
