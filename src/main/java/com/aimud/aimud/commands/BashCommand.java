@@ -1,7 +1,6 @@
 package com.aimud.aimud.commands;
 
 import com.aimud.aimud.annontation.MudCommand;
-import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Item;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.CharacterService;

@@ -3,9 +3,7 @@ package com.aimud.aimud.spells;
 import com.aimud.aimud.Dice;
 import com.aimud.aimud.annontation.MagicSpell;
 import com.aimud.aimud.model.Mobile;
-import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.*;
-import com.aimud.aimud.types.SkillsType;
 
 @MagicSpell(name = "missile")
 public class MagicMissile extends Spell {

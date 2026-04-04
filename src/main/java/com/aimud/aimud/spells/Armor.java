@@ -1,12 +1,9 @@
 package com.aimud.aimud.spells;
 
 import com.aimud.aimud.annontation.MagicSpell;
-import com.aimud.aimud.model.Mobile;
-import com.aimud.aimud.model.CharacterEffect;
 import com.aimud.aimud.model.Effect;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.*;
-import com.aimud.aimud.types.EffectType;
 import com.aimud.aimud.types.SkillsType;
 
 @MagicSpell(name = "armor")

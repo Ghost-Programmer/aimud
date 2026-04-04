@@ -65,7 +65,7 @@ public class TakeCommand implements Command {
                             .flatMap(itemToTake -> {
                                 if (itemToTake.isNoPickup()) {
                                     communicationService.sendTextMessage(Mobile, "\n\nYou cannot pick that up.");
-                                    return Mono.<Void>empty();
+                                    return Mono.empty();
                                 }
                                 return characterService.takeItem(Mobile, itemToTake.getId()).then();
                             })

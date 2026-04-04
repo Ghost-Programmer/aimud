@@ -1,11 +1,14 @@
 package com.aimud.aimud;
 
+import lombok.Getter;
+
 import java.util.Random;
 
 public class Dice {
 
     private final Random random = new Random();
 
+    @Getter
     int total = 0;
     
     public Dice(int number, int size) {
@@ -22,7 +25,4 @@ public class Dice {
         }
     }
 
-    public int getTotal() {
-        return total;
-    }
 }
