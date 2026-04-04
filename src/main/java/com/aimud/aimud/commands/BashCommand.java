@@ -106,7 +106,7 @@ public class BashCommand implements Command {
         if (target.getTarget() == null) {
             target.setTarget(attacker);
             if (target.getUserId() != null) {
-                communicationService.sendTextMessage((Mobile) target, "\n\n" + attacker.getName() + " is attacking you!");
+                communicationService.sendTextMessage(target, "\n\n" + attacker.getName() + " is attacking you!");
             }
         }
 
@@ -127,7 +127,7 @@ public class BashCommand implements Command {
         if (!isSuccess) {
             communicationService.sendTextMessage(attacker, "\n\nYou try to bash " + target.getName() + " but miss!");
             if (target.getUserId() != null) {
-                communicationService.sendTextMessage((Mobile) target, "\n\n" + attacker.getName() + " tries to bash you but misses!");
+                communicationService.sendTextMessage(target, "\n\n" + attacker.getName() + " tries to bash you but misses!");
             }
             communicationService.roomMessage(attacker, "\n" + attacker.getName() + " tries to bash " + target.getName() + " but misses!");
             return Mono.empty();
@@ -145,7 +145,7 @@ public class BashCommand implements Command {
 
         communicationService.sendTextMessage(attacker, "\n\nYou slam your shield into " + target.getName() + " for " + damage + " damage!");
         if (target.getUserId() != null) {
-            communicationService.sendTextMessage((Mobile) target, "\n\n" + attacker.getName() + " slams their shield into you for " + damage + " damage!");
+            communicationService.sendTextMessage(target, "\n\n" + attacker.getName() + " slams their shield into you for " + damage + " damage!");
         }
         communicationService.roomMessage(attacker, "\n" + attacker.getName() + " slams their shield into " + target.getName() + " for " + damage + " damage!");
 

@@ -91,7 +91,7 @@ public class PickpocketCommand implements Command {
         if (!success) {
             communicationService.sendTextMessage(thief, "\n\nYou fail to pickpocket " + target.getName() + " and are caught!");
             if (target.getUserId() != null) {
-                communicationService.sendTextMessage((Mobile) target, "\n\n" + thief.getName() + " tried to pick your pocket!");
+                communicationService.sendTextMessage(target, "\n\n" + thief.getName() + " tried to pick your pocket!");
             }
             communicationService.roomMessage(thief, "\n" + thief.getName() + " tried to pickpocket " + target.getName() + "!");
             

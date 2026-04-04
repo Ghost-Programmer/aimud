@@ -80,12 +80,12 @@ public class Armor extends Spell {
         if( this.applyEffect(mobile, this.getSpellSkillName(), armorEffect, tickCount)){
 
             if (mobile.getUserId() != null) {
-                this.communicationService.sendTextMessage((Mobile) mobile, String.format("\n\nYou feel a shimmering field of force surround %s.",
+                this.communicationService.sendTextMessage(mobile, String.format("\n\nYou feel a shimmering field of force surround %s.",
                         mobile == target ? "you" : target.getName()));
             }
 
             if (mobile.getUserId() != null && mobile != target) {
-                this.communicationService.sendTextMessage((Mobile) target, String.format("\n\n%s protects you with a magical suit of armor!", mobile.getName()));
+                this.communicationService.sendTextMessage(target, String.format("\n\n%s protects you with a magical suit of armor!", mobile.getName()));
             }
 
             this.communicationService.roomMessage(mobile, String.format("\n\n%s's skin shimmers briefly as a magical field of armor forms around %s.",
