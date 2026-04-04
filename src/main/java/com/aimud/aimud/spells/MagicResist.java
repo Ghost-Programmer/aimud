@@ -70,19 +70,19 @@ public class MagicResist extends Spell {
 
         Effect magicResistEffect = effectService.getEffectByName(effectName).block();
         if (magicResistEffect == null) {
-            if (mobile instanceof Mobile) {
+            if (mobile.getUserId() != null) {
                 communicationService.sendTextMessage((Mobile) mobile, "\n\nYour warding chant fades before it forms.");
             }
             return false;
         }
 
         if (applyEffect(mobile, getSpellSkillName(), magicResistEffect, tickCount)) {
-            if (mobile instanceof Mobile) {
+            if (mobile.getUserId() != null) {
                 communicationService.sendTextMessage((Mobile) mobile,
                         String.format("\n\nA shimmering ward settles over %s.", mobile == target ? "you" : target.getName()));
             }
 
-            if (target instanceof Mobile && mobile != target) {
+            if (target.getUserId() != null && mobile != target) {
                 communicationService.sendTextMessage((Mobile) target,
                         String.format("\n\n%s wraps you in a ward against magic!", mobile.getName()));
             }

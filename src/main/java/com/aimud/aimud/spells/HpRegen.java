@@ -74,19 +74,19 @@ public class HpRegen extends Spell {
 
         Effect hpRegenEffect = effectService.getEffectByName(effectName).block();
         if (hpRegenEffect == null) {
-            if (mobile instanceof Mobile) {
+            if (mobile.getUserId() != null) {
                 communicationService.sendTextMessage((Mobile) mobile, "\n\nYour healing prayer fails to find form.");
             }
             return false;
         }
 
         if (applyEffect(mobile, getSpellSkillName(), hpRegenEffect, tickCount)) {
-            if (mobile instanceof Mobile) {
+            if (mobile.getUserId() != null) {
                 communicationService.sendTextMessage((Mobile) mobile,
                         String.format("\n\nWarm vitality begins mending %s.", mobile == target ? "you" : target.getName()));
             }
 
-            if (target instanceof Mobile && mobile != target) {
+            if (target.getUserId() != null && mobile != target) {
                 communicationService.sendTextMessage((Mobile) target,
                         String.format("\n\n%s surrounds you with restorative magic!", mobile.getName()));
             }

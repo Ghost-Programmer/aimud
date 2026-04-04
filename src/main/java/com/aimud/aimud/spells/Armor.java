@@ -79,12 +79,12 @@ public class Armor extends Spell {
 
         if( this.applyEffect(mobile, this.getSpellSkillName(), armorEffect, tickCount)){
 
-            if (mobile instanceof Mobile) {
+            if (mobile.getUserId() != null) {
                 this.communicationService.sendTextMessage((Mobile) mobile, String.format("\n\nYou feel a shimmering field of force surround %s.",
                         mobile == target ? "you" : target.getName()));
             }
 
-            if (target instanceof Mobile && mobile != target) {
+            if (mobile.getUserId() != null && mobile != target) {
                 this.communicationService.sendTextMessage((Mobile) target, String.format("\n\n%s protects you with a magical suit of armor!", mobile.getName()));
             }
 

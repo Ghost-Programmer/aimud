@@ -90,7 +90,7 @@ public class PickpocketCommand implements Command {
 
         if (!success) {
             communicationService.sendTextMessage(thief, "\n\nYou fail to pickpocket " + target.getName() + " and are caught!");
-            if (target instanceof Mobile) {
+            if (target.getUserId() != null) {
                 communicationService.sendTextMessage((Mobile) target, "\n\n" + thief.getName() + " tried to pick your pocket!");
             }
             communicationService.roomMessage(thief, "\n" + thief.getName() + " tried to pickpocket " + target.getName() + "!");
@@ -126,11 +126,8 @@ public class PickpocketCommand implements Command {
         
         // Save both entities
         Mono<Void> saveTargetMono;
-        if (target instanceof Mobile pcTarget) {
-            saveTargetMono = characterService.save(pcTarget).then();
-        } else {
-            saveTargetMono = mobileService.saveMobile(target).then();
-        }
+        saveTargetMono = mobileService.saveMobile(target).then();
+
 
         return characterService.save(thief)
                 .then(saveTargetMono);

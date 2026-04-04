@@ -74,19 +74,19 @@ public class ManaRegen extends Spell {
 
         Effect manaRegenEffect = effectService.getEffectByName(effectName).block();
         if (manaRegenEffect == null) {
-            if (mobile instanceof Mobile) {
+            if (mobile.getUserId() != null) {
                 communicationService.sendTextMessage((Mobile) mobile, "\n\nThe weave fizzles. No matching mana regeneration effect exists.");
             }
             return false;
         }
 
         if (applyEffect(mobile, getSpellSkillName(), manaRegenEffect, tickCount)) {
-            if (mobile instanceof Mobile) {
+            if (mobile.getUserId() != null) {
                 communicationService.sendTextMessage((Mobile) mobile,
                         String.format("\n\nA calm pulse of arcane energy settles over %s.", mobile == target ? "you" : target.getName()));
             }
 
-            if (target instanceof Mobile && mobile != target) {
+            if (target.getUserId() != null && mobile != target) {
                 communicationService.sendTextMessage((Mobile) target,
                         String.format("\n\n%s blesses you with flowing mana!", mobile.getName()));
             }

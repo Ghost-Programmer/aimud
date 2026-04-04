@@ -45,15 +45,15 @@ public class MagicMissile extends Spell {
             resist = true;
         }
 
-        if(mobile instanceof Mobile) {
-            Mobile Mobile = (Mobile) mobile;
+        if(mobile.getUserId() != null) {
+
             if(resist) {
-                this.communicationService.sendTextMessage(Mobile, String.format("\n\n%s resists your magic missile for half damage!", target.getName()));
+                this.communicationService.sendTextMessage(mobile, String.format("\n\n%s resists your magic missile for half damage!", target.getName()));
             }
-            this.communicationService.sendTextMessage(Mobile, String.format("\n\nYou fire a magic missile at %s for %d damage!", target.getName(), damage));
+            this.communicationService.sendTextMessage(mobile, String.format("\n\nYou fire a magic missile at %s for %d damage!", target.getName(), damage));
         }
 
-        if(target instanceof Mobile) {
+        if(mobile.getUserId() != null) {
             Mobile Mobile = (Mobile) target;
             if(resist){
                 this.communicationService.sendTextMessage(Mobile, String.format("\n\nYou resist %s's magic missile  for half damage!", mobile.getName()));
