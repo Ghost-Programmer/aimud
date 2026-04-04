@@ -1,0 +1,110 @@
+package com.aimud.aimud.prayers;
+
+import com.aimud.aimud.Dice;
+import com.aimud.aimud.model.Effect;
+import com.aimud.aimud.model.Mobile;
+import com.aimud.aimud.service.*;
+import com.aimud.aimud.types.SkillsType;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
+public abstract class Prayer {
+
+    protected final SkillService skillService;
+    protected final MobileService mopbileService;
+    protected final CharacterService characterService;
+    protected final CommunicationService communicationService;
+    protected final EffectService effectService;
+
+    protected Prayer(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
+        this.skillService = skillService;
+        this.mopbileService = mopbileService;
+        this.characterService = characterService;
+        this.communicationService = communicationService;
+        this.effectService = effectService;
+    }
+
+    abstract public String getPrayerName();
+
+    abstract public Long getPrayerId();
+
+    abstract public Integer getPrayerLevel();
+
+    abstract public String getDescription();
+
+    abstract public boolean pray(Mobile mobile, Prayer prayer, Mobile target);
+
+
+    public String getPrayerSkillName() {
+        return "Prayer: " + this.getPrayerName();
+    }
+
+    public Integer getManaCost(Mobile mobile) {
+        int castSkill = skillService.getSkillRank(mobile, SkillsType.SAY_PRAYER);
+        int prayerSkill = skillService.getSkillRank(mobile, getPrayerSkillName());
+
+        return 9 + prayerSkill + (castSkill - getPrayerLevel());
+    }
+
+    public Mobile getDefaultTarget(Mobile mobile) {
+        return mobile.getTarget();
+    }
+
+    public Mobile getTarget(Mobile mobile, String[] parts) {
+        if (parts.length == 2) {
+            return this.getDefaultTarget(mobile);
+        }
+        if (parts.length > 3) {
+
+            String name = parts[2].toLowerCase();
+
+            Mobile target = mopbileService.getMobilesInRoom(mobile.getCurrentRoomId()).stream()
+                    .filter(m -> m.getName().toLowerCase().contains(name))
+                    .findFirst()
+                    .orElse(null);
+
+            if (target != null) {
+                return target;
+            }
+
+            return characterService.findAllByRoomId(mobile.getCurrentRoomId()).stream()
+                    .filter(c -> c.getName().toLowerCase().contains(name))
+                    .findFirst()
+                    .orElse(null);
+
+        }
+        return null;
+    }
+
+    int getDamage(Mobile mobile) {
+        int castSkill = skillService.getSkillRank(mobile, SkillsType.SAY_PRAYER);
+        int prayerSkill = skillService.getSkillRank(mobile, getPrayerSkillName());
+
+        int dice = (9 + prayerSkill + (castSkill - getPrayerLevel())) / 6;
+
+        return new Dice(dice, 6).getTotal() + (9 + prayerSkill + (castSkill - getPrayerLevel())) % 6;
+    }
+
+    public boolean applyEffect(Mobile mobile, String name, Effect effect, Integer tickCount) {
+        AtomicBoolean apply = new AtomicBoolean(false);
+        mobile.getSpellEffects().stream() // Using existing spell effects for prayers too
+                .filter(e -> e.getName() != null)
+                .filter(e -> e.getName().equals(name))
+                .findFirst()
+                .ifPresentOrElse(e -> {
+                    if (e.getEffect().getModifier1() < effect.getModifier1()) {
+                        effectService.removeCharacterEffectFromMobile(mobile, e);
+                        effectService.attachEffectToCharacter(mobile, effect, tickCount, name).subscribe();
+                        apply.set(true);
+                    } else if (e.getEffect().getModifier1() == effect.getModifier1() && e.getTickCount() < tickCount) {
+                        effectService.removeCharacterEffectFromMobile(mobile, e);
+                        effectService.attachEffectToCharacter(mobile, effect, tickCount, name).subscribe();
+                        apply.set(true);
+                    }
+                }, () -> {
+                    effectService.attachEffectToCharacter(mobile, effect, tickCount, name).subscribe();
+                    apply.set(true);
+                });
+        return apply.get();
+    }
+}
