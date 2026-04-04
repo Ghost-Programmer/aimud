@@ -1,74 +1,80 @@
 <div class="room-management-container">
   <div class="filters-bar">
     <div class="filter-group">
-      <input type="text" [(ngModel)]="filters.name" (ngModelChange)="onSearch()" placeholder="Search by name..." class="search-input">
+      <input (ngModelChange)="onSearch()" [(ngModel)]="filters.name" class="search-input" placeholder="Search by name..."
+             type="text">
     </div>
 
     <div class="filter-group">
-      <select [(ngModel)]="filters.type" (change)="onSearch()" class="filter-select">
+      <select (change)="onSearch()" [(ngModel)]="filters.type" class="filter-select">
         <option value="">All Types</option>
         <option *ngFor="let type of roomTypes" [value]="type">{{ type }}</option>
       </select>
     </div>
 
     <div class="filter-group id-filters">
-      <input type="number" [(ngModel)]="filters.minId" (ngModelChange)="onSearch()" placeholder="Min ID" class="id-input">
-      <input type="number" [(ngModel)]="filters.maxId" (ngModelChange)="onSearch()" placeholder="Max ID" class="id-input">
+      <input (ngModelChange)="onSearch()" [(ngModel)]="filters.minId" class="id-input" placeholder="Min ID"
+             type="number">
+      <input (ngModelChange)="onSearch()" [(ngModel)]="filters.maxId" class="id-input" placeholder="Max ID"
+             type="number">
     </div>
 
-    <button class="refresh-btn" (click)="loadRooms()">&#x21bb;</button>
-    <button class="create-btn" (click)="openCreateDialog()">+ New Room</button>
+    <button (click)="loadRooms()" class="refresh-btn">&#x21bb;</button>
+    <button (click)="openCreateDialog()" class="create-btn">+ New Room</button>
   </div>
 
   <div class="table-container">
     <table class="rooms-table">
       <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Exits (N/S/E/W/U/D)</th>
-          <th>Actions</th>
-        </tr>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Exits (N/S/E/W/U/D)</th>
+        <th>Actions</th>
+      </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let room of rooms" (click)="editRoom(room)" class="clickable-row">
-          <td>{{ room.id }}</td>
-          <td>{{ room.name }}</td>
-          <td>{{ room.roomType }}</td>
-          <td>
-            {{ room.northId ? 'N' : '-' }}
-            {{ room.southId ? 'S' : '-' }}
-            {{ room.eastId ? 'E' : '-' }}
-            {{ room.westId ? 'W' : '-' }}
-            {{ room.upId ? 'U' : '-' }}
-            {{ room.downId ? 'D' : '-' }}
-          </td>
-          <td>
-            <button class="icon-btn delete-btn" (click)="deleteRoom(room, $event)" title="Delete">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
-                  <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
-                </svg>
-              </button>
-          </td>
-        </tr>
-        <tr *ngIf="rooms.length === 0">
-          <td colspan="5" class="no-results">No rooms found matching your criteria.</td>
-        </tr>
+      <tr (click)="editRoom(room)" *ngFor="let room of rooms" class="clickable-row">
+        <td>{{ room.id }}</td>
+        <td>{{ room.name }}</td>
+        <td>{{ room.roomType }}</td>
+        <td>
+          {{ room.northId ? 'N' : '-' }}
+          {{ room.southId ? 'S' : '-' }}
+          {{ room.eastId ? 'E' : '-' }}
+          {{ room.westId ? 'W' : '-' }}
+          {{ room.upId ? 'U' : '-' }}
+          {{ room.downId ? 'D' : '-' }}
+        </td>
+        <td>
+          <button (click)="deleteRoom(room, $event)" class="icon-btn delete-btn" title="Delete">
+            <svg class="bi bi-trash-fill" fill="currentColor" height="16" viewBox="0 0 16 16" width="16"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+            </svg>
+          </button>
+        </td>
+      </tr>
+      <tr *ngIf="rooms.length === 0">
+        <td class="no-results" colspan="5">No rooms found matching your criteria.</td>
+      </tr>
       </tbody>
     </table>
   </div>
 
   <div class="pagination">
-    <button [disabled]="page === 0" (click)="prevPage()" class="pag-btn">Previous</button>
-    <span class="page-info">Page {{ page + 1 }} of {{ Math.ceil(totalRooms / size) || 1 }} ({{ totalRooms }} total)</span>
-    <button [disabled]="(page + 1) * size >= totalRooms" (click)="nextPage()" class="pag-btn">Next</button>
+    <button (click)="prevPage()" [disabled]="page === 0" class="pag-btn">Previous</button>
+    <span class="page-info">Page {{ page + 1 }} of {{ Math.ceil(totalRooms / size) || 1 }} ({{ totalRooms }}
+      total)</span>
+    <button (click)="nextPage()" [disabled]="(page + 1) * size >= totalRooms" class="pag-btn">Next</button>
   </div>
 
   <app-room-dialog
-    *ngIf="showDialog"
-    [room]="selectedRoom"
+    (cancel)="onCancelDialog()"
     (save)="onSaveRoom($event)"
-    (cancel)="onCancelDialog()">
+    *ngIf="showDialog"
+    [room]="selectedRoom">
   </app-room-dialog>
 </div>

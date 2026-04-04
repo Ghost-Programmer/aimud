@@ -21,16 +21,14 @@ import java.util.concurrent.TimeoutException;
 @RequiredArgsConstructor
 @Slf4j
 public class SkillService {
-    private final SkillRepository skillRepository;
-    private final SkillRegistryRepository skillRegistryRepository;
-    private final Random random = new Random();
-
     private static final double GLOBAL_GROWTH_RATE = 0.05; // Base chance multiplier
     private static final int MIN_CR_DELTA = -5;            // Too easy to learn from
     private static final double FAIL_LEARN_BONUS = 1.2;    // Learn faster from failure
-    private final DatabaseClient databaseClient;
-
     private static final Duration SKILL_LOOKUP_TIMEOUT = Duration.ofSeconds(5);
+    private final SkillRepository skillRepository;
+    private final SkillRegistryRepository skillRegistryRepository;
+    private final Random random = new Random();
+    private final DatabaseClient databaseClient;
 
     /**
      * Add skill - Create a new skill assigned to a character with a value of 1,
@@ -79,10 +77,11 @@ public class SkillService {
      * Check Skill - Test if skill value should be increased by 1.
      * This method evaluates if the skill should improve and increments it if so.
      *
-     * @param mobile      The mobile using the skill
-     * @param skillName   The name of the skill
-     * @param targetCr    The Challenge Rating of the target (NPC/Challenge)
-     * @param wasSuccess  Whether the skill attempt succeeded in-game
+     * @param mobile     The mobile using the skill
+     * @param skillName  The name of the skill
+     * @param targetCr   The Challenge Rating of the target (NPC/Challenge)
+     * @param wasSuccess Whether the skill attempt succeeded in-game
+     *
      * @return Mono<Skill> The updated skill if it improved, or empty Mono if not.
      */
     public Mono<Skill> checkSkill(Mobile mobile, String skillName, float targetCr, boolean wasSuccess) {
@@ -92,7 +91,7 @@ public class SkillService {
                 .filter(s -> s.getName().equalsIgnoreCase(skillName))
                 .findFirst()
                 .map(skill -> {
-                    float playerLevel =  mobile.getChallengeRating();
+                    float playerLevel = mobile.getChallengeRating();
                     if (shouldSkillImprove(skill.getRank(), playerLevel, targetCr, wasSuccess)) {
                         skill.setRank(skill.getRank() + 1);
                         log.info("Skill {} for mobile {} improved to rank {}", skillName, mobile.getName(), skill.getRank());
@@ -113,6 +112,7 @@ public class SkillService {
      * @param playerLevel       The player's character level (using CR as proxy)
      * @param targetCr          The Challenge Rating of the NPC
      * @param wasSuccess        Whether the skill attempt actually succeeded in-game
+     *
      * @return true if the skill improved by 1%
      */
     public boolean shouldSkillImprove(int currentSkillLevel, float playerLevel, float targetCr, boolean wasSuccess) {

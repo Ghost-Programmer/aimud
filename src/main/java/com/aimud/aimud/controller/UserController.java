@@ -30,7 +30,7 @@ public class UserController {
         }
 
         return userService.registerUser(user)
-                .map(savedUser -> ResponseEntity.ok((Object)savedUser))
+                .map(savedUser -> ResponseEntity.ok((Object) savedUser))
                 .onErrorResume(IllegalArgumentException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()))));
     }
 
@@ -44,7 +44,7 @@ public class UserController {
         }
 
         return userService.login(user.getUsername(), user.getPassword())
-                .map(token -> ResponseEntity.ok((Object)Map.of("token", token)))
+                .map(token -> ResponseEntity.ok((Object) Map.of("token", token)))
                 .onErrorResume(RuntimeException.class, e -> {
                     if (e.getMessage().equals("Account is locked")) {
                         return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Account is locked")));
@@ -66,14 +66,14 @@ public class UserController {
         }
 
         return userService.changePassword(userId, newPassword)
-                .map(updatedUser -> ResponseEntity.ok((Object)updatedUser))
+                .map(updatedUser -> ResponseEntity.ok((Object) updatedUser))
                 .onErrorResume(RuntimeException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", e.getMessage()))));
     }
 
     @PutMapping("/{userId}/lock")
     public Mono<ResponseEntity<Object>> toggleLock(@PathVariable Long userId) {
         return userService.toggleLock(userId)
-                .map(updatedUser -> ResponseEntity.ok((Object)updatedUser))
+                .map(updatedUser -> ResponseEntity.ok((Object) updatedUser))
                 .onErrorResume(RuntimeException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", e.getMessage()))));
     }
 }

@@ -9,5 +9,6 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface CharacterEffectRepository extends ReactiveCrudRepository<CharacterEffect, Long> {
     Flux<CharacterEffect> findByCharacterId(Long characterId);
+
     Mono<Void> deleteByCharacterId(Long characterId);
 }

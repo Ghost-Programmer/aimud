@@ -1,46 +1,61 @@
-<div class="play-container" cdkDropListGroup>
-  <div class="panel action-panel" cdkDrag>
-    <div class="panel-handle" cdkDragHandle>
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-grip-vertical" viewBox="0 0 16 16">
-        <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+<div cdkDropListGroup class="play-container">
+  <div cdkDrag class="panel action-panel">
+    <div cdkDragHandle class="panel-handle">
+      <svg class="bi bi-grip-vertical" fill="currentColor" height="16" viewBox="0 0 16 16" width="16"
+           xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
       </svg>
       Action
     </div>
     <div class="action-content">
       <div class="console-wrapper">
-        <textarea #consoleTextarea readonly class="console-textarea" [value]="textMessages.join('')"></textarea>
+        <textarea #consoleTextarea [value]="textMessages.join('')" class="console-textarea" readonly></textarea>
       </div>
-      <form class="command-form" (submit)="onSendCommand()">
-        <input type="text" [(ngModel)]="command" name="command" class="command-input" placeholder="Enter command..." autocomplete="off">
-        <button type="submit" class="command-submit">Send</button>
+      <form (submit)="onSendCommand()" class="command-form">
+        <input [(ngModel)]="command" autocomplete="off" class="command-input" name="command" placeholder="Enter command..."
+               type="text">
+        <button class="command-submit" type="submit">Send</button>
       </form>
     </div>
   </div>
 
-  <div class="panel stat-panel" cdkDrag>
-    <div class="panel-handle" cdkDragHandle>
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-grip-vertical" viewBox="0 0 16 16">
-        <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+  <div cdkDrag class="panel stat-panel">
+    <div cdkDragHandle class="panel-handle">
+      <svg class="bi bi-grip-vertical" fill="currentColor" height="16" viewBox="0 0 16 16" width="16"
+           xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
       </svg>
       Stats & Inventory
     </div>
 
     <div class="stat-tabs">
-      <button class="stat-tab-btn" [class.active]="activeStatTab === 'stats'" (click)="setActiveStatTab('stats')">Stats</button>
-      <button class="stat-tab-btn" [class.active]="activeStatTab === 'equipped'" (click)="setActiveStatTab('equipped')">Equipped</button>
-      <button class="stat-tab-btn" [class.active]="activeStatTab === 'inventory'" (click)="setActiveStatTab('inventory')">Inventory</button>
-      <button class="stat-tab-btn" [class.active]="activeStatTab === 'skills'" (click)="setActiveStatTab('skills')">Skills</button>
+      <button (click)="setActiveStatTab('stats')" [class.active]="activeStatTab === 'stats'" class="stat-tab-btn">
+        Stats
+      </button>
+      <button (click)="setActiveStatTab('equipped')" [class.active]="activeStatTab === 'equipped'" class="stat-tab-btn">
+        Equipped
+      </button>
+      <button (click)="setActiveStatTab('inventory')" [class.active]="activeStatTab === 'inventory'"
+              class="stat-tab-btn">Inventory
+      </button>
+      <button (click)="setActiveStatTab('skills')" [class.active]="activeStatTab === 'skills'" class="stat-tab-btn">
+        Skills
+      </button>
     </div>
 
-    <div class="stat-content" *ngIf="activeStatTab === 'stats'">
+    <div *ngIf="activeStatTab === 'stats'" class="stat-content">
       <div class="resource-bars">
         <div class="resource-bar hp-bar">
-          <div class="bar-fill" [style.width.%]="(character.maxHp / character.maxHp) * 100"></div>
-          <span class="bar-text">HP: {{ character.currentHp | number:'1.0-0' }} / {{ character.maxHp | number:'1.0-0' }}</span>
+          <div [style.width.%]="(character.maxHp / character.maxHp) * 100" class="bar-fill"></div>
+          <span class="bar-text">HP: {{ character.currentHp | number:'1.0-0' }}
+            / {{ character.maxHp | number:'1.0-0' }}</span>
         </div>
         <div class="resource-bar mana-bar">
-          <div class="bar-fill" [style.width.%]="(character.maxMana / character.maxMana) * 100"></div>
-          <span class="bar-text">Mana: {{ character.currentMana | number:'1.0-0' }} / {{ character.maxMana | number:'1.0-0' }}</span>
+          <div [style.width.%]="(character.maxMana / character.maxMana) * 100" class="bar-fill"></div>
+          <span class="bar-text">Mana: {{ character.currentMana | number:'1.0-0' }}
+            / {{ character.maxMana | number:'1.0-0' }}</span>
         </div>
       </div>
       <div class="divider"></div>
@@ -65,28 +80,35 @@
       <div class="divider"></div>
       <div class="stat-group-label">Derived Stats</div>
       <div class="stat-row">
-        <span class="stat-label">HP Regen:</span> <span class="stat-value">{{ character.hpRegen | number:'1.1-1' }}</span>
+        <span class="stat-label">HP Regen:</span> <span
+        class="stat-value">{{ character.hpRegen | number:'1.1-1' }}</span>
       </div>
       <div class="stat-row">
-        <span class="stat-label">Mana Regen:</span> <span class="stat-value">{{ character.manaRegen | number:'1.1-1' }}</span>
+        <span class="stat-label">Mana Regen:</span> <span
+        class="stat-value">{{ character.manaRegen | number:'1.1-1' }}</span>
       </div>
       <div class="stat-row">
-        <span class="stat-label">Phys Attack:</span> <span class="stat-value">{{ character.physicalAttack | number:'1.1-1' }}</span>
+        <span class="stat-label">Phys Attack:</span> <span
+        class="stat-value">{{ character.physicalAttack | number:'1.1-1' }}</span>
       </div>
       <div class="stat-row">
-        <span class="stat-label">Mag Attack:</span> <span class="stat-value">{{ character.magicAttack | number:'1.1-1' }}</span>
+        <span class="stat-label">Mag Attack:</span> <span
+        class="stat-value">{{ character.magicAttack | number:'1.1-1' }}</span>
       </div>
       <div class="stat-row">
         <span class="stat-label">Armor:</span> <span class="stat-value">{{ character.armor | number:'1.1-1' }}</span>
       </div>
       <div class="stat-row">
-        <span class="stat-label">Mag Resist:</span> <span class="stat-value">{{ character.magicResist | number:'1.1-1' }}</span>
+        <span class="stat-label">Mag Resist:</span> <span
+        class="stat-value">{{ character.magicResist | number:'1.1-1' }}</span>
       </div>
       <div class="stat-row">
-        <span class="stat-label">Dodge:</span> <span class="stat-value">{{ character.dodgeChance | number:'1.1-1' }}%</span>
+        <span class="stat-label">Dodge:</span> <span class="stat-value">{{ character.dodgeChance | number:'1.1-1' }}
+        %</span>
       </div>
       <div class="stat-row">
-        <span class="stat-label">Crit:</span> <span class="stat-value">{{ character.critChance | number:'1.1-1' }}%</span>
+        <span class="stat-label">Crit:</span> <span class="stat-value">{{ character.critChance | number:'1.1-1' }}
+        %</span>
       </div>
 
       <ng-container *ngIf="target">
@@ -100,56 +122,62 @@
         </div>
         <div class="resource-bars" style="margin-top: 8px;">
           <div class="resource-bar hp-bar">
-            <div class="bar-fill" [style.width.%]="(target.currentHp / target.maxHp) * 100"></div>
+            <div [style.width.%]="(target.currentHp / target.maxHp) * 100" class="bar-fill"></div>
             <span class="bar-text">HP: {{ (target.currentHp / target.maxHp) * 100 | number:'1.0-0' }}%</span>
           </div>
         </div>
       </ng-container>
     </div>
 
-    <div class="stat-content equipped-tab" *ngIf="activeStatTab === 'equipped'">
+    <div *ngIf="activeStatTab === 'equipped'" class="stat-content equipped-tab">
       <div class="equipment-layout">
         <div class="equipment-column">
           <div class="stat-group-label">Upper Body</div>
-          <div class="equipment-slot" [class.has-item]="character.head" (click)="onShowItemStats(character.head)">
+          <div (click)="onShowItemStats(character.head)" [class.has-item]="character.head" class="equipment-slot">
             <span class="slot-label">Head:</span>
             <span class="slot-item">{{ character.head?.name || 'Empty' }}</span>
-            <button *ngIf="character.head" mat-icon-button class="unequip-btn" title="Unequip" (click)="onUnequip('head'); $event.stopPropagation()">
+            <button (click)="onUnequip('head'); $event.stopPropagation()" *ngIf="character.head" class="unequip-btn" mat-icon-button
+                    title="Unequip">
               <mat-icon>eject</mat-icon>
             </button>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.face" (click)="onShowItemStats(character.face)">
+          <div (click)="onShowItemStats(character.face)" [class.has-item]="character.face" class="equipment-slot">
             <span class="slot-label">Face:</span>
             <span class="slot-item">{{ character.face?.name || 'Empty' }}</span>
-            <button *ngIf="character.face" mat-icon-button class="unequip-btn" title="Unequip" (click)="onUnequip('face'); $event.stopPropagation()">
+            <button (click)="onUnequip('face'); $event.stopPropagation()" *ngIf="character.face" class="unequip-btn" mat-icon-button
+                    title="Unequip">
               <mat-icon>eject</mat-icon>
             </button>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.neck" (click)="onShowItemStats(character.neck)">
+          <div (click)="onShowItemStats(character.neck)" [class.has-item]="character.neck" class="equipment-slot">
             <span class="slot-label">Neck:</span>
             <span class="slot-item">{{ character.neck?.name || 'Empty' }}</span>
-            <button *ngIf="character.neck" mat-icon-button class="unequip-btn" title="Unequip" (click)="onUnequip('neck'); $event.stopPropagation()">
+            <button (click)="onUnequip('neck'); $event.stopPropagation()" *ngIf="character.neck" class="unequip-btn" mat-icon-button
+                    title="Unequip">
               <mat-icon>eject</mat-icon>
             </button>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.chest" (click)="onShowItemStats(character.chest)">
+          <div (click)="onShowItemStats(character.chest)" [class.has-item]="character.chest" class="equipment-slot">
             <span class="slot-label">Chest:</span>
             <span class="slot-item">{{ character.chest?.name || 'Empty' }}</span>
-            <button *ngIf="character.chest" mat-icon-button class="unequip-btn" title="Unequip" (click)="onUnequip('chest'); $event.stopPropagation()">
+            <button (click)="onUnequip('chest'); $event.stopPropagation()" *ngIf="character.chest" class="unequip-btn" mat-icon-button
+                    title="Unequip">
               <mat-icon>eject</mat-icon>
             </button>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.arms" (click)="onShowItemStats(character.arms)">
+          <div (click)="onShowItemStats(character.arms)" [class.has-item]="character.arms" class="equipment-slot">
             <span class="slot-label">Arms:</span>
             <span class="slot-item">{{ character.arms?.name || 'Empty' }}</span>
-            <button *ngIf="character.arms" mat-icon-button class="unequip-btn" title="Unequip" (click)="onUnequip('arms'); $event.stopPropagation()">
+            <button (click)="onUnequip('arms'); $event.stopPropagation()" *ngIf="character.arms" class="unequip-btn" mat-icon-button
+                    title="Unequip">
               <mat-icon>eject</mat-icon>
             </button>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.hands" (click)="onShowItemStats(character.hands)">
+          <div (click)="onShowItemStats(character.hands)" [class.has-item]="character.hands" class="equipment-slot">
             <span class="slot-label">Hands:</span>
             <span class="slot-item">{{ character.hands?.name || 'Empty' }}</span>
-            <button *ngIf="character.hands" mat-icon-button class="unequip-btn" title="Unequip" (click)="onUnequip('hands'); $event.stopPropagation()">
+            <button (click)="onUnequip('hands'); $event.stopPropagation()" *ngIf="character.hands" class="unequip-btn" mat-icon-button
+                    title="Unequip">
               <mat-icon>eject</mat-icon>
             </button>
           </div>
@@ -157,24 +185,27 @@
 
         <div class="equipment-column">
           <div class="stat-group-label">Lower Body</div>
-          <div class="equipment-slot" [class.has-item]="character.waist" (click)="onShowItemStats(character.waist)">
+          <div (click)="onShowItemStats(character.waist)" [class.has-item]="character.waist" class="equipment-slot">
             <span class="slot-label">Waist:</span>
             <span class="slot-item">{{ character.waist?.name || 'Empty' }}</span>
-            <button *ngIf="character.waist" mat-icon-button class="unequip-btn" title="Unequip" (click)="onUnequip('waist'); $event.stopPropagation()">
+            <button (click)="onUnequip('waist'); $event.stopPropagation()" *ngIf="character.waist" class="unequip-btn" mat-icon-button
+                    title="Unequip">
               <mat-icon>eject</mat-icon>
             </button>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.legs" (click)="onShowItemStats(character.legs)">
+          <div (click)="onShowItemStats(character.legs)" [class.has-item]="character.legs" class="equipment-slot">
             <span class="slot-label">Legs:</span>
             <span class="slot-item">{{ character.legs?.name || 'Empty' }}</span>
-            <button *ngIf="character.legs" mat-icon-button class="unequip-btn" title="Unequip" (click)="onUnequip('legs'); $event.stopPropagation()">
+            <button (click)="onUnequip('legs'); $event.stopPropagation()" *ngIf="character.legs" class="unequip-btn" mat-icon-button
+                    title="Unequip">
               <mat-icon>eject</mat-icon>
             </button>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.feet" (click)="onShowItemStats(character.feet)">
+          <div (click)="onShowItemStats(character.feet)" [class.has-item]="character.feet" class="equipment-slot">
             <span class="slot-label">Feet:</span>
             <span class="slot-item">{{ character.feet?.name || 'Empty' }}</span>
-            <button *ngIf="character.feet" mat-icon-button class="unequip-btn" title="Unequip" (click)="onUnequip('feet'); $event.stopPropagation()">
+            <button (click)="onUnequip('feet'); $event.stopPropagation()" *ngIf="character.feet" class="unequip-btn" mat-icon-button
+                    title="Unequip">
               <mat-icon>eject</mat-icon>
             </button>
           </div>
@@ -182,17 +213,19 @@
           <div class="divider"></div>
 
           <div class="stat-group-label">Combat</div>
-          <div class="equipment-slot" [class.has-item]="character.primary" (click)="onShowItemStats(character.primary)">
+          <div (click)="onShowItemStats(character.primary)" [class.has-item]="character.primary" class="equipment-slot">
             <span class="slot-label">Primary:</span>
             <span class="slot-item">{{ character.primary?.name || 'Empty' }}</span>
-            <button *ngIf="character.primary" mat-icon-button class="unequip-btn" title="Unequip" (click)="onUnequip('primary'); $event.stopPropagation()">
+            <button (click)="onUnequip('primary'); $event.stopPropagation()" *ngIf="character.primary" class="unequip-btn" mat-icon-button
+                    title="Unequip">
               <mat-icon>eject</mat-icon>
             </button>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.offhand" (click)="onShowItemStats(character.offhand)">
+          <div (click)="onShowItemStats(character.offhand)" [class.has-item]="character.offhand" class="equipment-slot">
             <span class="slot-label">Offhand:</span>
             <span class="slot-item">{{ character.offhand?.name || 'Empty' }}</span>
-            <button *ngIf="character.offhand" mat-icon-button class="unequip-btn" title="Unequip" (click)="onUnequip('offhand'); $event.stopPropagation()">
+            <button (click)="onUnequip('offhand'); $event.stopPropagation()" *ngIf="character.offhand" class="unequip-btn" mat-icon-button
+                    title="Unequip">
               <mat-icon>eject</mat-icon>
             </button>
           </div>
@@ -200,45 +233,56 @@
 
         <div class="equipment-column">
           <div class="stat-group-label">Accessories</div>
-          <div class="equipment-slot" [class.has-item]="character.leftEar" (click)="onShowItemStats(character.leftEar)">
+          <div (click)="onShowItemStats(character.leftEar)" [class.has-item]="character.leftEar" class="equipment-slot">
             <span class="slot-label">Left Ear:</span>
             <span class="slot-item">{{ character.leftEar?.name || 'Empty' }}</span>
-            <button *ngIf="character.leftEar" mat-icon-button class="unequip-btn" title="Unequip" (click)="onUnequip('leftear'); $event.stopPropagation()">
+            <button (click)="onUnequip('leftear'); $event.stopPropagation()" *ngIf="character.leftEar" class="unequip-btn" mat-icon-button
+                    title="Unequip">
               <mat-icon>eject</mat-icon>
             </button>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.rightEar" (click)="onShowItemStats(character.rightEar)">
+          <div (click)="onShowItemStats(character.rightEar)" [class.has-item]="character.rightEar"
+               class="equipment-slot">
             <span class="slot-label">Right Ear:</span>
             <span class="slot-item">{{ character.rightEar?.name || 'Empty' }}</span>
-            <button *ngIf="character.rightEar" mat-icon-button class="unequip-btn" title="Unequip" (click)="onUnequip('rightear'); $event.stopPropagation()">
+            <button (click)="onUnequip('rightear'); $event.stopPropagation()" *ngIf="character.rightEar" class="unequip-btn" mat-icon-button
+                    title="Unequip">
               <mat-icon>eject</mat-icon>
             </button>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.leftFinger" (click)="onShowItemStats(character.leftFinger)">
+          <div (click)="onShowItemStats(character.leftFinger)" [class.has-item]="character.leftFinger"
+               class="equipment-slot">
             <span class="slot-label">Left Finger:</span>
             <span class="slot-item">{{ character.leftFinger?.name || 'Empty' }}</span>
-            <button *ngIf="character.leftFinger" mat-icon-button class="unequip-btn" title="Unequip" (click)="onUnequip('leftfinger'); $event.stopPropagation()">
+            <button (click)="onUnequip('leftfinger'); $event.stopPropagation()" *ngIf="character.leftFinger" class="unequip-btn" mat-icon-button
+                    title="Unequip">
               <mat-icon>eject</mat-icon>
             </button>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.rightFinger" (click)="onShowItemStats(character.rightFinger)">
+          <div (click)="onShowItemStats(character.rightFinger)" [class.has-item]="character.rightFinger"
+               class="equipment-slot">
             <span class="slot-label">Right Finger:</span>
             <span class="slot-item">{{ character.rightFinger?.name || 'Empty' }}</span>
-            <button *ngIf="character.rightFinger" mat-icon-button class="unequip-btn" title="Unequip" (click)="onUnequip('rightfinger'); $event.stopPropagation()">
+            <button (click)="onUnequip('rightfinger'); $event.stopPropagation()" *ngIf="character.rightFinger" class="unequip-btn" mat-icon-button
+                    title="Unequip">
               <mat-icon>eject</mat-icon>
             </button>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.leftWrist" (click)="onShowItemStats(character.leftWrist)">
+          <div (click)="onShowItemStats(character.leftWrist)" [class.has-item]="character.leftWrist"
+               class="equipment-slot">
             <span class="slot-label">Left Wrist:</span>
             <span class="slot-item">{{ character.leftWrist?.name || 'Empty' }}</span>
-            <button *ngIf="character.leftWrist" mat-icon-button class="unequip-btn" title="Unequip" (click)="onUnequip('leftwrist'); $event.stopPropagation()">
+            <button (click)="onUnequip('leftwrist'); $event.stopPropagation()" *ngIf="character.leftWrist" class="unequip-btn" mat-icon-button
+                    title="Unequip">
               <mat-icon>eject</mat-icon>
             </button>
           </div>
-          <div class="equipment-slot" [class.has-item]="character.rightWrist" (click)="onShowItemStats(character.rightWrist)">
+          <div (click)="onShowItemStats(character.rightWrist)" [class.has-item]="character.rightWrist"
+               class="equipment-slot">
             <span class="slot-label">Right Wrist:</span>
             <span class="slot-item">{{ character.rightWrist?.name || 'Empty' }}</span>
-            <button *ngIf="character.rightWrist" mat-icon-button class="unequip-btn" title="Unequip" (click)="onUnequip('rightwrist'); $event.stopPropagation()">
+            <button (click)="onUnequip('rightwrist'); $event.stopPropagation()" *ngIf="character.rightWrist" class="unequip-btn" mat-icon-button
+                    title="Unequip">
               <mat-icon>eject</mat-icon>
             </button>
           </div>
@@ -246,80 +290,80 @@
       </div>
     </div>
 
-    <div class="stat-content" *ngIf="activeStatTab === 'inventory'">
+    <div *ngIf="activeStatTab === 'inventory'" class="stat-content">
       <div class="inventory-container">
         <table class="inventory-table">
           <thead>
-            <tr>
-              <th (click)="toggleSort('name')" [class.sorted]="sortColumn === 'name'">
-                Name
-                <span class="sort-indicator" *ngIf="sortColumn === 'name'">
+          <tr>
+            <th (click)="toggleSort('name')" [class.sorted]="sortColumn === 'name'">
+              Name
+              <span *ngIf="sortColumn === 'name'" class="sort-indicator">
                   {{ sortDirection === 'asc' ? '▲' : '▼' }}
                 </span>
-              </th>
-              <th (click)="toggleSort('itemType')" [class.sorted]="sortColumn === 'itemType'">
-                Type
-                <span class="sort-indicator" *ngIf="sortColumn === 'itemType'">
+            </th>
+            <th (click)="toggleSort('itemType')" [class.sorted]="sortColumn === 'itemType'">
+              Type
+              <span *ngIf="sortColumn === 'itemType'" class="sort-indicator">
                   {{ sortDirection === 'asc' ? '▲' : '▼' }}
                 </span>
-              </th>
-              <th (click)="toggleSort('wearLocation')" [class.sorted]="sortColumn === 'wearLocation'">
-                Location
-                <span class="sort-indicator" *ngIf="sortColumn === 'wearLocation'">
+            </th>
+            <th (click)="toggleSort('wearLocation')" [class.sorted]="sortColumn === 'wearLocation'">
+              Location
+              <span *ngIf="sortColumn === 'wearLocation'" class="sort-indicator">
                   {{ sortDirection === 'asc' ? '▲' : '▼' }}
                 </span>
-              </th>
-              <th (click)="toggleSort('value')" [class.sorted]="sortColumn === 'value'">
-                Value
-                <span class="sort-indicator" *ngIf="sortColumn === 'value'">
+            </th>
+            <th (click)="toggleSort('value')" [class.sorted]="sortColumn === 'value'">
+              Value
+              <span *ngIf="sortColumn === 'value'" class="sort-indicator">
                   {{ sortDirection === 'asc' ? '▲' : '▼' }}
                 </span>
-              </th>
-              <th>Actions</th>
-            </tr>
+            </th>
+            <th>Actions</th>
+          </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of sortedInventory">
-              <td class="item-name" (click)="onShowItemStats(item)">{{ item.name }}</td>
-              <td (click)="onShowItemStats(item)">{{ item.itemType }}</td>
-              <td (click)="onShowItemStats(item)">{{ item.wearLocation }}</td>
-              <td class="item-value" (click)="onShowItemStats(item)">{{ item.value }}g</td>
-              <td class="action-cell">
-                <div class="action-buttons">
-                  <button mat-icon-button class="action-btn equip-btn" (click)="onEquip(item.id)" title="Equip">
-                    <mat-icon>checkroom</mat-icon>
-                  </button>
-                  <button mat-icon-button class="action-btn drop-btn" (click)="onDrop(item.id)" title="Drop">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="!character.inventory || character.inventory.length === 0">
-              <td colspan="5" class="empty-inventory">Inventory is empty.</td>
-            </tr>
+          <tr *ngFor="let item of sortedInventory">
+            <td (click)="onShowItemStats(item)" class="item-name">{{ item.name }}</td>
+            <td (click)="onShowItemStats(item)">{{ item.itemType }}</td>
+            <td (click)="onShowItemStats(item)">{{ item.wearLocation }}</td>
+            <td (click)="onShowItemStats(item)" class="item-value">{{ item.value }}g</td>
+            <td class="action-cell">
+              <div class="action-buttons">
+                <button (click)="onEquip(item.id)" class="action-btn equip-btn" mat-icon-button title="Equip">
+                  <mat-icon>checkroom</mat-icon>
+                </button>
+                <button (click)="onDrop(item.id)" class="action-btn drop-btn" mat-icon-button title="Drop">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="!character.inventory || character.inventory.length === 0">
+            <td class="empty-inventory" colspan="5">Inventory is empty.</td>
+          </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <div class="stat-content" *ngIf="activeStatTab === 'skills'">
+    <div *ngIf="activeStatTab === 'skills'" class="stat-content">
       <div class="inventory-container">
         <table class="inventory-table">
           <thead>
-            <tr>
-              <th>Name</th>
-              <th class="skill-rank-header">Rank</th>
-            </tr>
+          <tr>
+            <th>Name</th>
+            <th class="skill-rank-header">Rank</th>
+          </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let skill of sortedSkills">
-              <td class="item-name">{{ skill.name }}</td>
-              <td class="skill-rank-value">{{ skill.rank }}</td>
-            </tr>
-            <tr *ngIf="!character.skills || character.skills.length === 0">
-              <td colspan="2" class="empty-inventory">No skills learned.</td>
-            </tr>
+          <tr *ngFor="let skill of sortedSkills">
+            <td class="item-name">{{ skill.name }}</td>
+            <td class="skill-rank-value">{{ skill.rank }}</td>
+          </tr>
+          <tr *ngIf="!character.skills || character.skills.length === 0">
+            <td class="empty-inventory" colspan="2">No skills learned.</td>
+          </tr>
           </tbody>
         </table>
       </div>

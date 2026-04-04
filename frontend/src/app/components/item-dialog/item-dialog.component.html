@@ -1,28 +1,29 @@
-<div class="dialog-overlay" (click)="cancel()">
-  <div class="dialog-container" (click)="$event.stopPropagation()">
+<div (click)="cancel()" class="dialog-overlay">
+  <div (click)="$event.stopPropagation()" class="dialog-container">
     <h2>{{ item.id ? 'Edit Item' : 'Create New Item' }}</h2>
 
     <div class="form-content">
       <div class="form-group">
         <label for="name">Name</label>
-        <input id="name" [(ngModel)]="item.name" placeholder="Item Name" class="form-input">
+        <input [(ngModel)]="item.name" class="form-input" id="name" placeholder="Item Name">
       </div>
 
       <div class="form-group">
         <label for="description">Description</label>
-        <textarea id="description" [(ngModel)]="item.description" placeholder="Item Description" class="form-input" rows="3"></textarea>
+        <textarea [(ngModel)]="item.description" class="form-input" id="description" placeholder="Item Description"
+                  rows="3"></textarea>
       </div>
 
       <div class="form-row">
         <div class="form-group half">
           <label for="type">Item Type</label>
-          <select id="type" [(ngModel)]="item.itemType" class="form-input">
+          <select [(ngModel)]="item.itemType" class="form-input" id="type">
             <option *ngFor="let type of itemTypes" [ngValue]="type">{{ type }}</option>
           </select>
         </div>
         <div class="form-group half">
           <label for="location">Wear Location</label>
-          <select id="location" [(ngModel)]="item.wearLocation" class="form-input">
+          <select [(ngModel)]="item.wearLocation" class="form-input" id="location">
             <option *ngFor="let loc of wearLocations" [ngValue]="loc">{{ loc }}</option>
           </select>
         </div>
@@ -31,7 +32,7 @@
       <div class="form-row">
         <div class="form-group checkbox-group">
           <label class="checkbox-label">
-            <input type="checkbox" [(ngModel)]="item.noPickup" name="noPickup">
+            <input [(ngModel)]="item.noPickup" name="noPickup" type="checkbox">
             No Pickup (item cannot be taken from the room)
           </label>
         </div>
@@ -40,22 +41,22 @@
       <div class="form-row">
         <div class="form-group half">
           <label for="property1">Property 1</label>
-          <input id="property1" type="number" [(ngModel)]="item.property1" class="form-input">
+          <input [(ngModel)]="item.property1" class="form-input" id="property1" type="number">
         </div>
         <div class="form-group half">
           <label for="property2">Property 2</label>
-          <input id="property2" type="number" [(ngModel)]="item.property2" class="form-input">
+          <input [(ngModel)]="item.property2" class="form-input" id="property2" type="number">
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group half">
           <label for="property3">Property 3</label>
-          <input id="property3" type="number" [(ngModel)]="item.property3" class="form-input">
+          <input [(ngModel)]="item.property3" class="form-input" id="property3" type="number">
         </div>
         <div class="form-group half">
           <label for="property4">Property 4</label>
-          <input id="property4" type="number" [(ngModel)]="item.property4" class="form-input">
+          <input [(ngModel)]="item.property4" class="form-input" id="property4" type="number">
         </div>
       </div>
 
@@ -69,7 +70,7 @@
               {{ effect.name || (effect.effectType + ' (' + effect.modifier1 + ')') }}
             </option>
           </select>
-          <button class="add-btn" (click)="addSelectedEffect()" [disabled]="!selectedEffectId">Add</button>
+          <button (click)="addSelectedEffect()" [disabled]="!selectedEffectId" class="add-btn">Add</button>
         </div>
 
         <div class="effect-list">
@@ -82,7 +83,7 @@
                 {{ effect.modifier2 ? ' d' + effect.modifier2 : '' }}
               </span>
             </div>
-            <button class="remove-btn" (click)="removeEffect(i)" title="Remove">×</button>
+            <button (click)="removeEffect(i)" class="remove-btn" title="Remove">×</button>
           </div>
           <div *ngIf="item.effects.length === 0" class="no-effects">
             No effects added.
@@ -92,8 +93,8 @@
     </div>
 
     <div class="actions">
-      <button class="cancel-btn" (click)="cancel()">Cancel</button>
-      <button class="save-btn" (click)="save()">Save</button>
+      <button (click)="cancel()" class="cancel-btn">Cancel</button>
+      <button (click)="save()" class="save-btn">Save</button>
     </div>
   </div>
 </div>

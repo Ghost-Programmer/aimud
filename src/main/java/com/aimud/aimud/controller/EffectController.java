@@ -32,7 +32,7 @@ public class EffectController {
             @RequestParam(required = false) EffectType type,
             @RequestParam(defaultValue = "id") String sort) {
         log.info("REST Request to get effects: page={}, size={}, name={}, type={}, sort={}", page, size, name, type, sort);
-        
+
         return effectService.getAllEffects()
                 .filter(effect -> {
                     boolean matches = true;
@@ -49,25 +49,25 @@ public class EffectController {
                 .map(effects -> {
                     // Sorting
                     List<Effect> sortedEffects = effects.stream()
-                        .sorted((e1, e2) -> {
-                            if ("effectType".equals(sort)) {
-                                return e1.getEffectType().name().compareTo(e2.getEffectType().name());
-                            } else if ("name".equals(sort)) {
-                                String n1 = e1.getName() != null ? e1.getName() : "";
-                                String n2 = e2.getName() != null ? e2.getName() : "";
-                                return n1.compareTo(n2);
-                            } else {
-                                return e1.getId().compareTo(e2.getId());
-                            }
-                        })
-                        .collect(Collectors.toList());
+                            .sorted((e1, e2) -> {
+                                if ("effectType".equals(sort)) {
+                                    return e1.getEffectType().name().compareTo(e2.getEffectType().name());
+                                } else if ("name".equals(sort)) {
+                                    String n1 = e1.getName() != null ? e1.getName() : "";
+                                    String n2 = e2.getName() != null ? e2.getName() : "";
+                                    return n1.compareTo(n2);
+                                } else {
+                                    return e1.getId().compareTo(e2.getId());
+                                }
+                            })
+                            .collect(Collectors.toList());
 
                     int totalEffects = sortedEffects.size();
                     int fromIndex = page * size;
                     int toIndex = Math.min(fromIndex + size, totalEffects);
-                    
-                    List<Effect> pagedEffects = (fromIndex < totalEffects) 
-                            ? sortedEffects.subList(fromIndex, toIndex) 
+
+                    List<Effect> pagedEffects = (fromIndex < totalEffects)
+                            ? sortedEffects.subList(fromIndex, toIndex)
                             : List.of();
 
                     Map<String, Object> response = new HashMap<>();

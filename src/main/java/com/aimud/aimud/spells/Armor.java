@@ -66,7 +66,7 @@ public class Armor extends Spell {
         String effectName;
 
         if (skillRank <= 51) {
-            effectName = "Armor +" + ((skillRank / 5)+1);
+            effectName = "Armor +" + ((skillRank / 5) + 1);
         } else if (skillRank <= 61) {
             effectName = "Armor +15";
         } else if (skillRank <= 75) {
@@ -77,7 +77,7 @@ public class Armor extends Spell {
 
         Effect armorEffect = this.effectService.getEffectByName(effectName).block();
 
-        if( this.applyEffect(mobile, this.getSpellSkillName(), armorEffect, tickCount)){
+        if (this.applyEffect(mobile, this.getSpellSkillName(), armorEffect, tickCount)) {
 
             if (mobile.getUserId() != null) {
                 this.communicationService.sendTextMessage(mobile, String.format("\n\nYou feel a shimmering field of force surround %s.",

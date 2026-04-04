@@ -1,4 +1,4 @@
-<main class="main-container" *ngIf="router.url === '/'">
+<main *ngIf="router.url === '/'" class="main-container">
   <!-- Show loading state if settings aren't loaded -->
   <div *ngIf="!settingsLoaded" class="glass-panel loading-state">
     <div class="spinner"></div>
@@ -20,8 +20,8 @@
       <p class="subtitle">Welcome to the adventure.</p>
 
       <div class="action-buttons">
-        <button class="btn btn-primary" (click)="openLoginDialog()">Login</button>
-        <button *ngIf="allowNewUser" class="btn btn-secondary" (click)="openRegisterDialog()">Create new User</button>
+        <button (click)="openLoginDialog()" class="btn btn-primary">Login</button>
+        <button (click)="openRegisterDialog()" *ngIf="allowNewUser" class="btn btn-secondary">Create new User</button>
       </div>
     </div>
 
@@ -30,8 +30,8 @@
       <div class="status-header">
         <h2>System Status</h2>
         <div class="status-indicator">
-          <span class="status-dot" [class.online]="systemStatus?.status === 'ONLINE'"></span>
-          <span class="status-text" [class.online-text]="systemStatus?.status === 'ONLINE'">
+          <span [class.online]="systemStatus?.status === 'ONLINE'" class="status-dot"></span>
+          <span [class.online-text]="systemStatus?.status === 'ONLINE'" class="status-text">
             {{ systemStatus?.status || 'CONNECTING...' }}
           </span>
         </div>
@@ -54,7 +54,8 @@
         </div>
         <div class="status-item">
           <span class="label">LLM</span>
-          <span class="value" [class.online-text]="systemStatus?.llmStatus === 'Connected'">{{ systemStatus?.llmStatus || '---' }}</span>
+          <span [class.online-text]="systemStatus?.llmStatus === 'Connected'"
+                class="value">{{ systemStatus?.llmStatus || '---' }}</span>
         </div>
         <div class="status-item">
           <span class="label">Model</span>
@@ -65,6 +66,6 @@
   </div>
 </main>
 
-<app-register-dialog *ngIf="isRegisterDialogOpen" (closeDialog)="closeRegisterDialog()"></app-register-dialog>
-<app-login-dialog *ngIf="isLoginDialogOpen" (closeDialog)="closeLoginDialog()"></app-login-dialog>
-<router-outlet />
+<app-register-dialog (closeDialog)="closeRegisterDialog()" *ngIf="isRegisterDialogOpen"></app-register-dialog>
+<app-login-dialog (closeDialog)="closeLoginDialog()" *ngIf="isLoginDialogOpen"></app-login-dialog>
+<router-outlet/>

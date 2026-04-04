@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @RequiredArgsConstructor
 @MudCommand(name = "logout")
-public class Logout implements Command{
+public class Logout implements Command {
 
     private final CharacterService characterService;
     private final CommunicationService communicationService;

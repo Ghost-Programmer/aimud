@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { Mobile } from '../models/mobile.model';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {Mobile} from '../models/mobile.model';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +9,8 @@ import { Mobile } from '../models/mobile.model';
 export class MobileService {
   private apiUrl = '/api/mobiles';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+  }
 
   getAllMobiles(): Observable<Mobile[]> {
     return this.http.get<Mobile[]>(this.apiUrl);

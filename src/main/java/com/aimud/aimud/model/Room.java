@@ -62,7 +62,7 @@ public class Room {
 
     @Column("items")
     private String items;
-    
+
     @Column("mobiles")
     private String mobiles;
 
@@ -92,12 +92,13 @@ public class Room {
             for (String s : split) {
                 try {
                     itemIds.add(Long.parseLong(s.trim()));
-                } catch (NumberFormatException ignored) {}
+                } catch (NumberFormatException ignored) {
+                }
             }
         }
         return itemIds;
     }
-    
+
     public List<Long> getMobileIds() {
         List<Long> mobileIds = new ArrayList<>();
         if (mobiles != null && !mobiles.isEmpty()) {
@@ -105,7 +106,8 @@ public class Room {
             for (String s : split) {
                 try {
                     mobileIds.add(Long.parseLong(s.trim()));
-                } catch (NumberFormatException ignored) {}
+                } catch (NumberFormatException ignored) {
+                }
             }
         }
         return mobileIds;

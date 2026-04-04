@@ -2,11 +2,7 @@ package com.aimud.aimud.model;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.*;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -40,7 +36,7 @@ public class CharacterClass {
 
     @Column("starting_items")
     private String startingItems;
-    
+
     @Column("starting_skills")
     private String startingSkills;
 
@@ -81,12 +77,13 @@ public class CharacterClass {
             for (String s : split) {
                 try {
                     items.add(Long.parseLong(s.trim()));
-                } catch (NumberFormatException ignored) {}
+                } catch (NumberFormatException ignored) {
+                }
             }
         }
         return items;
     }
-    
+
     public List<String> getStartingSkillNames() {
         List<String> skills = new ArrayList<>();
         if (startingSkills != null && !startingSkills.isEmpty()) {

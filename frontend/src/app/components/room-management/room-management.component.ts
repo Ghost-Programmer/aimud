@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RoomService } from '../../services/room.service';
-import { Room, RoomType } from '../../models/room.model';
-import { RoomDialogComponent } from '../room-dialog/room-dialog.component';
+import {Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {RoomService} from '../../services/room.service';
+import {Room, RoomType} from '../../models/room.model';
+import {RoomDialogComponent} from '../room-dialog/room-dialog.component';
 
 @Component({
   selector: 'app-room-management',
@@ -32,14 +32,15 @@ export class RoomManagementComponent implements OnInit {
 
   constructor(
     private roomService: RoomService
-  ) {}
-
-  ngOnInit(): void {
-    this.loadRooms();
+  ) {
   }
 
   get Math() {
     return Math;
+  }
+
+  ngOnInit(): void {
+    this.loadRooms();
   }
 
   loadRooms() {

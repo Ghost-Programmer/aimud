@@ -1,19 +1,19 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { PlayerListComponent } from '../../components/player-list/player-list.component';
-import { CreateCharacterComponent } from '../../components/create-character/create-character.component';
-import { CharacterSelectComponent } from '../../components/character-select/character-select.component';
-import { CharacterPlayComponent } from '../../components/character-play/character-play.component';
-import { ConfigDashboardComponent } from '../../components/config-dashboard/config-dashboard.component';
-import { ItemCreatorComponent } from '../../components/item-creator/item-creator.component';
-import { RoomManagementComponent } from '../../components/room-management/room-management.component';
-import { AiDialogComponent } from '../../components/ai-dialog/ai-dialog.component';
-import { EffectDashboardComponent } from '../../components/effect-dashboard/effect-dashboard.component';
-import { MobileEditorComponent } from '../../components/mobile-editor/mobile-editor.component';
-import { GameWebSocketService } from '../../services/game-websocket.service';
-import { Subscription } from 'rxjs';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {Router} from '@angular/router';
+import {CdkDragDrop, DragDropModule, moveItemInArray} from '@angular/cdk/drag-drop';
+import {PlayerListComponent} from '../../components/player-list/player-list.component';
+import {CreateCharacterComponent} from '../../components/create-character/create-character.component';
+import {CharacterSelectComponent} from '../../components/character-select/character-select.component';
+import {CharacterPlayComponent} from '../../components/character-play/character-play.component';
+import {ConfigDashboardComponent} from '../../components/config-dashboard/config-dashboard.component';
+import {ItemCreatorComponent} from '../../components/item-creator/item-creator.component';
+import {RoomManagementComponent} from '../../components/room-management/room-management.component';
+import {AiDialogComponent} from '../../components/ai-dialog/ai-dialog.component';
+import {EffectDashboardComponent} from '../../components/effect-dashboard/effect-dashboard.component';
+import {MobileEditorComponent} from '../../components/mobile-editor/mobile-editor.component';
+import {GameWebSocketService} from '../../services/game-websocket.service';
+import {Subscription} from 'rxjs';
 
 interface Tab {
   id: string;
@@ -62,9 +62,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   private wsSubscription: Subscription | null = null;
 
   constructor(
-      private router: Router,
-      private gameWebSocketService: GameWebSocketService
-  ) {}
+    private router: Router,
+    private gameWebSocketService: GameWebSocketService
+  ) {
+  }
 
   ngOnInit() {
     const token = localStorage.getItem('token');
@@ -75,12 +76,12 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
         // Initialize tabs based on role
         if (this.role === 'MUD_ADMIN') {
-          this.tabs.push({ id: 'world', label: 'World', type: 'world' });
-          this.tabs.push({ id: 'players', label: 'Players', type: 'players' });
-          this.tabs.push({ id: 'config', label: 'Config', type: 'config' });
+          this.tabs.push({id: 'world', label: 'World', type: 'world'});
+          this.tabs.push({id: 'players', label: 'Players', type: 'players'});
+          this.tabs.push({id: 'config', label: 'Config', type: 'config'});
         }
-        this.tabs.push({ id: 'select-character-1', label: 'Select Character', type: 'select-character' });
-        this.tabs.push({ id: 'create-character', label: 'Create Character', type: 'create-character' });
+        this.tabs.push({id: 'select-character-1', label: 'Select Character', type: 'select-character'});
+        this.tabs.push({id: 'create-character', label: 'Create Character', type: 'create-character'});
 
         // Set active tab to the first one
         if (this.tabs.length > 0) {
@@ -107,26 +108,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     if (this.wsSubscription) {
       this.wsSubscription.unsubscribe();
     }
-  }
-
-  private subscribeToWs() {
-    this.wsSubscription = this.gameWebSocketService.getAllMessages().subscribe({
-      next: (msg) => {
-        console.log('Dashboard received message:', msg);
-        if (msg && msg.type === 'logout') {
-          const characterId = msg.id;
-          const tabId = `play-${characterId}`;
-          const tabIndex = this.tabs.findIndex(t => t.id === tabId);
-          if (tabIndex !== -1) {
-            console.log(`Closing tab ${tabId} due to logout message`);
-            // Create a fake event to reuse closeTab logic
-            const fakeEvent = { stopPropagation: () => {} } as Event;
-            this.closeTab(tabId, fakeEvent);
-          }
-        }
-      },
-      error: (err) => console.error('Dashboard WS error', err)
-    });
   }
 
   setActiveTab(tabId: string) {
@@ -166,7 +147,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       if (!hasSelectTab) {
         const newSelectTabId = `select-character-${Date.now()}`;
         // Insert it after the current tab
-        const newTab: Tab = { id: newSelectTabId, label: 'Select Character', type: 'select-character' };
+        const newTab: Tab = {id: newSelectTabId, label: 'Select Character', type: 'select-character'};
         this.tabs.splice(tabIndex + 1, 0, newTab);
       }
     }
@@ -197,6 +178,39 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.isAiDialogOpen = false;
   }
 
+  getActiveTab(): Tab | undefined {
+    return this.tabs.find(t => t.id === this.activeTabId);
+  }
+
+  getPlayingCharacterIds(): number[] {
+    return this.tabs
+      .filter(t => t.type === 'play-character')
+      .map(t => t.data.character.id);
+  }
+
+  private subscribeToWs() {
+    this.wsSubscription = this.gameWebSocketService.getAllMessages().subscribe({
+      next: (msg) => {
+        console.log('Dashboard received message:', msg);
+        if (msg && msg.type === 'logout') {
+          const characterId = msg.id;
+          const tabId = `play-${characterId}`;
+          const tabIndex = this.tabs.findIndex(t => t.id === tabId);
+          if (tabIndex !== -1) {
+            console.log(`Closing tab ${tabId} due to logout message`);
+            // Create a fake event to reuse closeTab logic
+            const fakeEvent = {
+              stopPropagation: () => {
+              }
+            } as Event;
+            this.closeTab(tabId, fakeEvent);
+          }
+        }
+      },
+      error: (err) => console.error('Dashboard WS error', err)
+    });
+  }
+
   private updateTime() {
     const now = new Date();
     this.localTime = now.toLocaleTimeString();
@@ -211,15 +225,5 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   private pad(num: number): string {
     return num < 10 ? '0' + num : num.toString();
-  }
-
-  getActiveTab(): Tab | undefined {
-    return this.tabs.find(t => t.id === this.activeTabId);
-  }
-
-  getPlayingCharacterIds(): number[] {
-    return this.tabs
-      .filter(t => t.type === 'play-character')
-      .map(t => t.data.character.id);
   }
 }

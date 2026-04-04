@@ -20,7 +20,7 @@ public class AssistCommand implements Command {
     @Override
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing assist command for Mobile: {}", Mobile.getName());
-        
+
         String[] parts = commandLine.trim().split("\\s+", 2);
         if (parts.length < 2) {
             communicationService.sendTextMessage(Mobile, "\n\nAssist who?");
@@ -49,7 +49,7 @@ public class AssistCommand implements Command {
         Mobile.setTarget(targetOfTarget);
         communicationService.sendTextMessage(Mobile, "\n\nYou jump in to assist " + assistTarget.getName() + " in the fight!");
         communicationService.roomMessage(Mobile, "\n" + Mobile.getName() + " jumps in to assist " + assistTarget.getName() + "!");
-        
+
         return Mono.empty();
     }
 

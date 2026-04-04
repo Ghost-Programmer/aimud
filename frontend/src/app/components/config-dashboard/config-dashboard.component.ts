@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
-import { Title } from '@angular/platform-browser';
-import { ConfigService } from '../../services/config.service';
-import { ItemService } from '../../services/item.service';
-import { Agent } from '../../models/agent.model';
-import { Item } from '../../models/item.model';
+import {Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {Title} from '@angular/platform-browser';
+import {ConfigService} from '../../services/config.service';
+import {ItemService} from '../../services/item.service';
+import {Agent} from '../../models/agent.model';
+import {Item} from '../../models/item.model';
 
 @Component({
   selector: 'app-config-dashboard',
@@ -93,6 +93,29 @@ export class ConfigDashboardComponent implements OnInit {
     });
   }
 
+  get totalAgentPages(): number {
+    return Math.max(1, Math.ceil(this.agents.length / this.agentPageSize));
+  }
+
+  get paginatedAgents(): Agent[] {
+    const startIndex = (this.currentAgentPage - 1) * this.agentPageSize;
+    return this.agents.slice(startIndex, startIndex + this.agentPageSize);
+  }
+
+  get agentRangeStart(): number {
+    if (this.agents.length === 0) {
+      return 0;
+    }
+    return (this.currentAgentPage - 1) * this.agentPageSize + 1;
+  }
+
+  get agentRangeEnd(): number {
+    if (this.agents.length === 0) {
+      return 0;
+    }
+    return Math.min(this.currentAgentPage * this.agentPageSize, this.agents.length);
+  }
+
   ngOnInit() {
     this.loadServerSettings();
     this.loadAgents();
@@ -127,29 +150,6 @@ export class ConfigDashboardComponent implements OnInit {
     });
   }
 
-  get totalAgentPages(): number {
-    return Math.max(1, Math.ceil(this.agents.length / this.agentPageSize));
-  }
-
-  get paginatedAgents(): Agent[] {
-    const startIndex = (this.currentAgentPage - 1) * this.agentPageSize;
-    return this.agents.slice(startIndex, startIndex + this.agentPageSize);
-  }
-
-  get agentRangeStart(): number {
-    if (this.agents.length === 0) {
-      return 0;
-    }
-    return (this.currentAgentPage - 1) * this.agentPageSize + 1;
-  }
-
-  get agentRangeEnd(): number {
-    if (this.agents.length === 0) {
-      return 0;
-    }
-    return Math.min(this.currentAgentPage * this.agentPageSize, this.agents.length);
-  }
-
   previousAgentPage() {
     if (this.currentAgentPage > 1) {
       this.currentAgentPage--;
@@ -160,10 +160,6 @@ export class ConfigDashboardComponent implements OnInit {
     if (this.currentAgentPage < this.totalAgentPages) {
       this.currentAgentPage++;
     }
-  }
-
-  private clampAgentPage() {
-    this.currentAgentPage = Math.min(Math.max(1, this.currentAgentPage), this.totalAgentPages);
   }
 
   openAgentForm(agent: Agent | null = null) {
@@ -356,7 +352,7 @@ export class ConfigDashboardComponent implements OnInit {
 
   updateStartingItemsFormValue() {
     const ids = this.currentClassStartingItems.map(i => i.id).join(',');
-    this.classForm.patchValue({ startingItems: ids });
+    this.classForm.patchValue({startingItems: ids});
   }
 
   onSelectItemIdChange(event: Event) {
@@ -382,7 +378,7 @@ export class ConfigDashboardComponent implements OnInit {
 
   updateStartingSkillsFormValue() {
     const names = this.currentClassStartingSkills.join(',');
-    this.classForm.patchValue({ startingSkills: names });
+    this.classForm.patchValue({startingSkills: names});
   }
 
   onSelectSkillChange(event: Event) {
@@ -416,5 +412,9 @@ export class ConfigDashboardComponent implements OnInit {
         this.loadClasses();
       });
     }
+  }
+
+  private clampAgentPage() {
+    this.currentAgentPage = Math.min(Math.max(1, this.currentAgentPage), this.totalAgentPages);
   }
 }

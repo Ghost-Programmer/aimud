@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +8,8 @@ import { Observable } from 'rxjs';
 export class CharacterService {
   private apiUrl = '/api/characters';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+  }
 
   createCharacter(character: any): Observable<any> {
     return this.http.post(this.apiUrl, character);

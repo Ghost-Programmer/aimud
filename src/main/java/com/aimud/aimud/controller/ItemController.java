@@ -61,9 +61,9 @@ public class ItemController {
                     int totalItems = items.size();
                     int fromIndex = page * size;
                     int toIndex = Math.min(fromIndex + size, totalItems);
-                    
-                    List<Item> pagedItems = (fromIndex < totalItems) 
-                            ? items.subList(fromIndex, toIndex) 
+
+                    List<Item> pagedItems = (fromIndex < totalItems)
+                            ? items.subList(fromIndex, toIndex)
                             : List.of();
 
                     Map<String, Object> response = new HashMap<>();
@@ -104,7 +104,7 @@ public class ItemController {
                     existingItem.setProperty3(item.getProperty3());
                     existingItem.setProperty4(item.getProperty4());
                     existingItem.setEffects(item.getEffects());
-                    
+
                     return itemService.saveItem(existingItem);
                 })
                 .map(ResponseEntity::ok)

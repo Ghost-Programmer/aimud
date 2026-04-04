@@ -1,20 +1,22 @@
 <div class="create-character-container">
-  <form [formGroup]="characterForm" (ngSubmit)="saveCharacter()">
+  <form (ngSubmit)="saveCharacter()" [formGroup]="characterForm">
     <div class="form-group">
       <label for="name">Character Name</label>
-      <input type="text" id="name" formControlName="name">
+      <input formControlName="name" id="name" type="text">
     </div>
 
     <div class="form-group">
       <label for="race">Race</label>
       <div class="select-with-info">
-        <select id="race" formControlName="raceId">
+        <select formControlName="raceId" id="race">
           <option [ngValue]="null" disabled>Select a Race</option>
           <option *ngFor="let race of races" [ngValue]="race.id">{{ race.name }}</option>
         </select>
-        <div class="info-icon" *ngIf="characterForm.get('raceId')?.value" [title]="getSelectedRaceDescription()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
-            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+        <div *ngIf="characterForm.get('raceId')?.value" [title]="getSelectedRaceDescription()" class="info-icon">
+          <svg class="bi bi-info-circle-fill" fill="currentColor" height="16" viewBox="0 0 16 16"
+               width="16" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
           </svg>
         </div>
       </div>
@@ -23,13 +25,15 @@
     <div class="form-group">
       <label for="class">Class</label>
       <div class="select-with-info">
-        <select id="class" formControlName="classId">
+        <select formControlName="classId" id="class">
           <option [ngValue]="null" disabled>Select a Class</option>
           <option *ngFor="let cls of classes" [ngValue]="cls.id">{{ cls.name }}</option>
         </select>
-        <div class="info-icon" *ngIf="characterForm.get('classId')?.value" [title]="getSelectedClassDescription()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
-            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+        <div *ngIf="characterForm.get('classId')?.value" [title]="getSelectedClassDescription()" class="info-icon">
+          <svg class="bi bi-info-circle-fill" fill="currentColor" height="16" viewBox="0 0 16 16"
+               width="16" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
           </svg>
         </div>
       </div>
@@ -39,48 +43,48 @@
   <div class="stats-table-container">
     <table class="stats-table">
       <thead>
-        <tr>
-          <th>Stat</th>
-          <th>Base</th>
-          <th>Current</th>
-        </tr>
+      <tr>
+        <th>Stat</th>
+        <th>Base</th>
+        <th>Current</th>
+      </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>Strength</td>
-          <td>{{ baseStats.strength }}</td>
-          <td>{{ currentStats.currentStrength }}</td>
-        </tr>
-        <tr>
-          <td>Dexterity</td>
-          <td>{{ baseStats.dexterity }}</td>
-          <td>{{ currentStats.currentDexterity }}</td>
-        </tr>
-        <tr>
-          <td>Constitution</td>
-          <td>{{ baseStats.constitution }}</td>
-          <td>{{ currentStats.currentConstitution }}</td>
-        </tr>
-        <tr>
-          <td>Intelligence</td>
-          <td>{{ baseStats.intelligence }}</td>
-          <td>{{ currentStats.currentIntelligence }}</td>
-        </tr>
-        <tr>
-          <td>Wisdom</td>
-          <td>{{ baseStats.wisdom }}</td>
-          <td>{{ currentStats.currentWisdom }}</td>
-        </tr>
-        <tr>
-          <td>Charisma</td>
-          <td>{{ baseStats.charisma }}</td>
-          <td>{{ currentStats.currentCharisma }}</td>
-        </tr>
+      <tr>
+        <td>Strength</td>
+        <td>{{ baseStats.strength }}</td>
+        <td>{{ currentStats.currentStrength }}</td>
+      </tr>
+      <tr>
+        <td>Dexterity</td>
+        <td>{{ baseStats.dexterity }}</td>
+        <td>{{ currentStats.currentDexterity }}</td>
+      </tr>
+      <tr>
+        <td>Constitution</td>
+        <td>{{ baseStats.constitution }}</td>
+        <td>{{ currentStats.currentConstitution }}</td>
+      </tr>
+      <tr>
+        <td>Intelligence</td>
+        <td>{{ baseStats.intelligence }}</td>
+        <td>{{ currentStats.currentIntelligence }}</td>
+      </tr>
+      <tr>
+        <td>Wisdom</td>
+        <td>{{ baseStats.wisdom }}</td>
+        <td>{{ currentStats.currentWisdom }}</td>
+      </tr>
+      <tr>
+        <td>Charisma</td>
+        <td>{{ baseStats.charisma }}</td>
+        <td>{{ currentStats.currentCharisma }}</td>
+      </tr>
       </tbody>
     </table>
   </div>
 
-  <div class="derived-stats-container" *ngIf="derivedStats.maxHp">
+  <div *ngIf="derivedStats.maxHp" class="derived-stats-container">
     <h3>Derived Stats</h3>
     <div class="derived-stats-grid">
       <div class="derived-stat">
@@ -127,11 +131,15 @@
   </div>
 
   <div class="actions">
-    <button class="icon-btn" (click)="rollStats()" title="Roll Stats">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dice-5-fill" viewBox="0 0 16 16">
-        <path d="M3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3H3zm1 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM8 8a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm4 2.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM4 10.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+    <button (click)="rollStats()" class="icon-btn" title="Roll Stats">
+      <svg class="bi bi-dice-5-fill" fill="currentColor" height="16" viewBox="0 0 16 16" width="16"
+           xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3H3zm1 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM8 8a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm4 2.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM4 10.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
       </svg>
     </button>
-    <button class="save-btn" (click)="saveCharacter()" [disabled]="characterForm.invalid || baseStats.strength === 0">Save Character</button>
+    <button (click)="saveCharacter()" [disabled]="characterForm.invalid || baseStats.strength === 0" class="save-btn">
+      Save Character
+    </button>
   </div>
 </div>

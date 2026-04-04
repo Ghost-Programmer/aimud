@@ -1,15 +1,7 @@
 package com.aimud.aimud.service;
 
-import com.aimud.aimud.model.Agent;
-import com.aimud.aimud.model.CharacterClass;
-import com.aimud.aimud.model.Race;
-import com.aimud.aimud.model.ServerSettings;
-import com.aimud.aimud.model.SkillRegistry;
-import com.aimud.aimud.repository.AgentRepository;
-import com.aimud.aimud.repository.CharacterClassRepository;
-import com.aimud.aimud.repository.RaceRepository;
-import com.aimud.aimud.repository.ServerSettingsRepository;
-import com.aimud.aimud.repository.SkillRegistryRepository;
+import com.aimud.aimud.model.*;
+import com.aimud.aimud.repository.*;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;

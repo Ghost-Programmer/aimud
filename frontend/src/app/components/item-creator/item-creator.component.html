@@ -1,74 +1,80 @@
 <div class="item-creator-container">
   <div class="filters-bar">
     <div class="filter-group">
-      <input type="text" [(ngModel)]="filters.name" (ngModelChange)="onSearch()" placeholder="Search by name..." class="search-input">
+      <input (ngModelChange)="onSearch()" [(ngModel)]="filters.name" class="search-input" placeholder="Search by name..."
+             type="text">
     </div>
 
     <div class="filter-group">
-      <select [(ngModel)]="filters.type" (change)="onSearch()" class="filter-select">
+      <select (change)="onSearch()" [(ngModel)]="filters.type" class="filter-select">
         <option value="">All Types</option>
         <option *ngFor="let type of itemTypes" [value]="type">{{ type }}</option>
       </select>
     </div>
 
     <div class="filter-group">
-      <select [(ngModel)]="filters.location" (change)="onSearch()" class="filter-select">
+      <select (change)="onSearch()" [(ngModel)]="filters.location" class="filter-select">
         <option value="">All Locations</option>
         <option *ngFor="let loc of wearLocations" [value]="loc">{{ loc }}</option>
       </select>
     </div>
 
     <div class="filter-group cost-filters">
-      <input type="number" [(ngModel)]="filters.minValue" (ngModelChange)="onSearch()" placeholder="Min Cost" class="cost-input">
-      <input type="number" [(ngModel)]="filters.maxValue" (ngModelChange)="onSearch()" placeholder="Max Cost" class="cost-input">
+      <input (ngModelChange)="onSearch()" [(ngModel)]="filters.minValue" class="cost-input" placeholder="Min Cost"
+             type="number">
+      <input (ngModelChange)="onSearch()" [(ngModel)]="filters.maxValue" class="cost-input" placeholder="Max Cost"
+             type="number">
     </div>
 
-    <button class="refresh-btn" (click)="loadItems()">&#x21bb;</button>
-    <button class="create-btn" (click)="openCreateDialog()">+ New Item</button>
+    <button (click)="loadItems()" class="refresh-btn">&#x21bb;</button>
+    <button (click)="openCreateDialog()" class="create-btn">+ New Item</button>
   </div>
 
   <div class="table-container">
     <table class="items-table">
       <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Location</th>
-          <th>Cost</th>
-          <th>Actions</th>
-        </tr>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Location</th>
+        <th>Cost</th>
+        <th>Actions</th>
+      </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let item of items" (click)="editItem(item)" class="clickable-row">
-          <td>{{ item.name }}</td>
-          <td>{{ item.itemType }}</td>
-          <td>{{ item.wearLocation }}</td>
-          <td class="gold-text">{{ item.value }}g</td>
-          <td>
-            <button class="icon-btn delete-btn" (click)="deleteItem(item, $event)" title="Delete">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
-                  <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
-                </svg>
-              </button>
-          </td>
-        </tr>
-        <tr *ngIf="items.length === 0">
-          <td colspan="5" class="no-results">No items found matching your criteria.</td>
-        </tr>
+      <tr (click)="editItem(item)" *ngFor="let item of items" class="clickable-row">
+        <td>{{ item.name }}</td>
+        <td>{{ item.itemType }}</td>
+        <td>{{ item.wearLocation }}</td>
+        <td class="gold-text">{{ item.value }}g</td>
+        <td>
+          <button (click)="deleteItem(item, $event)" class="icon-btn delete-btn" title="Delete">
+            <svg class="bi bi-trash-fill" fill="currentColor" height="16" viewBox="0 0 16 16" width="16"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+            </svg>
+          </button>
+        </td>
+      </tr>
+      <tr *ngIf="items.length === 0">
+        <td class="no-results" colspan="5">No items found matching your criteria.</td>
+      </tr>
       </tbody>
     </table>
   </div>
 
   <div class="pagination">
-    <button [disabled]="page === 0" (click)="prevPage()" class="pag-btn">Previous</button>
-    <span class="page-info">Page {{ page + 1 }} of {{ Math.ceil(totalItems / size) || 1 }} ({{ totalItems }} total)</span>
-    <button [disabled]="(page + 1) * size >= totalItems" (click)="nextPage()" class="pag-btn">Next</button>
+    <button (click)="prevPage()" [disabled]="page === 0" class="pag-btn">Previous</button>
+    <span class="page-info">Page {{ page + 1 }} of {{ Math.ceil(totalItems / size) || 1 }} ({{ totalItems }}
+      total)</span>
+    <button (click)="nextPage()" [disabled]="(page + 1) * size >= totalItems" class="pag-btn">Next</button>
   </div>
 
   <app-item-dialog
-    *ngIf="showDialog"
-    [itemData]="selectedItem"
+    (cancelDialog)="onCancelDialog()"
     (saveItem)="onSaveItem($event)"
-    (cancelDialog)="onCancelDialog()">
+    *ngIf="showDialog"
+    [itemData]="selectedItem">
   </app-item-dialog>
 </div>

@@ -17,6 +17,7 @@ public abstract class MoveCommand implements Command {
     protected final RoomService roomService;
 
     protected abstract Long getNextRoomId(Room currentRoom);
+
     protected abstract String getDirectionName();
 
     @Override

@@ -3,11 +3,7 @@ package com.aimud.aimud.spells;
 import com.aimud.aimud.annontation.MagicSpell;
 import com.aimud.aimud.model.Effect;
 import com.aimud.aimud.model.Mobile;
-import com.aimud.aimud.service.CharacterService;
-import com.aimud.aimud.service.CommunicationService;
-import com.aimud.aimud.service.EffectService;
-import com.aimud.aimud.service.MobileService;
-import com.aimud.aimud.service.SkillService;
+import com.aimud.aimud.service.*;
 import com.aimud.aimud.types.SkillsType;
 
 @MagicSpell(name = "mresist")

@@ -11,8 +11,8 @@ import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -78,7 +78,7 @@ public class GameWebSocketHandler implements WebSocketHandler {
                         map.put("type", "target");
                         map.put("id", targetUpdate.getCharacter().getId());
                         map.put("data", targetUpdate.getTarget());
-                        
+
                         String json = objectMapper.writeValueAsString(map);
                         return Mono.just(json);
                     } catch (JsonProcessingException e) {

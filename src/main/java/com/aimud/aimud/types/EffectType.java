@@ -52,11 +52,6 @@ public enum EffectType {
         this.modifier4Name = modifier4Name;
     }
 
-    @JsonValue
-    public String getLabel() {
-        return label;
-    }
-
     @JsonCreator
     public static EffectType fromString(String value) {
         if (value == null || value.isBlank()) {
@@ -66,6 +61,11 @@ public enum EffectType {
                 .filter(et -> et.name().equalsIgnoreCase(value) || et.getLabel().equalsIgnoreCase(value))
                 .findFirst()
                 .orElse(UNKNOWN);
+    }
+
+    @JsonValue
+    public String getLabel() {
+        return label;
     }
 
 }

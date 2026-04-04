@@ -1,8 +1,8 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { CharacterService } from '../../services/character.service';
-import { ConfigService } from '../../services/config.service';
-import { forkJoin } from 'rxjs';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {CharacterService} from '../../services/character.service';
+import {ConfigService} from '../../services/config.service';
+import {forkJoin} from 'rxjs';
 
 @Component({
   selector: 'app-character-select',
@@ -21,7 +21,12 @@ export class CharacterSelectComponent implements OnInit {
   constructor(
     private characterService: CharacterService,
     private configService: ConfigService
-  ) {}
+  ) {
+  }
+
+  get filteredCharacters() {
+    return this.characters.filter(c => !this.excludeCharacterIds.includes(c.id));
+  }
 
   ngOnInit() {
     this.loadData();
@@ -33,7 +38,7 @@ export class CharacterSelectComponent implements OnInit {
       races: this.configService.getAllRaces(),
       classes: this.configService.getAllCharacterClasses()
     }).subscribe({
-      next: ({ characters, races, classes }) => {
+      next: ({characters, races, classes}) => {
         this.characters = [...characters].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
         this.races = [...races].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
         this.classes = [...classes].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
@@ -42,10 +47,6 @@ export class CharacterSelectComponent implements OnInit {
         console.error('Error loading data', error);
       }
     });
-  }
-
-  get filteredCharacters() {
-    return this.characters.filter(c => !this.excludeCharacterIds.includes(c.id));
   }
 
   selectCharacter(character: any) {

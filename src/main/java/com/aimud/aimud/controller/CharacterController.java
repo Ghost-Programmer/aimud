@@ -58,7 +58,7 @@ public class CharacterController {
     public Mono<ResponseEntity<Object>> updateCharacter(@PathVariable Long id, @RequestBody Mobile character) {
         log.info("REST Request to update character: {}", id);
         return characterService.updateCharacter(id, character)
-                .map(updated -> ResponseEntity.ok((Object)updated))
+                .map(updated -> ResponseEntity.ok((Object) updated))
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
@@ -73,7 +73,7 @@ public class CharacterController {
     public Mono<ResponseEntity<Object>> getCharacter(@PathVariable Long id) {
         log.info("REST Request to get character: {}", id);
         return characterService.getCharacterById(id)
-                .map(c -> ResponseEntity.ok((Object)c))
+                .map(c -> ResponseEntity.ok((Object) c))
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
@@ -116,7 +116,7 @@ public class CharacterController {
         log.info("REST Request to get room for character: {}", id);
         return characterService.getCharacterById(id)
                 .flatMap(character -> roomService.getRoom(character.getCurrentRoomId())
-                        .map(room -> ResponseEntity.ok((Object)room))
+                        .map(room -> ResponseEntity.ok((Object) room))
                         .defaultIfEmpty(ResponseEntity.notFound().build()))
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }

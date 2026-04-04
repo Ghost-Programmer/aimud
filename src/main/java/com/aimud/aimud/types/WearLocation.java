@@ -28,11 +28,6 @@ public enum WearLocation {
         this.label = label;
     }
 
-    @JsonValue
-    public String getLabel() {
-        return label;
-    }
-
     @JsonCreator
     public static WearLocation fromString(String value) {
         if (value == null || value.isBlank()) {
@@ -42,5 +37,10 @@ public enum WearLocation {
                 .filter(wl -> wl.name().equalsIgnoreCase(value) || wl.getLabel().equalsIgnoreCase(value))
                 .findFirst()
                 .orElse(NONE);
+    }
+
+    @JsonValue
+    public String getLabel() {
+        return label;
     }
 }

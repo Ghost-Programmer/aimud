@@ -1,13 +1,9 @@
 package com.aimud.aimud.service;
 
-import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Item;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.User;
-import com.aimud.aimud.repository.CharacterClassRepository;
-import com.aimud.aimud.repository.CharacterEffectRepository;
-import com.aimud.aimud.repository.MobileRepository;
-import com.aimud.aimud.repository.SkillRepository;
-import com.aimud.aimud.repository.UserRepository;
+import com.aimud.aimud.repository.*;
 import com.aimud.aimud.types.ItemType;
 import com.aimud.aimud.types.WearLocation;
 import org.junit.jupiter.api.BeforeEach;
@@ -159,7 +155,7 @@ class CharacterServiceTest {
         character.setId(1L);
         character.setUserId(99L);
         character.setName("TestHero");
-        
+
         Item oldHead = new Item();
         oldHead.setId(10L);
         oldHead.setName("Old Helmet");
@@ -178,7 +174,7 @@ class CharacterServiceTest {
         when(mobileRepository.save(any(Mobile.class))).thenReturn(Mono.just(character));
         when(mobileRepository.findById(1L)).thenReturn(Mono.just(character));
         when(statService.updateCurrentStats(any(Mobile.class))).thenReturn(Mono.just(character));
-        
+
         // Mocking databaseClient for updateInventory
         when(databaseClient.sql(anyString())).thenReturn(mock(DatabaseClient.GenericExecuteSpec.class, RETURNS_DEEP_STUBS));
 
@@ -208,7 +204,7 @@ class CharacterServiceTest {
         ring1.setName("Gold Ring");
         ring1.setItemType(ItemType.MISC); // Initially MISC to avoid being equippable if we test that
         ring1.setWearLocation(WearLocation.FINGER);
-        
+
         // Equippable ring
         Item newRing = new Item();
         newRing.setId(22L);
@@ -221,7 +217,7 @@ class CharacterServiceTest {
         when(mobileRepository.save(any(Mobile.class))).thenReturn(Mono.just(character));
         when(mobileRepository.findById(1L)).thenReturn(Mono.just(character));
         when(statService.updateCurrentStats(any(Mobile.class))).thenReturn(Mono.just(character));
-        
+
         // Mocks for DB
         when(databaseClient.sql(anyString())).thenReturn(mock(DatabaseClient.GenericExecuteSpec.class, RETURNS_DEEP_STUBS));
 
@@ -237,7 +233,7 @@ class CharacterServiceTest {
         newRing2.setItemType(ItemType.LIGHT_ARMOR);
         newRing2.setWearLocation(WearLocation.FINGER);
         character.getInventory().add(newRing2);
-        
+
         characterService.equipItem(character, 23L).block();
         assertThat(character.getRightFinger()).isEqualTo(newRing);
         assertThat(character.getLeftFinger()).isEqualTo(newRing2);

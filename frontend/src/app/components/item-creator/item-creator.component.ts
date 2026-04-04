@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { ItemService } from '../../services/item.service';
-import { Item, ItemType, WearLocation } from '../../models/item.model';
-import { ItemDialogComponent } from '../item-dialog/item-dialog.component';
+import {Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {ItemService} from '../../services/item.service';
+import {Item, ItemType, WearLocation} from '../../models/item.model';
+import {ItemDialogComponent} from '../item-dialog/item-dialog.component';
 
 @Component({
   selector: 'app-item-creator',
@@ -34,14 +34,15 @@ export class ItemCreatorComponent implements OnInit {
 
   constructor(
     private itemService: ItemService
-  ) {}
-
-  ngOnInit(): void {
-    this.loadItems();
+  ) {
   }
 
   get Math() {
     return Math;
+  }
+
+  ngOnInit(): void {
+    this.loadItems();
   }
 
   loadItems() {

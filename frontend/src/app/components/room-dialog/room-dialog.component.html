@@ -1,21 +1,22 @@
-<div class="dialog-overlay" (click)="onCancel()">
-  <div class="dialog-container" (click)="$event.stopPropagation()">
+<div (click)="onCancel()" class="dialog-overlay">
+  <div (click)="$event.stopPropagation()" class="dialog-container">
     <h2>{{ editRoom.id ? 'Edit Room' : 'Create New Room' }}</h2>
 
     <div class="form-content">
       <div class="form-group">
         <label for="name">Name</label>
-        <input id="name" type="text" [(ngModel)]="editRoom.name" placeholder="Room name" class="form-input">
+        <input [(ngModel)]="editRoom.name" class="form-input" id="name" placeholder="Room name" type="text">
       </div>
 
       <div class="form-group">
         <label for="description">Description</label>
-        <textarea id="description" [(ngModel)]="editRoom.description" rows="4" placeholder="Room description" class="form-input"></textarea>
+        <textarea [(ngModel)]="editRoom.description" class="form-input" id="description" placeholder="Room description"
+                  rows="4"></textarea>
       </div>
 
       <div class="form-group">
         <label for="roomType">Room Type</label>
-        <select id="roomType" [(ngModel)]="editRoom.roomType" class="form-input">
+        <select [(ngModel)]="editRoom.roomType" class="form-input" id="roomType">
           <option *ngFor="let type of roomTypes" [value]="type">{{ type }}</option>
         </select>
       </div>
@@ -33,49 +34,49 @@
           <!-- North -->
           <div class="exit-row">
             <div class="dir">North</div>
-            <div class="dest"><input type="number" [(ngModel)]="editRoom.northId" class="form-input small"></div>
-            <div class="door"><input type="checkbox" [(ngModel)]="editRoom.northDoor"></div>
-            <div class="open"><input type="checkbox" [(ngModel)]="editRoom.northDoorOpen"></div>
+            <div class="dest"><input [(ngModel)]="editRoom.northId" class="form-input small" type="number"></div>
+            <div class="door"><input [(ngModel)]="editRoom.northDoor" type="checkbox"></div>
+            <div class="open"><input [(ngModel)]="editRoom.northDoorOpen" type="checkbox"></div>
           </div>
 
           <!-- South -->
           <div class="exit-row">
             <div class="dir">South</div>
-            <div class="dest"><input type="number" [(ngModel)]="editRoom.southId" class="form-input small"></div>
-            <div class="door"><input type="checkbox" [(ngModel)]="editRoom.southDoor"></div>
-            <div class="open"><input type="checkbox" [(ngModel)]="editRoom.southDoorOpen"></div>
+            <div class="dest"><input [(ngModel)]="editRoom.southId" class="form-input small" type="number"></div>
+            <div class="door"><input [(ngModel)]="editRoom.southDoor" type="checkbox"></div>
+            <div class="open"><input [(ngModel)]="editRoom.southDoorOpen" type="checkbox"></div>
           </div>
 
           <!-- East -->
           <div class="exit-row">
             <div class="dir">East</div>
-            <div class="dest"><input type="number" [(ngModel)]="editRoom.eastId" class="form-input small"></div>
-            <div class="door"><input type="checkbox" [(ngModel)]="editRoom.eastDoor"></div>
-            <div class="open"><input type="checkbox" [(ngModel)]="editRoom.eastDoorOpen"></div>
+            <div class="dest"><input [(ngModel)]="editRoom.eastId" class="form-input small" type="number"></div>
+            <div class="door"><input [(ngModel)]="editRoom.eastDoor" type="checkbox"></div>
+            <div class="open"><input [(ngModel)]="editRoom.eastDoorOpen" type="checkbox"></div>
           </div>
 
           <!-- West -->
           <div class="exit-row">
             <div class="dir">West</div>
-            <div class="dest"><input type="number" [(ngModel)]="editRoom.westId" class="form-input small"></div>
-            <div class="door"><input type="checkbox" [(ngModel)]="editRoom.westDoor"></div>
-            <div class="open"><input type="checkbox" [(ngModel)]="editRoom.westDoorOpen"></div>
+            <div class="dest"><input [(ngModel)]="editRoom.westId" class="form-input small" type="number"></div>
+            <div class="door"><input [(ngModel)]="editRoom.westDoor" type="checkbox"></div>
+            <div class="open"><input [(ngModel)]="editRoom.westDoorOpen" type="checkbox"></div>
           </div>
 
           <!-- Up -->
           <div class="exit-row">
             <div class="dir">Up</div>
-            <div class="dest"><input type="number" [(ngModel)]="editRoom.upId" class="form-input small"></div>
-            <div class="door"><input type="checkbox" [(ngModel)]="editRoom.upDoor"></div>
-            <div class="open"><input type="checkbox" [(ngModel)]="editRoom.upDoorOpen"></div>
+            <div class="dest"><input [(ngModel)]="editRoom.upId" class="form-input small" type="number"></div>
+            <div class="door"><input [(ngModel)]="editRoom.upDoor" type="checkbox"></div>
+            <div class="open"><input [(ngModel)]="editRoom.upDoorOpen" type="checkbox"></div>
           </div>
 
           <!-- Down -->
           <div class="exit-row">
             <div class="dir">Down</div>
-            <div class="dest"><input type="number" [(ngModel)]="editRoom.downId" class="form-input small"></div>
-            <div class="door"><input type="checkbox" [(ngModel)]="editRoom.downDoor"></div>
-            <div class="open"><input type="checkbox" [(ngModel)]="editRoom.downDoorOpen"></div>
+            <div class="dest"><input [(ngModel)]="editRoom.downId" class="form-input small" type="number"></div>
+            <div class="door"><input [(ngModel)]="editRoom.downDoor" type="checkbox"></div>
+            <div class="open"><input [(ngModel)]="editRoom.downDoorOpen" type="checkbox"></div>
           </div>
         </div>
       </div>
@@ -83,7 +84,7 @@
       <div class="items-section">
         <h3>Items in Room</h3>
         <div class="item-selection">
-          <select [ngModel]="selectedItemId" (change)="onSelectItemIdChange($event)" class="form-input">
+          <select (change)="onSelectItemIdChange($event)" [ngModel]="selectedItemId" class="form-input">
             <option [value]="null">-- Select an item to add --</option>
             <option *ngFor="let item of availableItems" [value]="item.id">
               {{ item.name }} ({{ item.itemType }})
@@ -102,8 +103,8 @@
     </div>
 
     <div class="actions">
-      <button class="cancel-btn" (click)="onCancel()">Cancel</button>
-      <button class="save-btn" (click)="onSave()">Save</button>
+      <button (click)="onCancel()" class="cancel-btn">Cancel</button>
+      <button (click)="onSave()" class="save-btn">Save</button>
     </div>
   </div>
 </div>

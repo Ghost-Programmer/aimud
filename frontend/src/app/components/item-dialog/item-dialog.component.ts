@@ -1,9 +1,9 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Item, ItemType, WearLocation } from '../../models/item.model';
-import { Effect, EffectType } from '../../models/effect.model';
-import { EffectService } from '../../services/effect.service';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {Item, ItemType, WearLocation} from '../../models/item.model';
+import {Effect} from '../../models/effect.model';
+import {EffectService} from '../../services/effect.service';
 
 @Component({
   selector: 'app-item-dialog',
@@ -36,7 +36,8 @@ export class ItemDialogComponent implements OnInit {
   availableEffects: Effect[] = [];
   selectedEffectId: number | null = null;
 
-  constructor(private effectService: EffectService) {}
+  constructor(private effectService: EffectService) {
+  }
 
   ngOnInit(): void {
     if (this.itemData) {

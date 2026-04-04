@@ -2,24 +2,24 @@
   <!-- Server Settings -->
   <section class="config-section">
     <h2>Server Settings</h2>
-    <form [formGroup]="serverSettingsForm" (ngSubmit)="saveServerSettings()">
+    <form (ngSubmit)="saveServerSettings()" [formGroup]="serverSettingsForm">
       <div class="form-group">
         <label for="serverName">Server Name</label>
-        <input type="text" id="serverName" formControlName="serverName">
+        <input formControlName="serverName" id="serverName" type="text">
       </div>
       <div class="form-group checkbox-group">
-        <input type="checkbox" id="allowNewUser" formControlName="allowNewUser">
+        <input formControlName="allowNewUser" id="allowNewUser" type="checkbox">
         <label for="allowNewUser">Allow New Users</label>
       </div>
       <div class="form-group checkbox-group">
-        <input type="checkbox" id="maintenance" formControlName="maintenance">
+        <input formControlName="maintenance" id="maintenance" type="checkbox">
         <label for="maintenance">Maintenance Mode</label>
       </div>
       <div class="form-group">
         <label for="maintenanceText">Maintenance Text</label>
-        <input type="text" id="maintenanceText" formControlName="maintenanceText">
+        <input formControlName="maintenanceText" id="maintenanceText" type="text">
       </div>
-      <button type="submit" class="btn-primary" [disabled]="serverSettingsForm.invalid">Save Settings</button>
+      <button [disabled]="serverSettingsForm.invalid" class="btn-primary" type="submit">Save Settings</button>
     </form>
   </section>
 
@@ -27,42 +27,48 @@
   <section class="config-section">
     <div class="section-header">
       <h2>Agents</h2>
-      <button class="btn-secondary" (click)="openAgentForm()">Add Agent</button>
+      <button (click)="openAgentForm()" class="btn-secondary">Add Agent</button>
     </div>
     <div class="table-container">
       <table>
         <thead>
-          <tr>
-            <th>ID</th>
-            <th>Title</th>
-            <th>Content</th>
-            <th>Actions</th>
-          </tr>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Content</th>
+          <th>Actions</th>
+        </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let agent of paginatedAgents" (click)="openAgentForm(agent)" class="clickable-row">
-            <td>{{ agent.id }}</td>
-            <td>{{ agent.title }}</td>
-            <td class="agent-content-cell">{{ agent.content }}</td>
-            <td class="actions-cell">
-              <button class="icon-btn delete-btn" (click)="deleteAgent(agent.id, $event)" title="Delete">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
-                  <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
-                </svg>
-              </button>
-            </td>
-          </tr>
+        <tr (click)="openAgentForm(agent)" *ngFor="let agent of paginatedAgents" class="clickable-row">
+          <td>{{ agent.id }}</td>
+          <td>{{ agent.title }}</td>
+          <td class="agent-content-cell">{{ agent.content }}</td>
+          <td class="actions-cell">
+            <button (click)="deleteAgent(agent.id, $event)" class="icon-btn delete-btn" title="Delete">
+              <svg class="bi bi-trash-fill" fill="currentColor" height="16" viewBox="0 0 16 16"
+                   width="16" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
         </tbody>
       </table>
     </div>
-    <div class="pagination-bar" *ngIf="agents.length > 0">
+    <div *ngIf="agents.length > 0" class="pagination-bar">
       <div class="pagination-summary">
         Showing {{ agentRangeStart }}-{{ agentRangeEnd }} of {{ agents.length }} agents
       </div>
       <div class="pagination-controls">
-        <button type="button" class="btn-secondary" (click)="previousAgentPage()" [disabled]="currentAgentPage === 1">Previous</button>
+        <button (click)="previousAgentPage()" [disabled]="currentAgentPage === 1" class="btn-secondary" type="button">
+          Previous
+        </button>
         <span class="page-indicator">Page {{ currentAgentPage }} of {{ totalAgentPages }}</span>
-        <button type="button" class="btn-secondary" (click)="nextAgentPage()" [disabled]="currentAgentPage === totalAgentPages">Next</button>
+        <button (click)="nextAgentPage()" [disabled]="currentAgentPage === totalAgentPages" class="btn-secondary"
+                type="button">Next
+        </button>
       </div>
     </div>
   </section>
@@ -71,29 +77,31 @@
   <section class="config-section">
     <div class="section-header">
       <h2>Races</h2>
-      <button class="btn-secondary" (click)="openRaceForm()">Add Race</button>
+      <button (click)="openRaceForm()" class="btn-secondary">Add Race</button>
     </div>
     <div class="table-container">
       <table>
         <thead>
-          <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Actions</th>
-          </tr>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Actions</th>
+        </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let race of races" (click)="openRaceForm(race)" class="clickable-row">
-            <td>{{ race.name }}</td>
-            <td>{{ race.description }}</td>
-            <td class="actions-cell">
-              <button class="icon-btn delete-btn" (click)="deleteRace(race.id, $event)" title="Delete">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
-                  <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
-                </svg>
-              </button>
-            </td>
-          </tr>
+        <tr (click)="openRaceForm(race)" *ngFor="let race of races" class="clickable-row">
+          <td>{{ race.name }}</td>
+          <td>{{ race.description }}</td>
+          <td class="actions-cell">
+            <button (click)="deleteRace(race.id, $event)" class="icon-btn delete-btn" title="Delete">
+              <svg class="bi bi-trash-fill" fill="currentColor" height="16" viewBox="0 0 16 16"
+                   width="16" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
         </tbody>
       </table>
     </div>
@@ -103,29 +111,31 @@
   <section class="config-section">
     <div class="section-header">
       <h2>Character Classes</h2>
-      <button class="btn-secondary" (click)="openClassForm()">Add Class</button>
+      <button (click)="openClassForm()" class="btn-secondary">Add Class</button>
     </div>
     <div class="table-container">
       <table>
         <thead>
-          <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Actions</th>
-          </tr>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Actions</th>
+        </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let cls of classes" (click)="openClassForm(cls)" class="clickable-row">
-            <td>{{ cls.name }}</td>
-            <td>{{ cls.description }}</td>
-            <td class="actions-cell">
-              <button class="icon-btn delete-btn" (click)="deleteClass(cls.id, $event)" title="Delete">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
-                  <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
-                </svg>
-              </button>
-            </td>
-          </tr>
+        <tr (click)="openClassForm(cls)" *ngFor="let cls of classes" class="clickable-row">
+          <td>{{ cls.name }}</td>
+          <td>{{ cls.description }}</td>
+          <td class="actions-cell">
+            <button (click)="deleteClass(cls.id, $event)" class="icon-btn delete-btn" title="Delete">
+              <svg class="bi bi-trash-fill" fill="currentColor" height="16" viewBox="0 0 16 16"
+                   width="16" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
         </tbody>
       </table>
     </div>
@@ -133,74 +143,74 @@
 </div>
 
 <!-- Agent Form Dialog -->
-<div class="dialog-overlay" *ngIf="isAgentFormVisible">
+<div *ngIf="isAgentFormVisible" class="dialog-overlay">
   <div class="dialog-content">
     <h2>{{ selectedAgent ? 'Edit' : 'Add' }} Agent</h2>
-    <form [formGroup]="agentForm" (ngSubmit)="saveAgent()">
+    <form (ngSubmit)="saveAgent()" [formGroup]="agentForm">
       <div class="form-group">
         <label for="agentTitle">Title</label>
-        <input type="text" id="agentTitle" formControlName="title">
+        <input formControlName="title" id="agentTitle" type="text">
       </div>
       <div class="form-group">
         <label for="agentContent">Content</label>
-        <textarea id="agentContent" formControlName="content" rows="12"></textarea>
+        <textarea formControlName="content" id="agentContent" rows="12"></textarea>
       </div>
       <div class="dialog-actions">
-        <button type="button" (click)="closeAgentForm()">Cancel</button>
-        <button type="submit" class="btn-primary" [disabled]="agentForm.invalid">Save</button>
+        <button (click)="closeAgentForm()" type="button">Cancel</button>
+        <button [disabled]="agentForm.invalid" class="btn-primary" type="submit">Save</button>
       </div>
     </form>
   </div>
 </div>
 
 <!-- Race Form Dialog -->
-<div class="dialog-overlay" *ngIf="isRaceFormVisible">
+<div *ngIf="isRaceFormVisible" class="dialog-overlay">
   <div class="dialog-content">
     <h2>{{ selectedRace ? 'Edit' : 'Add' }} Race</h2>
-    <form [formGroup]="raceForm" (ngSubmit)="saveRace()">
+    <form (ngSubmit)="saveRace()" [formGroup]="raceForm">
       <div class="form-group">
         <label for="raceName">Name</label>
-        <input type="text" id="raceName" formControlName="name">
+        <input formControlName="name" id="raceName" type="text">
       </div>
       <div class="form-group">
         <label for="raceDesc">Description</label>
-        <textarea id="raceDesc" formControlName="description"></textarea>
+        <textarea formControlName="description" id="raceDesc"></textarea>
       </div>
       <div class="form-group checkbox-group">
-        <input type="checkbox" id="raceNpcOnly" formControlName="npcOnly">
+        <input formControlName="npcOnly" id="raceNpcOnly" type="checkbox">
         <label for="raceNpcOnly">NPC Only</label>
       </div>
       <div class="stats-grid">
-        <div class="form-group"><label>STR Mod</label><input type="number" formControlName="strengthMod"></div>
-        <div class="form-group"><label>DEX Mod</label><input type="number" formControlName="dexterityMod"></div>
-        <div class="form-group"><label>CON Mod</label><input type="number" formControlName="constitutionMod"></div>
-        <div class="form-group"><label>INT Mod</label><input type="number" formControlName="intelligenceMod"></div>
-        <div class="form-group"><label>WIS Mod</label><input type="number" formControlName="wisdomMod"></div>
-        <div class="form-group"><label>CHA Mod</label><input type="number" formControlName="charismaMod"></div>
+        <div class="form-group"><label>STR Mod</label><input formControlName="strengthMod" type="number"></div>
+        <div class="form-group"><label>DEX Mod</label><input formControlName="dexterityMod" type="number"></div>
+        <div class="form-group"><label>CON Mod</label><input formControlName="constitutionMod" type="number"></div>
+        <div class="form-group"><label>INT Mod</label><input formControlName="intelligenceMod" type="number"></div>
+        <div class="form-group"><label>WIS Mod</label><input formControlName="wisdomMod" type="number"></div>
+        <div class="form-group"><label>CHA Mod</label><input formControlName="charismaMod" type="number"></div>
       </div>
       <div class="dialog-actions">
-        <button type="button" (click)="closeRaceForm()">Cancel</button>
-        <button type="submit" class="btn-primary" [disabled]="raceForm.invalid">Save</button>
+        <button (click)="closeRaceForm()" type="button">Cancel</button>
+        <button [disabled]="raceForm.invalid" class="btn-primary" type="submit">Save</button>
       </div>
     </form>
   </div>
 </div>
 
 <!-- Class Form Dialog -->
-<div class="dialog-overlay" *ngIf="isClassFormVisible">
+<div *ngIf="isClassFormVisible" class="dialog-overlay">
   <div class="dialog-content">
     <h2>{{ selectedClass ? 'Edit' : 'Add' }} Class</h2>
-    <form [formGroup]="classForm" (ngSubmit)="saveClass()">
+    <form (ngSubmit)="saveClass()" [formGroup]="classForm">
       <div class="form-group">
         <label for="className">Name</label>
-        <input type="text" id="className" formControlName="name">
+        <input formControlName="name" id="className" type="text">
       </div>
       <div class="form-group">
         <label for="classDesc">Description</label>
-        <textarea id="classDesc" formControlName="description"></textarea>
+        <textarea formControlName="description" id="classDesc"></textarea>
       </div>
       <div class="form-group checkbox-group">
-        <input type="checkbox" id="classNpcOnly" formControlName="npcOnly">
+        <input formControlName="npcOnly" id="classNpcOnly" type="checkbox">
         <label for="classNpcOnly">NPC Only</label>
       </div>
 
@@ -208,59 +218,63 @@
       <div class="form-group">
         <label>Starting Items</label>
 
-        <div class="selected-items-list" *ngIf="currentClassStartingItems.length > 0">
-          <div class="selected-item-pill" *ngFor="let item of currentClassStartingItems; let i = index">
+        <div *ngIf="currentClassStartingItems.length > 0" class="selected-items-list">
+          <div *ngFor="let item of currentClassStartingItems; let i = index" class="selected-item-pill">
             <span>{{ item.name }} ({{ item.id }})</span>
-            <button type="button" class="remove-btn" (click)="removeStartingItem(i)" title="Remove">&times;</button>
+            <button (click)="removeStartingItem(i)" class="remove-btn" title="Remove" type="button">&times;</button>
           </div>
         </div>
 
         <div class="item-selector">
-          <select [ngModel]="selectedItemId" (change)="onSelectItemIdChange($event)" [ngModelOptions]="{standalone: true}">
+          <select (change)="onSelectItemIdChange($event)" [ngModelOptions]="{standalone: true}"
+                  [ngModel]="selectedItemId">
             <option [value]="null">Select an item to add...</option>
             <option *ngFor="let item of availableItems" [value]="item.id">
               {{ item.name }} ({{ item.id }}) - {{ item.itemType }}
             </option>
           </select>
-          <button type="button" class="btn-secondary" (click)="addSelectedItem()" [disabled]="!selectedItemId">Add</button>
+          <button (click)="addSelectedItem()" [disabled]="!selectedItemId" class="btn-secondary" type="button">Add
+          </button>
         </div>
-        <input type="hidden" formControlName="startingItems">
+        <input formControlName="startingItems" type="hidden">
       </div>
 
       <!-- Starting Skills UI -->
       <div class="form-group">
         <label>Starting Skills</label>
 
-        <div class="selected-items-list" *ngIf="currentClassStartingSkills.length > 0">
-          <div class="selected-item-pill" *ngFor="let skill of currentClassStartingSkills; let i = index">
+        <div *ngIf="currentClassStartingSkills.length > 0" class="selected-items-list">
+          <div *ngFor="let skill of currentClassStartingSkills; let i = index" class="selected-item-pill">
             <span>{{ skill }}</span>
-            <button type="button" class="remove-btn" (click)="removeStartingSkill(i)" title="Remove">&times;</button>
+            <button (click)="removeStartingSkill(i)" class="remove-btn" title="Remove" type="button">&times;</button>
           </div>
         </div>
 
         <div class="item-selector">
-          <select [ngModel]="selectedSkillName" (change)="onSelectSkillChange($event)" [ngModelOptions]="{standalone: true}">
+          <select (change)="onSelectSkillChange($event)" [ngModelOptions]="{standalone: true}"
+                  [ngModel]="selectedSkillName">
             <option [value]="null">Select a skill to add...</option>
             <option *ngFor="let skill of availableSkills" [value]="skill.name">
               {{ skill.name }}
             </option>
           </select>
-          <button type="button" class="btn-secondary" (click)="addSelectedSkill()" [disabled]="!selectedSkillName">Add</button>
+          <button (click)="addSelectedSkill()" [disabled]="!selectedSkillName" class="btn-secondary" type="button">Add
+          </button>
         </div>
-        <input type="hidden" formControlName="startingSkills">
+        <input formControlName="startingSkills" type="hidden">
       </div>
 
       <div class="stats-grid">
-        <div class="form-group"><label>STR Mod</label><input type="number" formControlName="strengthMod"></div>
-        <div class="form-group"><label>DEX Mod</label><input type="number" formControlName="dexterityMod"></div>
-        <div class="form-group"><label>CON Mod</label><input type="number" formControlName="constitutionMod"></div>
-        <div class="form-group"><label>INT Mod</label><input type="number" formControlName="intelligenceMod"></div>
-        <div class="form-group"><label>WIS Mod</label><input type="number" formControlName="wisdomMod"></div>
-        <div class="form-group"><label>CHA Mod</label><input type="number" formControlName="charismaMod"></div>
+        <div class="form-group"><label>STR Mod</label><input formControlName="strengthMod" type="number"></div>
+        <div class="form-group"><label>DEX Mod</label><input formControlName="dexterityMod" type="number"></div>
+        <div class="form-group"><label>CON Mod</label><input formControlName="constitutionMod" type="number"></div>
+        <div class="form-group"><label>INT Mod</label><input formControlName="intelligenceMod" type="number"></div>
+        <div class="form-group"><label>WIS Mod</label><input formControlName="wisdomMod" type="number"></div>
+        <div class="form-group"><label>CHA Mod</label><input formControlName="charismaMod" type="number"></div>
       </div>
       <div class="dialog-actions">
-        <button type="button" (click)="closeClassForm()">Cancel</button>
-        <button type="submit" class="btn-primary" [disabled]="classForm.invalid">Save</button>
+        <button (click)="closeClassForm()" type="button">Cancel</button>
+        <button [disabled]="classForm.invalid" class="btn-primary" type="submit">Save</button>
       </div>
     </form>
   </div>

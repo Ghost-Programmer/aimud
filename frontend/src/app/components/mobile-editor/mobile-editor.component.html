@@ -4,24 +4,24 @@
   <div class="list-panel">
     <div class="panel-header">
       <h3>Mobiles</h3>
-      <button class="btn-create" (click)="createNew()">+ New</button>
+      <button (click)="createNew()" class="btn-create">+ New</button>
     </div>
     <ul class="mobile-list">
-      <li *ngFor="let m of mobiles"
-          [class.selected]="selectedMobile?.id === m.id"
-          (click)="selectMobile(m)">
+      <li (click)="selectMobile(m)"
+          *ngFor="let m of mobiles"
+          [class.selected]="selectedMobile?.id === m.id">
         <span class="mobile-name">{{ m.name }}</span>
-        <button class="btn-delete" (click)="deleteMobile(m); $event.stopPropagation()">×</button>
+        <button (click)="deleteMobile(m); $event.stopPropagation()" class="btn-delete">×</button>
       </li>
     </ul>
   </div>
 
   <!-- Right Panel: Editor -->
-  <div class="editor-panel" *ngIf="mobileForm">
+  <div *ngIf="mobileForm" class="editor-panel">
     <h3 *ngIf="!selectedMobile">Create New Mobile</h3>
     <h3 *ngIf="selectedMobile">Edit {{ selectedMobile.name }}</h3>
 
-    <form [formGroup]="mobileForm" (ngSubmit)="save()">
+    <form (ngSubmit)="save()" [formGroup]="mobileForm">
       <div class="editor-columns">
         <!-- Column 1: Basic Info, Stats & Skills -->
         <div class="editor-column">
@@ -29,25 +29,25 @@
             <h4>Basic Info</h4>
             <div class="form-row">
               <label>Name</label>
-              <input formControlName="name" />
+              <input formControlName="name"/>
             </div>
             <div class="form-row">
               <label>Starting Room ID</label>
-              <input type="number" formControlName="currentRoomId" />
+              <input formControlName="currentRoomId" type="number"/>
             </div>
           </div>
 
           <div class="form-section">
             <h4>Stats & Vitals</h4>
             <div class="stats-grid">
-              <div><label>HP</label><input type="number" formControlName="currentHp" /></div>
-              <div><label>Mana</label><input type="number" formControlName="currentMana" /></div>
-              <div><label>STR</label><input type="number" formControlName="strength" /></div>
-              <div><label>DEX</label><input type="number" formControlName="dexterity" /></div>
-              <div><label>CON</label><input type="number" formControlName="constitution" /></div>
-              <div><label>INT</label><input type="number" formControlName="intelligence" /></div>
-              <div><label>WIS</label><input type="number" formControlName="wisdom" /></div>
-              <div><label>CHA</label><input type="number" formControlName="charisma" /></div>
+              <div><label>HP</label><input formControlName="currentHp" type="number"/></div>
+              <div><label>Mana</label><input formControlName="currentMana" type="number"/></div>
+              <div><label>STR</label><input formControlName="strength" type="number"/></div>
+              <div><label>DEX</label><input formControlName="dexterity" type="number"/></div>
+              <div><label>CON</label><input formControlName="constitution" type="number"/></div>
+              <div><label>INT</label><input formControlName="intelligence" type="number"/></div>
+              <div><label>WIS</label><input formControlName="wisdom" type="number"/></div>
+              <div><label>CHA</label><input formControlName="charisma" type="number"/></div>
             </div>
           </div>
 
@@ -61,11 +61,11 @@
                     {{ available.name }}
                   </option>
                 </select>
-                <input type="number" formControlName="rank" placeholder="Rank" min="1" />
-                <button type="button" class="btn-remove" (click)="removeSkill(i)">×</button>
+                <input formControlName="rank" min="1" placeholder="Rank" type="number"/>
+                <button (click)="removeSkill(i)" class="btn-remove" type="button">×</button>
               </div>
             </div>
-            <button type="button" class="btn-add" (click)="addSkill()">Add Skill</button>
+            <button (click)="addSkill()" class="btn-add" type="button">Add Skill</button>
           </div>
         </div>
 
@@ -77,7 +77,8 @@
               <div *ngFor="let loc of wearLocations" class="equip-row">
                 <label>{{ loc }}</label>
                 <div class="search-select-group">
-                  <input type="text" class="search-input" placeholder="Search..." [(ngModel)]="equipSearchTexts[loc]" [ngModelOptions]="{standalone: true}" />
+                  <input [(ngModel)]="equipSearchTexts[loc]" [ngModelOptions]="{standalone: true}" class="search-input" placeholder="Search..."
+                         type="text"/>
                   <select [formControlName]="loc.toLowerCase().replace('_', '') + 'Id'">
                     <option [ngValue]="null">None</option>
                     <option *ngFor="let item of getFilteredEquipItems(loc)" [ngValue]="item.id">
@@ -93,23 +94,24 @@
             <h4>Inventory</h4>
             <div formArrayName="inventory">
               <div *ngFor="let inv of inventoryControls.controls; let i=index" [formGroupName]="i" class="array-row">
-                <input type="text" class="search-input" placeholder="Search item..." [(ngModel)]="invSearchTexts[i]" [ngModelOptions]="{standalone: true}" />
+                <input [(ngModel)]="invSearchTexts[i]" [ngModelOptions]="{standalone: true}" class="search-input" placeholder="Search item..."
+                       type="text"/>
                 <select formControlName="id">
                   <option [ngValue]="null">Select Item</option>
                   <option *ngFor="let item of getFilteredInvItems(i)" [ngValue]="item.id">
                     {{ item.name }} ({{ item.id }})
                   </option>
                 </select>
-                <button type="button" class="btn-remove" (click)="removeInventoryItem(i)">×</button>
+                <button (click)="removeInventoryItem(i)" class="btn-remove" type="button">×</button>
               </div>
             </div>
-            <button type="button" class="btn-add" (click)="addInventoryItem()">Add Item</button>
+            <button (click)="addInventoryItem()" class="btn-add" type="button">Add Item</button>
           </div>
         </div>
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="btn-save" [disabled]="mobileForm.invalid">Save Mobile</button>
+        <button [disabled]="mobileForm.invalid" class="btn-save" type="submit">Save Mobile</button>
       </div>
     </form>
   </div>

@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
 
 export interface SystemStatus {
   status: string;
@@ -17,7 +17,8 @@ export interface SystemStatus {
 export class StatusService {
   private apiUrl = '/api/status';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+  }
 
   getSystemStatus(): Observable<SystemStatus> {
     return this.http.get<SystemStatus>(this.apiUrl);

@@ -2,11 +2,7 @@ package com.aimud.aimud.commands;
 
 import com.aimud.aimud.annontation.MudCommand;
 import com.aimud.aimud.model.Mobile;
-import com.aimud.aimud.service.CharacterService;
-import com.aimud.aimud.service.CommunicationService;
-import com.aimud.aimud.service.ItemService;
-import com.aimud.aimud.service.MobileService;
-import com.aimud.aimud.service.RoomService;
+import com.aimud.aimud.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -30,7 +26,7 @@ public class LookCommand implements Command {
         return roomService.getRoom(Mobile.getCurrentRoomId())
                 .flatMap(room -> {
                     communicationService.sendTextMessage(Mobile, "\n\n" + room.getName() + "\n" + room.getDescription());
-                    
+
                     characterService.findAllByRoomId(room.getId()).stream()
                             .filter(c -> !c.getId().equals(Mobile.getId()))
                             .forEach(c -> communicationService.sendTextMessage(Mobile, "\nYou see " + c.getName() + " here."));
@@ -46,7 +42,7 @@ public class LookCommand implements Command {
                     });
 
                     roomService.getTransientItemsInRoom(room.getId()).forEach(item ->
-                        communicationService.sendTextMessage(Mobile, "\nYou see " + item.getName() + " laying here."));
+                            communicationService.sendTextMessage(Mobile, "\nYou see " + item.getName() + " laying here."));
 
                     List<String> exits = new ArrayList<>();
                     if (room.getNorthId() != null) exits.add("North");

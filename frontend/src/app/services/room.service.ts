@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { Room, PagedRooms, RoomType } from '../models/room.model';
+import {Injectable} from '@angular/core';
+import {HttpClient, HttpParams} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {PagedRooms, Room, RoomType} from '../models/room.model';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +9,8 @@ import { Room, PagedRooms, RoomType } from '../models/room.model';
 export class RoomService {
   private apiUrl = '/api/rooms';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+  }
 
   getRooms(page: number, size: number, filters: {
     name?: string,
@@ -26,7 +27,7 @@ export class RoomService {
     if (filters.minId !== undefined) params = params.set('minId', filters.minId.toString());
     if (filters.maxId !== undefined) params = params.set('maxId', filters.maxId.toString());
 
-    return this.http.get<PagedRooms>(this.apiUrl, { params });
+    return this.http.get<PagedRooms>(this.apiUrl, {params});
   }
 
   getRoom(id: number): Observable<Room> {

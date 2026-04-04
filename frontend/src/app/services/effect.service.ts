@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { Effect, PagedEffects, EffectType } from '../models/effect.model';
+import {Injectable} from '@angular/core';
+import {HttpClient, HttpParams} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {Effect, EffectType, PagedEffects} from '../models/effect.model';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +9,8 @@ import { Effect, PagedEffects, EffectType } from '../models/effect.model';
 export class EffectService {
   private apiUrl = '/api/effects';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+  }
 
   getEffects(page: number, size: number, filters: {
     name?: string,
@@ -24,7 +25,7 @@ export class EffectService {
     if (filters.type) params = params.set('type', filters.type);
     if (filters.sort) params = params.set('sort', filters.sort);
 
-    return this.http.get<PagedEffects>(this.apiUrl, { params });
+    return this.http.get<PagedEffects>(this.apiUrl, {params});
   }
 
   getEffect(id: number): Observable<Effect> {

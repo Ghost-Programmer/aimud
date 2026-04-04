@@ -1,16 +1,16 @@
-<div class="dialog-overlay" (click)="cancel()">
-  <div class="dialog-container" (click)="$event.stopPropagation()">
+<div (click)="cancel()" class="dialog-overlay">
+  <div (click)="$event.stopPropagation()" class="dialog-container">
     <h2>{{ effect.id ? 'Edit Effect' : 'Create New Effect' }}</h2>
 
     <div class="form-content">
       <div class="form-group">
         <label for="name">Name (optional)</label>
-        <input id="name" type="text" [(ngModel)]="effect.name" placeholder="Effect name" class="form-input">
+        <input [(ngModel)]="effect.name" class="form-input" id="name" placeholder="Effect name" type="text">
       </div>
 
       <div class="form-group">
         <label for="effectType">Effect Type</label>
-        <select id="effectType" [(ngModel)]="effect.effectType" class="form-input">
+        <select [(ngModel)]="effect.effectType" class="form-input" id="effectType">
           <option *ngFor="let t of effectTypes" [value]="t">{{ t }}</option>
         </select>
       </div>
@@ -18,26 +18,26 @@
       <div class="grid">
         <div class="form-group">
           <label for="mod1">Modifier 1</label>
-          <input id="mod1" type="number" [(ngModel)]="effect.modifier1" class="form-input small">
+          <input [(ngModel)]="effect.modifier1" class="form-input small" id="mod1" type="number">
         </div>
         <div class="form-group">
           <label for="mod2">Modifier 2</label>
-          <input id="mod2" type="number" [(ngModel)]="effect.modifier2" class="form-input small">
+          <input [(ngModel)]="effect.modifier2" class="form-input small" id="mod2" type="number">
         </div>
         <div class="form-group">
           <label for="mod3">Modifier 3</label>
-          <input id="mod3" type="number" [(ngModel)]="effect.modifier3" class="form-input small">
+          <input [(ngModel)]="effect.modifier3" class="form-input small" id="mod3" type="number">
         </div>
         <div class="form-group">
           <label for="mod4">Modifier 4</label>
-          <input id="mod4" type="number" [(ngModel)]="effect.modifier4" class="form-input small">
+          <input [(ngModel)]="effect.modifier4" class="form-input small" id="mod4" type="number">
         </div>
       </div>
     </div>
 
     <div class="actions">
-      <button class="cancel-btn" (click)="cancel()">Cancel</button>
-      <button class="save-btn" (click)="save()">Save</button>
+      <button (click)="cancel()" class="cancel-btn">Cancel</button>
+      <button (click)="save()" class="save-btn">Save</button>
     </div>
   </div>
 </div>

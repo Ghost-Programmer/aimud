@@ -1,7 +1,7 @@
-import { Component, EventEmitter, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { UserService } from '../../services/user.service';
+import {Component, EventEmitter, Output} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {UserService} from '../../services/user.service';
 
 @Component({
   selector: 'app-register-dialog',
@@ -21,18 +21,18 @@ export class RegisterDialogComponent {
       username: ['', Validators.required],
       password: ['', Validators.required],
       confirmPassword: ['', Validators.required]
-    }, { validators: this.passwordMatchValidator });
+    }, {validators: this.passwordMatchValidator});
   }
 
   passwordMatchValidator(g: FormGroup) {
     return g.get('password')?.value === g.get('confirmPassword')?.value
-      ? null : { mismatch: true };
+      ? null : {mismatch: true};
   }
 
   onSubmit() {
     if (this.registerForm.valid) {
-      const { username, password } = this.registerForm.value;
-      this.userService.register({ username, password }).subscribe({
+      const {username, password} = this.registerForm.value;
+      this.userService.register({username, password}).subscribe({
         next: (response) => {
           console.log('User registered successfully', response);
           this.closeDialog.emit();
@@ -40,9 +40,9 @@ export class RegisterDialogComponent {
         error: (error) => {
           console.error('Registration failed', error);
           if (error.status === 409) {
-             this.errorMessage = 'Username already exists';
+            this.errorMessage = 'Username already exists';
           } else {
-             this.errorMessage = error.error?.message || 'Registration failed';
+            this.errorMessage = error.error?.message || 'Registration failed';
           }
         }
       });

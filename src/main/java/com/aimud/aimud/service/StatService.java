@@ -58,7 +58,7 @@ public class StatService {
         } else if (mobile.getCurrentHp() == 0) {
             mobile.setCurrentHp(mobile.getMaxHp()); // initialize currentHp if it is 0
         }
-        
+
         if (mobile.getCurrentMana() > mobile.getMaxMana()) {
             mobile.setCurrentMana(mobile.getMaxMana());
         } else if (mobile.getCurrentMana() == 0) {
@@ -72,7 +72,7 @@ public class StatService {
         mobile.setMagicAttack((intel * 2.5) + (wis * 0.5));
         mobile.setArmor(str + (con * 1.5));
         mobile.setMagicResist(wis + (intel * 0.5));
-        
+
         float cr = calculateChallengeRating(mobile);
         mobile.setChallengeRating(cr);
     }
@@ -113,7 +113,7 @@ public class StatService {
                                 c.setMaxMana(50 + (intel * 20));
                                 c.setHpRegen(Math.max(1, (int) (0.5 + (con / 20.0) + (str / 100.0))));
                                 c.setManaRegen(Math.max(1, (int) (1.0 + (wis / 25.0))));
-                                
+
                                 // Ensure current stats are not above max (e.g. if max dropped due to equipment change)
                                 // Although currentHp/currentMana are persistent, we might want to clamp them here just in case?
                                 // For now, we only calculate derived stats.
@@ -133,7 +133,7 @@ public class StatService {
                                 c.setMagicAttack((intel * 2.5) + (wis * 0.5));
                                 c.setArmor(str + (con * 1.5));
                                 c.setMagicResist(wis + (intel * 0.5));
-                                
+
                                 // Calculate Challenge Rating
                                 float cr = calculateChallengeRating(c);
                                 c.setChallengeRating(cr);
@@ -154,23 +154,23 @@ public class StatService {
                 })
                 .flatMap(mono -> mono);
     }
-    
+
     private float calculateChallengeRating(Mobile c) {
         // Base stats contribution
-        float statsScore = (c.getCurrentStrength() + c.getCurrentDexterity() + c.getCurrentConstitution() + 
-                           c.getCurrentIntelligence() + c.getCurrentWisdom() + c.getCurrentCharisma()) / 6.0f;
-                           
+        float statsScore = (c.getCurrentStrength() + c.getCurrentDexterity() + c.getCurrentConstitution() +
+                c.getCurrentIntelligence() + c.getCurrentWisdom() + c.getCurrentCharisma()) / 6.0f;
+
         // HP contribution (assuming 100 HP is roughly CR 1 for a basic mob, but scaling down)
         float hpScore = (float) c.getMaxHp() / 50.0f;
-        
+
         // Attack/Defense contribution
         float offensiveScore = (float) (c.getPhysicalAttack() + c.getMagicAttack()) / 20.0f;
         float defensiveScore = (float) (c.getArmor() + c.getMagicResist() + (c.getDodgeChance() * 100)) / 20.0f;
-        
+
         // Simple formula combining these factors
         // Weights: Stats (1), HP (2), Offense (3), Defense (2)
         float cr = (statsScore + hpScore * 2.0f + offensiveScore * 3.0f + defensiveScore * 2.0f) / 8.0f;
-        
+
         return Math.round(cr * 10.0f) / 10.0f; // Round to 1 decimal place
     }
 

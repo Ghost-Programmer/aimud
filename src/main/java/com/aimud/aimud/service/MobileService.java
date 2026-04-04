@@ -58,7 +58,7 @@ public class MobileService {
         return mobileRepository.findById(id).cache();
     }
 
-    @CacheEvict(value = {"mobiles", "mobile","mobiles"}, allEntries = true)
+    @CacheEvict(value = {"mobiles", "mobile", "mobiles"}, allEntries = true)
     public Mono<Mobile> saveMobile(Mobile mobile) {
         log.info("Saving mobile: {} (id: {})", mobile.getName(), mobile.getId());
         return mobileRepository.save(mobile)
@@ -70,7 +70,7 @@ public class MobileService {
                 });
     }
 
-    @CacheEvict(value = {"mobiles", "mobile","mobiles" }, allEntries = true)
+    @CacheEvict(value = {"mobiles", "mobile", "mobiles"}, allEntries = true)
     public Mono<Void> deleteMobile(Long id) {
         log.info("Deleting mobile with id: {}", id);
         return mobileRepository.deleteById(id)
@@ -130,8 +130,8 @@ public class MobileService {
     public Mono<MobileSkill> assignSkill(Long mobileId, String skillName, int rank) {
         log.info("Assigning skill '{}' rank {} to mobile {}", skillName, rank, mobileId);
         return databaseClient.sql(
-                "INSERT INTO mobile_skills (mobile_id, name, rank) VALUES (:mobileId, :name, :rank) " +
-                "ON CONFLICT (mobile_id, name) DO UPDATE SET rank = EXCLUDED.rank")
+                        "INSERT INTO mobile_skills (mobile_id, name, rank) VALUES (:mobileId, :name, :rank) " +
+                                "ON CONFLICT (mobile_id, name) DO UPDATE SET rank = EXCLUDED.rank")
                 .bind("mobileId", mobileId)
                 .bind("name", skillName)
                 .bind("rank", rank)
@@ -157,7 +157,7 @@ public class MobileService {
                 .flatMap(mobile -> itemService.getItem(itemId)
                         .switchIfEmpty(Mono.error(new IllegalArgumentException("Item not found: " + itemId)))
                         .then(databaseClient.sql(
-                                "INSERT INTO mobile_inventory (mobile_id, item_id) VALUES (:mobileId, :itemId) ON CONFLICT DO NOTHING")
+                                        "INSERT INTO mobile_inventory (mobile_id, item_id) VALUES (:mobileId, :itemId) ON CONFLICT DO NOTHING")
                                 .bind("mobileId", mobileId)
                                 .bind("itemId", itemId)
                                 .fetch().rowsUpdated())
@@ -184,23 +184,23 @@ public class MobileService {
         return getMobile(mobileId)
                 .flatMapMany(mobile -> {
                     List<Long> ids = new ArrayList<>();
-                    if (mobile.getHeadId() != null)         ids.add(mobile.getHeadId());
-                    if (mobile.getChestId() != null)        ids.add(mobile.getChestId());
-                    if (mobile.getLegsId() != null)         ids.add(mobile.getLegsId());
-                    if (mobile.getFeetId() != null)         ids.add(mobile.getFeetId());
-                    if (mobile.getArmsId() != null)         ids.add(mobile.getArmsId());
-                    if (mobile.getHandsId() != null)        ids.add(mobile.getHandsId());
-                    if (mobile.getRightFingerId() != null)  ids.add(mobile.getRightFingerId());
-                    if (mobile.getLeftFingerId() != null)   ids.add(mobile.getLeftFingerId());
-                    if (mobile.getRightWristId() != null)   ids.add(mobile.getRightWristId());
-                    if (mobile.getLeftWristId() != null)    ids.add(mobile.getLeftWristId());
-                    if (mobile.getNeckId() != null)         ids.add(mobile.getNeckId());
-                    if (mobile.getLeftEarId() != null)      ids.add(mobile.getLeftEarId());
-                    if (mobile.getRightEarId() != null)     ids.add(mobile.getRightEarId());
-                    if (mobile.getFaceId() != null)         ids.add(mobile.getFaceId());
-                    if (mobile.getWaistId() != null)        ids.add(mobile.getWaistId());
-                    if (mobile.getPrimaryId() != null)      ids.add(mobile.getPrimaryId());
-                    if (mobile.getOffhandId() != null)      ids.add(mobile.getOffhandId());
+                    if (mobile.getHeadId() != null) ids.add(mobile.getHeadId());
+                    if (mobile.getChestId() != null) ids.add(mobile.getChestId());
+                    if (mobile.getLegsId() != null) ids.add(mobile.getLegsId());
+                    if (mobile.getFeetId() != null) ids.add(mobile.getFeetId());
+                    if (mobile.getArmsId() != null) ids.add(mobile.getArmsId());
+                    if (mobile.getHandsId() != null) ids.add(mobile.getHandsId());
+                    if (mobile.getRightFingerId() != null) ids.add(mobile.getRightFingerId());
+                    if (mobile.getLeftFingerId() != null) ids.add(mobile.getLeftFingerId());
+                    if (mobile.getRightWristId() != null) ids.add(mobile.getRightWristId());
+                    if (mobile.getLeftWristId() != null) ids.add(mobile.getLeftWristId());
+                    if (mobile.getNeckId() != null) ids.add(mobile.getNeckId());
+                    if (mobile.getLeftEarId() != null) ids.add(mobile.getLeftEarId());
+                    if (mobile.getRightEarId() != null) ids.add(mobile.getRightEarId());
+                    if (mobile.getFaceId() != null) ids.add(mobile.getFaceId());
+                    if (mobile.getWaistId() != null) ids.add(mobile.getWaistId());
+                    if (mobile.getPrimaryId() != null) ids.add(mobile.getPrimaryId());
+                    if (mobile.getOffhandId() != null) ids.add(mobile.getOffhandId());
                     return Flux.fromIterable(ids);
                 })
                 .flatMap(itemService::getItem);
@@ -221,26 +221,26 @@ public class MobileService {
 
     private void applyWearLocation(Mobile mobile, Item item, WearLocation location) {
         switch (location) {
-            case HEAD    -> mobile.setHead(item);
-            case CHEST   -> mobile.setChest(item);
-            case LEGS    -> mobile.setLegs(item);
-            case FEET    -> mobile.setFeet(item);
-            case ARMS    -> mobile.setArms(item);
-            case HANDS   -> mobile.setHands(item);
-            case NECK    -> mobile.setNeck(item);
-            case FACE    -> mobile.setFace(item);
-            case WAIST   -> mobile.setWaist(item);
+            case HEAD -> mobile.setHead(item);
+            case CHEST -> mobile.setChest(item);
+            case LEGS -> mobile.setLegs(item);
+            case FEET -> mobile.setFeet(item);
+            case ARMS -> mobile.setArms(item);
+            case HANDS -> mobile.setHands(item);
+            case NECK -> mobile.setNeck(item);
+            case FACE -> mobile.setFace(item);
+            case WAIST -> mobile.setWaist(item);
             case PRIMARY -> mobile.setPrimary(item);
             case OFFHAND -> mobile.setOffhand(item);
-            case FINGER  -> {
+            case FINGER -> {
                 if (mobile.getRightFingerId() == null) mobile.setRightFinger(item);
                 else mobile.setLeftFinger(item);
             }
-            case WRIST   -> {
+            case WRIST -> {
                 if (mobile.getRightWristId() == null) mobile.setRightWrist(item);
                 else mobile.setLeftWrist(item);
             }
-            case EAR     -> {
+            case EAR -> {
                 if (mobile.getLeftEarId() == null) mobile.setLeftEar(item);
                 else mobile.setRightEar(item);
             }

@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { RouterOutlet, Router } from '@angular/router';
-import { RegisterDialogComponent } from './components/register-dialog/register-dialog.component';
-import { LoginDialogComponent } from './components/login-dialog/login-dialog.component';
-import { HttpClient } from '@angular/common/http';
-import { CommonModule } from '@angular/common';
-import { Title } from '@angular/platform-browser';
-import { StatusService, SystemStatus } from './services/status.service';
+import {Component, OnInit} from '@angular/core';
+import {Router, RouterOutlet} from '@angular/router';
+import {RegisterDialogComponent} from './components/register-dialog/register-dialog.component';
+import {LoginDialogComponent} from './components/login-dialog/login-dialog.component';
+import {HttpClient} from '@angular/common/http';
+import {CommonModule} from '@angular/common';
+import {Title} from '@angular/platform-browser';
+import {StatusService, SystemStatus} from './services/status.service';
 
 @Component({
   selector: 'app-root',
@@ -26,6 +26,14 @@ export class AppComponent implements OnInit {
   isRegisterDialogOpen = false;
   isLoginDialogOpen = false;
 
+  constructor(
+    private http: HttpClient,
+    public router: Router,
+    private statusService: StatusService,
+    private titleService: Title
+  ) {
+  }
+
   openRegisterDialog() {
     this.isRegisterDialogOpen = true;
   }
@@ -41,13 +49,6 @@ export class AppComponent implements OnInit {
   closeLoginDialog() {
     this.isLoginDialogOpen = false;
   }
-
-  constructor(
-    private http: HttpClient,
-    public router: Router,
-    private statusService: StatusService,
-    private titleService: Title
-  ) { }
 
   ngOnInit() {
     this.titleService.setTitle(this.serverName);
@@ -69,7 +70,12 @@ export class AppComponent implements OnInit {
       }
     });
 
-    this.http.get<{ serverName: string, allowNewUser: boolean, maintenance: boolean, maintenanceText: string }>('/api/settings').subscribe({
+    this.http.get<{
+      serverName: string,
+      allowNewUser: boolean,
+      maintenance: boolean,
+      maintenanceText: string
+    }>('/api/settings').subscribe({
       next: (data) => {
         this.serverName = data.serverName;
         this.titleService.setTitle(this.serverName || 'AI Mud');

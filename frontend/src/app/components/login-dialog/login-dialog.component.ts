@@ -1,8 +1,8 @@
-import { Component, EventEmitter, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { UserService } from '../../services/user.service';
-import { Router } from '@angular/router';
+import {Component, EventEmitter, Output} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {UserService} from '../../services/user.service';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-login-dialog',
@@ -26,8 +26,8 @@ export class LoginDialogComponent {
 
   onSubmit() {
     if (this.loginForm.valid) {
-      const { username, password } = this.loginForm.value;
-      this.userService.login({ username, password }).subscribe({
+      const {username, password} = this.loginForm.value;
+      this.userService.login({username, password}).subscribe({
         next: (response) => {
           console.log('Login successful', response);
           localStorage.setItem('token', response.token);

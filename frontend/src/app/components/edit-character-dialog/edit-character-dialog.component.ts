@@ -1,8 +1,8 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CharacterService } from '../../services/character.service';
-import { ConfigService } from '../../services/config.service';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {CharacterService} from '../../services/character.service';
+import {ConfigService} from '../../services/config.service';
 
 @Component({
   selector: 'app-edit-character-dialog',
@@ -70,7 +70,7 @@ export class EditCharacterDialogComponent {
 
   updateCurrentStats() {
     if (this.characterForm.valid) {
-      const character = { ...this.character, ...this.characterForm.value };
+      const character = {...this.character, ...this.characterForm.value};
       this.characterService.generateCharacter(character).subscribe({
         next: (generatedCharacter) => {
           this.currentStats = {
@@ -83,7 +83,7 @@ export class EditCharacterDialogComponent {
           };
           this.updateDerivedStats(generatedCharacter);
           if (generatedCharacter.currentRoomName) {
-              this.currentRoomName = generatedCharacter.currentRoomName;
+            this.currentRoomName = generatedCharacter.currentRoomName;
           }
         },
         error: (error) => {
@@ -111,7 +111,7 @@ export class EditCharacterDialogComponent {
 
   onSubmit() {
     if (this.characterForm.valid) {
-      const updatedCharacter = { ...this.character, ...this.characterForm.value };
+      const updatedCharacter = {...this.character, ...this.characterForm.value};
       this.characterService.updateCharacter(this.character.id, updatedCharacter).subscribe({
         next: (response) => {
           console.log('Character updated', response);

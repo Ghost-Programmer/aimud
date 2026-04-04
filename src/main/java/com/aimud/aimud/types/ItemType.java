@@ -34,11 +34,6 @@ public enum ItemType {
         this.label = label;
     }
 
-    @JsonValue
-    public String getLabel() {
-        return label;
-    }
-
     @JsonCreator
     public static ItemType fromString(String value) {
         if (value == null || value.isBlank()) {
@@ -48,5 +43,10 @@ public enum ItemType {
                 .filter(it -> it.name().equalsIgnoreCase(value) || it.getLabel().equalsIgnoreCase(value))
                 .findFirst()
                 .orElse(NONE);
+    }
+
+    @JsonValue
+    public String getLabel() {
+        return label;
     }
 }

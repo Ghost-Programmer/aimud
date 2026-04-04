@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
-import { Observable, filter, retry, shareReplay } from 'rxjs';
+import {Injectable} from '@angular/core';
+import {webSocket, WebSocketSubject} from 'rxjs/webSocket';
+import {filter, Observable, retry, shareReplay} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -25,8 +25,8 @@ export class GameWebSocketService {
     });
 
     this.messages$ = this.socket$.pipe(
-      retry({ delay: 3000 }),
-      shareReplay({ bufferSize: 10, refCount: true })
+      retry({delay: 3000}),
+      shareReplay({bufferSize: 10, refCount: true})
     );
   }
 

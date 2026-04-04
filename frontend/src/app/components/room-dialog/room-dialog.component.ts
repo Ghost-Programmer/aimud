@@ -1,9 +1,9 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Room, RoomType } from '../../models/room.model';
-import { Item } from '../../models/item.model';
-import { ItemService } from '../../services/item.service';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {Room, RoomType} from '../../models/room.model';
+import {Item} from '../../models/item.model';
+import {ItemService} from '../../services/item.service';
 
 @Component({
   selector: 'app-room-dialog',
@@ -42,7 +42,8 @@ export class RoomDialogComponent implements OnInit {
   selectedItemId: number | null = null;
   currentRoomItems: Item[] = [];
 
-  constructor(private itemService: ItemService) {}
+  constructor(private itemService: ItemService) {
+  }
 
   ngOnInit(): void {
     this.loadItems();

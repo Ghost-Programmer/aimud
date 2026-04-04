@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { EffectService } from '../../services/effect.service';
-import { Effect, PagedEffects, EffectType } from '../../models/effect.model';
-import { EffectDialogComponent } from '../effect-dialog/effect-dialog.component';
+import {Component} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {EffectService} from '../../services/effect.service';
+import {Effect, EffectType} from '../../models/effect.model';
+import {EffectDialogComponent} from '../effect-dialog/effect-dialog.component';
 
 @Component({
   selector: 'app-effect-dashboard',
@@ -53,7 +53,9 @@ export class EffectDashboardComponent {
     });
   }
 
-  refresh() { this.load(); }
+  refresh() {
+    this.load();
+  }
 
   newEffect() {
     this.editingEffect = undefined;
@@ -65,7 +67,9 @@ export class EffectDashboardComponent {
     this.showDialog = true;
   }
 
-  onDialogCancel() { this.showDialog = false; }
+  onDialogCancel() {
+    this.showDialog = false;
+  }
 
   onDialogSave(effect: Effect) {
     const op = effect.id ? this.effectService.updateEffect(effect.id, effect) : this.effectService.createEffect(effect);
@@ -78,9 +82,29 @@ export class EffectDashboardComponent {
     });
   }
 
-  pageCount(): number { return Math.ceil(this.total / this.size) || 1; }
-  canPrev(): boolean { return this.page > 0; }
-  canNext(): boolean { return this.page + 1 < this.pageCount(); }
-  prevPage() { if (this.canPrev()) { this.page--; this.load(); } }
-  nextPage() { if (this.canNext()) { this.page++; this.load(); } }
+  pageCount(): number {
+    return Math.ceil(this.total / this.size) || 1;
+  }
+
+  canPrev(): boolean {
+    return this.page > 0;
+  }
+
+  canNext(): boolean {
+    return this.page + 1 < this.pageCount();
+  }
+
+  prevPage() {
+    if (this.canPrev()) {
+      this.page--;
+      this.load();
+    }
+  }
+
+  nextPage() {
+    if (this.canNext()) {
+      this.page++;
+      this.load();
+    }
+  }
 }

@@ -61,7 +61,7 @@ public class ItemService {
                     if (effects == null) {
                         return Mono.just(savedItem);
                     }
-                    
+
                     log.info("Saving {} effects for item: {}", effects.size(), savedItem.getId());
                     return effectService.deleteByItemId(savedItem.getId())
                             .thenMany(Flux.fromIterable(effects))

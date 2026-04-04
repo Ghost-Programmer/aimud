@@ -20,7 +20,7 @@ public class Mobile {
 
     @Column("user_id")
     private Long userId;
-    
+
     private String name;
     private int strength;
     private int dexterity;
@@ -51,7 +51,7 @@ public class Mobile {
     @LastModifiedBy
     @Column("modified_by")
     private String modifiedBy;
-    
+
     @Column("current_hp")
     private int currentHp;
     @Column("current_mana")
@@ -74,13 +74,13 @@ public class Mobile {
     private int currentCharisma;
 
     @Transient
-    private int maxHp; 
+    private int maxHp;
     @Transient
-    private int maxMana; 
+    private int maxMana;
     @Transient
-    private int hpRegen; 
+    private int hpRegen;
     @Transient
-    private int manaRegen; 
+    private int manaRegen;
     @Transient
     private double dodgeChance;
     @Transient

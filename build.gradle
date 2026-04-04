@@ -1,18 +1,18 @@
 buildscript {
-	repositories {
-		mavenCentral()
-	}
-	dependencies {
-		classpath 'org.liquibase:liquibase-core:4.31.1'
-	}
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.liquibase:liquibase-core:4.31.1'
+    }
 }
 
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.4.3'
-	id 'io.spring.dependency-management' version '1.1.7'
-	id "com.github.node-gradle.node" version "7.1.0"
-	id 'org.liquibase.gradle' version '3.1.0'
+    id 'java'
+    id 'org.springframework.boot' version '3.4.3'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id "com.github.node-gradle.node" version "7.1.0"
+    id 'org.liquibase.gradle' version '3.1.0'
 }
 
 group = 'com.aimud'
@@ -20,87 +20,87 @@ version = '0.0.1-SNAPSHOT'
 description = 'Demo project for Spring Boot'
 
 ext {
-	set('springAiVersion', "1.0.0-M6")
+    set('springAiVersion', "1.0.0-M6")
 }
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 repositories {
-	mavenCentral()
-	maven { url 'https://repo.spring.io/milestone' }
+    mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' }
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-webflux'
-	implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-cache'
-	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-	implementation 'org.liquibase:liquibase-core'
-	implementation 'org.springframework:spring-jdbc'
-	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
-	runtimeOnly 'org.postgresql:r2dbc-postgresql'
-	runtimeOnly 'org.postgresql:postgresql'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	testImplementation 'io.projectreactor:reactor-test'
-	testImplementation 'org.springframework.security:spring-security-test'
-	implementation 'org.springframework.ai:spring-ai-ollama-spring-boot-starter'
-	implementation 'org.springframework.ai:spring-ai-mcp-server-spring-boot-starter'
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
-	testCompileOnly 'org.projectlombok:lombok'
-	testAnnotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    implementation 'org.liquibase:liquibase-core'
+    implementation 'org.springframework:spring-jdbc'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+    developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+    runtimeOnly 'org.postgresql:r2dbc-postgresql'
+    runtimeOnly 'org.postgresql:postgresql'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'io.projectreactor:reactor-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    implementation 'org.springframework.ai:spring-ai-ollama-spring-boot-starter'
+    implementation 'org.springframework.ai:spring-ai-mcp-server-spring-boot-starter'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 
-	// Liquibase plugin dependencies
-	liquibaseRuntime 'org.postgresql:postgresql:42.7.2'
-	liquibaseRuntime 'org.liquibase:liquibase-core:4.31.1'
-	liquibaseRuntime 'org.liquibase:liquibase-groovy-dsl:4.0.1'
-	liquibaseRuntime 'info.picocli:picocli:4.6.1'
+    // Liquibase plugin dependencies
+    liquibaseRuntime 'org.postgresql:postgresql:42.7.2'
+    liquibaseRuntime 'org.liquibase:liquibase-core:4.31.1'
+    liquibaseRuntime 'org.liquibase:liquibase-groovy-dsl:4.0.1'
+    liquibaseRuntime 'info.picocli:picocli:4.6.1'
 }
 
 dependencyManagement {
-	imports {
-		mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
-	}
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
 }
 
 liquibase {
-	activities {
-		main {
-			changelogFile 'src/main/resources/db/changelog/master.xml'
-			url 'jdbc:postgresql://localhost:5432/aimud'
-			username 'aimud'
-			password 'aimud_password'
-			driver 'org.postgresql.Driver'
-		}
-	}
-	runList = 'main'
+    activities {
+        main {
+            changelogFile 'src/main/resources/db/changelog/master.xml'
+            url 'jdbc:postgresql://localhost:5432/aimud'
+            username 'aimud'
+            password 'aimud_password'
+            driver 'org.postgresql.Driver'
+        }
+    }
+    runList = 'main'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
 
 node {
-	download = false
-	nodeProjectDir = file("${project.projectDir}/frontend")
+    download = false
+    nodeProjectDir = file("${project.projectDir}/frontend")
 }
 
 task buildFrontend(type: NpmTask) {
-	dependsOn npmInstall
-	args = ['run', 'build']
+    dependsOn npmInstall
+    args = ['run', 'build']
 }
 
 processResources {
-	dependsOn buildFrontend
-	from("${project.projectDir}/frontend/dist/frontend/browser") {
-		into "static"
-	}
+    dependsOn buildFrontend
+    from("${project.projectDir}/frontend/dist/frontend/browser") {
+        into "static"
+    }
 }

@@ -1,10 +1,6 @@
 package com.aimud.aimud.controller;
 
-import com.aimud.aimud.model.Agent;
-import com.aimud.aimud.model.CharacterClass;
-import com.aimud.aimud.model.Race;
-import com.aimud.aimud.model.ServerSettings;
-import com.aimud.aimud.model.SkillRegistry;
+import com.aimud.aimud.model.*;
 import com.aimud.aimud.service.ConfigService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -56,9 +56,9 @@ public class RoomController {
                     int totalRooms = rooms.size();
                     int fromIndex = page * size;
                     int toIndex = Math.min(fromIndex + size, totalRooms);
-                    
-                    List<Room> pagedRooms = (fromIndex < totalRooms) 
-                            ? rooms.subList(fromIndex, toIndex) 
+
+                    List<Room> pagedRooms = (fromIndex < totalRooms)
+                            ? rooms.subList(fromIndex, toIndex)
                             : List.of();
 
                     Map<String, Object> response = new HashMap<>();
@@ -93,21 +93,21 @@ public class RoomController {
                     existingRoom.setName(room.getName());
                     existingRoom.setDescription(room.getDescription());
                     existingRoom.setRoomType(room.getRoomType());
-                    
+
                     existingRoom.setNorthId(room.getNorthId());
                     existingRoom.setSouthId(room.getSouthId());
                     existingRoom.setEastId(room.getEastId());
                     existingRoom.setWestId(room.getWestId());
                     existingRoom.setUpId(room.getUpId());
                     existingRoom.setDownId(room.getDownId());
-                    
+
                     existingRoom.setNorthDoor(room.isNorthDoor());
                     existingRoom.setSouthDoor(room.isSouthDoor());
                     existingRoom.setEastDoor(room.isEastDoor());
                     existingRoom.setWestDoor(room.isWestDoor());
                     existingRoom.setUpDoor(room.isUpDoor());
                     existingRoom.setDownDoor(room.isDownDoor());
-                    
+
                     existingRoom.setNorthDoorOpen(room.isNorthDoorOpen());
                     existingRoom.setSouthDoorOpen(room.isSouthDoorOpen());
                     existingRoom.setEastDoorOpen(room.isEastDoorOpen());
@@ -115,7 +115,7 @@ public class RoomController {
                     existingRoom.setUpDoorOpen(room.isUpDoorOpen());
                     existingRoom.setDownDoorOpen(room.isDownDoorOpen());
                     existingRoom.setItems(room.getItems());
-                    
+
                     return roomService.saveRoom(existingRoom);
                 })
                 .map(ResponseEntity::ok)

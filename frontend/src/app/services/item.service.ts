@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { Item, PagedItems, ItemType, WearLocation } from '../models/item.model';
+import {Injectable} from '@angular/core';
+import {HttpClient, HttpParams} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {Item, ItemType, PagedItems, WearLocation} from '../models/item.model';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +9,8 @@ import { Item, PagedItems, ItemType, WearLocation } from '../models/item.model';
 export class ItemService {
   private apiUrl = '/api/items';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+  }
 
   getItems(page: number, size: number, filters: {
     name?: string,
@@ -28,7 +29,7 @@ export class ItemService {
     if (filters.minValue !== undefined) params = params.set('minValue', filters.minValue.toString());
     if (filters.maxValue !== undefined) params = params.set('maxValue', filters.maxValue.toString());
 
-    return this.http.get<PagedItems>(this.apiUrl, { params });
+    return this.http.get<PagedItems>(this.apiUrl, {params});
   }
 
   getItem(id: number): Observable<Item> {

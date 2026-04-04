@@ -48,8 +48,7 @@ public class EffectService {
         log.info("Fetching effects for item: {}", itemId);
         return effectRepository.findByItemId(itemId).cache();
     }
-    
-    
+
 
     public Mono<CharacterEffect> attachEffectToCharacter(Mobile mobile, Effect effect, int tickCount, String name) {
         CharacterEffect characterEffect = new CharacterEffect(mobile.getId(), effect.getId(), tickCount);
@@ -57,7 +56,7 @@ public class EffectService {
         characterEffect.setName(name);
         mobile.getSpellEffects().add(characterEffect);
 
-        if(mobile.getUserId() != null) {
+        if (mobile.getUserId() != null) {
             log.info("Attaching effect {} to character {} for {} ticks", effect.getId(), mobile.getId(), tickCount);
             return characterEffectRepository.save(characterEffect);
         } else {
@@ -105,7 +104,7 @@ public class EffectService {
         log.info("Deleting all item_effects links for item: {}", itemId);
         return effectRepository.deleteItemEffectsByItemId(itemId);
     }
-    
+
     @CacheEvict(value = "itemEffects", key = "#itemId")
     public Mono<Void> linkItemAndEffect(Long itemId, Long effectId) {
         return effectRepository.linkItemAndEffect(itemId, effectId);

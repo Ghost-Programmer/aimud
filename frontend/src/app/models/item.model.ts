@@ -1,4 +1,4 @@
-import { Effect } from './effect.model';
+import {Effect} from './effect.model';
 
 export enum ItemType {
   WEAPON = 'Weapon',

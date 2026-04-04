@@ -13,21 +13,21 @@ public class CacheConfiguration {
     @Bean
     public CacheManager cacheManager() {
         return new ConcurrentMapCacheManager(
-            "serverSettings",
-            "agents",
-            "agent",
-            "races",
-            "characterClasses",
-            "skillsRegistry",
-            "effects",
-            "effect",
-            "itemEffects",
-            "items",
-            "item",
-            "rooms",
-            "room",
-            "mobiles",
-            "mobile"
+                "serverSettings",
+                "agents",
+                "agent",
+                "races",
+                "characterClasses",
+                "skillsRegistry",
+                "effects",
+                "effect",
+                "itemEffects",
+                "items",
+                "item",
+                "rooms",
+                "room",
+                "mobiles",
+                "mobile"
         );
     }
 }

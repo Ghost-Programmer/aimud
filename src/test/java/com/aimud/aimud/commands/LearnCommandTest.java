@@ -1,7 +1,7 @@
 package com.aimud.aimud.commands;
 
-import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Item;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Skill;
 import com.aimud.aimud.service.CharacterService;
 import com.aimud.aimud.service.CommunicationService;
@@ -19,9 +19,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LearnCommandTest {

@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CharacterService } from '../../services/character.service';
-import { ConfigService } from '../../services/config.service';
-import { forkJoin } from 'rxjs';
+import {Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {CharacterService} from '../../services/character.service';
+import {ConfigService} from '../../services/config.service';
+import {forkJoin} from 'rxjs';
 
 @Component({
   selector: 'app-create-character',
@@ -67,7 +67,7 @@ export class CreateCharacterComponent implements OnInit {
     forkJoin({
       races: this.configService.getPlayableRaces(),
       classes: this.configService.getPlayableCharacterClasses()
-    }).subscribe(({ races, classes }) => {
+    }).subscribe(({races, classes}) => {
       this.races = [...races].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
       this.classes = [...classes].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
 
@@ -121,7 +121,7 @@ export class CreateCharacterComponent implements OnInit {
         };
         this.updateDerivedStats(generatedCharacter);
         if (generatedCharacter.currentRoomName) {
-            this.currentRoomName = generatedCharacter.currentRoomName;
+          this.currentRoomName = generatedCharacter.currentRoomName;
         }
       },
       error: (error) => {
@@ -188,15 +188,22 @@ export class CreateCharacterComponent implements OnInit {
           const human = this.races.find(r => r.name === 'Human');
           const cleric = this.classes.find(c => c.name === 'Cleric');
           if (human && cleric) {
-             this.characterForm.patchValue({
-               raceId: human.id,
-               classId: cleric.id
-             });
-             this.rollStats();
+            this.characterForm.patchValue({
+              raceId: human.id,
+              classId: cleric.id
+            });
+            this.rollStats();
           } else {
-             this.baseStats = { strength: 0, dexterity: 0, constitution: 0, intelligence: 0, wisdom: 0, charisma: 0 };
-             this.currentStats = { currentStrength: 0, currentDexterity: 0, currentConstitution: 0, currentIntelligence: 0, currentWisdom: 0, currentCharisma: 0 };
-             this.derivedStats = {};
+            this.baseStats = {strength: 0, dexterity: 0, constitution: 0, intelligence: 0, wisdom: 0, charisma: 0};
+            this.currentStats = {
+              currentStrength: 0,
+              currentDexterity: 0,
+              currentConstitution: 0,
+              currentIntelligence: 0,
+              currentWisdom: 0,
+              currentCharisma: 0
+            };
+            this.derivedStats = {};
           }
         },
         error: (error) => {

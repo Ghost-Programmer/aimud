@@ -40,27 +40,27 @@ public class MagicMissile extends Spell {
 
         boolean resist = false;
 
-        if(target.getMagicResist() > new Dice(1, 100).getTotal()) {
+        if (target.getMagicResist() > new Dice(1, 100).getTotal()) {
             damage = damage / 2;
             resist = true;
         }
 
-        if(mobile.getUserId() != null) {
+        if (mobile.getUserId() != null) {
 
-            if(resist) {
+            if (resist) {
                 this.communicationService.sendTextMessage(mobile, String.format("\n\n%s resists your magic missile for half damage!", target.getName()));
             }
             this.communicationService.sendTextMessage(mobile, String.format("\n\nYou fire a magic missile at %s for %d damage!", target.getName(), damage));
         }
 
-        if(mobile.getUserId() != null) {
+        if (mobile.getUserId() != null) {
             Mobile Mobile = target;
-            if(resist){
+            if (resist) {
                 this.communicationService.sendTextMessage(Mobile, String.format("\n\nYou resist %s's magic missile  for half damage!", mobile.getName()));
             }
-            this.communicationService.sendTextMessage(Mobile,String.format("\n\n%s fires a magic missile at you for %d damage!", mobile.getName(), damage));
+            this.communicationService.sendTextMessage(Mobile, String.format("\n\n%s fires a magic missile at you for %d damage!", mobile.getName(), damage));
         }
-        if(resist) {
+        if (resist) {
             this.communicationService.roomMessage(mobile, String.format("\n\n%s's magic missile is resisted for half damage as it hits %s!", mobile.getName(), target.getName()));
         }
         this.communicationService.roomMessage(mobile, String.format("\n\n%s fires a magic missile at %s for %d damage!", mobile.getName(), target.getName(), damage));

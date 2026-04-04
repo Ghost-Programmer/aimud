@@ -3,11 +3,7 @@ package com.aimud.aimud.commands;
 import com.aimud.aimud.annontation.MudCommand;
 import com.aimud.aimud.model.Item;
 import com.aimud.aimud.model.Mobile;
-import com.aimud.aimud.service.CharacterService;
-import com.aimud.aimud.service.CommunicationService;
-import com.aimud.aimud.service.MobileService;
-import com.aimud.aimud.service.RoomService;
-import com.aimud.aimud.service.SkillService;
+import com.aimud.aimud.service.*;
 import com.aimud.aimud.types.SkillsType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +28,7 @@ public class PickpocketCommand implements Command {
     @Override
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing pickpocket command for Mobile: {}", Mobile.getName());
-        
+
         int pickRank = skillService.getSkillRank(Mobile, SkillsType.PICKPOCKET);
         if (pickRank <= 0) {
             communicationService.sendTextMessage(Mobile, "\n\nYou don't know how to pickpocket.");
@@ -64,14 +60,14 @@ public class PickpocketCommand implements Command {
                                 // Also check if target is a PC
                                 List<Mobile> pcs = characterService.findAllByRoomId(room.getId());
                                 Mobile pcTarget = pcs.stream()
-                                    .filter(c -> !c.getId().equals(Mobile.getId()) && c.getName().toLowerCase().contains(targetName))
-                                    .findFirst()
-                                    .orElse(null);
-                                    
+                                        .filter(c -> !c.getId().equals(Mobile.getId()) && c.getName().toLowerCase().contains(targetName))
+                                        .findFirst()
+                                        .orElse(null);
+
                                 if (pcTarget != null) {
                                     return executePickpocket(Mobile, pcTarget, pickRank);
                                 }
-                                
+
                                 communicationService.sendTextMessage(Mobile, "\n\nThey aren't here.");
                                 return Mono.empty();
                             }));
@@ -94,7 +90,7 @@ public class PickpocketCommand implements Command {
                 communicationService.sendTextMessage(target, "\n\n" + thief.getName() + " tried to pick your pocket!");
             }
             communicationService.roomMessage(thief, "\n" + thief.getName() + " tried to pickpocket " + target.getName() + "!");
-            
+
             // Auto-retaliate
             if (target.getTarget() == null) {
                 target.setTarget(thief);
@@ -123,7 +119,7 @@ public class PickpocketCommand implements Command {
         thief.setInventory(newThiefInventory);
 
         communicationService.sendTextMessage(thief, "\n\nYou successfully steal " + stolenItem.getName() + " from " + target.getName() + "!");
-        
+
         // Save both entities
         Mono<Void> saveTargetMono;
         saveTargetMono = mobileService.saveMobile(target).then();

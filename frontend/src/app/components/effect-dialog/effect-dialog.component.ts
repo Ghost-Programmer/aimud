@@ -1,7 +1,7 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Effect, EffectType } from '../../models/effect.model';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {Effect, EffectType} from '../../models/effect.model';
 
 @Component({
   selector: 'app-effect-dialog',
@@ -26,7 +26,8 @@ export class EffectDialogComponent {
 
   effectTypes = Object.values(EffectType);
 
-  constructor() {}
+  constructor() {
+  }
 
   ngOnInit(): void {
     if (this.effectData) {

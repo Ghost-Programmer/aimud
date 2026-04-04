@@ -3,11 +3,7 @@ package com.aimud.aimud.service;
 import com.aimud.aimud.model.Item;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Skill;
-import com.aimud.aimud.repository.CharacterClassRepository;
-import com.aimud.aimud.repository.CharacterEffectRepository;
-import com.aimud.aimud.repository.MobileRepository;
-import com.aimud.aimud.repository.SkillRepository;
-import com.aimud.aimud.repository.UserRepository;
+import com.aimud.aimud.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Service;
@@ -85,7 +81,7 @@ public class CharacterService {
     public List<Mobile> getAvailableCharacters() {
         return new ArrayList<>(availableCharacters.values());
     }
-    
+
     public void removeAvailableCharacter(Long characterId) {
         availableCharacters.remove(characterId);
     }
@@ -135,7 +131,7 @@ public class CharacterService {
                                                 )
                                                 .then(Mono.just(savedCharacter));
                                     }
-                                    
+
                                     return itemsMono.flatMap(c -> {
                                         List<String> startingSkills = characterClass.getStartingSkillNames();
                                         if (startingSkills.isEmpty()) {
@@ -223,20 +219,20 @@ public class CharacterService {
 
         // Extract unique item IDs from the inventory list to prevent duplicate key exceptions
         List<Long> uniqueItemIds = inventory.stream()
-                                            .map(Item::getId)
-                                            .filter(java.util.Objects::nonNull)
-                                            .distinct() // This ensures only unique item IDs are processed
-                                            .collect(Collectors.toList());
+                .map(Item::getId)
+                .filter(java.util.Objects::nonNull)
+                .distinct() // This ensures only unique item IDs are processed
+                .collect(Collectors.toList());
 
         return databaseClient.sql("DELETE FROM character_inventory WHERE character_id = :characterId")
                 .bind("characterId", character.getId())
                 .then()
                 .thenMany(Flux.fromIterable(uniqueItemIds)) // Iterate over unique IDs
                 .flatMap(itemId -> databaseClient.sql("INSERT INTO character_inventory (character_id, item_id) VALUES (:characterId, :itemId)")
-                            .bind("characterId", character.getId())
-                            .bind("itemId", itemId)
-                            .fetch()
-                            .rowsUpdated()
+                        .bind("characterId", character.getId())
+                        .bind("itemId", itemId)
+                        .fetch()
+                        .rowsUpdated()
                 )
                 .then(Mono.just(character));
     }
@@ -432,23 +428,74 @@ public class CharacterService {
 
         Item itemToUnequip;
         switch (slot.toLowerCase()) {
-            case "head"         -> { itemToUnequip = character.getHead();        character.setHead(null); }
-            case "chest"        -> { itemToUnequip = character.getChest();       character.setChest(null); }
-            case "legs"         -> { itemToUnequip = character.getLegs();        character.setLegs(null); }
-            case "feet"         -> { itemToUnequip = character.getFeet();        character.setFeet(null); }
-            case "arms"         -> { itemToUnequip = character.getArms();        character.setArms(null); }
-            case "hands"        -> { itemToUnequip = character.getHands();       character.setHands(null); }
-            case "rightfinger"  -> { itemToUnequip = character.getRightFinger(); character.setRightFinger(null); }
-            case "leftfinger"   -> { itemToUnequip = character.getLeftFinger();  character.setLeftFinger(null); }
-            case "rightwrist"   -> { itemToUnequip = character.getRightWrist();  character.setRightWrist(null); }
-            case "leftwrist"    -> { itemToUnequip = character.getLeftWrist();   character.setLeftWrist(null); }
-            case "neck"         -> { itemToUnequip = character.getNeck();        character.setNeck(null); }
-            case "leftear"      -> { itemToUnequip = character.getLeftEar();     character.setLeftEar(null); }
-            case "rightear"     -> { itemToUnequip = character.getRightEar();    character.setRightEar(null); }
-            case "face"         -> { itemToUnequip = character.getFace();        character.setFace(null); }
-            case "waist"        -> { itemToUnequip = character.getWaist();       character.setWaist(null); }
-            case "primary"      -> { itemToUnequip = character.getPrimary();     character.setPrimary(null); }
-            case "offhand"      -> { itemToUnequip = character.getOffhand();     character.setOffhand(null); }
+            case "head" -> {
+                itemToUnequip = character.getHead();
+                character.setHead(null);
+            }
+            case "chest" -> {
+                itemToUnequip = character.getChest();
+                character.setChest(null);
+            }
+            case "legs" -> {
+                itemToUnequip = character.getLegs();
+                character.setLegs(null);
+            }
+            case "feet" -> {
+                itemToUnequip = character.getFeet();
+                character.setFeet(null);
+            }
+            case "arms" -> {
+                itemToUnequip = character.getArms();
+                character.setArms(null);
+            }
+            case "hands" -> {
+                itemToUnequip = character.getHands();
+                character.setHands(null);
+            }
+            case "rightfinger" -> {
+                itemToUnequip = character.getRightFinger();
+                character.setRightFinger(null);
+            }
+            case "leftfinger" -> {
+                itemToUnequip = character.getLeftFinger();
+                character.setLeftFinger(null);
+            }
+            case "rightwrist" -> {
+                itemToUnequip = character.getRightWrist();
+                character.setRightWrist(null);
+            }
+            case "leftwrist" -> {
+                itemToUnequip = character.getLeftWrist();
+                character.setLeftWrist(null);
+            }
+            case "neck" -> {
+                itemToUnequip = character.getNeck();
+                character.setNeck(null);
+            }
+            case "leftear" -> {
+                itemToUnequip = character.getLeftEar();
+                character.setLeftEar(null);
+            }
+            case "rightear" -> {
+                itemToUnequip = character.getRightEar();
+                character.setRightEar(null);
+            }
+            case "face" -> {
+                itemToUnequip = character.getFace();
+                character.setFace(null);
+            }
+            case "waist" -> {
+                itemToUnequip = character.getWaist();
+                character.setWaist(null);
+            }
+            case "primary" -> {
+                itemToUnequip = character.getPrimary();
+                character.setPrimary(null);
+            }
+            case "offhand" -> {
+                itemToUnequip = character.getOffhand();
+                character.setOffhand(null);
+            }
             default -> {
                 communicationService.sendTextMessage(character, "\n\nUnknown equipment slot: " + slot);
                 return Mono.just(character);
@@ -600,7 +647,7 @@ public class CharacterService {
                                 room.getItemIds().stream().forEach(itemId -> {
                                     this.itemService.getItem(itemId)
                                             .doOnNext(item ->
-                                    this.communicationService.sendTextMessage(character, "\nYou see " + item.getName() + " laying here."));
+                                                    this.communicationService.sendTextMessage(character, "\nYou see " + item.getName() + " laying here."));
                                 });
                                 List<String> exits = new ArrayList<>();
                                 if (room.getNorthId() != null) {

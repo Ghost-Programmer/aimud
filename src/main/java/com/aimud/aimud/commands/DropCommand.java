@@ -1,8 +1,8 @@
 package com.aimud.aimud.commands;
 
 import com.aimud.aimud.annontation.MudCommand;
-import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Item;
+import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.service.CharacterService;
 import com.aimud.aimud.service.CommunicationService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class DropCommand implements Command {
     @Override
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing drop command for Mobile: {}", Mobile.getName());
-        
+
         String[] parts = commandLine.trim().split("\\s+", 2);
         if (parts.length < 2) {
             communicationService.sendTextMessage(Mobile, "\n\nDrop what?");
@@ -29,7 +29,7 @@ public class DropCommand implements Command {
         }
 
         String itemName = parts[1].toLowerCase();
-        
+
         Optional<Item> itemToDrop = Mobile.getInventory().stream()
                 .filter(i -> i.getName().toLowerCase().contains(itemName))
                 .findFirst();

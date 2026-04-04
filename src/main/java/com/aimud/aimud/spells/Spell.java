@@ -26,9 +26,13 @@ public abstract class Spell {
 
 
     abstract public String getSpellName();
+
     abstract public Long getSpellId();
+
     abstract public Integer getSpellLevel();
+
     abstract public String getDescription();
+
     abstract public boolean cast(Mobile mobile, Spell spell, Mobile target);
 
 
@@ -53,14 +57,14 @@ public abstract class Spell {
         }
         if (parts.length > 3) {
 
-            String name =  parts[2].toLowerCase();
+            String name = parts[2].toLowerCase();
 
             Mobile target = mopbileService.getMobilesInRoom(mobile.getCurrentRoomId()).stream()
                     .filter(m -> m.getName().toLowerCase().contains(name))
                     .findFirst()
                     .orElse(null);
 
-            if(target != null) {
+            if (target != null) {
                 return target;
             }
 
@@ -79,29 +83,29 @@ public abstract class Spell {
 
         int dice = (9 + spellSkill + (castSkill - getSpellLevel())) / 6;
 
-       return new Dice(dice, 6).getTotal() + (9 + spellSkill + (castSkill - getSpellLevel())) % 6;
+        return new Dice(dice, 6).getTotal() + (9 + spellSkill + (castSkill - getSpellLevel())) % 6;
     }
 
     public boolean applyEffect(Mobile mobile, String name, Effect effect, Integer tickCount) {
         AtomicBoolean apply = new AtomicBoolean(false);
         mobile.getSpellEffects().stream()
-            .filter(e -> e.getName() != null)
-            .filter(e -> e.getName().equals(name))
-            .findFirst()
-            .ifPresentOrElse(e -> {
-               if(e.getEffect().getModifier1() < effect.getModifier1()) {
-                  effectService.removeCharacterEffectFromMobile(mobile, e);
-                  effectService.attachEffectToCharacter(mobile, effect, tickCount, name).subscribe();
-                  apply.set(true);
-               } else if (e.getEffect().getModifier1() == effect.getModifier1() && e.getTickCount() < tickCount) {
-                   effectService.removeCharacterEffectFromMobile(mobile, e);
-                   effectService.attachEffectToCharacter(mobile, effect, tickCount, name).subscribe();
-                   apply.set(true);
-               }
-            }, () -> {
-                effectService.attachEffectToCharacter(mobile, effect, tickCount, name).subscribe();
-                apply.set(true);
-            });
+                .filter(e -> e.getName() != null)
+                .filter(e -> e.getName().equals(name))
+                .findFirst()
+                .ifPresentOrElse(e -> {
+                    if (e.getEffect().getModifier1() < effect.getModifier1()) {
+                        effectService.removeCharacterEffectFromMobile(mobile, e);
+                        effectService.attachEffectToCharacter(mobile, effect, tickCount, name).subscribe();
+                        apply.set(true);
+                    } else if (e.getEffect().getModifier1() == effect.getModifier1() && e.getTickCount() < tickCount) {
+                        effectService.removeCharacterEffectFromMobile(mobile, e);
+                        effectService.attachEffectToCharacter(mobile, effect, tickCount, name).subscribe();
+                        apply.set(true);
+                    }
+                }, () -> {
+                    effectService.attachEffectToCharacter(mobile, effect, tickCount, name).subscribe();
+                    apply.set(true);
+                });
         return apply.get();
     }
 }

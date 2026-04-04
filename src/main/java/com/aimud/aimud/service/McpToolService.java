@@ -1,11 +1,6 @@
 package com.aimud.aimud.service;
 
-import com.aimud.aimud.model.Effect;
-import com.aimud.aimud.model.Item;
-import com.aimud.aimud.model.Mobile;
-import com.aimud.aimud.model.MobileSkill;
-import com.aimud.aimud.model.Room;
-import com.aimud.aimud.model.SkillRegistry;
+import com.aimud.aimud.model.*;
 import com.aimud.aimud.types.EffectType;
 import com.aimud.aimud.types.ItemType;
 import com.aimud.aimud.types.RoomType;
@@ -19,9 +14,9 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
-import java.util.concurrent.ExecutionException;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -388,14 +383,14 @@ public class McpToolService {
         effect.setModifier4(modifier4);
 
         return effectService.saveEffect(effect)
-                 .flatMap(savedEffect -> {
-                     if (itemId != null) {
-                         return effectService.linkItemAndEffect(itemId, savedEffect.getId())
-                                 .onErrorResume(e -> Mono.empty())
-                                 .thenReturn(savedEffect);
-                     }
-                     return Mono.just(savedEffect);
-                 })
+                .flatMap(savedEffect -> {
+                    if (itemId != null) {
+                        return effectService.linkItemAndEffect(itemId, savedEffect.getId())
+                                .onErrorResume(e -> Mono.empty())
+                                .thenReturn(savedEffect);
+                    }
+                    return Mono.just(savedEffect);
+                })
                 .as(mono -> await(mono, "update effect"));
     }
 

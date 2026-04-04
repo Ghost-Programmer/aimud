@@ -1,22 +1,24 @@
 <div class="dialog-overlay">
   <div class="dialog-content">
     <h2>Edit Character</h2>
-    <form [formGroup]="characterForm" (ngSubmit)="onSubmit()">
+    <form (ngSubmit)="onSubmit()" [formGroup]="characterForm">
       <div class="form-group">
         <label for="name">Name</label>
-        <input type="text" id="name" formControlName="name">
+        <input formControlName="name" id="name" type="text">
       </div>
 
       <div class="form-group">
         <label for="race">Race</label>
         <div class="select-with-info">
-          <select id="race" formControlName="raceId">
+          <select formControlName="raceId" id="race">
             <option [ngValue]="null" disabled>Select a Race</option>
             <option *ngFor="let race of races" [ngValue]="race.id">{{ race.name }}</option>
           </select>
-          <div class="info-icon" *ngIf="characterForm.get('raceId')?.value" [title]="getSelectedRaceDescription()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
-              <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+          <div *ngIf="characterForm.get('raceId')?.value" [title]="getSelectedRaceDescription()" class="info-icon">
+            <svg class="bi bi-info-circle-fill" fill="currentColor" height="16" viewBox="0 0 16 16"
+                 width="16" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
             </svg>
           </div>
         </div>
@@ -25,13 +27,15 @@
       <div class="form-group">
         <label for="class">Class</label>
         <div class="select-with-info">
-          <select id="class" formControlName="classId">
+          <select formControlName="classId" id="class">
             <option [ngValue]="null" disabled>Select a Class</option>
             <option *ngFor="let cls of classes" [ngValue]="cls.id">{{ cls.name }}</option>
           </select>
-          <div class="info-icon" *ngIf="characterForm.get('classId')?.value" [title]="getSelectedClassDescription()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
-              <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+          <div *ngIf="characterForm.get('classId')?.value" [title]="getSelectedClassDescription()" class="info-icon">
+            <svg class="bi bi-info-circle-fill" fill="currentColor" height="16" viewBox="0 0 16 16"
+                 width="16" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
             </svg>
           </div>
         </div>
@@ -40,12 +44,12 @@
       <div class="form-group">
         <label for="currentRoomId">Current Room ID</label>
         <div class="room-input-group">
-          <input type="number" id="currentRoomId" formControlName="currentRoomId">
-          <span class="room-name" *ngIf="currentRoomName">({{ currentRoomName }})</span>
+          <input formControlName="currentRoomId" id="currentRoomId" type="number">
+          <span *ngIf="currentRoomName" class="room-name">({{ currentRoomName }})</span>
         </div>
       </div>
 
-      <div class="form-group" *ngIf="derivedStats.challengeRating !== undefined">
+      <div *ngIf="derivedStats.challengeRating !== undefined" class="form-group">
         <label>Challenge Rating</label>
         <div class="cr-value">{{ derivedStats.challengeRating }}</div>
       </div>
@@ -53,48 +57,48 @@
       <div class="stats-table-container">
         <table class="stats-table">
           <thead>
-            <tr>
-              <th>Stat</th>
-              <th>Base</th>
-              <th>Current</th>
-            </tr>
+          <tr>
+            <th>Stat</th>
+            <th>Base</th>
+            <th>Current</th>
+          </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>Strength</td>
-              <td><input type="number" formControlName="strength"></td>
-              <td>{{ currentStats.currentStrength }}</td>
-            </tr>
-            <tr>
-              <td>Dexterity</td>
-              <td><input type="number" formControlName="dexterity"></td>
-              <td>{{ currentStats.currentDexterity }}</td>
-            </tr>
-            <tr>
-              <td>Constitution</td>
-              <td><input type="number" formControlName="constitution"></td>
-              <td>{{ currentStats.currentConstitution }}</td>
-            </tr>
-            <tr>
-              <td>Intelligence</td>
-              <td><input type="number" formControlName="intelligence"></td>
-              <td>{{ currentStats.currentIntelligence }}</td>
-            </tr>
-            <tr>
-              <td>Wisdom</td>
-              <td><input type="number" formControlName="wisdom"></td>
-              <td>{{ currentStats.currentWisdom }}</td>
-            </tr>
-            <tr>
-              <td>Charisma</td>
-              <td><input type="number" formControlName="charisma"></td>
-              <td>{{ currentStats.currentCharisma }}</td>
-            </tr>
+          <tr>
+            <td>Strength</td>
+            <td><input formControlName="strength" type="number"></td>
+            <td>{{ currentStats.currentStrength }}</td>
+          </tr>
+          <tr>
+            <td>Dexterity</td>
+            <td><input formControlName="dexterity" type="number"></td>
+            <td>{{ currentStats.currentDexterity }}</td>
+          </tr>
+          <tr>
+            <td>Constitution</td>
+            <td><input formControlName="constitution" type="number"></td>
+            <td>{{ currentStats.currentConstitution }}</td>
+          </tr>
+          <tr>
+            <td>Intelligence</td>
+            <td><input formControlName="intelligence" type="number"></td>
+            <td>{{ currentStats.currentIntelligence }}</td>
+          </tr>
+          <tr>
+            <td>Wisdom</td>
+            <td><input formControlName="wisdom" type="number"></td>
+            <td>{{ currentStats.currentWisdom }}</td>
+          </tr>
+          <tr>
+            <td>Charisma</td>
+            <td><input formControlName="charisma" type="number"></td>
+            <td>{{ currentStats.currentCharisma }}</td>
+          </tr>
           </tbody>
         </table>
       </div>
 
-      <div class="derived-stats-container" *ngIf="derivedStats.maxHp">
+      <div *ngIf="derivedStats.maxHp" class="derived-stats-container">
         <h3>Derived Stats</h3>
         <div class="derived-stats-grid">
           <div class="derived-stat">
@@ -141,8 +145,8 @@
       </div>
 
       <div class="dialog-actions">
-        <button type="button" (click)="onCancel()">Cancel</button>
-        <button type="submit" [disabled]="characterForm.invalid">Save</button>
+        <button (click)="onCancel()" type="button">Cancel</button>
+        <button [disabled]="characterForm.invalid" type="submit">Save</button>
       </div>
     </form>
   </div>

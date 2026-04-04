@@ -7,5 +7,6 @@ import reactor.core.publisher.Mono;
 
 public interface SkillRepository extends ReactiveCrudRepository<Skill, Long> {
     Mono<Skill> findByCharacterIdAndName(Long characterId, String name);
+
     Flux<Skill> findByCharacterId(Long characterId);
 }

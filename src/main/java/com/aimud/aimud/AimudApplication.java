@@ -10,8 +10,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableCaching
 public class AimudApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(AimudApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(AimudApplication.class, args);
+    }
 
 }

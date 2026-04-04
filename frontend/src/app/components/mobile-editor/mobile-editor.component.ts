@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
-import { MobileService } from '../../services/mobile.service';
-import { Mobile } from '../../models/mobile.model';
-import { ItemService } from '../../services/item.service';
-import { ConfigService } from '../../services/config.service';
+import {Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {MobileService} from '../../services/mobile.service';
+import {Mobile} from '../../models/mobile.model';
+import {ItemService} from '../../services/item.service';
+import {ConfigService} from '../../services/config.service';
 
 @Component({
   selector: 'app-mobile-editor',
@@ -38,6 +38,14 @@ export class MobileEditorComponent implements OnInit {
     private configService: ConfigService
   ) {
     this.createForm();
+  }
+
+  get inventoryControls() {
+    return (this.mobileForm.get('inventory') as FormArray);
+  }
+
+  get skillsControls() {
+    return (this.mobileForm.get('skills') as FormArray);
   }
 
   ngOnInit(): void {
@@ -122,14 +130,6 @@ export class MobileEditorComponent implements OnInit {
     });
   }
 
-  get inventoryControls() {
-    return (this.mobileForm.get('inventory') as FormArray);
-  }
-
-  get skillsControls() {
-    return (this.mobileForm.get('skills') as FormArray);
-  }
-
   getFilteredEquipItems(loc: string) {
     const items = this.availableItemsByLocation[loc]?.length ? this.availableItemsByLocation[loc] : this.availableItems;
     const search = this.equipSearchTexts[loc]?.toLowerCase();
@@ -139,11 +139,11 @@ export class MobileEditorComponent implements OnInit {
     const currentId = this.mobileForm.get(controlName)?.value;
 
     if (!search) {
-        return items;
+      return items;
     }
 
     return items.filter(item =>
-        item.name.toLowerCase().includes(search) || item.id === currentId
+      item.name.toLowerCase().includes(search) || item.id === currentId
     );
   }
 
@@ -152,11 +152,11 @@ export class MobileEditorComponent implements OnInit {
     const currentId = this.inventoryControls.at(index).get('id')?.value;
 
     if (!search) {
-        return this.availableItems;
+      return this.availableItems;
     }
 
     return this.availableItems.filter(item =>
-        item.name.toLowerCase().includes(search) || item.id === currentId
+      item.name.toLowerCase().includes(search) || item.id === currentId
     );
   }
 
@@ -243,7 +243,7 @@ export class MobileEditorComponent implements OnInit {
 
     // Transform inventory from [{id: 1}] to Item objects
     formValue.inventory = formValue.inventory.map((i: any) => {
-      return this.availableItems.find(item => item.id == i.id) || { id: i.id };
+      return this.availableItems.find(item => item.id == i.id) || {id: i.id};
     });
 
     if (formValue.id) {

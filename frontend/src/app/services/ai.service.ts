@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +8,8 @@ import { Observable } from 'rxjs';
 export class AiService {
   private apiUrl = '/api/ai';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+  }
 
   processPrompt(prompt: string): Observable<string> {
     return new Observable<string>(observer => {
@@ -18,7 +19,7 @@ export class AiService {
           'Content-Type': 'application/json',
           'Accept': 'text/event-stream'
         },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({prompt})
       }).then(response => {
         const reader = response.body?.getReader();
         if (!reader) {
@@ -28,12 +29,12 @@ export class AiService {
 
         const decoder = new TextDecoder();
         const read = () => {
-          reader.read().then(({ done, value }) => {
+          reader.read().then(({done, value}) => {
             if (done) {
               observer.complete();
               return;
             }
-            const chunk = decoder.decode(value, { stream: true });
+            const chunk = decoder.decode(value, {stream: true});
             // SSE chunks usually look like "data: ...\n\n"
             const lines = chunk.split('\n');
             for (const line of lines) {

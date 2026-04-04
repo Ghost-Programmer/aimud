@@ -21,10 +21,10 @@
 
     <div class="divider"></div>
 
-    <div class="effects-section" *ngIf="data.item.effects && data.item.effects.length > 0">
+    <div *ngIf="data.item.effects && data.item.effects.length > 0" class="effects-section">
       <h3 class="section-title">Effects</h3>
       <div class="effects-list">
-        <div class="effect-item" *ngFor="let effect of data.item.effects">
+        <div *ngFor="let effect of data.item.effects" class="effect-item">
           {{ getEffectDescription(effect) }}
         </div>
       </div>
@@ -33,21 +33,21 @@
 
     <div class="stats-grid">
       <ng-container *ngFor="let key of getStatKeys()">
-        <div class="stat-item" *ngIf="hasStat(key)">
+        <div *ngIf="hasStat(key)" class="stat-item">
           <span class="stat-label">{{ getStatLabel(key) }}:</span>
-          <span class="stat-value" [class.positive]="data.item[key] > 0" [class.negative]="data.item[key] < 0">
+          <span [class.negative]="data.item[key] < 0" [class.positive]="data.item[key] > 0" class="stat-value">
             {{ data.item[key] > 0 ? '+' : '' }}{{ data.item[key] }}
           </span>
         </div>
       </ng-container>
     </div>
 
-    <div class="no-stats" *ngIf="!getStatKeys().some(hasStat.bind(this))">
+    <div *ngIf="!getStatKeys().some(hasStat.bind(this))" class="no-stats">
       No additional stats.
     </div>
   </mat-dialog-content>
 
   <mat-dialog-actions align="end">
-    <button mat-button (click)="onClose()" class="ok-button">OK</button>
+    <button (click)="onClose()" class="ok-button" mat-button>OK</button>
   </mat-dialog-actions>
 </div>

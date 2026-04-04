@@ -8,9 +8,9 @@ import com.aimud.aimud.types.EffectType;
 import com.aimud.aimud.types.ItemType;
 import com.aimud.aimud.types.SkillsType;
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Mono;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,8 +49,8 @@ public class TickService {
             boolean combatOccurred = processAttack(character);
 
             if (effectsChanged || statsChanged || combatOccurred) {
-               save = true;
-               communicationService.sendCharacterUpdate(character);
+                save = true;
+                communicationService.sendCharacterUpdate(character);
             }
 
             if (!character.getCommandQueue().isEmpty()) {
@@ -62,7 +62,7 @@ public class TickService {
             } else {
                 character.setIdle(character.getIdle() + 1);
 
-                if(character.getIdle() > 300) {
+                if (character.getIdle() > 300) {
                     character.getCommandQueue().add("logout");
                     commandService.processCommand(character)
                             .doOnError(error -> log.error("Error processing idle logout for {}", character.getName(), error))
@@ -70,7 +70,7 @@ public class TickService {
                             .subscribe();
                 }
             }
-            if(save) {
+            if (save) {
                 characterService.save(character).subscribe();
             }
         }
@@ -129,7 +129,7 @@ public class TickService {
 
         return true;
     }
-    
+
     private void sendTargetUpdates(Mobile target) {
         if (target.getCurrentRoomId() == null) {
             return;
@@ -230,16 +230,16 @@ public class TickService {
         target.setCurrentHp(target.getCurrentHp() - totalDamage);
 
         String damageString = String.join(", ", damageReports);
-        
-        sendCombatMessage(attacker, target, 
-            "You hit " + target.getName() + " for " + damageString + "!",
-            attacker.getName() + " hits you for " + damageString + "!",
-            attacker.getName() + " hits " + target.getName() + " for " + damageString + "!");
+
+        sendCombatMessage(attacker, target,
+                "You hit " + target.getName() + " for " + damageString + "!",
+                attacker.getName() + " hits you for " + damageString + "!",
+                attacker.getName() + " hits " + target.getName() + " for " + damageString + "!");
 
         // 6. Check Death
         if (target.getCurrentHp() <= 0) {
             target.setCurrentHp(0);
-            
+
             String deathMsg = "\n" + target.getName() + " is DEAD!!";
             sendCombatMessage(attacker, target, deathMsg, "\n\nYou have died...", deathMsg);
 
@@ -249,22 +249,22 @@ public class TickService {
             target.setTarget(null);
         }
 
-        if(target.getUserId() != null) {
+        if (target.getUserId() != null) {
             communicationService.sendCharacterUpdate(target);
         }
-        if(attacker.getUserId() != null) {
+        if (attacker.getUserId() != null) {
             this.communicationService.sendCharacterUpdate(attacker);
         }
     }
 
     private void checkSkillImprovement(Mobile mobile, String skillName, Mobile target, boolean wasSuccess) {
         skillService.checkSkill(mobile, skillName, (int) target.getChallengeRating(), wasSuccess)
-            .doOnNext(improvedSkill -> {
-                if (mobile.getUserId() != null) {
-                    communicationService.sendTextMessage(mobile, "\n\nYour " + skillName + " skill has improved to " + improvedSkill.getRank() + "!");
-                }
-            })
-            .subscribe();
+                .doOnNext(improvedSkill -> {
+                    if (mobile.getUserId() != null) {
+                        communicationService.sendTextMessage(mobile, "\n\nYour " + skillName + " skill has improved to " + improvedSkill.getRank() + "!");
+                    }
+                })
+                .subscribe();
     }
 
     private void sendCombatMessage(Mobile attacker, Mobile target, String attackerMsg, String targetMsg, String roomMsg) {
@@ -277,7 +277,7 @@ public class TickService {
             communicationService.roomMessage(target, "\n" + roomMsg);
             communicationService.sendCharacterUpdate(target);
         }
-        
+
         if (target.getUserId() != null) {
             communicationService.sendTextMessage(target, "\n" + targetMsg);
             communicationService.sendCharacterUpdate(target);
@@ -301,15 +301,15 @@ public class TickService {
     private boolean isShield(Item item) {
         // Typically a shield is MEDIUM_ARMOR or HEAVY_ARMOR worn in the OFFHAND.
         // For simplicity, we check if it's armor in the offhand.
-        return item.getWearLocation() == com.aimud.aimud.types.WearLocation.OFFHAND && 
-               (item.getItemType() == ItemType.LIGHT_ARMOR || item.getItemType() == ItemType.MEDIUM_ARMOR || item.getItemType() == ItemType.HEAVY_ARMOR);
+        return item.getWearLocation() == com.aimud.aimud.types.WearLocation.OFFHAND &&
+                (item.getItemType() == ItemType.LIGHT_ARMOR || item.getItemType() == ItemType.MEDIUM_ARMOR || item.getItemType() == ItemType.HEAVY_ARMOR);
     }
 
     private boolean isDamageEffect(EffectType type) {
-        return type == EffectType.BASHING_DAMAGE || type == EffectType.SLASHING_DAMAGE || 
-               type == EffectType.PIERCING_DAMAGE || type == EffectType.FIRE_DAMAGE || 
-               type == EffectType.COLD_DAMAGE || type == EffectType.SONIC_DAMAGE || 
-               type == EffectType.POISON_DAMAGE || type == EffectType.ELECTRICAL_DAMAGE;
+        return type == EffectType.BASHING_DAMAGE || type == EffectType.SLASHING_DAMAGE ||
+                type == EffectType.PIERCING_DAMAGE || type == EffectType.FIRE_DAMAGE ||
+                type == EffectType.COLD_DAMAGE || type == EffectType.SONIC_DAMAGE ||
+                type == EffectType.POISON_DAMAGE || type == EffectType.ELECTRICAL_DAMAGE;
     }
 
     private void createCorpse(Mobile deceased) {
@@ -373,7 +373,7 @@ public class TickService {
         if (mobile.getSpellEffects() == null || mobile.getSpellEffects().isEmpty()) {
             return false;
         }
-        
+
         int initialSize = mobile.getSpellEffects().size();
         mobile.setSpellEffects(mobile.getSpellEffects().stream()
                 .filter(effect -> {
@@ -412,11 +412,11 @@ public class TickService {
 
         // Mana Regeneration
         if (mobile.getCurrentMana() < mobile.getMaxMana()) {
-             int newMana = Math.min(mobile.getCurrentMana() + mobile.getManaRegen(), mobile.getMaxMana());
-             if (newMana != mobile.getCurrentMana()) {
-                 mobile.setCurrentMana(newMana);
-                 updated = true;
-             }
+            int newMana = Math.min(mobile.getCurrentMana() + mobile.getManaRegen(), mobile.getMaxMana());
+            if (newMana != mobile.getCurrentMana()) {
+                mobile.setCurrentMana(newMana);
+                updated = true;
+            }
         }
 
         if (updated) {

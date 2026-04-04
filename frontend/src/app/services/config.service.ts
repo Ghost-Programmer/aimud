@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { Agent } from '../models/agent.model';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {Agent} from '../models/agent.model';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +9,8 @@ import { Agent } from '../models/agent.model';
 export class ConfigService {
   private apiUrl = '/api/config';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+  }
 
   // Server Settings
   getServerSettings(): Observable<any> {
@@ -43,7 +44,7 @@ export class ConfigService {
   }
 
   getPlayableRaces(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/races`, { params: { playableOnly: 'true' } });
+    return this.http.get<any[]>(`${this.apiUrl}/races`, {params: {playableOnly: 'true'}});
   }
 
   createRace(race: any): Observable<any> {
@@ -64,7 +65,7 @@ export class ConfigService {
   }
 
   getPlayableCharacterClasses(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/classes`, { params: { playableOnly: 'true' } });
+    return this.http.get<any[]>(`${this.apiUrl}/classes`, {params: {playableOnly: 'true'}});
   }
 
   createCharacterClass(characterClass: any): Observable<any> {

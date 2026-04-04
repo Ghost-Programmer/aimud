@@ -75,7 +75,7 @@ public class CommunicationService {
         textMessages.tryEmitNext(new TextMessage(character.getId(), message));
     }
 
-    public void roomMessage(Mobile mobile, String message){
+    public void roomMessage(Mobile mobile, String message) {
         this.characterService.findAllByRoomId(mobile.getCurrentRoomId()).stream().filter(c -> !c.getId().equals(mobile.getId())).forEach(c -> {
             this.sendTextMessage(c, message);
         });

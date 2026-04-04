@@ -1,7 +1,7 @@
 <div class="character-list-container">
   <h2>Select a Character</h2>
   <div class="character-grid">
-    <div *ngFor="let character of filteredCharacters" class="character-card" (click)="selectCharacter(character)">
+    <div (click)="selectCharacter(character)" *ngFor="let character of filteredCharacters" class="character-card">
       <div class="card-header">
         <h3>{{ character.name }}</h3>
         <div class="race-class">{{ getRaceName(character.raceId) }} / {{ getClassName(character.classId) }}</div>
@@ -9,12 +9,14 @@
 
       <div class="resource-bars">
         <div class="resource-bar hp-bar">
-          <div class="bar-fill" [style.width.%]="(character.maxHp / character.maxHp) * 100"></div>
-          <span class="bar-text">HP: {{ character.currentHp | number:'1.0-0' }} / {{ character.maxHp | number:'1.0-0' }}</span>
+          <div [style.width.%]="(character.maxHp / character.maxHp) * 100" class="bar-fill"></div>
+          <span class="bar-text">HP: {{ character.currentHp | number:'1.0-0' }}
+            / {{ character.maxHp | number:'1.0-0' }}</span>
         </div>
         <div class="resource-bar mana-bar">
-          <div class="bar-fill" [style.width.%]="(character.maxMana / character.maxMana) * 100"></div>
-          <span class="bar-text">MP: {{ character.currentMana | number:'1.0-0' }} / {{ character.maxMana | number:'1.0-0' }}</span>
+          <div [style.width.%]="(character.maxMana / character.maxMana) * 100" class="bar-fill"></div>
+          <span class="bar-text">MP: {{ character.currentMana | number:'1.0-0' }}
+            / {{ character.maxMana | number:'1.0-0' }}</span>
         </div>
       </div>
 

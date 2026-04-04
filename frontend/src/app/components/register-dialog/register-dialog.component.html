@@ -1,24 +1,24 @@
 <div class="dialog-overlay">
   <div class="dialog-content">
     <h2>Create New User</h2>
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+    <form (ngSubmit)="onSubmit()" [formGroup]="registerForm">
       <div class="form-group">
         <label for="username">Username</label>
-        <input type="text" id="username" formControlName="username">
+        <input formControlName="username" id="username" type="text">
         <div *ngIf="registerForm.get('username')?.invalid && registerForm.get('username')?.touched" class="error">
           Username is required
         </div>
       </div>
       <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" id="password" formControlName="password">
+        <input formControlName="password" id="password" type="password">
         <div *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" class="error">
           Password is required
         </div>
       </div>
       <div class="form-group">
         <label for="confirmPassword">Confirm Password</label>
-        <input type="password" id="confirmPassword" formControlName="confirmPassword">
+        <input formControlName="confirmPassword" id="confirmPassword" type="password">
         <div *ngIf="registerForm.hasError('mismatch') && registerForm.get('confirmPassword')?.touched" class="error">
           Passwords do not match
         </div>
@@ -27,8 +27,8 @@
         {{ errorMessage }}
       </div>
       <div class="dialog-actions">
-        <button type="button" (click)="onCancel()">Cancel</button>
-        <button type="submit" [disabled]="registerForm.invalid">Register</button>
+        <button (click)="onCancel()" type="button">Cancel</button>
+        <button [disabled]="registerForm.invalid" type="submit">Register</button>
       </div>
     </form>
   </div>

@@ -24,7 +24,7 @@ public class AttackCommand implements Command {
     @Override
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing attack command for Mobile: {}", Mobile.getName());
-        
+
         String[] parts = commandLine.trim().split("\\s+", 2);
         if (parts.length < 2) {
             communicationService.sendTextMessage(Mobile, "\n\nAttack who?");

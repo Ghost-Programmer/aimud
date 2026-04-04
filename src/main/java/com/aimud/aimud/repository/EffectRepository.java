@@ -14,10 +14,10 @@ public interface EffectRepository extends ReactiveCrudRepository<Effect, Long> {
 
     @Query("SELECT e.* FROM effects e JOIN item_effects ie ON e.id = ie.effect_id WHERE ie.item_id = :itemId")
     Flux<Effect> findByItemId(Long itemId);
-    
+
     @Query("DELETE FROM item_effects WHERE item_id = :itemId")
     Mono<Void> deleteItemEffectsByItemId(Long itemId);
-    
+
     @Query("INSERT INTO item_effects (item_id, effect_id) VALUES (:itemId, :effectId)")
     Mono<Void> linkItemAndEffect(Long itemId, Long effectId);
 }

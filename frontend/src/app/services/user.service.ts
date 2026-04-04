@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +8,8 @@ import { Observable } from 'rxjs';
 export class UserService {
   private apiUrl = '/api/users';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+  }
 
   register(user: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, user);
@@ -23,7 +24,7 @@ export class UserService {
   }
 
   changePassword(userId: number, password: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${userId}/password`, { password });
+    return this.http.put(`${this.apiUrl}/${userId}/password`, {password});
   }
 
   toggleLock(userId: number): Observable<any> {

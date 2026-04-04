@@ -1,8 +1,8 @@
 package com.aimud.aimud.controller;
 
 import com.aimud.aimud.model.Room;
-import com.aimud.aimud.types.RoomType;
 import com.aimud.aimud.repository.RoomRepository;
+import com.aimud.aimud.types.RoomType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

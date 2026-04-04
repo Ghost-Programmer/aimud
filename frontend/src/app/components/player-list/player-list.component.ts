@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { UserService } from '../../services/user.service';
-import { EditCharacterDialogComponent } from '../edit-character-dialog/edit-character-dialog.component';
+import {Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {UserService} from '../../services/user.service';
+import {EditCharacterDialogComponent} from '../edit-character-dialog/edit-character-dialog.component';
 
 @Component({
   selector: 'app-player-list',
@@ -14,7 +14,8 @@ export class PlayerListComponent implements OnInit {
   users: any[] = [];
   selectedCharacter: any = null;
 
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService) {
+  }
 
   ngOnInit() {
     this.loadUsers();

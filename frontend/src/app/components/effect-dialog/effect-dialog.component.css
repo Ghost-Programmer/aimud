@@ -1,17 +1,92 @@
-.dialog-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:1000}
-.dialog-container{width:520px;max-width:95vw;background:rgba(20,24,28,0.8);border:1px solid var(--glass-border,#334);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.4);padding:16px;color:var(--text-main,#e6eaf0)}
-.form-content{display:flex;flex-direction:column;gap:12px;margin-top:8px}
-.form-group{display:flex;flex-direction:column;gap:6px}
-.form-input{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:8px 10px;color:inherit}
-.form-input.small{max-width:140px}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
-.cancel-btn{background:transparent;border:1px solid rgba(255,255,255,0.18);color:inherit;padding:8px 14px;border-radius:8px;cursor:pointer}
-.save-btn{background:var(--primary,#4ea1ff);border:1px solid rgba(255,255,255,0.18);color:#0b1020;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600}
-.cancel-btn:hover{border-color:#e57373;color:#e57373}
-.save-btn:hover{filter:brightness(1.1)}
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000
+}
+
+.dialog-container {
+  width: 520px;
+  max-width: 95vw;
+  background: rgba(20, 24, 28, 0.8);
+  border: 1px solid var(--glass-border, #334);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  padding: 16px;
+  color: var(--text-main, #e6eaf0)
+}
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px
+}
+
+.form-input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: inherit
+}
+
+.form-input.small {
+  max-width: 140px
+}
+
+.grid {
+  display: grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap: 12px
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 16px
+}
+
+.cancel-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: inherit;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer
+}
+
+.save-btn {
+  background: var(--primary, #4ea1ff);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #0b1020;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600
+}
+
+.cancel-btn:hover {
+  border-color: #e57373;
+  color: #e57373
+}
+
+.save-btn:hover {
+  filter: brightness(1.1)
+}
 
 select.form-input option {
-    background-color: #1a1d24; /* Dark background matching the theme */
-    color: #e6eaf0; /* Light text matching the theme */
+  background-color: #1a1d24; /* Dark background matching the theme */
+  color: #e6eaf0; /* Light text matching the theme */
 }

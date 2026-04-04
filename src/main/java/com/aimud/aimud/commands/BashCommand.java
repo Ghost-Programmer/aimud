@@ -3,11 +3,7 @@ package com.aimud.aimud.commands;
 import com.aimud.aimud.annontation.MudCommand;
 import com.aimud.aimud.model.Item;
 import com.aimud.aimud.model.Mobile;
-import com.aimud.aimud.service.CharacterService;
-import com.aimud.aimud.service.CommunicationService;
-import com.aimud.aimud.service.MobileService;
-import com.aimud.aimud.service.RoomService;
-import com.aimud.aimud.service.SkillService;
+import com.aimud.aimud.service.*;
 import com.aimud.aimud.types.ItemType;
 import com.aimud.aimud.types.SkillsType;
 import com.aimud.aimud.types.WearLocation;
@@ -33,7 +29,7 @@ public class BashCommand implements Command {
     @Override
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing bash command for Mobile: {}", Mobile.getName());
-        
+
         int bashRank = skillService.getSkillRank(Mobile, SkillsType.BASH);
         if (bashRank <= 0) {
             communicationService.sendTextMessage(Mobile, "\n\nYou don't know how to bash.");
@@ -47,7 +43,7 @@ public class BashCommand implements Command {
 
         Mobile target = null;
         String[] parts = commandLine.trim().split("\\s+", 2);
-        
+
         if (parts.length < 2) {
             // No target specified, use current target if any
             if (Mobile.getTarget() != null) {
@@ -61,35 +57,35 @@ public class BashCommand implements Command {
             // Find target by name
             String targetName = parts[1].toLowerCase();
             return roomService.getRoom(Mobile.getCurrentRoomId())
-                .flatMap(room -> {
-                    // Check for PC target
-                    List<Mobile> charactersInRoom = characterService.findAllByRoomId(room.getId());
-                    Mobile pcTarget = charactersInRoom.stream()
-                            .filter(c -> !c.getId().equals(Mobile.getId()) && c.getName().toLowerCase().contains(targetName))
-                            .findFirst()
-                            .orElse(null);
+                    .flatMap(room -> {
+                        // Check for PC target
+                        List<Mobile> charactersInRoom = characterService.findAllByRoomId(room.getId());
+                        Mobile pcTarget = charactersInRoom.stream()
+                                .filter(c -> !c.getId().equals(Mobile.getId()) && c.getName().toLowerCase().contains(targetName))
+                                .findFirst()
+                                .orElse(null);
 
-                    if (pcTarget != null) {
-                        return executeBash(Mobile, pcTarget);
-                    }
+                        if (pcTarget != null) {
+                            return executeBash(Mobile, pcTarget);
+                        }
 
-                    // Check for NPC target
-                    List<Long> mobileIds = room.getMobileIds();
-                    if (mobileIds.isEmpty()) {
-                        communicationService.sendTextMessage(Mobile, "\n\nThey aren't here.");
-                        return Mono.empty();
-                    }
+                        // Check for NPC target
+                        List<Long> mobileIds = room.getMobileIds();
+                        if (mobileIds.isEmpty()) {
+                            communicationService.sendTextMessage(Mobile, "\n\nThey aren't here.");
+                            return Mono.empty();
+                        }
 
-                    return Flux.fromIterable(mobileIds)
-                            .flatMap(mobileService::getMobile)
-                            .filter(m -> m.getName().toLowerCase().contains(targetName))
-                            .next()
-                            .flatMap(npcTarget -> executeBash(Mobile, npcTarget))
-                            .switchIfEmpty(Mono.defer(() -> {
-                                communicationService.sendTextMessage(Mobile, "\n\nThey aren't here.");
-                                return Mono.empty();
-                            }));
-                });
+                        return Flux.fromIterable(mobileIds)
+                                .flatMap(mobileService::getMobile)
+                                .filter(m -> m.getName().toLowerCase().contains(targetName))
+                                .next()
+                                .flatMap(npcTarget -> executeBash(Mobile, npcTarget))
+                                .switchIfEmpty(Mono.defer(() -> {
+                                    communicationService.sendTextMessage(Mobile, "\n\nThey aren't here.");
+                                    return Mono.empty();
+                                }));
+                    });
         }
     }
 
@@ -111,7 +107,7 @@ public class BashCommand implements Command {
         }
 
         int bashRank = skillService.getSkillRank(attacker, SkillsType.BASH);
-        
+
         // Calculate bash success
         int attackRoll = random.nextInt(20) + 1 + (int) attacker.getPhysicalAttack();
         int defenseScore = 10 + (int) (target.getArmor() / 5);
@@ -135,7 +131,7 @@ public class BashCommand implements Command {
 
         // Successful bash: 2d(Skill Rank) damage
         int damage = random.nextInt(Math.max(1, bashRank)) + 1 + random.nextInt(Math.max(1, bashRank)) + 1;
-        
+
         // Simple mitigation
         int mitigation = (int) (target.getArmor() / 4);
         damage -= mitigation;
@@ -161,11 +157,11 @@ public class BashCommand implements Command {
     private boolean hasShieldEquipped(Mobile Mobile) {
         Item offhand = Mobile.getOffhand();
         if (offhand == null) return false;
-        
-        return offhand.getWearLocation() == WearLocation.OFFHAND && 
-               (offhand.getItemType() == ItemType.LIGHT_ARMOR || 
-                offhand.getItemType() == ItemType.MEDIUM_ARMOR || 
-                offhand.getItemType() == ItemType.HEAVY_ARMOR);
+
+        return offhand.getWearLocation() == WearLocation.OFFHAND &&
+                (offhand.getItemType() == ItemType.LIGHT_ARMOR ||
+                        offhand.getItemType() == ItemType.MEDIUM_ARMOR ||
+                        offhand.getItemType() == ItemType.HEAVY_ARMOR);
     }
 
     @Override

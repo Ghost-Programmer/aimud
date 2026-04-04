@@ -15,23 +15,23 @@
       </div>
     </div>
     <div class="status-group">
-      <div *ngIf="role === 'MUD_ADMIN'" class="status-item ai-icon" (click)="openAiDialog()" title="AI Assistant">
+      <div (click)="openAiDialog()" *ngIf="role === 'MUD_ADMIN'" class="status-item ai-icon" title="AI Assistant">
         <span class="value">🤖</span>
       </div>
-      <button class="logout-btn" (click)="logout()">Logout</button>
+      <button (click)="logout()" class="logout-btn">Logout</button>
     </div>
   </div>
 
   <div class="tabs-container">
-    <div class="tabs-header" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="onTabDrop($event)">
+    <div (cdkDropListDropped)="onTabDrop($event)" cdkDropList cdkDropListOrientation="horizontal" class="tabs-header">
       <div
+        (click)="setActiveTab(tab.id)"
         *ngFor="let tab of tabs"
-        class="tab-button"
-        cdkDrag
         [class.active]="activeTabId === tab.id"
-        (click)="setActiveTab(tab.id)">
+        cdkDrag
+        class="tab-button">
         {{ tab.label }}
-        <span *ngIf="tab.type === 'play-character'" class="close-tab" (click)="closeTab(tab.id, $event)">×</span>
+        <span (click)="closeTab(tab.id, $event)" *ngIf="tab.type === 'play-character'" class="close-tab">×</span>
       </div>
     </div>
 
@@ -39,23 +39,23 @@
       <ng-container *ngFor="let tab of tabs">
         <div
           *ngIf="activeTabId === tab.id"
-          class="tab-pane"
-          [class.full-height-pane]="tab.type === 'play-character' || tab.type === 'config'">
+          [class.full-height-pane]="tab.type === 'play-character' || tab.type === 'config'"
+          class="tab-pane">
           <div *ngIf="tab.type === 'create-character'">
             <h2>Create Character</h2>
             <app-create-character></app-create-character>
           </div>
           <div *ngIf="tab.type === 'select-character'">
             <app-character-select
-              [excludeCharacterIds]="getPlayingCharacterIds()"
-              (characterSelected)="onCharacterSelected($event, tab.id)">
+              (characterSelected)="onCharacterSelected($event, tab.id)"
+              [excludeCharacterIds]="getPlayingCharacterIds()">
             </app-character-select>
           </div>
           <div *ngIf="tab.type === 'play-character'" class="play-pane">
             <app-character-play
-              class="play-screen"
               [character]="tab.data.character"
-              [textMessages]="tab.data.messages">
+              [textMessages]="tab.data.messages"
+              class="play-screen">
             </app-character-play>
           </div>
           <div *ngIf="tab.type === 'players'">
@@ -69,8 +69,8 @@
             <h2>World Builder</h2>
             <div class="world-builder-container">
               <!-- Room Management Accordion -->
-              <div class="accordion-item" [class.active]="activeWorldSection === 'rooms'">
-                <div class="accordion-header" (click)="toggleWorldSection('rooms')">
+              <div [class.active]="activeWorldSection === 'rooms'" class="accordion-item">
+                <div (click)="toggleWorldSection('rooms')" class="accordion-header">
                   <span class="accordion-title">Room Management</span>
                   <span class="accordion-icon">{{ activeWorldSection === 'rooms' ? '▼' : '▶' }}</span>
                 </div>
@@ -80,8 +80,8 @@
               </div>
 
               <!-- NPC Spawner Accordion -->
-              <div class="accordion-item" [class.active]="activeWorldSection === 'npcs'">
-                <div class="accordion-header" (click)="toggleWorldSection('npcs')">
+              <div [class.active]="activeWorldSection === 'npcs'" class="accordion-item">
+                <div (click)="toggleWorldSection('npcs')" class="accordion-header">
                   <span class="accordion-title">Mobile Editor</span>
                   <span class="accordion-icon">{{ activeWorldSection === 'npcs' ? '▼' : '▶' }}</span>
                 </div>
@@ -91,8 +91,8 @@
               </div>
 
               <!-- Item Creator Accordion -->
-              <div class="accordion-item" [class.active]="activeWorldSection === 'items'">
-                <div class="accordion-header" (click)="toggleWorldSection('items')">
+              <div [class.active]="activeWorldSection === 'items'" class="accordion-item">
+                <div (click)="toggleWorldSection('items')" class="accordion-header">
                   <span class="accordion-title">Item Creator</span>
                   <span class="accordion-icon">{{ activeWorldSection === 'items' ? '▼' : '▶' }}</span>
                 </div>
@@ -101,8 +101,8 @@
                 </div>
               </div>
 
-              <div class="accordion-item" [class.active]="activeWorldSection === 'effects'">
-                <div class="accordion-header" (click)="toggleWorldSection('effects')">
+              <div [class.active]="activeWorldSection === 'effects'" class="accordion-item">
+                <div (click)="toggleWorldSection('effects')" class="accordion-header">
                   <span class="accordion-title">Effect Creator</span>
                   <span class="accordion-icon">{{ activeWorldSection === 'effects' ? '▼' : '▶' }}</span>
                 </div>
@@ -118,4 +118,4 @@
   </div>
 </div>
 
-<app-ai-dialog [isOpen]="isAiDialogOpen" (close)="closeAiDialog()"></app-ai-dialog>
+<app-ai-dialog (close)="closeAiDialog()" [isOpen]="isAiDialogOpen"></app-ai-dialog>
