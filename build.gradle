@@ -1,9 +1,18 @@
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath 'org.liquibase:liquibase-core:4.31.1'
+	}
+}
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.3'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id "com.github.node-gradle.node" version "7.1.0"
-	id 'org.liquibase.gradle' version '2.2.2'
+	id 'org.liquibase.gradle' version '3.1.0'
 }
 
 group = 'com.aimud'
@@ -50,9 +59,10 @@ dependencies {
 	testAnnotationProcessor 'org.projectlombok:lombok'
 
 	// Liquibase plugin dependencies
-	liquibaseRuntime 'org.liquibase:liquibase-core:4.29.2'
-	liquibaseRuntime 'org.postgresql:postgresql'
-	liquibaseRuntime 'info.picocli:picocli:4.7.6'
+	liquibaseRuntime 'org.postgresql:postgresql:42.7.2'
+	liquibaseRuntime 'org.liquibase:liquibase-core:4.31.1'
+	liquibaseRuntime 'org.liquibase:liquibase-groovy-dsl:4.0.1'
+	liquibaseRuntime 'info.picocli:picocli:4.6.1'
 }
 
 dependencyManagement {
