@@ -51,7 +51,14 @@ public class EffectService {
 
 
     public Mono<CharacterEffect> attachEffectToCharacter(Mobile mobile, Effect effect, int tickCount, String name) {
+        return attachEffectToCharacter(mobile, null, effect, tickCount, name);
+    }
+
+    public Mono<CharacterEffect> attachEffectToCharacter(Mobile mobile, Mobile caster, Effect effect, int tickCount, String name) {
         CharacterEffect characterEffect = new CharacterEffect(mobile.getId(), effect.getId(), tickCount);
+        if (caster != null) {
+            characterEffect.setCasterId(caster.getId());
+        }
         characterEffect.setEffect(effect);
         characterEffect.setName(name);
         mobile.getSpellEffects().add(characterEffect);

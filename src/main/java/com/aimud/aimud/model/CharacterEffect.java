@@ -21,6 +21,9 @@ public class CharacterEffect {
     @Column("effect_id")
     private Long effectId;
 
+    @Column("caster_id")
+    private Long casterId;
+
     @Column("tick_count")
     private int tickCount;
 

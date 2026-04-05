@@ -374,21 +374,59 @@ public class TickService {
             return false;
         }
 
-        int initialSize = mobile.getSpellEffects().size();
-        mobile.setSpellEffects(mobile.getSpellEffects().stream()
-                .filter(effect -> {
-                    if (effect.getTickCount() != -1) {
-                        effect.setTickCount(effect.getTickCount() - 1);
-                        if (effect.getTickCount() <= 0) {
-                            log.debug("Removing expired spell effect {} from {}", effect.getEffect().getName(), mobile.getName());
-                            return false; // Remove expired effect
-                        }
+        boolean hpChangedOrRemoved = false;
+        List<com.aimud.aimud.model.CharacterEffect> newEffects = new ArrayList<>();
+
+        for (com.aimud.aimud.model.CharacterEffect ce : mobile.getSpellEffects()) {
+            com.aimud.aimud.model.Effect effect = ce.getEffect();
+
+            // DoT Damage Application
+            if (effect != null && isDamageEffect(effect.getEffectType())) {
+                int numDice = effect.getModifier1();
+                int diceSize = effect.getModifier2();
+                int damage = 0;
+                for (int i = 0; i < numDice; i++) {
+                    damage += random.nextInt(diceSize) + 1;
+                }
+                mobile.setCurrentHp(mobile.getCurrentHp() - damage);
+                hpChangedOrRemoved = true;
+
+                String damageTypeStr = effect.getEffectType().getLabel().toLowerCase();
+                if (mobile.getUserId() != null) {
+                    communicationService.sendTextMessage(mobile, "\nYou take " + damage + " " + damageTypeStr + " damage!");
+                    communicationService.sendCharacterUpdate(mobile);
+                }
+                communicationService.roomMessage(mobile, "\n" + mobile.getName() + " takes " + damage + " " + damageTypeStr + " damage!");
+
+                if (mobile.getCurrentHp() <= 0) {
+                    mobile.setCurrentHp(0);
+                    if (mobile.getUserId() != null) {
+                        communicationService.sendTextMessage(mobile, "\n\nYou have succumbed to your wounds...");
                     }
-                    return true; // Keep active effect
-                })
-                .toList()
-        );
-        return mobile.getSpellEffects().size() != initialSize;
+                    communicationService.roomMessage(mobile, "\n" + mobile.getName() + " has succumbed to their wounds!");
+                    createCorpse(mobile);
+                    // Do not keep current effect or any remaining since they are dead
+                    break;
+                }
+            }
+
+            if (ce.getTickCount() != -1) {
+                ce.setTickCount(ce.getTickCount() - 1);
+                hpChangedOrRemoved = true;
+                if (ce.getTickCount() <= 0) {
+                    log.debug("Removing expired spell effect {} from {}", effect != null ? effect.getName() : "unknown", mobile.getName());
+                    continue; // Remove expired effect
+                }
+            }
+            newEffects.add(ce);
+        }
+
+        if (newEffects.size() != mobile.getSpellEffects().size()) {
+            mobile.setSpellEffects(newEffects);
+            hpChangedOrRemoved = true;
+        }
+
+        return hpChangedOrRemoved;
     }
 
     private boolean processRegen(Mobile mobile) {

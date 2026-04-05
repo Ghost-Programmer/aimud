@@ -6878,3 +6878,6 @@ SELECT setval(
         pg_get_serial_sequence('mobiles', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL
     )
 FROM mobiles;
+
+--changeset jeff:54
+ALTER TABLE character_effects ADD COLUMN caster_id BIGINT;
