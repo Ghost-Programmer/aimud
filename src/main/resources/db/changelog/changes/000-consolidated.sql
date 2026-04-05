@@ -6879,5 +6879,5 @@ SELECT setval(
     )
 FROM mobiles;
 
---changeset jeff:54
+--changeset jeff:999
 ALTER TABLE character_effects ADD COLUMN caster_id BIGINT;
