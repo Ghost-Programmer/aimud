@@ -99,6 +99,12 @@ public class Mobile {
     private float challengeRating;
 
     @Transient
+    private Long partyLeaderId;
+
+    @Transient
+    private Long pendingPartyInviteId;
+
+    @Transient
     private String currentRoomName;
 
     @Column("head_id")
