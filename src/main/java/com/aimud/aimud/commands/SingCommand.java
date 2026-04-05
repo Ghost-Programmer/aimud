@@ -20,6 +20,7 @@ public class SingCommand implements Command {
     private final SongService songService;
     private final SkillService skillService;
     private final CharacterService characterService;
+    private final com.aimud.aimud.service.MobileService mobileService;
 
     @Override
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
@@ -62,18 +63,47 @@ public class SingCommand implements Command {
             return Mono.empty();
         }
 
-        Mobile target = song.getTarget(Mobile, parts);
+        Long leaderId = Mobile.getPartyLeaderId();
+        java.util.List<Mobile> groupTargets = new java.util.ArrayList<>();
 
-        boolean success = song.sing(Mobile, song, target);
+        if (leaderId == null) {
+            groupTargets.add(Mobile);
+        } else {
+            java.util.List<Mobile> allMobilesInRoom = new java.util.ArrayList<>(characterService.findAllByRoomId(Mobile.getCurrentRoomId()));
+            allMobilesInRoom.addAll(mobileService.getMobilesInRoom(Mobile.getCurrentRoomId()));
+
+            for (Mobile m : allMobilesInRoom) {
+                if (leaderId.equals(m.getPartyLeaderId())) {
+                    groupTargets.add(m);
+                }
+            }
+        }
+
+        if (groupTargets.isEmpty()) {
+            communicationService.sendTextMessage(Mobile, "\n\nYou have no valid target.");
+            return Mono.empty();
+        }
+
+        boolean anySuccess = false;
+        Mobile targetForSkillCheck = null;
+
+        for (Mobile tgt : groupTargets) {
+            boolean success = song.sing(Mobile, song, tgt);
+            if (success) {
+                anySuccess = true;
+                targetForSkillCheck = tgt;
+            }
+        }
 
         Mobile.setCurrentMana(Mobile.getCurrentMana() - song.getManaCost(Mobile));
 
-        this.skillService.checkSkill(Mobile, song.getSongSkillName(), target == null ? 0 : target.getChallengeRating(), success)
+        float cr = targetForSkillCheck == null ? 0 : targetForSkillCheck.getChallengeRating();
+        this.skillService.checkSkill(Mobile, song.getSongSkillName(), cr, anySuccess)
                 .doOnNext(improvedSkill -> {
                     communicationService.sendTextMessage(Mobile, "\n\nYour " + song.getSongSkillName() + " skill has improved to " + improvedSkill.getRank() + "!");
                 })
                 .subscribe();
-        this.skillService.checkSkill(Mobile, SkillsType.SING_SONG, target == null ? 0 : target.getChallengeRating(), success)
+        this.skillService.checkSkill(Mobile, SkillsType.SING_SONG, cr, anySuccess)
                 .doOnNext(improvedSkill -> {
                     communicationService.sendTextMessage(Mobile, "\n\nYour " + SkillsType.SING_SONG + " skill has improved to " + improvedSkill.getRank() + "!");
                 })
