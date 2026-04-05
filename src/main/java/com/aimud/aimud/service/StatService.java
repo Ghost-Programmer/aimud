@@ -212,6 +212,7 @@ public class StatService {
                 case CHARISMA -> c.setCurrentCharisma(c.getCurrentCharisma() + effect.getModifier1());
                 case ARMOR -> c.setArmor(c.getArmor() + effect.getModifier1());
                 case MAGIC_RESIST -> c.setMagicResist(c.getMagicResist() + effect.getModifier1());
+                case PHYSICAL_RESIST -> c.setPhysicalResist(c.getPhysicalResist() + effect.getModifier1());
                 case HP_REGEN -> c.setHpRegen(c.getHpRegen() + effect.getModifier1());
                 case MANA_REGEN -> c.setManaRegen(c.getManaRegen() + effect.getModifier1());
                 case PHYSICAL_ATTACK -> c.setPhysicalAttack(c.getPhysicalAttack() + effect.getModifier1());

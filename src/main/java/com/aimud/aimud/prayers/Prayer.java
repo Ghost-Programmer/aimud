@@ -86,6 +86,10 @@ public abstract class Prayer {
     }
 
     public boolean applyEffect(Mobile mobile, String name, Effect effect, Integer tickCount) {
+        return applyEffect(mobile, null, name, effect, tickCount);
+    }
+
+    public boolean applyEffect(Mobile mobile, Mobile caster, String name, Effect effect, Integer tickCount) {
         AtomicBoolean apply = new AtomicBoolean(false);
         mobile.getSpellEffects().stream() // Using existing spell effects for prayers too
                 .filter(e -> e.getName() != null)
@@ -94,15 +98,15 @@ public abstract class Prayer {
                 .ifPresentOrElse(e -> {
                     if (e.getEffect().getModifier1() < effect.getModifier1()) {
                         effectService.removeCharacterEffectFromMobile(mobile, e);
-                        effectService.attachEffectToCharacter(mobile, effect, tickCount, name).subscribe();
+                        effectService.attachEffectToCharacter(mobile, caster, effect, tickCount, name).subscribe();
                         apply.set(true);
                     } else if (e.getEffect().getModifier1() == effect.getModifier1() && e.getTickCount() < tickCount) {
                         effectService.removeCharacterEffectFromMobile(mobile, e);
-                        effectService.attachEffectToCharacter(mobile, effect, tickCount, name).subscribe();
+                        effectService.attachEffectToCharacter(mobile, caster, effect, tickCount, name).subscribe();
                         apply.set(true);
                     }
                 }, () -> {
-                    effectService.attachEffectToCharacter(mobile, effect, tickCount, name).subscribe();
+                    effectService.attachEffectToCharacter(mobile, caster, effect, tickCount, name).subscribe();
                     apply.set(true);
                 });
         return apply.get();

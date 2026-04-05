@@ -222,8 +222,8 @@ public class TickService {
             damageReports.add(baseDamage + " bashing damage");
         }
 
-        // Apply armor mitigation (simplistic)
-        int mitigation = (int) (target.getArmor() / 4);
+        // Apply armor and physical resistance mitigation
+        int mitigation = (int) (target.getArmor() / 4) + (int) target.getPhysicalResist();
         totalDamage -= mitigation;
         if (totalDamage < 1) totalDamage = 1;
 

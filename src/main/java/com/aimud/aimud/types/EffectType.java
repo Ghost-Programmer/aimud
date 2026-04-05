@@ -21,6 +21,7 @@ public enum EffectType {
     PHYSICAL_ATTACK("Physical Attack", "Amount", null, null, null),
     MAGIC_ATTACK("Magic Attack", "Amount", null, null, null),
     MAGIC_RESIST("Magic Resist", "Amount", null, null, null),
+    PHYSICAL_RESIST("Physical Resist", "Amount", null, null, null),
     DODGE("Dodge", "Amount", null, null, null),
     SLASHING_DAMAGE("Slashing Damage", "Number of Dice", "Size of the Dice", null, null),
     CRITICAL_HIT("Critical Hit", "Amount", null, null, null),

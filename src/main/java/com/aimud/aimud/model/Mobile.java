@@ -94,6 +94,8 @@ public class Mobile {
     @Transient
     private double magicResist;
     @Transient
+    private double physicalResist;
+    @Transient
     private float challengeRating;
 
     @Transient
