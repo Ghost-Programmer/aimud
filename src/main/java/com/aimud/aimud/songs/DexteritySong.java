@@ -25,7 +25,7 @@ public class DexteritySong extends Song {
 
     @Override
     public Integer getSongLevel() {
-        return 1;
+        return 4;
     }
 
     @Override

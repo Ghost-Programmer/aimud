@@ -25,7 +25,7 @@ public class Charisma extends Prayer {
 
     @Override
     public Integer getPrayerLevel() {
-        return 1;
+        return 4;
     }
 
     @Override

@@ -25,7 +25,7 @@ public class Intelligence extends Prayer {
 
     @Override
     public Integer getPrayerLevel() {
-        return 1;
+        return 20;
     }
 
     @Override

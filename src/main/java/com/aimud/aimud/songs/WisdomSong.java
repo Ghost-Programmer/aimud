@@ -25,7 +25,7 @@ public class WisdomSong extends Song {
 
     @Override
     public Integer getSongLevel() {
-        return 1;
+        return 8;
     }
 
     @Override

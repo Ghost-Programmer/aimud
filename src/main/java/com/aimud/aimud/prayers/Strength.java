@@ -25,7 +25,7 @@ public class Strength extends Prayer {
 
     @Override
     public Integer getPrayerLevel() {
-        return 1;
+        return 12;
     }
 
     @Override

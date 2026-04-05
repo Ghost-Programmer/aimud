@@ -25,7 +25,7 @@ public class Dexterity extends Prayer {
 
     @Override
     public Integer getPrayerLevel() {
-        return 1;
+        return 16;
     }
 
     @Override

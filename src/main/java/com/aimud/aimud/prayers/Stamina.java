@@ -25,7 +25,7 @@ public class Stamina extends Prayer {
 
     @Override
     public Integer getPrayerLevel() {
-        return 1;
+        return 8;
     }
 
     @Override
