@@ -55,6 +55,7 @@
       </div>
 
       <div class="stats-table-container">
+        <!-- existing table -->
         <table class="stats-table">
           <thead>
           <tr>
@@ -96,6 +97,27 @@
           </tr>
           </tbody>
         </table>
+      </div>
+
+      <div class="form-group mt-3" style="margin-top: 20px;">
+        <label for="factionId">Primary Faction</label>
+        <select formControlName="factionId" id="factionId" class="faction-dropdown">
+          <option [ngValue]="null">No Faction</option>
+          <option *ngFor="let faction of factions" [ngValue]="faction.id">{{ faction.name }}</option>
+        </select>
+      </div>
+
+      <div class="form-group faction-reputation-group" *ngIf="factions.length > 0">
+        <label>Faction Reputations (1-100)</label>
+        <div class="derived-stats-grid" style="margin-top: 5px;">
+          <div class="derived-stat" *ngFor="let faction of factions">
+            <span class="label" [title]="faction.description">{{ faction.name }}:</span>
+            <input type="number" min="1" max="100" class="value" style="width: 60px; text-align: right;"
+                   [ngModel]="factionRatings[faction.id] || 50"
+                   (ngModelChange)="factionRatings[faction.id] = $event"
+                   [ngModelOptions]="{standalone: true}"/>
+          </div>
+        </div>
       </div>
 
       <div *ngIf="derivedStats.maxHp" class="derived-stats-container">

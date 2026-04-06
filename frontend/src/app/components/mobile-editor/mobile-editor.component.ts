@@ -5,6 +5,8 @@ import {MobileService} from '../../services/mobile.service';
 import {Mobile} from '../../models/mobile.model';
 import {ItemService} from '../../services/item.service';
 import {ConfigService} from '../../services/config.service';
+import {FactionService} from '../../services/faction.service';
+import {Faction} from '../../models/faction.model';
 
 @Component({
   selector: 'app-mobile-editor',
@@ -20,6 +22,8 @@ export class MobileEditorComponent implements OnInit {
 
   availableItems: any[] = [];
   availableSkills: any[] = [];
+  factions: Faction[] = [];
+  factionRatings: { [key: number]: number } = {};
 
   // Adjusted to match backend JSON mapping of WearLocation
   wearLocations = ['Head', 'Chest', 'Legs', 'Feet', 'Arms', 'Hands', 'Finger', 'Wrist', 'Neck', 'Ear', 'Face', 'Waist', 'Primary', 'Offhand'];
@@ -35,7 +39,8 @@ export class MobileEditorComponent implements OnInit {
     private fb: FormBuilder,
     private mobileService: MobileService,
     private itemService: ItemService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private factionService: FactionService
   ) {
     this.createForm();
   }
@@ -52,6 +57,7 @@ export class MobileEditorComponent implements OnInit {
     this.loadMobiles();
     this.loadItems();
     this.loadSkills();
+    this.factionService.getAllFactions().subscribe(f => this.factions = f);
   }
 
   createForm() {
@@ -67,6 +73,7 @@ export class MobileEditorComponent implements OnInit {
       currentHp: [100],
       currentMana: [50],
       currentRoomId: [1],
+      factionId: [null],
 
       // Equipment
       headId: [null],
@@ -205,6 +212,14 @@ export class MobileEditorComponent implements OnInit {
       });
     }
 
+    if (mobile.id) {
+      this.factionService.getMobileFactionRatings(mobile.id).subscribe(ratings => {
+        this.factionRatings = ratings || {};
+      });
+    } else {
+      this.factionRatings = {};
+    }
+
     if (mobile.skills) {
       mobile.skills.forEach((skill: any) => {
         this.skillsControls.push(this.fb.group({
@@ -228,10 +243,12 @@ export class MobileEditorComponent implements OnInit {
       charisma: 10,
       currentHp: 100,
       currentMana: 50,
-      currentRoomId: 1
+      currentRoomId: 1,
+      factionId: null
     });
     this.invSearchTexts = [];
     this.equipSearchTexts = {};
+    this.factionRatings = {};
     while (this.inventoryControls.length) this.inventoryControls.removeAt(0);
     while (this.skillsControls.length) this.skillsControls.removeAt(0);
   }
@@ -241,23 +258,35 @@ export class MobileEditorComponent implements OnInit {
 
     const formValue = this.mobileForm.value;
 
-    // Transform inventory from [{id: 1}] to Item objects
     formValue.inventory = formValue.inventory.map((i: any) => {
       return this.availableItems.find(item => item.id == i.id) || {id: i.id};
     });
 
     if (formValue.id) {
       this.mobileService.updateMobile(formValue.id, formValue).subscribe({
-        next: () => {
-          this.loadMobiles();
-          this.selectedMobile = null;
+        next: (updated) => {
+          this.factionService.updateMobileFactionRatings(formValue.id, this.factionRatings).subscribe({
+            next: () => {
+              this.loadMobiles();
+              this.selectedMobile = null;
+            }
+          });
         }
       });
     } else {
       this.mobileService.createMobile(formValue).subscribe({
-        next: () => {
-          this.loadMobiles();
-          this.selectedMobile = null;
+        next: (created: any) => {
+          if (created && created.id) {
+            this.factionService.updateMobileFactionRatings(created.id, this.factionRatings).subscribe({
+              next: () => {
+                this.loadMobiles();
+                this.selectedMobile = null;
+              }
+            });
+          } else {
+            this.loadMobiles();
+            this.selectedMobile = null;
+          }
         }
       });
     }

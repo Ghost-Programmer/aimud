@@ -10,6 +10,7 @@ export interface Mobile {
   charisma: number;
   raceId?: number;
   classId?: number;
+  factionId?: number;
   currentRoomId?: number;
   currentHp?: number;
   currentMana?: number;

@@ -67,6 +67,30 @@
             </div>
             <button (click)="addSkill()" class="btn-add" type="button">Add Skill</button>
           </div>
+
+          <div class="form-section">
+            <h4>Factions</h4>
+            <div class="form-row">
+              <label>Primary Faction</label>
+              <select formControlName="factionId">
+                <option [ngValue]="null">No Faction</option>
+                <option *ngFor="let faction of factions" [ngValue]="faction.id">{{ faction.name }}</option>
+              </select>
+            </div>
+            
+            <div class="faction-reputation mt-3" *ngIf="factions.length > 0">
+              <h5>Faction Reputations (1-100)</h5>
+              <div class="stats-grid">
+                <div *ngFor="let faction of factions">
+                  <label [title]="faction.description">{{ faction.name }}</label>
+                  <input type="number" min="1" max="100" 
+                         [ngModel]="factionRatings[faction.id] || 50" 
+                         (ngModelChange)="factionRatings[faction.id] = $event" 
+                         [ngModelOptions]="{standalone: true}"/>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Column 2: Equipment & Inventory -->

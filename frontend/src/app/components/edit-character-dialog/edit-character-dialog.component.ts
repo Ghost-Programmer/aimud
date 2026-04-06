@@ -1,13 +1,15 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule} from '@angular/forms';
 import {CharacterService} from '../../services/character.service';
 import {ConfigService} from '../../services/config.service';
+import {FactionService} from '../../services/faction.service';
+import {Faction} from '../../models/faction.model';
 
 @Component({
   selector: 'app-edit-character-dialog',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './edit-character-dialog.component.html',
   styleUrl: './edit-character-dialog.component.css'
 })
@@ -22,11 +24,14 @@ export class EditCharacterDialogComponent {
   currentStats: any = {};
   derivedStats: any = {};
   currentRoomName: string = '';
+  factions: Faction[] = [];
+  factionRatings: { [key: number]: number } = {};
 
   constructor(
     private fb: FormBuilder,
     private characterService: CharacterService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private factionService: FactionService
   ) {
     this.characterForm = this.fb.group({
       name: ['', Validators.required],
@@ -38,17 +43,23 @@ export class EditCharacterDialogComponent {
       intelligence: [0, Validators.required],
       wisdom: [0, Validators.required],
       charisma: [0, Validators.required],
-      currentRoomId: [null]
+      currentRoomId: [null],
+      factionId: [null]
     });
   }
 
   ngOnInit() {
     this.loadRaces();
     this.loadClasses();
+    this.factionService.getAllFactions().subscribe(f => this.factions = f);
+    
     if (this.character) {
       this.characterForm.patchValue(this.character);
       this.currentRoomName = this.character.currentRoomName;
       this.updateCurrentStats();
+      this.factionService.getMobileFactionRatings(this.character.id).subscribe(ratings => {
+        this.factionRatings = ratings || {};
+      });
     }
 
     this.characterForm.valueChanges.subscribe(() => {
@@ -114,9 +125,13 @@ export class EditCharacterDialogComponent {
       const updatedCharacter = {...this.character, ...this.characterForm.value};
       this.characterService.updateCharacter(this.character.id, updatedCharacter).subscribe({
         next: (response) => {
-          console.log('Character updated', response);
-          this.characterUpdated.emit(response);
-          this.closeDialog.emit();
+          this.factionService.updateMobileFactionRatings(this.character.id, this.factionRatings).subscribe({
+            next: () => {
+              console.log('Character updated', response);
+              this.characterUpdated.emit(response);
+              this.closeDialog.emit();
+            }
+          });
         },
         error: (error) => {
           console.error('Error updating character', error);
