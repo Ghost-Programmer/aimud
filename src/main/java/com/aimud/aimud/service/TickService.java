@@ -334,7 +334,7 @@ public class TickService {
                 type == EffectType.POISON_DAMAGE || type == EffectType.ELECTRICAL_DAMAGE;
     }
 
-    private void createCorpse(Mobile deceased) {
+    public void createCorpse(Mobile deceased) {
         log.info("Creating corpse for {}", deceased.getName());
 
         // Collect all in-memory inventory items

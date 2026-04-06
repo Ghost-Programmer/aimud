@@ -43,13 +43,13 @@ public class FollowCommand implements Command {
 
         // Check active characters in the room first
         Optional<Mobile> targetMobile = characterService.findAllByRoomId(roomId).stream()
-                .filter(m -> m.getName().equalsIgnoreCase(targetName) && !m.getId().equals(mobile.getId()))
+                .filter(m -> m.getName().equalsIgnoreCase(targetName) && !m.getId().equals(mobile.getId()) && !m.isHidden() && !m.isInvisible())
                 .findFirst();
 
         if (targetMobile.isEmpty()) {
             // Check NPCs in the room
             targetMobile = mobileService.getMobilesInRoom(roomId).stream()
-                    .filter(m -> m.getName().toLowerCase().contains(targetName.toLowerCase()))
+                    .filter(m -> m.getName().toLowerCase().contains(targetName.toLowerCase()) && !m.isHidden() && !m.isInvisible())
                     .findFirst();
         }
 

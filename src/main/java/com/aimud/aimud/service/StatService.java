@@ -219,6 +219,7 @@ public class StatService {
                 case MAGIC_ATTACK -> c.setMagicAttack(c.getMagicAttack() + effect.getModifier1());
                 case DODGE -> c.setDodgeChance(c.getDodgeChance() + (effect.getModifier1() / 100.0));
                 case CRITICAL_HIT -> c.setCritChance(c.getCritChance() + (effect.getModifier1() / 100.0));
+                default -> { /* No stat modification for other effects */ }
             }
         }
     }

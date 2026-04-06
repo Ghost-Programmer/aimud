@@ -625,23 +625,31 @@ public class CharacterService {
         return this.roomService.getRoom(roomId)
                 .flatMap(room -> {
                     if (character.getCurrentRoomId() != null) {
-                        this.communicationService.roomMessage(character, "\n" + character.getName() + " has left the room.");
+                        if (!character.isHidden() && !character.isInvisible()) {
+                            this.communicationService.roomMessage(character, "\n" + character.getName() + " has left the room.");
+                        }
                     }
 
                     character.setCurrentRoomId(room.getId());
                     return this.save(character)
                             .doOnNext(savedChar -> {
-                                this.communicationService.roomMessage(savedChar, "\n" + savedChar.getName() + " has entered the room.");
+                                if (!savedChar.isHidden() && !savedChar.isInvisible()) {
+                                    this.communicationService.roomMessage(savedChar, "\n" + savedChar.getName() + " has entered the room.");
+                                }
 
                                 this.communicationService.sendTextMessage(character, "\n\nYou have entered " + room.getName() + ".");
                                 this.communicationService.sendTextMessage(character, "\n\n" + room.getDescription() + "\n\n");
 
                                 this.findAllByRoomId(room.getId()).stream().filter(c -> !c.getId().equals(character.getId())).forEach(c -> {
-                                    this.communicationService.sendTextMessage(character, "\nYou see " + c.getName() + " here.");
+                                    if (!c.isHidden() && !c.isInvisible()) {
+                                        this.communicationService.sendTextMessage(character, "\nYou see " + c.getName() + " here.");
+                                    }
                                 });
 
                                 this.mobileService.getMobilesInRoom(room.getId()).forEach(m -> {
-                                    this.communicationService.sendTextMessage(character, "\nYou see " + m.getName() + " here.");
+                                    if (!m.isHidden() && !m.isInvisible()) {
+                                        this.communicationService.sendTextMessage(character, "\nYou see " + m.getName() + " here.");
+                                    }
                                 });
 
                                 room.getItemIds().stream().forEach(itemId -> {

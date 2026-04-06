@@ -28,10 +28,12 @@ public class LookCommand implements Command {
                     communicationService.sendTextMessage(Mobile, "\n\n" + room.getName() + "\n" + room.getDescription());
 
                     characterService.findAllByRoomId(room.getId()).stream()
-                            .filter(c -> !c.getId().equals(Mobile.getId()))
+                            .filter(c -> !c.getId().equals(Mobile.getId()) && !c.isHidden() && !c.isInvisible())
                             .forEach(c -> communicationService.sendTextMessage(Mobile, "\nYou see " + c.getName() + " here."));
 
-                    mobileService.getMobilesInRoom(room.getId()).forEach(m -> {
+                    mobileService.getMobilesInRoom(room.getId()).stream()
+                            .filter(m -> !m.isHidden() && !m.isInvisible())
+                            .forEach(m -> {
                         communicationService.sendTextMessage(Mobile, "\nYou see " + m.getName() + " here.");
                     });
 

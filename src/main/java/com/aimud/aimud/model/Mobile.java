@@ -1,6 +1,7 @@
 package com.aimud.aimud.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.aimud.aimud.types.EffectType;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.*;
@@ -284,5 +285,17 @@ public class Mobile {
     public void setOffhand(Item offhand) {
         this.offhand = offhand;
         this.offhandId = offhand != null ? offhand.getId() : null;
+    }
+
+    public boolean isHidden() {
+        if (this.spellEffects == null) return false;
+        return this.spellEffects.stream()
+                .anyMatch(effect -> effect.getEffect() != null && effect.getEffect().getEffectType() == EffectType.HIDDEN);
+    }
+
+    public boolean isInvisible() {
+        if (this.spellEffects == null) return false;
+        return this.spellEffects.stream()
+                .anyMatch(effect -> effect.getEffect() != null && effect.getEffect().getEffectType() == EffectType.INVISIBLE);
     }
 }

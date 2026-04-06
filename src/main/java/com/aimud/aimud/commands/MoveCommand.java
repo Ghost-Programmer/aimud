@@ -32,14 +32,26 @@ public abstract class MoveCommand implements Command {
                         .filter(c -> Mobile.getId().equals(c.getFollowingId()))
                         .toList();
 
-                return this.characterService.enterRoom(Mobile, nextRoomId)
-                        .then(reactor.core.publisher.Flux.fromIterable(followers)
-                                .flatMap(follower -> {
-                                    communicationService.sendTextMessage(follower, "\n\nYou follow " + Mobile.getName() + " " + getDirectionName() + ".");
-                                    return characterService.enterRoom(follower, nextRoomId);
-                                })
-                                .then()
-                        );
+                if (Mobile.isHidden() || Mobile.isInvisible()) {
+                    return this.characterService.enterRoom(Mobile, nextRoomId)
+                            .then(reactor.core.publisher.Flux.fromIterable(followers)
+                                    .flatMap(follower -> {
+                                        follower.setFollowingId(null);
+                                        communicationService.sendTextMessage(follower, "\n\nYou lost track of " + Mobile.getName() + ".");
+                                        return characterService.save(follower);
+                                    })
+                                    .then()
+                            );
+                } else {
+                    return this.characterService.enterRoom(Mobile, nextRoomId)
+                            .then(reactor.core.publisher.Flux.fromIterable(followers)
+                                    .flatMap(follower -> {
+                                        communicationService.sendTextMessage(follower, "\n\nYou follow " + Mobile.getName() + " " + getDirectionName() + ".");
+                                        return characterService.enterRoom(follower, nextRoomId);
+                                    })
+                                    .then()
+                            );
+                }
             } else {
                 communicationService.sendTextMessage(Mobile, "\n\nYou can't go " + getDirectionName() + " from here.");
                 return Mono.empty();
