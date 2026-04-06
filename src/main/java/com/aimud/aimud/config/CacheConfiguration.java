@@ -21,6 +21,7 @@ public class CacheConfiguration {
                 "skillsRegistry",
                 "effects",
                 "effect",
+                "effectByName",
                 "itemEffects",
                 "items",
                 "item",

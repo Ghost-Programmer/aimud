@@ -27,6 +27,7 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
   sortDirection: 'asc' | 'desc' = 'asc';
   command: string = '';
   target: any = null;
+  partyData: any = null;
 
   private wsSubscription: Subscription | null = null;
 
@@ -109,6 +110,8 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
           this.scrollToBottom();
         } else if (update.type === 'target') {
           this.target = update.data;
+        } else if (update.type === 'party') {
+          this.partyData = update.data;
         }
       },
       error: (err) => console.error('WebSocket error', err)
@@ -132,6 +135,13 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
 
     this.characterService.sendCommand(this.character.id, cmd).subscribe({
       error: (err) => console.error('Error sending command', err)
+    });
+  }
+
+  onRemovePartyMember(memberName: string) {
+    if (!this.character?.id) return;
+    this.characterService.sendCommand(this.character.id, 'party remove ' + memberName).subscribe({
+      error: (err) => console.error('Error removing party member', err)
     });
   }
 

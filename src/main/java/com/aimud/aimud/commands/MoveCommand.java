@@ -27,7 +27,19 @@ public abstract class MoveCommand implements Command {
         return this.roomService.getRoom(Mobile.getCurrentRoomId()).flatMap(room -> {
             Long nextRoomId = getNextRoomId(room);
             if (nextRoomId != null) {
-                return this.characterService.enterRoom(Mobile, nextRoomId);
+                // Find all followers in the SAME room before the leader moves
+                java.util.List<Mobile> followers = characterService.findAllByRoomId(room.getId()).stream()
+                        .filter(c -> Mobile.getId().equals(c.getFollowingId()))
+                        .toList();
+
+                return this.characterService.enterRoom(Mobile, nextRoomId)
+                        .then(reactor.core.publisher.Flux.fromIterable(followers)
+                                .flatMap(follower -> {
+                                    communicationService.sendTextMessage(follower, "\n\nYou follow " + Mobile.getName() + " " + getDirectionName() + ".");
+                                    return characterService.enterRoom(follower, nextRoomId);
+                                })
+                                .then()
+                        );
             } else {
                 communicationService.sendTextMessage(Mobile, "\n\nYou can't go " + getDirectionName() + " from here.");
                 return Mono.empty();

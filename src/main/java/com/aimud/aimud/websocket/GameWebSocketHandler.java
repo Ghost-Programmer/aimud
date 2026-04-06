@@ -87,8 +87,23 @@ public class GameWebSocketHandler implements WebSocketHandler {
                     }
                 });
 
+        Flux<String> partyUpdates = communicationService.getPartyUpdates()
+                .flatMap(partyUpdate -> {
+                    try {
+                        String json = objectMapper.writeValueAsString(Map.of(
+                                "type", "party",
+                                "id", partyUpdate.getCharacterId(),
+                                "data", partyUpdate
+                        ));
+                        return Mono.just(json);
+                    } catch (JsonProcessingException e) {
+                        log.error("Error serializing party update", e);
+                        return Mono.empty();
+                    }
+                });
+
         return session.send(
-                Flux.merge(characterUpdates, textMessages, logoutMessages, targetUpdates)
+                Flux.merge(characterUpdates, textMessages, logoutMessages, targetUpdates, partyUpdates)
                         .map(session::textMessage)
         );
     }

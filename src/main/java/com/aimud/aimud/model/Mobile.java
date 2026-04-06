@@ -102,6 +102,9 @@ public class Mobile {
     private Long partyLeaderId;
 
     @Transient
+    private Long followingId;
+
+    @Transient
     private Long pendingPartyInviteId;
 
     @Transient

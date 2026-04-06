@@ -14,7 +14,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
+import com.aimud.aimud.model.PartyUpdate;
 
 @Service
 @Slf4j
@@ -85,6 +88,25 @@ public class TickService {
             // Execute pending commands for the mobile if we ever add an AI decision loop queue
             if (!mobile.getCommandQueue().isEmpty()) {
                 // Not implemented yet
+            }
+        }
+
+        // Process Party Updates
+        List<Mobile> allMobiles = new ArrayList<>(characters);
+        allMobiles.addAll(mobiles);
+        Map<Long, List<Mobile>> parties = allMobiles.stream()
+                .filter(m -> m.getPartyLeaderId() != null)
+                .collect(Collectors.groupingBy(Mobile::getPartyLeaderId));
+
+        for (Mobile pc : characters) {
+            if (pc.getPartyLeaderId() != null) {
+                List<Mobile> party = parties.get(pc.getPartyLeaderId());
+                if (party != null) {
+                    List<PartyUpdate.PartyMemberInfo> memberInfos = party.stream()
+                            .map(m -> new PartyUpdate.PartyMemberInfo(m.getId(), m.getName(), m.getCurrentHp(), m.getMaxHp(), m.getCurrentMana(), m.getMaxMana()))
+                            .collect(Collectors.toList());
+                    communicationService.sendPartyUpdate(new PartyUpdate(pc.getId(), pc.getPartyLeaderId(), memberInfos));
+                }
             }
         }
     }

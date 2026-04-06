@@ -1,6 +1,7 @@
 package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Mobile;
+import com.aimud.aimud.model.PartyUpdate;
 import com.aimud.aimud.model.TargetUpdate;
 import com.aimud.aimud.model.TextMessage;
 import lombok.Setter;
@@ -17,6 +18,7 @@ public class CommunicationService {
     private final Sinks.Many<TextMessage> textMessages = Sinks.many().replay().limit(20);
     private final Sinks.Many<Mobile> logoutMessages = Sinks.many().replay().limit(10);
     private final Sinks.Many<TargetUpdate> targetUpdates = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<PartyUpdate> partyUpdates = Sinks.many().multicast().onBackpressureBuffer();
 
     @Setter
     private CharacterService characterService;
@@ -37,12 +39,21 @@ public class CommunicationService {
         return targetUpdates.asFlux();
     }
 
+    public Flux<PartyUpdate> getPartyUpdates() {
+        return partyUpdates.asFlux();
+    }
+
     public void sendCharacterUpdate(Mobile character) {
         if (character.getUserId() == null) {
             return;
         }
         log.info("Sending character update for {}", character.getName());
         characterUpdates.tryEmitNext(character);
+    }
+
+    public void sendPartyUpdate(PartyUpdate partyUpdate) {
+        log.info("Sending party update for character {}", partyUpdate.getCharacterId());
+        partyUpdates.tryEmitNext(partyUpdate);
     }
 
     public void sendTargetUpdate(Mobile character, Mobile target) {

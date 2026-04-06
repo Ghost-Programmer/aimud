@@ -43,6 +43,9 @@
       <button (click)="setActiveStatTab('skills')" [class.active]="activeStatTab === 'skills'" class="stat-tab-btn">
         Skills
       </button>
+      <button (click)="setActiveStatTab('party')" [class.active]="activeStatTab === 'party'" class="stat-tab-btn">
+        Party
+      </button>
     </div>
 
     <div *ngIf="activeStatTab === 'stats'" class="stat-content">
@@ -363,6 +366,48 @@
           </tr>
           <tr *ngIf="!character.skills || character.skills.length === 0">
             <td class="empty-inventory" colspan="2">No skills learned.</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div *ngIf="activeStatTab === 'party'" class="stat-content">
+      <div class="stat-group-label" *ngIf="!partyData || !partyData.members || partyData.members.length === 0">You are not in a party.</div>
+      <div class="inventory-container" *ngIf="partyData && partyData.members && partyData.members.length > 0">
+        <table class="inventory-table">
+          <thead>
+          <tr>
+            <th>Name</th>
+            <th style="width: 30%">HP</th>
+            <th style="width: 30%">Mana</th>
+            <th>Action</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let member of partyData.members">
+            <td class="item-name">{{ member.name }} <span *ngIf="partyData.leaderId === member.id" style="font-size: 0.8em; color: gold;">(L)</span></td>
+            <td>
+              <div class="resource-bar hp-bar" style="height: 16px; margin: 0; position: relative;">
+                <div [style.width.%]="(member.currentHp / member.maxHp) * 100" class="bar-fill"></div>
+                <span class="bar-text" style="font-size: 10px;">{{ (member.currentHp / member.maxHp) * 100 | number:'1.0-0' }}%</span>
+              </div>
+            </td>
+            <td>
+              <div class="resource-bar mana-bar" style="height: 16px; margin: 0; position: relative;">
+                <div [style.width.%]="(member.currentMana / member.maxMana) * 100" class="bar-fill"></div>
+                <span class="bar-text" style="font-size: 10px;">{{ (member.currentMana / member.maxMana) * 100 | number:'1.0-0' }}%</span>
+              </div>
+            </td>
+            <td class="action-cell">
+              <button *ngIf="character.id === partyData.leaderId && member.id !== character.id" 
+                      (click)="onRemovePartyMember(member.name)" 
+                      class="action-btn drop-btn" 
+                      mat-icon-button 
+                      title="Remove">
+                <mat-icon>person_remove</mat-icon>
+              </button>
+            </td>
           </tr>
           </tbody>
         </table>
