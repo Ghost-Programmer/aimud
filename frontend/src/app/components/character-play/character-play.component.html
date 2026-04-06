@@ -17,6 +17,14 @@
                type="text">
         <button class="command-submit" type="submit">Send</button>
       </form>
+      <div class="macro-grid">
+        <div *ngFor="let macro of macros; let i = index" class="macro-btn-wrapper" (contextmenu)="editMacro(i, $event)">
+          <button type="button" class="macro-btn" [class.unassigned]="!macro.command" (click)="triggerMacro(i)">
+            <span class="macro-key">F{{i + 1}}</span>
+            <span class="macro-label">{{macro.label || 'Unassigned'}}</span>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 

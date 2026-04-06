@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
+import {MobileMacro} from '../models/mobile-macro.model';
 
 @Injectable({
   providedIn: 'root'
@@ -57,5 +58,13 @@ export class CharacterService {
 
   getAvailableCharacters(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/available`);
+  }
+
+  getMacros(characterId: number): Observable<MobileMacro[]> {
+    return this.http.get<MobileMacro[]>(`${this.apiUrl}/${characterId}/macros`);
+  }
+
+  saveMacros(characterId: number, macros: MobileMacro[]): Observable<MobileMacro[]> {
+    return this.http.post<MobileMacro[]>(`${this.apiUrl}/${characterId}/macros`, macros);
   }
 }

@@ -51,6 +51,8 @@ class CharacterServiceTest {
     private MobileService mobileService;
     @Mock
     private FactionService factionService;
+    @Mock
+    private com.aimud.aimud.repository.MobileMacroRepository mobileMacroRepository;
 
     private CharacterService characterService;
 
@@ -68,7 +70,8 @@ class CharacterServiceTest {
                 skillRepository,
                 itemService,
                 mobileService,
-                factionService
+                factionService,
+                mobileMacroRepository
         );
     }
 

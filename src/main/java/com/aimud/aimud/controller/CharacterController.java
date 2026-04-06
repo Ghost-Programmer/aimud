@@ -120,4 +120,16 @@ public class CharacterController {
                         .defaultIfEmpty(ResponseEntity.notFound().build()))
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
+
+    @GetMapping("/{id}/macros")
+    public Flux<com.aimud.aimud.model.MobileMacro> getMacros(@PathVariable Long id) {
+        log.info("REST Request to get macros for character: {}", id);
+        return characterService.getCharacterMacros(id);
+    }
+
+    @PostMapping("/{id}/macros")
+    public Flux<com.aimud.aimud.model.MobileMacro> saveMacros(@PathVariable Long id, @RequestBody java.util.List<com.aimud.aimud.model.MobileMacro> macros) {
+        log.info("REST Request to save macros for character: {}", id);
+        return characterService.saveCharacterMacros(id, macros);
+    }
 }

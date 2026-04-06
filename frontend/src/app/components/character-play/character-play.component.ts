@@ -1,4 +1,4 @@
-import {Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, AfterViewInit} from '@angular/core';
+import {Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, AfterViewInit, HostListener} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {DragDropModule} from '@angular/cdk/drag-drop';
@@ -7,6 +7,8 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import {ItemStatsDialogComponent} from '../item-stats-dialog/item-stats-dialog.component';
+import {MacroEditDialogComponent} from '../macro-edit-dialog/macro-edit-dialog.component';
+import {MobileMacro} from '../../models/mobile-macro.model';
 import {CharacterService} from '../../services/character.service';
 import {GameWebSocketService} from '../../services/game-websocket.service';
 import {Subscription} from 'rxjs';
@@ -28,8 +30,20 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
   command: string = '';
   target: any = null;
   partyData: any = null;
+  macros: MobileMacro[] = Array(12).fill(null).map((_, i) => ({ macroIndex: i, label: '', command: '' }));
 
   private wsSubscription: Subscription | null = null;
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyDown(event: KeyboardEvent) {
+    if (event.key.startsWith('F')) {
+      const fNumber = parseInt(event.key.substring(1), 10);
+      if (fNumber >= 1 && fNumber <= 12) {
+        event.preventDefault(); // Override browser default
+        this.triggerMacro(fNumber - 1);
+      }
+    }
+  }
 
   constructor(
     private characterService: CharacterService,
@@ -94,8 +108,60 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
     this.characterService.getCharacter(this.character.id).subscribe({
       next: (c) => {
         Object.assign(this.character, c);
+        this.loadMacros();
       },
       error: (err) => console.error('Error refreshing character', err)
+    });
+  }
+
+  loadMacros() {
+    if (!this.character?.id) return;
+    this.characterService.getMacros(this.character.id).subscribe({
+      next: (macros) => {
+        // Overlay existing configuration onto our initialized 12-slot array
+        if (macros && macros.length > 0) {
+           macros.forEach(macro => {
+             if (macro.macroIndex >= 0 && macro.macroIndex < 12) {
+               this.macros[macro.macroIndex] = { ...macro };
+             }
+           });
+        }
+      },
+      error: (err) => console.error('Error loading macros', err)
+    });
+  }
+
+  saveMacros() {
+    if (!this.character?.id) return;
+    // Only save those that have actual commands or labels
+    const macrosToSave = this.macros.filter(m => m.label || m.command);
+    this.characterService.saveMacros(this.character.id, macrosToSave).subscribe({
+      error: (err) => console.error('Error saving macros', err)
+    });
+  }
+
+  triggerMacro(index: number) {
+    const macro = this.macros[index];
+    if (macro && macro.command) {
+      this.characterService.sendCommand(this.character.id, macro.command).subscribe();
+    }
+  }
+
+  editMacro(index: number, event: MouseEvent) {
+    event.preventDefault(); // Stop normal context menu
+    const macro = this.macros[index];
+    
+    // Open Dialog
+    const dialogRef = this.dialog.open(MacroEditDialogComponent, {
+      width: '300px',
+      data: { ...macro } // Pass a copy to avoid immediate bindings if cancelled
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+         this.macros[index] = result;
+         this.saveMacros();
+      }
     });
   }
 

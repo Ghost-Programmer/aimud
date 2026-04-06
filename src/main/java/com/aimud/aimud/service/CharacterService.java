@@ -33,11 +33,12 @@ public class CharacterService {
     private final SkillRepository skillRepository;
     private final ItemService itemService;
     private final MobileService mobileService;
+    private final MobileMacroRepository mobileMacroRepository;
 
     // In-memory storage for active/available characters
     private final ConcurrentHashMap<Long, Mobile> availableCharacters = new ConcurrentHashMap<>();
 
-    public CharacterService(MobileRepository mobileRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository, CommunicationService communicationService, RoomService roomService, CharacterClassRepository characterClassRepository, SkillRepository skillRepository, ItemService itemService, MobileService mobileService, FactionService factionService) {
+    public CharacterService(MobileRepository mobileRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository, CommunicationService communicationService, RoomService roomService, CharacterClassRepository characterClassRepository, SkillRepository skillRepository, ItemService itemService, MobileService mobileService, FactionService factionService, MobileMacroRepository mobileMacroRepository) {
         this.mobileRepository = mobileRepository;
         this.userRepository = userRepository;
         this.statService = statService;
@@ -47,10 +48,25 @@ public class CharacterService {
         this.communicationService = communicationService;
         this.itemService = itemService;
         this.mobileService = mobileService;
+        this.mobileMacroRepository = mobileMacroRepository;
         this.communicationService.setCharacterService(this);
         this.roomService = roomService;
         this.characterClassRepository = characterClassRepository;
         this.skillRepository = skillRepository;
+    }
+
+    public Flux<com.aimud.aimud.model.MobileMacro> getCharacterMacros(Long characterId) {
+        return mobileMacroRepository.findByMobileId(characterId);
+    }
+
+    public Flux<com.aimud.aimud.model.MobileMacro> saveCharacterMacros(Long characterId, List<com.aimud.aimud.model.MobileMacro> macros) {
+        return mobileMacroRepository.deleteByMobileId(characterId)
+                .thenMany(Flux.fromIterable(macros))
+                .flatMap(macro -> {
+                    macro.setMobileId(characterId);
+                    macro.setId(null);
+                    return mobileMacroRepository.save(macro);
+                });
     }
 
     public List<Mobile> findAllByRoomId(Long roomId) {
