@@ -200,7 +200,36 @@ public class TickService {
         }
 
         // Process Primary Attack
-        performSingleAttack(attacker, target, attacker.getPrimary(), "primary");
+        boolean primaryHit = performSingleAttack(attacker, target, attacker.getPrimary(), "primary");
+        
+        // Check for Double & Triple Attack
+        if (primaryHit) {
+            int doubleAttackRank = getSkillRank(attacker, SkillsType.DOUBLE_ATTACK);
+            if (doubleAttackRank > 0 && target.getCurrentHp() > 0) {
+                int doubleChance = Math.max(1, doubleAttackRank / 5);
+                if (random.nextInt(100) < doubleChance) {
+                    communicationService.roomMessage(attacker, "\n" + attacker.getName() + " strikes with a blindingly fast EXTRA attack!");
+                    if (attacker.getUserId() != null) communicationService.sendTextMessage(attacker, "\nYour speed grants you an extra attack!");
+                    checkSkillImprovement(attacker, SkillsType.DOUBLE_ATTACK, target, true);
+                    
+                    boolean doubleHit = performSingleAttack(attacker, target, attacker.getPrimary(), "primary");
+                    
+                    if (doubleHit && target.getCurrentHp() > 0) {
+                        int tripleAttackRank = getSkillRank(attacker, SkillsType.TRIPLE_ATTACK);
+                        if (tripleAttackRank > 0) {
+                            int tripleChance = Math.max(1, tripleAttackRank / 5);
+                            if (random.nextInt(100) < tripleChance) {
+                                communicationService.roomMessage(attacker, "\n" + attacker.getName() + " masterfully flows into a TRIPLE attack!");
+                                if (attacker.getUserId() != null) communicationService.sendTextMessage(attacker, "\nYou masterfully follow up with a third strike!");
+                                checkSkillImprovement(attacker, SkillsType.TRIPLE_ATTACK, target, true);
+                                
+                                performSingleAttack(attacker, target, attacker.getPrimary(), "primary");
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         // Check for Dual Wield
         int dualWieldRank = getSkillRank(attacker, SkillsType.DUAL_WIELD);
@@ -229,8 +258,8 @@ public class TickService {
         }
     }
 
-    private void performSingleAttack(Mobile attacker, Mobile target, Item weapon, String hand) {
-        if (target.getCurrentHp() <= 0) return;
+    private boolean performSingleAttack(Mobile attacker, Mobile target, Item weapon, String hand) {
+        if (target.getCurrentHp() <= 0) return false;
 
         // Weapon Skill Improvement Check
         if (weapon != null) {
@@ -247,14 +276,14 @@ public class TickService {
 
         if (attackRoll < defenseScore) {
             sendCombatMessage(attacker, target, "You miss " + target.getName() + ".", attacker.getName() + " misses you.", attacker.getName() + " misses " + target.getName() + ".");
-            return;
+            return false;
         }
 
         // 2. Dodge Check
         double dodgeChance = target.getDodgeChance();
         if (random.nextInt(100) < dodgeChance) {
             sendCombatMessage(attacker, target, target.getName() + " dodges your attack!", "You dodge " + attacker.getName() + "'s attack!", target.getName() + " dodges " + attacker.getName() + "'s attack!");
-            return;
+            return false;
         }
 
         // 3. Parry Check
@@ -264,7 +293,7 @@ public class TickService {
             if (random.nextInt(100) < parryChance) {
                 sendCombatMessage(attacker, target, target.getName() + " parries your attack!", "You parry " + attacker.getName() + "'s attack!", target.getName() + " parries " + attacker.getName() + "'s attack!");
                 checkSkillImprovement(target, SkillsType.PARRY, attacker, true);
-                return;
+                return false;
             }
         }
 
@@ -275,7 +304,7 @@ public class TickService {
             if (random.nextInt(100) < blockChance) {
                 sendCombatMessage(attacker, target, target.getName() + " blocks your attack with their shield!", "You block " + attacker.getName() + "'s attack!", target.getName() + " blocks " + attacker.getName() + "'s attack!");
                 checkSkillImprovement(target, SkillsType.SHIELD_BLOCK, attacker, true);
-                return;
+                return false;
             }
         }
 
@@ -344,9 +373,12 @@ public class TickService {
         if (target.getUserId() != null) {
             communicationService.sendCharacterUpdate(target);
         }
+        
         if (attacker.getUserId() != null) {
             this.communicationService.sendCharacterUpdate(attacker);
         }
+        
+        return true;
     }
 
     private void checkSkillImprovement(Mobile mobile, String skillName, Mobile target, boolean wasSuccess) {
