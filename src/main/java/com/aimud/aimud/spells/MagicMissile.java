@@ -66,7 +66,27 @@ public class MagicMissile extends Spell {
         this.communicationService.roomMessage(mobile, String.format("\n\n%s fires a magic missile at %s for %d damage!", mobile.getName(), target.getName(), damage));
 
         target.setCurrentHp(target.getCurrentHp() - damage);
+        target.addHate(mobile.getId(), damage);
 
+        if (target.getCurrentHp() <= 0) {
+            target.setCurrentHp(0);
+            String deathMsg = "\n" + target.getName() + " is DEAD!!";
+            if (mobile.getUserId() != null) {
+                this.communicationService.sendTextMessage(mobile, deathMsg);
+            }
+            if (target.getUserId() != null) {
+                this.communicationService.sendTextMessage(target, "\n\nYou have died...");
+                this.communicationService.sendTextMessage(target, deathMsg);
+            }
+            this.communicationService.roomMessage(target, deathMsg);
+
+            target.setTarget(null);
+            mobile.setTarget(null);
+
+            // Clear hate
+            this.characterService.findAllByRoomId(target.getCurrentRoomId())
+                    .forEach(m -> m.removeHate(target.getId()));
+        }
         return !resist;
     }
 }

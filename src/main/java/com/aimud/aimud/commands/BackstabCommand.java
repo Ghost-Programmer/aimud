@@ -120,6 +120,7 @@ public class BackstabCommand implements Command {
 
         // Apply damage
         target.setCurrentHp(target.getCurrentHp() - totalDamage);
+        target.addHate(attacker.getId(), totalDamage);
 
         communicationService.sendTextMessage(attacker, "\n\nYou step out of the shadows and backstab " + target.getName() + " for " + totalDamage + " damage (" + multiplier + "x multiplier)!");
         if (target.getUserId() != null) {
@@ -149,6 +150,10 @@ public class BackstabCommand implements Command {
             communicationService.roomMessage(target, deathMsg);
 
             tickService.createCorpse(target);
+            
+            // Clear hate towards the dead target from everyone in the room
+            characterService.findAllByRoomId(target.getCurrentRoomId())
+                    .forEach(m -> m.removeHate(target.getId()));
 
             attacker.setTarget(null);
             target.setTarget(null);

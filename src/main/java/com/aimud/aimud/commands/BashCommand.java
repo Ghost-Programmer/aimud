@@ -138,6 +138,7 @@ public class BashCommand implements Command {
         if (damage < 1) damage = 1;
 
         target.setCurrentHp(target.getCurrentHp() - damage);
+        target.addHate(attacker.getId(), damage);
 
         communicationService.sendTextMessage(attacker, "\n\nYou slam your shield into " + target.getName() + " for " + damage + " damage!");
         if (target.getUserId() != null) {

@@ -62,6 +62,7 @@ public class DisarmCommand implements Command {
 
         if (roll < disarmChance) {
             // Success
+            target.addHate(mobile.getId(), 5);
             communicationService.roomMessage(mobile, "\n" + mobile.getName() + " skillfully disarms " + target.getName() + "!");
             if (mobile.getUserId() != null) {
                 communicationService.sendTextMessage(mobile, "\nYou expertly knock the " + primaryWeapon.getName() + " out of " + target.getName() + "'s hands!");

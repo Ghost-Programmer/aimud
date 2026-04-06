@@ -177,6 +177,23 @@ public class TickService {
     }
 
     private boolean processAttack(Mobile attacker) {
+        if (attacker.getUserId() == null) {
+            Long highestHateId = attacker.getHighestHateTargetId();
+            while (highestHateId != null) {
+                Long topHateId = highestHateId;
+                Mobile newTarget = characterService.findAllByRoomId(attacker.getCurrentRoomId()).stream()
+                    .filter(c -> c.getId().equals(topHateId)).findFirst().orElse(null);
+                    
+                if (newTarget != null && newTarget.getCurrentHp() > 0) {
+                    attacker.setTarget(newTarget);
+                    break;
+                } else {
+                    attacker.removeHate(highestHateId);
+                    highestHateId = attacker.getHighestHateTargetId();
+                }
+            }
+        }
+        
         Mobile target = attacker.getTarget();
         if (target == null) {
             return false;
@@ -344,7 +361,8 @@ public class TickService {
         if (totalDamage < 1) totalDamage = 1;
 
         target.setCurrentHp(target.getCurrentHp() - totalDamage);
-
+        target.addHate(attacker.getId(), totalDamage);
+        
         String damageString = String.join(", ", damageReports);
 
         sendCombatMessage(attacker, target,
@@ -365,6 +383,10 @@ public class TickService {
             factionService.handleKillPenalty(attacker, target)
                     .doOnError(e -> log.error("Failed to handle faction kill penalty", e))
                     .subscribe();
+
+            // Clear hate towards the dead target from everyone in the room
+            characterService.findAllByRoomId(target.getCurrentRoomId())
+                    .forEach(m -> m.removeHate(target.getId()));
 
             attacker.setTarget(null);
             target.setTarget(null);
@@ -513,6 +535,7 @@ public class TickService {
                     damage += random.nextInt(diceSize) + 1;
                 }
                 mobile.setCurrentHp(mobile.getCurrentHp() - damage);
+                mobile.addHate(ce.getCasterId(), damage);
                 hpChangedOrRemoved = true;
 
                 String damageTypeStr = effect.getEffectType().getLabel().toLowerCase();
@@ -529,6 +552,11 @@ public class TickService {
                     }
                     communicationService.roomMessage(mobile, "\n" + mobile.getName() + " has succumbed to their wounds!");
                     createCorpse(mobile);
+                    
+                    // Clear hate towards the dead target from everyone in the room
+                    characterService.findAllByRoomId(mobile.getCurrentRoomId())
+                            .forEach(m -> m.removeHate(mobile.getId()));
+
                     // Do not keep current effect or any remaining since they are dead
                     break;
                 }

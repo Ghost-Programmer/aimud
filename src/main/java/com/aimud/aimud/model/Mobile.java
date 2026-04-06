@@ -11,6 +11,8 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 @Setter
@@ -200,6 +202,27 @@ public class Mobile {
     @Transient
     @JsonIgnore
     private Mobile target;
+
+    @Transient
+    private Map<Long, Integer> hateList = new ConcurrentHashMap<>();
+
+    public void addHate(Long attackerId, int amount) {
+        if (attackerId == null || attackerId.equals(this.getId())) return;
+        hateList.merge(attackerId, amount, Integer::sum);
+    }
+
+    public void removeHate(Long attackerId) {
+        if (attackerId == null) return;
+        hateList.remove(attackerId);
+    }
+
+    public Long getHighestHateTargetId() {
+        if (hateList.isEmpty()) return null;
+        return hateList.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+    }
 
     public Mobile() {
     }
