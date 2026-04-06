@@ -144,6 +144,10 @@
   gap: 10px;
 }
 
+.form-row app-searchable-dropdown, .equip-row app-searchable-dropdown {
+  flex: 1;
+}
+
 .form-row input, .equip-row select, .search-input {
   flex: 1;
   padding: 8px;

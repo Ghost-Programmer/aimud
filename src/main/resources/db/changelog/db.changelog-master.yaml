@@ -5,3 +5,7 @@ databaseChangeLog:
       file: db/changelog/changes/055-negative-effects.sql
   - include:
       file: db/changelog/changes/056-mobile-flags.sql
+  - include:
+      file: db/changelog/changes/057-add-npc-races.sql
+  - include:
+      file: db/changelog/changes/058-add-npc-classes.sql

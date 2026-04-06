@@ -35,6 +35,28 @@
               <label>Starting Room ID</label>
               <input formControlName="currentRoomId" type="number"/>
             </div>
+            <div class="form-row">
+              <label>Race</label>
+              <app-searchable-dropdown
+                formControlName="raceId"
+                [options]="availableRaces"
+                bindLabel="name"
+                bindValue="id"
+                [displayFn]="raceDisplayFn"
+                placeholder="Select Race...">
+              </app-searchable-dropdown>
+            </div>
+            <div class="form-row">
+              <label>Class</label>
+              <app-searchable-dropdown
+                formControlName="classId"
+                [options]="availableClasses"
+                bindLabel="name"
+                bindValue="id"
+                [displayFn]="classDisplayFn"
+                placeholder="Select Class...">
+              </app-searchable-dropdown>
+            </div>
           </div>
 
           <div class="form-section">

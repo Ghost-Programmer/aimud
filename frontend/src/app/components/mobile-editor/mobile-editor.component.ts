@@ -23,6 +23,8 @@ export class MobileEditorComponent implements OnInit {
 
   availableItems: any[] = [];
   availableSkills: any[] = [];
+  availableRaces: any[] = [];
+  availableClasses: any[] = [];
   factions: Faction[] = [];
   factionRatings: { [key: number]: number } = {};
 
@@ -58,7 +60,19 @@ export class MobileEditorComponent implements OnInit {
     this.loadMobiles();
     this.loadItems();
     this.loadSkills();
+    this.loadRacesAndClasses();
     this.factionService.getAllFactions().subscribe(f => this.factions = f);
+  }
+
+  loadRacesAndClasses() {
+    this.configService.getAllRaces().subscribe({
+      next: (data) => this.availableRaces = [...data].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
+      error: (err) => console.error('Error loading races', err)
+    });
+    this.configService.getAllCharacterClasses().subscribe({
+      next: (data) => this.availableClasses = [...data].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
+      error: (err) => console.error('Error loading classes', err)
+    });
   }
 
   createForm() {
@@ -75,6 +89,8 @@ export class MobileEditorComponent implements OnInit {
       currentMana: [50],
       currentRoomId: [1],
       factionId: [null],
+      raceId: [null],
+      classId: [null],
 
       hateHealer: [false],
       hateDebuffer: [false],
@@ -151,6 +167,8 @@ export class MobileEditorComponent implements OnInit {
   }
 
   itemDisplayFn = (item: any) => `${item.name} (${item.id})`;
+  raceDisplayFn = (race: any) => `${race.name} (${race.id})`;
+  classDisplayFn = (c: any) => `${c.name} (${c.id})`;
 
   getFilteredInvItems(index: number) {
     const search = this.invSearchTexts[index]?.toLowerCase();
@@ -242,6 +260,8 @@ export class MobileEditorComponent implements OnInit {
       currentHp: 100,
       currentMana: 50,
       currentRoomId: 1,
+      raceId: null,
+      classId: null,
       hateHealer: false,
       hateDebuffer: false,
       hateWizard: false,
