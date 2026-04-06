@@ -29,15 +29,17 @@ public class TickService {
     private final CommunicationService communicationService;
     private final SkillService skillService;
     private final RoomService roomService;
+    private final FactionService factionService;
     private final Random random = new Random();
 
-    public TickService(CharacterService characterService, MobileService mobileService, CommandService commandService, CommunicationService communicationService, SkillService skillService, RoomService roomService) {
+    public TickService(CharacterService characterService, MobileService mobileService, CommandService commandService, CommunicationService communicationService, SkillService skillService, RoomService roomService, FactionService factionService) {
         this.characterService = characterService;
         this.mobileService = mobileService;
         this.commandService = commandService;
         this.communicationService = communicationService;
         this.skillService = skillService;
         this.roomService = roomService;
+        this.factionService = factionService;
     }
 
     @Scheduled(fixedRate = 2000)
@@ -89,6 +91,8 @@ public class TickService {
             if (!mobile.getCommandQueue().isEmpty()) {
                 // Not implemented yet
             }
+
+            processFactionAssist(mobile);
         }
 
         // Process Party Updates
@@ -109,6 +113,67 @@ public class TickService {
                 }
             }
         }
+    }
+
+    private void processFactionAssist(Mobile observer) {
+        if (observer.getCurrentRoomId() == null) return;
+        if (observer.getCurrentHp() <= 0) return;
+
+        List<Mobile> roomOccupants = new ArrayList<>(characterService.findAllByRoomId(observer.getCurrentRoomId()));
+        roomOccupants.addAll(mobileService.getMobilesInRoom(observer.getCurrentRoomId()));
+
+        for (Mobile actor : roomOccupants) {
+            if (actor.getId().equals(observer.getId())) continue;
+            
+            Mobile victim = actor.getTarget();
+            if (victim == null || victim.getCurrentHp() <= 0) continue;
+            // observer is not currently attacking someone
+            if (observer.getTarget() != null) continue;
+            
+            int ratingWithActor = factionService.getFactionRatingSync(observer, actor.getFactionId());
+            int ratingWithVictim = factionService.getFactionRatingSync(observer, victim.getFactionId());
+
+            if (ratingWithActor >= 21 && ratingWithActor <= 40 && ratingWithVictim > ratingWithActor) {
+                initiateAssist(observer, actor, victim);
+                return;
+            }
+
+            if (ratingWithActor >= 61 && ratingWithActor <= 80 && ratingWithVictim < ratingWithActor) {
+                initiateAssist(observer, victim, actor);
+                return;
+            }
+            
+            if (ratingWithVictim >= 81 && ratingWithVictim <= 100) {
+                if (!observer.getFactionId().equals(actor.getFactionId())) {
+                    initiateAssist(observer, actor, victim);
+                    return;
+                }
+            }
+        }
+        
+        // Healing Phase
+        if (observer.getTarget() == null) {
+            for (Mobile ally : roomOccupants) {
+                if (ally.getId().equals(observer.getId())) continue;
+                if (ally.getCurrentHp() < ally.getMaxHp() && factionService.getFactionRatingSync(observer, ally.getFactionId()) >= 81) {
+                    int prayerRank = skillService.getSkillRank(observer, SkillsType.SAY_PRAYER);
+                    if (prayerRank > 0 && observer.getCurrentMana() >= 10) {
+                        observer.setCurrentMana(observer.getCurrentMana() - 10);
+                        int heal = 10 + prayerRank * 2;
+                        ally.setCurrentHp(Math.min(ally.getMaxHp(), ally.getCurrentHp() + heal));
+                        communicationService.roomMessage(observer, "\n" + observer.getName() + " mutters a healing prayer for " + ally.getName() + ".");
+                        if (ally.getUserId() != null) communicationService.sendTextMessage(ally, "\n\n" + observer.getName() + " heals you for " + heal + "!");
+                        return; // heal once
+                    }
+                }
+            }
+        }
+    }
+
+    private void initiateAssist(Mobile observer, Mobile targetToAttack, Mobile personHelping) {
+        observer.setTarget(targetToAttack);
+        communicationService.roomMessage(observer, "\n" + observer.getName() + " jumps into the fray to assist " + personHelping.getName() + "!");
+        if (targetToAttack.getUserId() != null) communicationService.sendTextMessage(targetToAttack, "\n\n" + observer.getName() + " attacks you!");
     }
 
     private boolean processAttack(Mobile attacker) {
@@ -266,6 +331,11 @@ public class TickService {
             sendCombatMessage(attacker, target, deathMsg, "\n\nYou have died...", deathMsg);
 
             createCorpse(target);
+
+            // Faction penalty
+            factionService.handleKillPenalty(attacker, target)
+                    .doOnError(e -> log.error("Failed to handle faction kill penalty", e))
+                    .subscribe();
 
             attacker.setTarget(null);
             target.setTarget(null);

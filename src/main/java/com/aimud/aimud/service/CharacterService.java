@@ -24,6 +24,7 @@ public class CharacterService {
     private final UserRepository userRepository;
     private final StatService statService;
     private final DatabaseClient databaseClient;
+    private final FactionService factionService;
     private final CharacterEffectRepository characterEffectRepository;
     private final Random random = new Random();
     private final CommunicationService communicationService;
@@ -36,11 +37,12 @@ public class CharacterService {
     // In-memory storage for active/available characters
     private final ConcurrentHashMap<Long, Mobile> availableCharacters = new ConcurrentHashMap<>();
 
-    public CharacterService(MobileRepository mobileRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository, CommunicationService communicationService, RoomService roomService, CharacterClassRepository characterClassRepository, SkillRepository skillRepository, ItemService itemService, MobileService mobileService) {
+    public CharacterService(MobileRepository mobileRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository, CommunicationService communicationService, RoomService roomService, CharacterClassRepository characterClassRepository, SkillRepository skillRepository, ItemService itemService, MobileService mobileService, FactionService factionService) {
         this.mobileRepository = mobileRepository;
         this.userRepository = userRepository;
         this.statService = statService;
         this.databaseClient = databaseClient;
+        this.factionService = factionService;
         this.characterEffectRepository = characterEffectRepository;
         this.communicationService = communicationService;
         this.itemService = itemService;
@@ -655,8 +657,30 @@ public class CharacterService {
                                 room.getItemIds().stream().forEach(itemId -> {
                                     this.itemService.getItem(itemId)
                                             .doOnNext(item ->
-                                                    this.communicationService.sendTextMessage(character, "\nYou see " + item.getName() + " laying here."));
+                                                    this.communicationService.sendTextMessage(character, "\nYou see " + item.getName() + " laying here."))
+                                            .subscribe();
                                 });
+
+                                // Process Faction Aggressiveness
+                                java.util.List<Mobile> targets = new ArrayList<>(this.findAllByRoomId(room.getId()));
+                                targets.addAll(this.mobileService.getMobilesInRoom(room.getId()));
+                                for (Mobile res : targets) {
+                                    if (res.getId().equals(character.getId()) || res.isHidden() || res.isInvisible() || character.isHidden() || character.isInvisible()) continue;
+                                    
+                                    // If character hates resident
+                                    if (this.factionService.getFactionRatingSync(character, res.getFactionId()) < 20 && character.getTarget() == null) {
+                                        character.setTarget(res);
+                                        this.communicationService.roomMessage(character, "\n" + character.getName() + " attacks " + res.getName() + " on sight!");
+                                        this.communicationService.sendTextMessage(character, "\n\nYou attack " + res.getName() + " on sight!");
+                                    }
+                                    // If resident hates character
+                                    if (this.factionService.getFactionRatingSync(res, character.getFactionId()) < 20 && res.getTarget() == null) {
+                                        res.setTarget(character);
+                                        this.communicationService.roomMessage(res, "\n" + res.getName() + " attacks " + character.getName() + " on sight!");
+                                        this.communicationService.sendTextMessage(character, "\n\n" + res.getName() + " attacks you on sight!");
+                                    }
+                                }
+
                                 List<String> exits = new ArrayList<>();
                                 if (room.getNorthId() != null) {
                                     exits.add("North");

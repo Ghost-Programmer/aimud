@@ -36,6 +36,8 @@ public class Mobile {
     private Long classId;
     @Column("current_room_id")
     private Long currentRoomId;
+    @Column("faction_id")
+    private Long factionId;
 
     @CreatedDate
     @Column("created_at")

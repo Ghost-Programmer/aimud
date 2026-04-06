@@ -49,6 +49,8 @@ class CharacterServiceTest {
     private ItemService itemService;
     @Mock
     private MobileService mobileService;
+    @Mock
+    private FactionService factionService;
 
     private CharacterService characterService;
 
@@ -65,7 +67,8 @@ class CharacterServiceTest {
                 characterClassRepository,
                 skillRepository,
                 itemService,
-                mobileService
+                mobileService,
+                factionService
         );
     }
 
