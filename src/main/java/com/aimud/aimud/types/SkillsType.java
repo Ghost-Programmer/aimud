@@ -19,6 +19,7 @@ public class SkillsType {
     public static final String PICKPOCKET = "Pickpocket";
     public static final String DOUBLE_ATTACK = "Double Attack";
     public static final String TRIPLE_ATTACK = "Triple Attack";
+    public static final String DISARM = "Disarm";
 
     private SkillsType() {
         // Private constructor to prevent instantiation
