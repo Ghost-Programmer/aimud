@@ -75,6 +75,14 @@ export class MobileEditorComponent implements OnInit {
       currentRoomId: [1],
       factionId: [null],
 
+      hateHealer: [false],
+      hateDebuffer: [false],
+      hateWizard: [false],
+      hateCleric: [false],
+      hateSinger: [false],
+      willFollow: [false],
+      willLoot: [false],
+
       // Equipment
       headId: [null],
       chestId: [null],
@@ -244,6 +252,13 @@ export class MobileEditorComponent implements OnInit {
       currentHp: 100,
       currentMana: 50,
       currentRoomId: 1,
+      hateHealer: false,
+      hateDebuffer: false,
+      hateWizard: false,
+      hateCleric: false,
+      hateSinger: false,
+      willFollow: false,
+      willLoot: false,
       factionId: null
     });
     this.invSearchTexts = [];

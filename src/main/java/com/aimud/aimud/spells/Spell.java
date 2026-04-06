@@ -95,12 +95,14 @@ public abstract class Spell {
             boolean isDebuff = effect.getModifier1() < 0;
             if (isDebuff) {
                 int hateAmount = Math.abs(effect.getModifier1());
+                if (mobile.isHateDebuffer()) hateAmount *= 5;
                 mobile.addHate(caster.getId(), hateAmount);
             } else if (!caster.getId().equals(mobile.getId())) {
-                // Healing or buffing an ally generates hate towards the caster from enemies targeting the ally
                 characterService.findAllByRoomId(mobile.getCurrentRoomId()).forEach(m -> {
                     if (m.getUserId() == null && mobile.getId().equals(m.getHighestHateTargetId())) {
-                        m.addHate(caster.getId(), 5);
+                        int hateAmount = 5;
+                        if (m.isHateHealer()) hateAmount *= 5;
+                        m.addHate(caster.getId(), hateAmount);
                     }
                 });
             }

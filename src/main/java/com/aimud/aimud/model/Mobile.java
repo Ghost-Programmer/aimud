@@ -62,6 +62,22 @@ public class Mobile {
     @Column("current_mana")
     private int currentMana;
 
+    @Column("hate_healer")
+    private boolean hateHealer;
+    @Column("hate_debuffer")
+    private boolean hateDebuffer;
+    @Column("hate_wizard")
+    private boolean hateWizard;
+    @Column("hate_cleric")
+    private boolean hateCleric;
+    @Column("hate_singer")
+    private boolean hateSinger;
+
+    @Column("will_follow")
+    private boolean willFollow;
+    @Column("will_loot")
+    private boolean willLoot;
+
     @Transient
     private List<Skill> skills = new ArrayList<>();
 

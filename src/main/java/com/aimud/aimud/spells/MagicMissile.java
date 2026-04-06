@@ -66,7 +66,9 @@ public class MagicMissile extends Spell {
         this.communicationService.roomMessage(mobile, String.format("\n\n%s fires a magic missile at %s for %d damage!", mobile.getName(), target.getName(), damage));
 
         target.setCurrentHp(target.getCurrentHp() - damage);
-        target.addHate(mobile.getId(), damage);
+        int hateAmount = damage;
+        if (target.isHateWizard()) hateAmount *= 5;
+        target.addHate(mobile.getId(), hateAmount);
 
         if (target.getCurrentHp() <= 0) {
             target.setCurrentHp(0);

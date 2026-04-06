@@ -47,6 +47,11 @@ public class TickService {
         // Process PCs
         List<Mobile> characters = characterService.getAvailableCharacters();
         for (Mobile character : characters) {
+            if (character.getCurrentHp() <= 0) {
+                processDeath(character);
+                continue;
+            }
+            
             boolean save = false;
 
             boolean effectsChanged = processSpellEffects(character);
@@ -75,7 +80,7 @@ public class TickService {
                             .subscribe();
                 }
             }
-            if (save) {
+            if (save && character.getUserId() != null) {
                 characterService.save(character).subscribe();
             }
         }
@@ -83,6 +88,11 @@ public class TickService {
         // Process NPCs (Mobiles)
         List<Mobile> mobiles = mobileService.getActiveMobiles();
         for (Mobile mobile : mobiles) {
+            if (mobile.getCurrentHp() <= 0) {
+                processDeath(mobile);
+                continue;
+            }
+            
             processSpellEffects(mobile);
             processRegen(mobile);
             processAttack(mobile);
@@ -186,6 +196,7 @@ public class TickService {
                     
                 if (newTarget != null && newTarget.getCurrentHp() > 0) {
                     attacker.setTarget(newTarget);
+                    if (attacker.isWillFollow()) attacker.setFollowingId(newTarget.getId());
                     break;
                 } else {
                     attacker.removeHate(highestHateId);
@@ -204,13 +215,17 @@ public class TickService {
             if (attacker.getUserId() != null) {
                 communicationService.sendTextMessage(attacker, "\n\nYour target is no longer here.");
             }
-            attacker.setTarget(null);
+            // Do not clear target if willFollow is true, wait until next action
+            if (!attacker.isWillFollow()) {
+                attacker.setTarget(null);
+            }
             return true;
         }
 
         // Auto-retaliate if target doesn't have a target
         if (target.getTarget() == null) {
             target.setTarget(attacker);
+            if (target.isWillFollow()) target.setFollowingId(attacker.getId());
             if (target.getUserId() != null) {
                 communicationService.sendTextMessage(target, "\n\n" + attacker.getName() + " is attacking you!");
             }
@@ -370,28 +385,6 @@ public class TickService {
                 attacker.getName() + " hits you for " + damageString + "!",
                 attacker.getName() + " hits " + target.getName() + " for " + damageString + "!");
 
-        // 6. Check Death
-        if (target.getCurrentHp() <= 0) {
-            target.setCurrentHp(0);
-
-            String deathMsg = "\n" + target.getName() + " is DEAD!!";
-            sendCombatMessage(attacker, target, deathMsg, "\n\nYou have died...", deathMsg);
-
-            createCorpse(target);
-
-            // Faction penalty
-            factionService.handleKillPenalty(attacker, target)
-                    .doOnError(e -> log.error("Failed to handle faction kill penalty", e))
-                    .subscribe();
-
-            // Clear hate towards the dead target from everyone in the room
-            characterService.findAllByRoomId(target.getCurrentRoomId())
-                    .forEach(m -> m.removeHate(target.getId()));
-
-            attacker.setTarget(null);
-            target.setTarget(null);
-        }
-
         if (target.getUserId() != null) {
             communicationService.sendCharacterUpdate(target);
         }
@@ -458,7 +451,7 @@ public class TickService {
                 type == EffectType.POISON_DAMAGE || type == EffectType.ELECTRICAL_DAMAGE;
     }
 
-    public void createCorpse(Mobile deceased) {
+    public void createCorpse(Mobile deceased, Long killerId) {
         log.info("Creating corpse for {}", deceased.getName());
 
         // Collect all in-memory inventory items
@@ -482,6 +475,23 @@ public class TickService {
         addIfPresent(contents, deceased.getWaist());
         addIfPresent(contents, deceased.getPrimary());
         addIfPresent(contents, deceased.getOffhand());
+
+        Mobile looter = null;
+        if (deceased.getCurrentRoomId() != null && killerId != null) {
+            looter = characterService.findAllByRoomId(deceased.getCurrentRoomId()).stream()
+                    .filter(m -> m.getId().equals(killerId) && m.isWillLoot() && m.getCurrentHp() > 0)
+                    .findFirst()
+                    .orElse(null);
+        }
+        
+        if (looter != null && !contents.isEmpty()) {
+            communicationService.roomMessage(looter, "\n\n" + looter.getName() + " eagerly loots the corpse of " + deceased.getName() + "!");
+            if (looter.getInventory() == null) {
+                looter.setInventory(new ArrayList<>());
+            }
+            looter.getInventory().addAll(contents);
+            contents.clear();
+        }
 
         // Build the corpse item (transient — never saved to the DB)
         Item corpse = new Item();
@@ -513,6 +523,49 @@ public class TickService {
         if (item != null && item.getId() != null) {
             list.add(item);
         }
+    }
+
+    private void processDeath(Mobile target) {
+        target.setCurrentHp(0);
+        String deathMsg = "\n" + target.getName() + " is DEAD!!";
+
+        Long kId = target.getHighestHateTargetId();
+        if (kId == null && target.getTarget() != null) {
+            kId = target.getTarget().getId();
+        }
+        final Long finalKillerId = kId;
+
+        Mobile attacker = null;
+        if (finalKillerId != null) {
+            attacker = characterService.findAllByRoomId(target.getCurrentRoomId()).stream()
+                    .filter(m -> m.getId().equals(finalKillerId))
+                    .findFirst().orElse(null);
+        }
+
+        if (attacker != null) {
+            sendCombatMessage(attacker, target, deathMsg, "\n\nYou have died...", deathMsg);
+            factionService.handleKillPenalty(attacker, target)
+                    .doOnError(e -> log.error("Failed to handle faction kill penalty", e))
+                    .subscribe();
+            attacker.setTarget(null);
+        } else {
+            if (target.getUserId() != null) {
+                communicationService.sendTextMessage(target, "\n\nYou have died...");
+                communicationService.sendTextMessage(target, deathMsg);
+            }
+            communicationService.roomMessage(target, deathMsg);
+        }
+
+        createCorpse(target, finalKillerId);
+        
+        // Clear hate towards the dead target from everyone in the room
+        characterService.findAllByRoomId(target.getCurrentRoomId())
+                .forEach(m -> m.removeHate(target.getId()));
+
+        target.setTarget(null);
+        
+        if (target.getUserId() != null) communicationService.sendCharacterUpdate(target);
+        if (attacker != null && attacker.getUserId() != null) communicationService.sendCharacterUpdate(attacker);
     }
 
     private boolean processSpellEffects(Mobile mobile) {
@@ -547,17 +600,7 @@ public class TickService {
 
                 if (mobile.getCurrentHp() <= 0) {
                     mobile.setCurrentHp(0);
-                    if (mobile.getUserId() != null) {
-                        communicationService.sendTextMessage(mobile, "\n\nYou have succumbed to your wounds...");
-                    }
-                    communicationService.roomMessage(mobile, "\n" + mobile.getName() + " has succumbed to their wounds!");
-                    createCorpse(mobile);
-                    
-                    // Clear hate towards the dead target from everyone in the room
-                    characterService.findAllByRoomId(mobile.getCurrentRoomId())
-                            .forEach(m -> m.removeHate(mobile.getId()));
-
-                    // Do not keep current effect or any remaining since they are dead
+                    // Death will be processed on the next tick sweep or current tick
                     break;
                 }
             }

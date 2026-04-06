@@ -35,4 +35,11 @@ export interface Mobile {
   inventory?: any[];
   spellEffects?: any[];
   skills?: any[];
+  hateHealer?: boolean;
+  hateDebuffer?: boolean;
+  hateWizard?: boolean;
+  hateCleric?: boolean;
+  hateSinger?: boolean;
+  willFollow?: boolean;
+  willLoot?: boolean;
 }

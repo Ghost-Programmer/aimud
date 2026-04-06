@@ -26,7 +26,6 @@ public class BackstabCommand implements Command {
     private final MobileService mobileService;
     private final CharacterService characterService;
     private final SkillService skillService;
-    private final TickService tickService;
     private final Random random = new Random();
 
     @Override
@@ -136,27 +135,10 @@ public class BackstabCommand implements Command {
             attacker.setTarget(target);
         }
 
-        // Check death
-        if (target.getCurrentHp() <= 0) {
+        // The death handling will naturally be picked up by the TickService loop on the next pass,
+        // but we can enforce bounds here.
+        if (target.getCurrentHp() < 0) {
             target.setCurrentHp(0);
-            String deathMsg = "\n" + target.getName() + " is DEAD!!";
-            if (attacker.getUserId() != null) {
-                communicationService.sendTextMessage(attacker, deathMsg);
-            }
-            if (target.getUserId() != null) {
-                communicationService.sendTextMessage(target, "\n\nYou have died...");
-                communicationService.sendTextMessage(target, deathMsg);
-            }
-            communicationService.roomMessage(target, deathMsg);
-
-            tickService.createCorpse(target);
-            
-            // Clear hate towards the dead target from everyone in the room
-            characterService.findAllByRoomId(target.getCurrentRoomId())
-                    .forEach(m -> m.removeHate(target.getId()));
-
-            attacker.setTarget(null);
-            target.setTarget(null);
         }
 
         if (target.getUserId() != null) communicationService.sendCharacterUpdate(target);
