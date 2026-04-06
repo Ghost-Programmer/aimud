@@ -2,11 +2,12 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {Effect, EffectType} from '../../models/effect.model';
+import {SearchableDropdownComponent} from '../searchable-dropdown/searchable-dropdown.component';
 
 @Component({
   selector: 'app-effect-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SearchableDropdownComponent],
   templateUrl: './effect-dialog.component.html',
   styleUrl: './effect-dialog.component.css'
 })

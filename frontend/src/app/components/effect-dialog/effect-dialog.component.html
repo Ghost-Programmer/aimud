@@ -8,11 +8,12 @@
         <input [(ngModel)]="effect.name" class="form-input" id="name" placeholder="Effect name" type="text">
       </div>
 
-      <div class="form-group">
+      <div class="form-group" style="z-index: 10;">
         <label for="effectType">Effect Type</label>
-        <select [(ngModel)]="effect.effectType" class="form-input" id="effectType">
-          <option *ngFor="let t of effectTypes" [value]="t">{{ t }}</option>
-        </select>
+        <app-searchable-dropdown
+          [(ngModel)]="effect.effectType"
+          [options]="effectTypes">
+        </app-searchable-dropdown>
       </div>
 
       <div class="grid">

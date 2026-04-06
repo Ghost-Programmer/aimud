@@ -1,0 +1,30 @@
+<div class="searchable-dropdown">
+  <div class="dropdown-toggle" (click)="toggleDropdown()">
+    <span class="selected-text">{{ getSelectedLabel() }}</span>
+    <span class="dropdown-icon">▼</span>
+  </div>
+
+  <div class="dropdown-menu" *ngIf="isOpen" (click)="$event.stopPropagation()">
+    <div class="search-container">
+      <input type="text"
+             class="search-input"
+             [(ngModel)]="searchText"
+             [placeholder]="'Search...'"
+             (click)="$event.stopPropagation()">
+    </div>
+    
+    <div class="options-container">
+      <div *ngIf="showNoneOption" class="option-item clear-option" (click)="clearSelection($event)">
+        {{ noneLabel }}
+      </div>
+      <div class="option-item"
+           *ngFor="let option of filteredOptions"
+           (click)="selectOption(option, $event)">
+        {{ getLabel(option) }}
+      </div>
+      <div class="no-options" *ngIf="filteredOptions.length === 0">
+        No results found.
+      </div>
+    </div>
+  </div>
+</div>

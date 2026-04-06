@@ -4,11 +4,12 @@ import {FormsModule} from '@angular/forms';
 import {Room, RoomType} from '../../models/room.model';
 import {Item} from '../../models/item.model';
 import {ItemService} from '../../services/item.service';
+import {SearchableDropdownComponent} from '../searchable-dropdown/searchable-dropdown.component';
 
 @Component({
   selector: 'app-room-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SearchableDropdownComponent],
   templateUrl: './room-dialog.component.html',
   styleUrl: './room-dialog.component.css'
 })
@@ -41,6 +42,8 @@ export class RoomDialogComponent implements OnInit {
   availableItems: Item[] = [];
   selectedItemId: number | null = null;
   currentRoomItems: Item[] = [];
+
+  itemDisplayFn = (item: Item) => `${item.name} (${item.itemType})`;
 
   constructor(private itemService: ItemService) {
   }

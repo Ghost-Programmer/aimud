@@ -14,11 +14,12 @@
                   rows="4"></textarea>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" style="z-index: 10;">
         <label for="roomType">Room Type</label>
-        <select [(ngModel)]="editRoom.roomType" class="form-input" id="roomType">
-          <option *ngFor="let type of roomTypes" [value]="type">{{ type }}</option>
-        </select>
+        <app-searchable-dropdown
+          [(ngModel)]="editRoom.roomType"
+          [options]="roomTypes">
+        </app-searchable-dropdown>
       </div>
 
       <div class="exits-section">
@@ -84,12 +85,15 @@
       <div class="items-section">
         <h3>Items in Room</h3>
         <div class="item-selection">
-          <select (change)="onSelectItemIdChange($event)" [ngModel]="selectedItemId" class="form-input">
-            <option [value]="null">-- Select an item to add --</option>
-            <option *ngFor="let item of availableItems" [value]="item.id">
-              {{ item.name }} ({{ item.itemType }})
-            </option>
-          </select>
+          <div style="flex-grow: 1; margin-right: 10px;">
+            <app-searchable-dropdown
+              [(ngModel)]="selectedItemId"
+              [options]="availableItems"
+              bindValue="id"
+              [displayFn]="itemDisplayFn"
+              placeholder="-- Select an item to add --">
+            </app-searchable-dropdown>
+          </div>
           <button (click)="addSelectedItem()" [disabled]="!selectedItemId" class="add-btn">Add</button>
         </div>
         <div class="items-list">

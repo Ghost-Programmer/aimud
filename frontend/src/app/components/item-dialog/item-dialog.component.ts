@@ -4,11 +4,12 @@ import {FormsModule} from '@angular/forms';
 import {Item, ItemType, WearLocation} from '../../models/item.model';
 import {Effect} from '../../models/effect.model';
 import {EffectService} from '../../services/effect.service';
+import {SearchableDropdownComponent} from '../searchable-dropdown/searchable-dropdown.component';
 
 @Component({
   selector: 'app-item-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SearchableDropdownComponent],
   templateUrl: './item-dialog.component.html',
   styleUrl: './item-dialog.component.css'
 })
@@ -45,6 +46,8 @@ export class ItemDialogComponent implements OnInit {
     }
     this.loadEffects();
   }
+
+  effectDisplayFn = (effect: any) => this.getEffectDisplay(effect);
 
   loadEffects() {
     // Fetch all effects. In a real app, you might want pagination/search here.

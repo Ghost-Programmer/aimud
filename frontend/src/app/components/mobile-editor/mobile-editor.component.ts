@@ -7,11 +7,12 @@ import {ItemService} from '../../services/item.service';
 import {ConfigService} from '../../services/config.service';
 import {FactionService} from '../../services/faction.service';
 import {Faction} from '../../models/faction.model';
+import {SearchableDropdownComponent} from '../searchable-dropdown/searchable-dropdown.component';
 
 @Component({
   selector: 'app-mobile-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SearchableDropdownComponent],
   templateUrl: './mobile-editor.component.html',
   styleUrls: ['./mobile-editor.component.css']
 })
@@ -145,22 +146,11 @@ export class MobileEditorComponent implements OnInit {
     });
   }
 
-  getFilteredEquipItems(loc: string) {
-    const items = this.availableItemsByLocation[loc]?.length ? this.availableItemsByLocation[loc] : this.availableItems;
-    const search = this.equipSearchTexts[loc]?.toLowerCase();
-
-    // Always make sure the currently selected item is in the list, even if search filters it out
-    const controlName = loc.toLowerCase().replace('_', '') + 'Id';
-    const currentId = this.mobileForm.get(controlName)?.value;
-
-    if (!search) {
-      return items;
-    }
-
-    return items.filter(item =>
-      item.name.toLowerCase().includes(search) || item.id === currentId
-    );
+  getEquipItems(loc: string) {
+    return this.availableItemsByLocation[loc]?.length ? this.availableItemsByLocation[loc] : this.availableItems;
   }
+
+  itemDisplayFn = (item: any) => `${item.name} (${item.id})`;
 
   getFilteredInvItems(index: number) {
     const search = this.invSearchTexts[index]?.toLowerCase();
