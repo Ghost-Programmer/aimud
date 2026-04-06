@@ -6881,3 +6881,36 @@ FROM mobiles;
 
 --changeset jeff:999
 ALTER TABLE character_effects ADD COLUMN caster_id BIGINT;
+--changeset jeff:9990
+INSERT INTO
+    items (
+        item_type,
+        wear_location,
+        name,
+        description,
+        property_1,
+        property_2,
+        property_3,
+        property_4
+    )
+VALUES 
+    -- 1. Basic Linen Bandage (1d4, 0, 0)
+    ('BANDAGE', 'NONE', 'Basic Linen Bandage', 'A simple linen strip useful for patching up minor wounds.', 1, 4, 0, 0),
+    -- 2. Thick Cotton Bandage (2d4, 0, 0)
+    ('BANDAGE', 'NONE', 'Thick Cotton Bandage', 'A sturdy cotton bandage that stops bleeding effectively.', 2, 4, 0, 0),
+    -- 3. Treated Wool Bandage (2d6, 0, 0)
+    ('BANDAGE', 'NONE', 'Treated Wool Bandage', 'A tough wool bandage treated with simple herbs.', 2, 6, 0, 0),
+    -- 4. Herbal Poultice Bandage (3d6, 1, 0)
+    ('BANDAGE', 'NONE', 'Herbal Poultice Bandage', 'A bandage wrapped around a pungent poultice, known to draw out some poisons.', 3, 6, 1, 0),
+    -- 5. Antiseptic Silk Bandage (4d6, 1, 0)
+    ('BANDAGE', 'NONE', 'Antiseptic Silk Bandage', 'Fine silk strips soaked in alcohol and antiseptic solutions.', 4, 6, 1, 0),
+    -- 6. Alchemical Recovery Bandage (4d8, 1, 0)
+    ('BANDAGE', 'NONE', 'Alchemical Recovery Bandage', 'A bandage synthesized by skilled alchemists for rapid cell regeneration.', 4, 8, 1, 0),
+    -- 7. Enchanted Linen Bandage (5d8, 1, 1)
+    ('BANDAGE', 'NONE', 'Enchanted Linen Bandage', 'A bandage woven with minor restorative magic to soothe severe afflictions.', 5, 8, 1, 1),
+    -- 8. Divine Silk Bandage (6d8, 1, 1)
+    ('BANDAGE', 'NONE', 'Divine Silk Bandage', 'Blessed silk strips that feel warm to the touch.', 6, 8, 1, 1),
+    -- 9. Restoration Weave (8d8, 1, 1)
+    ('BANDAGE', 'NONE', 'Restoration Weave', 'A heavy weave of magical threads designed to purge darkness from the body.', 8, 8, 1, 1),
+    -- 10. Miracle Bandage (10d10, 1, 1)
+    ('BANDAGE', 'NONE', 'Miracle Bandage', 'A legendary wrap glowing with overwhelming restorative energy.', 10, 10, 1, 1);
