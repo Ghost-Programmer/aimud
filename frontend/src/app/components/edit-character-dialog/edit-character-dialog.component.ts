@@ -5,11 +5,12 @@ import {CharacterService} from '../../services/character.service';
 import {ConfigService} from '../../services/config.service';
 import {FactionService} from '../../services/faction.service';
 import {Faction} from '../../models/faction.model';
+import {SearchableDropdownComponent} from '../searchable-dropdown/searchable-dropdown.component';
 
 @Component({
   selector: 'app-edit-character-dialog',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, SearchableDropdownComponent],
   templateUrl: './edit-character-dialog.component.html',
   styleUrl: './edit-character-dialog.component.css'
 })

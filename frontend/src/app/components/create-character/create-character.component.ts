@@ -3,12 +3,13 @@ import {CommonModule} from '@angular/common';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {CharacterService} from '../../services/character.service';
 import {ConfigService} from '../../services/config.service';
+import {SearchableDropdownComponent} from '../searchable-dropdown/searchable-dropdown.component';
 import {forkJoin} from 'rxjs';
 
 @Component({
   selector: 'app-create-character',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent],
   templateUrl: './create-character.component.html',
   styleUrl: './create-character.component.css'
 })

@@ -8,10 +8,15 @@
     <div class="form-group">
       <label for="race">Race</label>
       <div class="select-with-info">
-        <select formControlName="raceId" id="race">
-          <option [ngValue]="null" disabled>Select a Race</option>
-          <option *ngFor="let race of races" [ngValue]="race.id">{{ race.name }}</option>
-        </select>
+        <div style="flex-grow: 1;">
+          <app-searchable-dropdown
+            formControlName="raceId"
+            [options]="races"
+            bindLabel="name"
+            bindValue="id"
+            placeholder="Select a Race">
+          </app-searchable-dropdown>
+        </div>
         <div *ngIf="characterForm.get('raceId')?.value" [title]="getSelectedRaceDescription()" class="info-icon">
           <svg class="bi bi-info-circle-fill" fill="currentColor" height="16" viewBox="0 0 16 16"
                width="16" xmlns="http://www.w3.org/2000/svg">
@@ -25,10 +30,15 @@
     <div class="form-group">
       <label for="class">Class</label>
       <div class="select-with-info">
-        <select formControlName="classId" id="class">
-          <option [ngValue]="null" disabled>Select a Class</option>
-          <option *ngFor="let cls of classes" [ngValue]="cls.id">{{ cls.name }}</option>
-        </select>
+        <div style="flex-grow: 1;">
+          <app-searchable-dropdown
+            formControlName="classId"
+            [options]="classes"
+            bindLabel="name"
+            bindValue="id"
+            placeholder="Select a Class">
+          </app-searchable-dropdown>
+        </div>
         <div *ngIf="characterForm.get('classId')?.value" [title]="getSelectedClassDescription()" class="info-icon">
           <svg class="bi bi-info-circle-fill" fill="currentColor" height="16" viewBox="0 0 16 16"
                width="16" xmlns="http://www.w3.org/2000/svg">
