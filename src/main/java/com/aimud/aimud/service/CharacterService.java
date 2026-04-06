@@ -586,14 +586,42 @@ public class CharacterService {
                 .flatMap(statService::updateCurrentStats);
     }
 
+    @org.springframework.beans.factory.annotation.Autowired
+    @org.springframework.context.annotation.Lazy
+    private CommandService commandService;
+
     public void addCommand(Long characterId, String command) {
         log.info("Adding command '{}' to character id {}", command, characterId);
         getAvailableCharacters().stream()
                 .filter(c -> c.getId().equals(characterId))
                 .findFirst()
                 .ifPresent(c -> {
-                    c.getCommandQueue().add(command);
-                    c.setIdle(0);
+                    String cleanCmd = command.trim();
+                    if (cleanCmd.isEmpty()) return;
+                    
+                    String firstWord = cleanCmd.split("\\s+")[0].toLowerCase();
+                    boolean isMovement = firstWord.equals("n") || firstWord.equals("s") 
+                                      || firstWord.equals("e") || firstWord.equals("w") 
+                                      || firstWord.equals("u") || firstWord.equals("d")
+                                      || firstWord.equals("north") || firstWord.equals("south")
+                                      || firstWord.equals("east") || firstWord.equals("west")
+                                      || firstWord.equals("up") || firstWord.equals("down");
+                                      
+                    if (isMovement && c.getCommandQueue().isEmpty()) {
+                        c.setIdle(0);
+                        com.aimud.aimud.commands.Command task = commandService.getTask(firstWord);
+                        if (task != null) {
+                            task.execute(c, command).subscribe(
+                                null,
+                                e -> log.error("Error executing immediate movement command", e)
+                            );
+                        } else {
+                            c.getCommandQueue().add(command);
+                        }
+                    } else {
+                        c.getCommandQueue().add(command);
+                        c.setIdle(0);
+                    }
                 });
     }
 
