@@ -1,4 +1,4 @@
-import {Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild} from '@angular/core';
+import {Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, AfterViewInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {DragDropModule} from '@angular/cdk/drag-drop';
@@ -18,7 +18,7 @@ import {Subscription} from 'rxjs';
   templateUrl: './character-play.component.html',
   styleUrl: './character-play.component.css'
 })
-export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
+export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, AfterViewInit {
   @Input() character: any;
   @Input() textMessages: string[] = [];
   @ViewChild('consoleTextarea') consoleTextarea!: ElementRef<HTMLTextAreaElement>;
@@ -66,6 +66,10 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
       this.refreshCharacter();
       this.subscribeToUpdates();
     }
+  }
+
+  ngAfterViewInit() {
+    this.scrollToBottom();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -121,7 +125,7 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy {
         const textarea = this.consoleTextarea.nativeElement;
         textarea.scrollTop = textarea.scrollHeight;
       }
-    }, 0);
+    }, 50);
   }
 
   onSendCommand() {
