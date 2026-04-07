@@ -32,6 +32,11 @@ public class BackstabCommand implements Command {
     public Mono<Void> execute(Mobile mobile, String commandLine) {
         log.info("Executing backstab command for Mobile: {}", mobile.getName());
 
+        if (skillService.getSkillRank(mobile, SkillsType.BACKSTAB) <= 0) {
+            communicationService.sendTextMessage(mobile, "\n\nYou don't know how to backstab.");
+            return Mono.empty();
+        }
+
         if (!mobile.isHidden()) {
             communicationService.sendTextMessage(mobile, "\n\nYou must be hidden in the shadows to backstab!");
             return Mono.empty();

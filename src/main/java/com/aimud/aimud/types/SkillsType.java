@@ -24,6 +24,7 @@ public class SkillsType {
     public static final String INTIMIDATE = "Intimidate";
     public static final String PROVOKE = "Provoke";
     public static final String TAUNT = "Taunt";
+    public static final String VANISH = "Vanish";
 
     private SkillsType() {
         // Private constructor to prevent instantiation

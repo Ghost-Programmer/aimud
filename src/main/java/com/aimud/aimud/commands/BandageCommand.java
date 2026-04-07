@@ -33,6 +33,11 @@ public class BandageCommand implements Command {
 
     @Override
     public Mono<Void> execute(Mobile mobile, String commandLine) {
+        if (skillService.getSkillRank(mobile, SkillsType.BANDAGE) <= 0) {
+            communicationService.sendTextMessage(mobile, "\n\nYou do not possess the first aid skills required to use a bandage.");
+            return Mono.empty();
+        }
+
         String[] parts = commandLine.trim().split("\\s+", 2);
         String targetName = parts.length > 1 ? parts[1].toLowerCase() : "self";
 

@@ -40,9 +40,29 @@ public class VanishCommand implements Command {
     public Mono<Void> execute(Mobile mobile, String arguments) {
         if (mobile.getUserId() == null) return Mono.empty();
 
-        int rank = skillService.getSkillRank(mobile, SkillsType.HIDE);
-        if (rank < 50) {
-            communicationService.sendTextMessage(mobile, "\n\nYou lack the skill to vanish into thin air.");
+        int hideRank = skillService.getSkillRank(mobile, SkillsType.HIDE);
+        if (hideRank < 50) {
+            communicationService.sendTextMessage(mobile, "\n\nYou lack the prerequisite hide skill to vanish into thin air.");
+            return Mono.empty();
+        }
+
+        int vanishRank = skillService.getSkillRank(mobile, SkillsType.VANISH);
+        if (vanishRank <= 0) {
+            communicationService.sendTextMessage(mobile, "\n\nYou don't know how to vanish.");
+            return Mono.empty();
+        }
+
+        int roll = new java.util.Random().nextInt(100) + 1; // 1 to 100
+        boolean success = roll <= vanishRank;
+
+        skillService.checkSkill(mobile, SkillsType.VANISH, 0, success)
+                .doOnNext(improvedSkill -> {
+                    communicationService.sendTextMessage(mobile, "\n\nYour " + SkillsType.VANISH + " skill has improved to " + improvedSkill.getRank() + "!");
+                })
+                .subscribe();
+
+        if (!success) {
+            communicationService.sendTextMessage(mobile, "\n\nYou fail to disappear from sight.");
             return Mono.empty();
         }
 

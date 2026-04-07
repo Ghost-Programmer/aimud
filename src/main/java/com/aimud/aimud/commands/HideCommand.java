@@ -6,6 +6,7 @@ import com.aimud.aimud.model.Mobile;
 
 import com.aimud.aimud.service.CommunicationService;
 import com.aimud.aimud.service.EffectService;
+import com.aimud.aimud.service.SkillService;
 import com.aimud.aimud.types.EffectType;
 import com.aimud.aimud.types.SkillsType;
 import org.springframework.stereotype.Component;
@@ -17,15 +18,22 @@ public class HideCommand implements Command {
 
     private final CommunicationService communicationService;
     private final EffectService effectService;
+    private final SkillService skillService;
 
-    public HideCommand(CommunicationService communicationService, EffectService effectService) {
+    public HideCommand(CommunicationService communicationService, EffectService effectService, SkillService skillService) {
         this.communicationService = communicationService;
         this.effectService = effectService;
+        this.skillService = skillService;
     }
 
     @Override
     public Mono<Void> execute(Mobile mobile, String command) {
         if (mobile.getUserId() == null) return Mono.empty();
+
+        if (skillService.getSkillRank(mobile, SkillsType.HIDE) <= 0) {
+            communicationService.sendTextMessage(mobile, "\n\nYou don't know how to hide.");
+            return Mono.empty();
+        }
 
         if (mobile.isHidden()) {
             communicationService.sendTextMessage(mobile, "\n\nYou are already hidden in the shadows.");
