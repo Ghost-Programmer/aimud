@@ -6,7 +6,7 @@ public class SkillsType {
     public static final String SING_SONG = "Sing Song";
     public static final String LIGHT_ARMOR = "Light Armor";
     public static final String MEDIUM_ARMOR = "Medium Armor";
-    public static final String HEAVY_ARMOR = "Heavy Armor"; // Assuming you meant Heavy Armor, but adhering to the prompt
+    public static final String HEAVY_ARMOR = "Heavy Armor";
     public static final String ONE_HANDED_WEAPON = "One Handed Weapon";
     public static final String TWO_HANDED_WEAPON = "Two Handed Weapon";
     public static final String BASH = "Bash";
@@ -20,6 +20,10 @@ public class SkillsType {
     public static final String DOUBLE_ATTACK = "Double Attack";
     public static final String TRIPLE_ATTACK = "Triple Attack";
     public static final String DISARM = "Disarm";
+    public static final String WARCRY = "Warcry";
+    public static final String INTIMIDATE = "Intimidate";
+    public static final String PROVOKE = "Provoke";
+    public static final String TAUNT = "Taunt";
 
     private SkillsType() {
         // Private constructor to prevent instantiation
