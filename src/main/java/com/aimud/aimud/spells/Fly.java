@@ -20,7 +20,7 @@ public class Fly extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 1002L;
+        return 1004L;
     }
 
     @Override

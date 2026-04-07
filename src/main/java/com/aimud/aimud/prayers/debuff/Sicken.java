@@ -21,7 +21,7 @@ public class Sicken extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 3051L;
+        return 2041L;
     }
 
     @Override

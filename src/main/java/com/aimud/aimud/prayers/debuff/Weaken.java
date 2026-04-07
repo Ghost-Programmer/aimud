@@ -21,7 +21,7 @@ public class Weaken extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 3001L;
+        return 2043L;
     }
 
     @Override

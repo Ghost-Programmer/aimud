@@ -21,7 +21,7 @@ public class CriticalWeaken extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 3004L;
+        return 2019L;
     }
 
     @Override

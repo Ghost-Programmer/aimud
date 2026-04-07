@@ -21,7 +21,7 @@ public class CriticalLowerResistance extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 3024L;
+        return 2015L;
     }
 
     @Override

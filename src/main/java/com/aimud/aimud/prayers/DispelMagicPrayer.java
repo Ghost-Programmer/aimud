@@ -23,7 +23,7 @@ public class DispelMagicPrayer extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 2210L;
+        return 2005L;
     }
 
     @Override

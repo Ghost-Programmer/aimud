@@ -20,7 +20,7 @@ public class Invisible extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 1004L;
+        return 1006L;
     }
 
     @Override

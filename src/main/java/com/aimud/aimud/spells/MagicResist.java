@@ -21,7 +21,7 @@ public class MagicResist extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 1004L;
+        return 1009L;
     }
 
     @Override

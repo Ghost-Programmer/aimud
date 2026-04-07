@@ -20,7 +20,7 @@ public class WisdomSong extends Song {
 
     @Override
     public Long getSongId() {
-        return 3003L;
+        return 3012L;
     }
 
     @Override

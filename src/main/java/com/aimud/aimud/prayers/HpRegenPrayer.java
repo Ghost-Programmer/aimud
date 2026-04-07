@@ -20,7 +20,7 @@ public class HpRegenPrayer extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 2009L;
+        return 2007L;
     }
 
     @Override

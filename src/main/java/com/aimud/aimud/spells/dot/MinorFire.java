@@ -20,7 +20,7 @@ public class MinorFire extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 2000L;
+        return 1027L;
     }
 
     @Override

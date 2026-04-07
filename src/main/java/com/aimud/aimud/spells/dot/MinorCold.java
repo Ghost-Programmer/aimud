@@ -20,7 +20,7 @@ public class MinorCold extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 2010L;
+        return 1025L;
     }
 
     @Override

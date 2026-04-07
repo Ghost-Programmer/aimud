@@ -20,7 +20,7 @@ public class Poison extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 2031L;
+        return 1030L;
     }
 
     @Override

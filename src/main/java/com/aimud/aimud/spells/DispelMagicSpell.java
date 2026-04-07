@@ -23,7 +23,7 @@ public class DispelMagicSpell extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 1010L;
+        return 1002L;
     }
 
     @Override

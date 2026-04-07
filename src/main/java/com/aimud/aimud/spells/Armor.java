@@ -21,7 +21,7 @@ public class Armor extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 1001L;
+        return 1000L;
     }
 
     @Override

@@ -21,7 +21,7 @@ public class ManaRegen extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 1002L;
+        return 1010L;
     }
 
     @Override

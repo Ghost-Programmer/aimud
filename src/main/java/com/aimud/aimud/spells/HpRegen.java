@@ -21,7 +21,7 @@ public class HpRegen extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 1003L;
+        return 1005L;
     }
 
     @Override

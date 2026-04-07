@@ -20,7 +20,7 @@ public class Dexterity extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 2005L;
+        return 2004L;
     }
 
     @Override

@@ -21,7 +21,7 @@ public class PaperArmor extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 3041L;
+        return 2040L;
     }
 
     @Override

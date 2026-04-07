@@ -77,6 +77,27 @@ public abstract class Spell {
         return null;
     }
 
+    public java.util.List<Mobile> getAoeTargets(Mobile caster, Mobile primaryTarget) {
+        java.util.List<Mobile> targets = new java.util.ArrayList<>();
+        if (primaryTarget == null) return targets;
+
+        if (primaryTarget.getUserId() == null) {
+            // Target is an NPC: affect all NPCs in the room
+            targets.addAll(mopbileService.getMobilesInRoom(caster.getCurrentRoomId()));
+        } else {
+            // Target is a PC: affect all PCs in the room who are not the caster and not in their party
+            Long casterPartyLeader = caster.getPartyLeaderId();
+            characterService.findAllByRoomId(caster.getCurrentRoomId()).forEach(c -> {
+                if (!c.getId().equals(caster.getId())) {
+                    if (casterPartyLeader == null || !casterPartyLeader.equals(c.getPartyLeaderId())) {
+                        targets.add(c);
+                    }
+                }
+            });
+        }
+        return targets;
+    }
+
     int getDamage(Mobile mobile) {
         int castSkill = skillService.getSkillRank(mobile, SkillsType.CAST_MAGIC);
         int spellSkill = skillService.getSkillRank(mobile, getSpellSkillName());

@@ -20,7 +20,7 @@ public class CriticalSonic extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 2023L;
+        return 1017L;
     }
 
     @Override

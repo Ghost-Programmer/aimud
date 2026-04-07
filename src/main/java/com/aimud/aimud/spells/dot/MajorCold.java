@@ -20,7 +20,7 @@ public class MajorCold extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 2012L;
+        return 1020L;
     }
 
     @Override

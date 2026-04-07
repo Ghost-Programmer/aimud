@@ -20,7 +20,7 @@ public class CompleteHealing extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 2014L;
+        return 2002L;
     }
 
     @Override

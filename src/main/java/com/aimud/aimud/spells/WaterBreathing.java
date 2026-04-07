@@ -20,7 +20,7 @@ public class WaterBreathing extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 1003L;
+        return 1011L;
     }
 
     @Override

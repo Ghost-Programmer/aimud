@@ -21,7 +21,7 @@ public class Stupify extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 3011L;
+        return 2042L;
     }
 
     @Override

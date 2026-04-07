@@ -20,7 +20,7 @@ public class DexteritySong extends Song {
 
     @Override
     public Long getSongId() {
-        return 3005L;
+        return 3002L;
     }
 
     @Override

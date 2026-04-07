@@ -20,7 +20,7 @@ public class ArmorPrayer extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 2008L;
+        return 2000L;
     }
 
     @Override

@@ -20,7 +20,7 @@ public class ArmorSong extends Song {
 
     @Override
     public Long getSongId() {
-        return 3008L;
+        return 3000L;
     }
 
     @Override

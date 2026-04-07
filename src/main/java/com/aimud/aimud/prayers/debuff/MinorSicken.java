@@ -21,7 +21,7 @@ public class MinorSicken extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 3050L;
+        return 2037L;
     }
 
     @Override

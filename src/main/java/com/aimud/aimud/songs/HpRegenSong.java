@@ -20,7 +20,7 @@ public class HpRegenSong extends Song {
 
     @Override
     public Long getSongId() {
-        return 3009L;
+        return 3004L;
     }
 
     @Override

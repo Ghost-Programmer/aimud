@@ -20,7 +20,7 @@ public class MagicMissile extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 1000L;
+        return 1008L;
     }
 
     @Override

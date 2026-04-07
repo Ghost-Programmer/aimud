@@ -20,7 +20,7 @@ public class Sonic extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 2021L;
+        return 1031L;
     }
 
     @Override

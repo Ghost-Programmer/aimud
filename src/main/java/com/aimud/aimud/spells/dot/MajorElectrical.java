@@ -20,7 +20,7 @@ public class MajorElectrical extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 2042L;
+        return 1021L;
     }
 
     @Override

@@ -20,7 +20,7 @@ public class StrengthSong extends Song {
 
     @Override
     public Long getSongId() {
-        return 3002L;
+        return 3010L;
     }
 
     @Override

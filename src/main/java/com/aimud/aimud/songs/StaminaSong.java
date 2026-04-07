@@ -20,7 +20,7 @@ public class StaminaSong extends Song {
 
     @Override
     public Long getSongId() {
-        return 3006L;
+        return 3009L;
     }
 
     @Override

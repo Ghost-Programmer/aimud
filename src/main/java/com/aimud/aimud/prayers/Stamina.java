@@ -20,7 +20,7 @@ public class Stamina extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 2006L;
+        return 2011L;
     }
 
     @Override

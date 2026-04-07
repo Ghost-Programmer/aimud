@@ -19,7 +19,7 @@ public class MajorHealing extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 2012L;
+        return 2009L;
     }
 
     @Override

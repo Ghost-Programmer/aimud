@@ -20,7 +20,7 @@ public class MinorSonic extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 2020L;
+        return 1029L;
     }
 
     @Override

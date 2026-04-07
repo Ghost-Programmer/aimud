@@ -20,7 +20,7 @@ public class CriticalPoison extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 2033L;
+        return 1016L;
     }
 
     @Override

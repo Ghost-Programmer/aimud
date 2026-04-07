@@ -20,7 +20,7 @@ public class MajorPoison extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 2032L;
+        return 1023L;
     }
 
     @Override

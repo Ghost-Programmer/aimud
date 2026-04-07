@@ -20,7 +20,7 @@ public class Strength extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 2002L;
+        return 2012L;
     }
 
     @Override

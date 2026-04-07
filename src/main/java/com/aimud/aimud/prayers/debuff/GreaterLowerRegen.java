@@ -21,7 +21,7 @@ public class GreaterLowerRegen extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 3033L;
+        return 2020L;
     }
 
     @Override

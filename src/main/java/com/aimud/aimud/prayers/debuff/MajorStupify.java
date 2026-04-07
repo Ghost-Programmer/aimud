@@ -21,7 +21,7 @@ public class MajorStupify extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 3012L;
+        return 2032L;
     }
 
     @Override

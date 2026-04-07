@@ -21,7 +21,7 @@ public class CriticalLowerRegen extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 3034L;
+        return 2014L;
     }
 
     @Override

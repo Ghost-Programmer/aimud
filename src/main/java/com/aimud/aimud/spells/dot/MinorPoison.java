@@ -20,7 +20,7 @@ public class MinorPoison extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 2030L;
+        return 1028L;
     }
 
     @Override

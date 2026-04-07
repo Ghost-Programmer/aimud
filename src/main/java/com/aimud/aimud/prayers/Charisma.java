@@ -20,7 +20,7 @@ public class Charisma extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 2007L;
+        return 2001L;
     }
 
     @Override

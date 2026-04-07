@@ -20,7 +20,7 @@ public class ManaTransferSong extends Song {
 
     @Override
     public Long getSongId() {
-        return 3010L;
+        return 3008L;
     }
 
     @Override

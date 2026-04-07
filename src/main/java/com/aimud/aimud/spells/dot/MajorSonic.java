@@ -20,7 +20,7 @@ public class MajorSonic extends Spell {
 
     @Override
     public Long getSpellId() {
-        return 2022L;
+        return 1024L;
     }
 
     @Override

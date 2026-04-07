@@ -21,7 +21,7 @@ public class GreaterLowerResistance extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 3023L;
+        return 2021L;
     }
 
     @Override

@@ -20,7 +20,7 @@ public class Intelligence extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 2004L;
+        return 2008L;
     }
 
     @Override

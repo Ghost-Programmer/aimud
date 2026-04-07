@@ -20,7 +20,7 @@ public class InvisibleSong extends Song {
 
     @Override
     public Long getSongId() {
-        return 3013L;
+        return 3006L;
     }
 
     @Override

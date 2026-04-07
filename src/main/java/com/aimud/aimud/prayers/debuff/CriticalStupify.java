@@ -21,7 +21,7 @@ public class CriticalStupify extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 3014L;
+        return 2018L;
     }
 
     @Override

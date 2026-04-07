@@ -20,7 +20,7 @@ public class CharismaSong extends Song {
 
     @Override
     public Long getSongId() {
-        return 3007L;
+        return 3001L;
     }
 
     @Override

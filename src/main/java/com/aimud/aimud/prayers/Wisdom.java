@@ -20,7 +20,7 @@ public class Wisdom extends Prayer {
 
     @Override
     public Long getPrayerId() {
-        return 2003L;
+        return 2013L;
     }
 
     @Override
