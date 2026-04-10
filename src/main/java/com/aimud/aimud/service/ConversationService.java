@@ -3,7 +3,6 @@ package com.aimud.aimud.service;
 import com.aimud.aimud.model.Mobile;
 import com.aimud.aimud.model.Room;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,21 +34,53 @@ public class ConversationService {
         this.configService = configService;
     }
 
-    @Scheduled(fixedRate = 15000)
-    public void processConversations() {
+    private final java.util.concurrent.ConcurrentHashMap<Long, java.time.Instant> lastEvaluationTime = new java.util.concurrent.ConcurrentHashMap<>();
+    private final java.util.Set<Long> processingNpcs = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    @org.springframework.scheduling.annotation.Scheduled(fixedRate = 30000)
+    public void processIdleConversations() {
         List<Mobile> npcs = mobileService.getActiveMobiles();
-        if (npcs == null)
-            return;
+        if (npcs == null) return;
 
         for (Mobile npc : npcs) {
-            // Skip dead, actively fighting, or unplaced NPCs
-            if (npc == null || npc.getCurrentHp() <= 0 || npc.getTarget() != null || npc.getCurrentRoomId() == null) {
+            // Skip dead, actively fighting, unplaced, or currently thinking NPCs
+            if (npc == null || npc.getCurrentHp() <= 0 || npc.getTarget() != null || processingNpcs.contains(npc.getId())) {
                 continue;
             }
 
             Long roomId = npc.getCurrentRoomId();
+            if (roomId == null) continue;
+
+            // Only trigger ambient chatter if the room hasn't been evaluated recently
+            java.time.Instant lastEval = lastEvaluationTime.get(roomId);
+            if (lastEval == null || java.time.Duration.between(lastEval, java.time.Instant.now()).toSeconds() > 30) {
+                triggerRoomConversations(roomId);
+            }
+        }
+    }
+
+    public void triggerRoomConversations(Long roomId) {
+        // Throttle evaluation to max once per 2 seconds per room to prevent rapid triggering while processing async
+        java.time.Instant lastEval = lastEvaluationTime.get(roomId);
+        if (lastEval != null && java.time.Duration.between(lastEval, java.time.Instant.now()).toSeconds() < 2) {
+            return;
+        }
+        lastEvaluationTime.put(roomId, java.time.Instant.now());
+
+        List<Mobile> npcs = mobileService.getMobilesInRoom(roomId);
+        if (npcs == null || npcs.isEmpty()) {
+            return;
+        }
+
+        for (Mobile npc : npcs) {
+            // Skip dead, actively fighting, or currently processing NPCs
+            if (npc == null || npc.getCurrentHp() <= 0 || npc.getTarget() != null || processingNpcs.contains(npc.getId())) {
+                continue;
+            }
+
             roomService.getRoom(roomId).subscribe(room -> {
                 if (room != null) {
+                    processingNpcs.add(npc.getId());
                     reactor.core.publisher.Mono.zip(
                             configService.getAllRaces().filter(r -> r.getId().equals(npc.getRaceId())).next()
                                     .map(com.aimud.aimud.model.Race::getName).defaultIfEmpty("Unknown"),
@@ -58,6 +89,9 @@ public class ConversationService {
                                     .defaultIfEmpty("Unknown"))
                             .subscribe(tuple -> {
                                 evaluateNpcConversation(npc, room, tuple.getT1(), tuple.getT2());
+                            }, error -> {
+                                processingNpcs.remove(npc.getId());
+                                log.error("Failed looking up race/class for NPC", error);
                             });
                 }
             });
@@ -74,6 +108,7 @@ public class ConversationService {
 
         // Skip inference engine entirely if there are zero players in the room!
         if (players.isEmpty()) {
+            processingNpcs.remove(npc.getId());
             return;
         }
 
@@ -84,6 +119,7 @@ public class ConversationService {
             if (lastMsg.startsWith(npc.getName() + " says") ||
                     lastMsg.startsWith(npc.getName() + " yells") ||
                     lastMsg.startsWith(npc.getName() + " shouts")) {
+                processingNpcs.remove(npc.getId());
                 return;
             }
         }
@@ -203,43 +239,47 @@ public class ConversationService {
     }
 
     private void processAiResponse(Mobile npc, String response) {
-        if (response == null)
-            return;
-        String text = response.trim();
+        try {
+            if (response == null)
+                return;
+            String text = response.trim();
 
-        if (text.isEmpty() || text.equalsIgnoreCase("IGNORE") || text.contains("IGNORE")) {
-            return;
-        }
-
-        // Strip out markdown hallucinations just in case
-        if (text.startsWith("```")) {
-            text = text.replaceAll("```[a-zA-Z]*", "").replaceAll("```", "").trim();
-        }
-
-        // Clean up any Ollama JSON/Array/Quote wrapping hallucinations
-        text = text.replaceAll("[\\{\\}\\[\\]\"]", "");
-
-        // Enforce the command prefix to have exactly one space after it, ignoring
-        // commas/colons/dashes
-        String lower = text.toLowerCase();
-        if (lower.startsWith("say") || lower.startsWith("yell") || lower.startsWith("shout")) {
-            text = text.replaceFirst("(?i)^(say|yell|shout)\\s*[:,\\-]?\\s*", "$1 ");
-        }
-
-        lower = text.toLowerCase();
-        if (lower.startsWith("say ") || lower.startsWith("yell ") || lower.startsWith("shout ")) {
-            log.info("NPC AI Command Execution: {}", text);
-            npc.getCommandQueue().add(text);
-            commandService.processCommand(npc).subscribe();
-        } else {
-            // Block massive JSON echoes dynamically
-            if (text.contains("effectType") || text.contains("modifier1")) {
-                log.info("NPC AI hallucinated system json. Ignoring.");
+            if (text.isEmpty() || text.equalsIgnoreCase("IGNORE") || text.contains("IGNORE")) {
                 return;
             }
-            log.info("NPC AI Fallback Say Execution: {}", text);
-            npc.getCommandQueue().add("say " + text);
-            commandService.processCommand(npc).subscribe();
+
+            // Strip out markdown hallucinations just in case
+            if (text.startsWith("```")) {
+                text = text.replaceAll("```[a-zA-Z]*", "").replaceAll("```", "").trim();
+            }
+
+            // Clean up any Ollama JSON/Array/Quote wrapping hallucinations
+            text = text.replaceAll("[\\{\\}\\[\\]\"]", "");
+
+            // Enforce the command prefix to have exactly one space after it, ignoring
+            // commas/colons/dashes
+            String lower = text.toLowerCase();
+            if (lower.startsWith("say") || lower.startsWith("yell") || lower.startsWith("shout")) {
+                text = text.replaceFirst("(?i)^(say|yell|shout)\\s*[:,\\-]?\\s*", "$1 ");
+            }
+
+            lower = text.toLowerCase();
+            if (lower.startsWith("say ") || lower.startsWith("yell ") || lower.startsWith("shout ")) {
+                log.info("NPC AI Command Execution: {}", text);
+                npc.getCommandQueue().add(text);
+                commandService.processCommand(npc).subscribe();
+            } else {
+                // Block massive JSON echoes dynamically
+                if (text.contains("effectType") || text.contains("modifier1")) {
+                    log.info("NPC AI hallucinated system json. Ignoring.");
+                    return;
+                }
+                log.info("NPC AI Fallback Say Execution: {}", text);
+                npc.getCommandQueue().add("say " + text);
+                commandService.processCommand(npc).subscribe();
+            }
+        } finally {
+            processingNpcs.remove(npc.getId());
         }
     }
 }

@@ -23,8 +23,13 @@ public class CommunicationService {
     @Setter
     private CharacterService characterService;
 
-    // Local room memory buffer limited to 10 strings
-    private final java.util.concurrent.ConcurrentHashMap<Long, java.util.LinkedList<String>> roomChatHistory = new java.util.concurrent.ConcurrentHashMap<>();
+    // Local room memory buffer utilizing infinite timebound ChatMessage payload strings
+    public static record ChatMessage(String message, java.time.Instant timestamp) {}
+    private final java.util.concurrent.ConcurrentHashMap<Long, java.util.LinkedList<ChatMessage>> roomChatHistory = new java.util.concurrent.ConcurrentHashMap<>();
+
+    @org.springframework.beans.factory.annotation.Autowired
+    @org.springframework.context.annotation.Lazy
+    private ConversationService conversationService;
 
     public Flux<Mobile> getCharacterUpdates() {
         return characterUpdates.asFlux();
@@ -95,11 +100,11 @@ public class CommunicationService {
             roomChatHistory.compute(roomId, (k, v) -> {
                 if (v == null)
                     v = new java.util.LinkedList<>();
-                v.add(loggedMessage);
-                if (v.size() > 10)
-                    v.removeFirst();
+                v.add(new ChatMessage(loggedMessage, java.time.Instant.now()));
                 return v;
             });
+            // Immediately trigger NPC conversational AI pipeline!
+            conversationService.triggerRoomConversations(roomId);
         }
 
         this.characterService.findAllByRoomId(roomId).stream()
@@ -110,10 +115,15 @@ public class CommunicationService {
     }
 
     public java.util.List<String> getRoomHistory(Long roomId) {
-        java.util.LinkedList<String> history = roomChatHistory.get(roomId);
+        java.util.LinkedList<ChatMessage> history = roomChatHistory.get(roomId);
         if (history == null) {
             return java.util.Collections.emptyList();
         }
-        return new java.util.ArrayList<>(history); // Thread-safe copy
+        // Thread-safe copy while mapping payload strings out of standard temporal wrapper
+        return new java.util.ArrayList<>(history).stream().map(ChatMessage::message).collect(java.util.stream.Collectors.toList());
+    }
+
+    public java.util.concurrent.ConcurrentHashMap<Long, java.util.LinkedList<ChatMessage>> getRoomChatHistoryMap() {
+        return roomChatHistory;
     }
 }

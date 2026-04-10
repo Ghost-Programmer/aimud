@@ -666,6 +666,10 @@ public class CharacterService {
         return random.nextInt(4) + 1;
     }
 
+    @org.springframework.beans.factory.annotation.Autowired
+    @org.springframework.context.annotation.Lazy
+    private ConversationService conversationService;
+
     public Mono<Void> enterRoom(Mobile character, Long roomId) {
         log.info("Entering room {} for character {}", roomId, character.getName());
         return this.roomService.getRoom(roomId)
@@ -682,6 +686,8 @@ public class CharacterService {
                                 if (!savedChar.isHidden() && !savedChar.isInvisible()) {
                                     this.communicationService.roomMessage(savedChar, "\n" + savedChar.getName() + " has entered the room.");
                                 }
+
+                                this.conversationService.triggerRoomConversations(room.getId());
 
                                 this.communicationService.sendTextMessage(character, "\n\nYou have entered " + room.getName() + ".");
                                 this.communicationService.sendTextMessage(character, "\n\n" + room.getDescription() + "\n\n");
