@@ -23,6 +23,9 @@ public class CommunicationService {
     @Setter
     private CharacterService characterService;
 
+    // Local room memory buffer limited to 10 strings
+    private final java.util.concurrent.ConcurrentHashMap<Long, java.util.LinkedList<String>> roomChatHistory = new java.util.concurrent.ConcurrentHashMap<>();
+
     public Flux<Mobile> getCharacterUpdates() {
         return characterUpdates.asFlux();
     }
@@ -79,7 +82,6 @@ public class CommunicationService {
 
     public void sendTextMessage(Mobile character, String message) {
         if (character == null || character.getId() == null || character.getUserId() == null) {
-            sendTextMessage(message);
             return;
         }
         log.info("Sending text message to {}: {}", character.getName(), message);
@@ -87,9 +89,31 @@ public class CommunicationService {
     }
 
     public void roomMessage(Mobile mobile, String message) {
-        this.characterService.findAllByRoomId(mobile.getCurrentRoomId()).stream().filter(c -> !c.getId().equals(mobile.getId())).forEach(c -> {
-            this.sendTextMessage(c, message);
-        });
+        Long roomId = mobile.getCurrentRoomId();
+        if (roomId != null) {
+            String loggedMessage = message.trim();
+            roomChatHistory.compute(roomId, (k, v) -> {
+                if (v == null)
+                    v = new java.util.LinkedList<>();
+                v.add(loggedMessage);
+                if (v.size() > 10)
+                    v.removeFirst();
+                return v;
+            });
+        }
 
+        this.characterService.findAllByRoomId(roomId).stream()
+                .filter(c -> !c.getId().equals(mobile.getId()))
+                .forEach(c -> {
+                    this.sendTextMessage(c, message);
+                });
+    }
+
+    public java.util.List<String> getRoomHistory(Long roomId) {
+        java.util.LinkedList<String> history = roomChatHistory.get(roomId);
+        if (history == null) {
+            return java.util.Collections.emptyList();
+        }
+        return new java.util.ArrayList<>(history); // Thread-safe copy
     }
 }
