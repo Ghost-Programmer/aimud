@@ -174,56 +174,32 @@ public class ConversationService {
             }
         }
 
-        // Find previous self-message to observe conversation state
-        String prevMessage = null;
-        for (int i = history.size() - 1; i >= 0; i--) {
-            String msg = history.get(i);
-            if (msg.startsWith(npc.getName() + " says") || msg.startsWith(npc.getName() + " yells")
-                    || msg.startsWith(npc.getName() + " shouts")) {
-                prevMessage = msg;
-                break;
-            }
-        }
 
         prompt.append("\nYour Dialogue Rules:\n");
-        prompt.append(
-                "1. You are roleplaying. NEVER break character, and NEVER output JSON, arrays, code, or metadata.\n");
-        prompt.append(
-                "2. You are an NPC. You do not have a user ID. You are not a player. You are not a bot. You are an NPC.\n");
-        prompt.append(
-                "3. You are in a room with players. You can see them. You can hear them. You can talk to them.\n");
-        prompt.append(
-                "4. You will speak based on your Intelligence, Wisdom, and Charisma stats. Values under 10 are considered unintelligent, unwise, and/or uncharming. Values over 10 are considered intelligent, wise, and/or charming.\n");
-        prompt.append(
-                "5. You will speak based on your faction rating to the players. Values 80-100 are allied/friendly. Values 21-79 are neutral. Values 0-20 are hostile/hating.\n");
-        prompt.append(
-                "6. You will speak based on your current HP. Values under 50% are considered injured. Values over 50% are considered healthy.\n");
-        prompt.append(
-                "7. You will speak based on your current MP. Values under 50% are considered injured. Values over 50% are considered healthy.\n");
-        prompt.append(
-                "8. You will speak based on the Recent Chat History in this room where lines you said are start with your name.\n");
-        prompt.append(
-                "9. You will not keep asking the same question over and over again. If you have already asked a question, ask a new, entirely different logical question or make a new observation based ONLY on their latest reply.\n");
-        prompt.append(
-                "10. You will speak and react in a manner deeply authentic to your Race (" + raceName + ") and Class ("
-                        + className
-                        + "). Incorporate your racial traits, cultural background, and class-specific knowledge into your conversation organically.\n");
-        prompt.append(
-                "11. You have already spoken recently in the history. You must acknowledge the players' newest replies. Ask a new, entirely different logical question or make a new observation based ONLY on their latest reply.\n");
-        prompt.append(
-                "12. Review the Recent Chat History if you have already performed a greeting do not greet them again. Push the conversation forward.\n");
-        prompt.append(
-                "13. If a question is asked you will try to answer it in character.\n");
-        prompt.append(
-                "14. If a player makes a statement, look and see if it answers your previous question. If it does, ask a new, entirely different logical question or make a new observation based ONLY on their latest reply.\n");
-
+        prompt.append("1. Roleplay strictly. You are completely immersed in a high-fantasy world.\n");
+        prompt.append("2. You have ABSOLUTELY NO knowledge of computers, AI, servers, patches, MUDs, coding, or the real world. NEVER mention them.\n");
+        prompt.append("3. You are an NPC entity living your life. You are not a player or an assistant.\n");
+        prompt.append("4. Adjust your vocabulary based on your Stats: Int=" + npc.getIntelligence() + ", Wis=" + npc.getWisdom() + ", Cha=" + npc.getCharisma() + ".\n");
+        prompt.append("5. Tone your response based on Faction Ratings (80-100=Allied, 21-79=Neutral, 0-20=Hostile).\n");
+        prompt.append("6. Acknowledge your health (HP) and magic (MP) if severely injured.\n");
+        prompt.append("7. READ the Chat History carefully. The very last line is what you must react to now.\n");
+        prompt.append("8. DO NOT REPEAT YOURSELF. If you have already said something in the history, say something completely different and new.\n");
+        prompt.append("9. Incorporate your Race (" + raceName + ") and Class (" + className + ") into how you speak and what you know.\n");
+        prompt.append("10. Push the conversation forward. Ask questions, make observations, or demand things based on the players' actions.\n");
+        prompt.append("11. ONLY output your action command. DO NOT output internal thoughts, JSON, or markdown.\n");
+        
         prompt.append("\nIf there is absolutely nothing to say, output EXACTLY ONE WORD: IGNORE\n");
         prompt.append("Otherwise, output your action using EXACTLY ONE of these formats:\n");
         prompt.append("say <message>\n");
         prompt.append("yell <message>\n");
         prompt.append("shout <message>\n");
-        prompt.append("Example: say The wind is howling today.\n");
-        prompt.append("DO NOT output quotes, thoughts, or formatting. Only the exact command or IGNORE.");
+
+        prompt.append("\nCRITICAL SYNTAX RULE: DO NOT include your own name or the word 'says' in the message! The server does that automatically.\n");
+        prompt.append("BAD: say " + npc.getName() + " says, 'Hello there!'\n");
+        prompt.append("GOOD: say Hello there!\n");
+        prompt.append("BAD: yell I am yelling!\n");
+        prompt.append("GOOD: yell I am yelling!\n");
+        prompt.append("DO NOT output quotes around your message unless you literally want to quote something.\n");
 
         org.springframework.ai.ollama.api.OllamaOptions options = new org.springframework.ai.ollama.api.OllamaOptions();
         options.setTemperature(0.95); // Increase temperature drastically
