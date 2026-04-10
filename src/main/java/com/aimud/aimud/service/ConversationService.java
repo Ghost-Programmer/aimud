@@ -191,6 +191,7 @@ public class ConversationService {
 
         org.springframework.ai.ollama.api.OllamaOptions options = new org.springframework.ai.ollama.api.OllamaOptions();
         options.setTemperature(0.95); // Increase temperature drastically
+        options.setModel("hermes3"); // Isolate the NPC dialogue purely to the hermes3 NLP model
 
         // Spring AI Ollama uses stream under the hood returning Flux<String>. We MUST
         // concat the chunks.
