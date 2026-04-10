@@ -26,15 +26,50 @@ public class AiService {
     private final List<FunctionCallback> mcpTools;
 
     public Flux<String> processPrompt(String userPrompt) {
-        log.info("Processing AI prompt: {}", userPrompt);
+        return processPrompt(userPrompt, null);
+    }
+
+    public Flux<String> processPrompt(String userPrompt, OllamaOptions customOptions) {
+        log.info("Processing AI prompt with tools: {}", userPrompt);
 
         return configService.getAllAgents()
                 .collectList()
                 .flatMapMany(agents -> {
                     UserMessage userMessage = new UserMessage(userPrompt);
 
-                    OllamaOptions options = new OllamaOptions();
+                    OllamaOptions options = customOptions != null ? customOptions : new OllamaOptions();
                     options.setFunctionCallbacks(mcpTools);
+                    options.setTruncate(false);
+
+                    List<Message> messages = new ArrayList<>(agents.size() + 1);
+                    for (Agent agent : agents) {
+                        messages.add(new SystemMessage("Agent: " + agent.title() + "\n" + agent.content()));
+                    }
+                    messages.add(userMessage);
+
+                    Prompt prompt = new Prompt(messages, options);
+
+                    return chatModel.stream(prompt)
+                            .map(response -> {
+                                if (response != null && response.getResult() != null && response.getResult().getOutput() != null) {
+                                    return response.getResult().getOutput().getText();
+                                }
+                                return "";
+                            })
+                            .filter(text -> !text.isEmpty());
+                });
+    }
+
+    public Flux<String> processPromptNoTools(String userPrompt, OllamaOptions customOptions) {
+        log.info("Processing AI prompt WITHOUT tools: {}", userPrompt);
+
+        return configService.getAllAgents()
+                .collectList()
+                .flatMapMany(agents -> {
+                    UserMessage userMessage = new UserMessage(userPrompt);
+
+                    // Explicitly ignore MCP tools for isolated dialogue interactions
+                    OllamaOptions options = customOptions != null ? customOptions : new OllamaOptions();
                     options.setTruncate(false);
 
                     List<Message> messages = new ArrayList<>(agents.size() + 1);

@@ -20,8 +20,11 @@ public class ConversationService {
     private final AiService aiService;
     private final CommandService commandService;
     private final FactionService factionService;
+    private final ConfigService configService;
 
-    public ConversationService(MobileService mobileService, CharacterService characterService, RoomService roomService, CommunicationService communicationService, AiService aiService, CommandService commandService, FactionService factionService) {
+    public ConversationService(MobileService mobileService, CharacterService characterService, RoomService roomService,
+            CommunicationService communicationService, AiService aiService, CommandService commandService,
+            FactionService factionService, ConfigService configService) {
         this.mobileService = mobileService;
         this.characterService = characterService;
         this.roomService = roomService;
@@ -29,32 +32,42 @@ public class ConversationService {
         this.aiService = aiService;
         this.commandService = commandService;
         this.factionService = factionService;
+        this.configService = configService;
     }
 
     @Scheduled(fixedRate = 15000)
     public void processConversations() {
         List<Mobile> npcs = mobileService.getActiveMobiles();
-        if (npcs == null) return;
-        
+        if (npcs == null)
+            return;
+
         for (Mobile npc : npcs) {
             // Skip dead, actively fighting, or unplaced NPCs
             if (npc == null || npc.getCurrentHp() <= 0 || npc.getTarget() != null || npc.getCurrentRoomId() == null) {
-                continue; 
+                continue;
             }
 
             Long roomId = npc.getCurrentRoomId();
             roomService.getRoom(roomId).subscribe(room -> {
                 if (room != null) {
-                    evaluateNpcConversation(npc, room);
+                    reactor.core.publisher.Mono.zip(
+                            configService.getAllRaces().filter(r -> r.getId().equals(npc.getRaceId())).next()
+                                    .map(com.aimud.aimud.model.Race::getName).defaultIfEmpty("Unknown"),
+                            configService.getAllCharacterClasses().filter(c -> c.getId().equals(npc.getClassId()))
+                                    .next().map(com.aimud.aimud.model.CharacterClass::getName)
+                                    .defaultIfEmpty("Unknown"))
+                            .subscribe(tuple -> {
+                                evaluateNpcConversation(npc, room, tuple.getT1(), tuple.getT2());
+                            });
                 }
             });
         }
     }
 
-    private void evaluateNpcConversation(Mobile npc, Room room) {
+    private void evaluateNpcConversation(Mobile npc, Room room, String raceName, String className) {
         // Collect history and parse if anyone is actually around physically
         List<String> history = communicationService.getRoomHistory(room.getId());
-        
+
         List<Mobile> players = characterService.findAllByRoomId(room.getId()).stream()
                 .filter(c -> c.getUserId() != null)
                 .collect(Collectors.toList());
@@ -64,12 +77,13 @@ public class ConversationService {
             return;
         }
 
-        // Prevent infinite self-talking loops. If the NPC was the last one to speak, do not trigger again.
+        // Prevent infinite self-talking loops. If the NPC was the last one to speak, do
+        // not trigger again.
         if (!history.isEmpty()) {
             String lastMsg = history.get(history.size() - 1);
-            if (lastMsg.startsWith(npc.getName() + " says") || 
-                lastMsg.startsWith(npc.getName() + " yells") || 
-                lastMsg.startsWith(npc.getName() + " shouts")) {
+            if (lastMsg.startsWith(npc.getName() + " says") ||
+                    lastMsg.startsWith(npc.getName() + " yells") ||
+                    lastMsg.startsWith(npc.getName() + " shouts")) {
                 return;
             }
         }
@@ -82,31 +96,39 @@ public class ConversationService {
         prompt.append("You are an NPC in a Multi-User Dungeon (MUD).\n");
         prompt.append("You are currently in: ").append(room.getName()).append("\n");
         prompt.append("Room Description: ").append(room.getDescription()).append("\n\n");
-        
+
         prompt.append("Your Identity & Stats:\n");
         prompt.append("- Name: ").append(npc.getName()).append("\n");
+        prompt.append("- Race: ").append(raceName).append("\n");
+        prompt.append("- Class: ").append(className).append("\n");
         prompt.append("- Level (Challenge Rating): ").append((int) npc.getChallengeRating()).append("\n");
-        prompt.append("- Intelligence: ").append(npc.getIntelligence()).append(" (High = articulate/smart, Low = simple/dumb)\n");
-        prompt.append("- Wisdom: ").append(npc.getWisdom()).append(" (High = insightful/calm, Low = unobservant/foolish)\n");
-        prompt.append("- Charisma: ").append(npc.getCharisma()).append(" (High = charming/persuasive, Low = rude/abrasive)\n\n");
+        prompt.append("- Intelligence: ").append(npc.getIntelligence())
+                .append(" (High = articulate/smart, Low = simple/dumb)\n");
+        prompt.append("- Wisdom: ").append(npc.getWisdom())
+                .append(" (High = insightful/calm, Low = unobservant/foolish)\n");
+        prompt.append("- Charisma: ").append(npc.getCharisma())
+                .append(" (High = charming/persuasive, Low = rude/abrasive)\n\n");
 
         prompt.append("Other entities present in the room:\n");
         for (Mobile p : players) {
             int rating = factionService.getFactionRatingSync(npc, p.getFactionId());
-            prompt.append("- ").append(p.getName()).append(" (Player) [Faction Rating to you: ").append(rating).append("]\n");
+            prompt.append("- ").append(p.getName()).append(" (Player) [Faction Rating to you: ").append(rating)
+                    .append("]\n");
             if (p.getTarget() != null) {
                 prompt.append("  * Currently attacking: ").append(p.getTarget().getName()).append("\n");
             }
         }
         for (Mobile n : npcsInRoom) {
             int rating = factionService.getFactionRatingSync(npc, n.getFactionId());
-            prompt.append("- ").append(n.getName()).append(" (NPC) [Faction Rating to you: ").append(rating).append("]\n");
+            prompt.append("- ").append(n.getName()).append(" (NPC) [Faction Rating to you: ").append(rating)
+                    .append("]\n");
             if (n.getTarget() != null) {
                 prompt.append("  * Currently attacking: ").append(n.getTarget().getName()).append("\n");
             }
         }
-        prompt.append("\n* Note: Faction rating 80-100 is allied/friendly. 21-79 is neutral. 0-20 is hostile/hating.\n");
-        
+        prompt.append(
+                "\n* Note: Faction rating 80-100 is allied/friendly. 21-79 is neutral. 0-20 is hostile/hating.\n");
+
         prompt.append("\nRecent Chat History in this room:\n");
         if (history.isEmpty()) {
             prompt.append("(Quiet)\n");
@@ -116,32 +138,78 @@ public class ConversationService {
             }
         }
 
-        prompt.append("\nYour Task:\n");
-        prompt.append("You are roleplaying a character. You MUST NOT break character. DO NOT output JSON, arrays, code, or metadata.\n");
-        prompt.append("If it is quiet and you have no reason to speak, output EXACTLY the word: IGNORE\n");
-        prompt.append("If you wish to converse, output EXACTLY ONE of the following formats (without any braces or quotes):\n");
+        // Find previous self-message to observe conversation state
+        String prevMessage = null;
+        for (int i = history.size() - 1; i >= 0; i--) {
+            String msg = history.get(i);
+            if (msg.startsWith(npc.getName() + " says") || msg.startsWith(npc.getName() + " yells")
+                    || msg.startsWith(npc.getName() + " shouts")) {
+                prevMessage = msg;
+                break;
+            }
+        }
+
+        prompt.append("\nYour Dialogue Rules:\n");
+        prompt.append(
+                "1. You are roleplaying. NEVER break character, and NEVER output JSON, arrays, code, or metadata.\n");
+        prompt.append(
+                "2. You are an NPC. You do not have a user ID. You are not a player. You are not a bot. You are an NPC.\n");
+        prompt.append(
+                "3. You are in a room with players. You can see them. You can hear them. You can talk to them.\n");
+        prompt.append(
+                "4. You will speak based on your Intelligence, Wisdom, and Charisma stats. Values under 10 are considered unintelligent, unwise, and/or uncharming. Values over 10 are considered intelligent, wise, and/or charming.\n");
+        prompt.append(
+                "5. You will speak based on your faction rating to the players. Values 80-100 are allied/friendly. Values 21-79 are neutral. Values 0-20 are hostile/hating.\n");
+        prompt.append(
+                "6. You will speak based on your current HP. Values under 50% are considered injured. Values over 50% are considered healthy.\n");
+        prompt.append(
+                "7. You will speak based on your current MP. Values under 50% are considered injured. Values over 50% are considered healthy.\n");
+        prompt.append(
+                "8. You will speak based on the Recent Chat History in this room where lines you said are start with your name.\n");
+        prompt.append(
+                "9. You will not keep asking the same question over and over again. If you have already asked a question, ask a new, entirely different logical question or make a new observation based ONLY on their latest reply.\n");
+        prompt.append(
+                "10. You will speak and react in a manner deeply authentic to your Race (" + raceName + ") and Class ("
+                        + className
+                        + "). Incorporate your racial traits, cultural background, and class-specific knowledge into your conversation organically.\n");
+        prompt.append(
+                "11. You have already spoken recently in the history. You must acknowledge the players' newest replies. Ask a new, entirely different logical question or make a new observation based ONLY on their latest reply.\n");
+        prompt.append(
+                "12. Review the Recent Chat History if you have already performed a greeting do not greet them again. Push the conversation forward.\n");
+        prompt.append(
+                "13. If a question is asked you will try to answer it in character.\n");
+        prompt.append(
+                "14. If a player makes a statement, look and see if it answers your previous question. If it does, ask a new, entirely different logical question or make a new observation based ONLY on their latest reply.\n");
+
+        prompt.append("\nIf there is absolutely nothing to say, output EXACTLY ONE WORD: IGNORE\n");
+        prompt.append("Otherwise, output your action using EXACTLY ONE of these formats:\n");
         prompt.append("say <message>\n");
         prompt.append("yell <message>\n");
         prompt.append("shout <message>\n");
-        prompt.append("DO NOT output quotes, thoughts, or formatting blocks. Only output the exact command or IGNORE.");
+        prompt.append("Example: say The wind is howling today.\n");
+        prompt.append("DO NOT output quotes, thoughts, or formatting. Only the exact command or IGNORE.");
 
-        // Spring AI Ollama uses stream under the hood returning Flux<String>. We MUST concat the chunks.
-        aiService.processPrompt(prompt.toString())
-            .reduce("", String::concat)
-            .subscribe(
-                response -> processAiResponse(npc, response),
-                error -> log.error("Error generating conversation for NPC {}", npc.getName(), error)
-            );
+        org.springframework.ai.ollama.api.OllamaOptions options = new org.springframework.ai.ollama.api.OllamaOptions();
+        options.setTemperature(0.95); // Increase temperature drastically
+
+        // Spring AI Ollama uses stream under the hood returning Flux<String>. We MUST
+        // concat the chunks.
+        aiService.processPromptNoTools(prompt.toString(), options)
+                .reduce("", String::concat)
+                .subscribe(
+                        response -> processAiResponse(npc, response),
+                        error -> log.error("Error generating conversation for NPC {}", npc.getName(), error));
     }
 
     private void processAiResponse(Mobile npc, String response) {
-        if (response == null) return;
+        if (response == null)
+            return;
         String text = response.trim();
-        
+
         if (text.isEmpty() || text.equalsIgnoreCase("IGNORE") || text.contains("IGNORE")) {
             return;
         }
-        
+
         // Strip out markdown hallucinations just in case
         if (text.startsWith("```")) {
             text = text.replaceAll("```[a-zA-Z]*", "").replaceAll("```", "").trim();
@@ -150,7 +218,8 @@ public class ConversationService {
         // Clean up any Ollama JSON/Array/Quote wrapping hallucinations
         text = text.replaceAll("[\\{\\}\\[\\]\"]", "");
 
-        // Enforce the command prefix to have exactly one space after it, ignoring commas/colons/dashes
+        // Enforce the command prefix to have exactly one space after it, ignoring
+        // commas/colons/dashes
         String lower = text.toLowerCase();
         if (lower.startsWith("say") || lower.startsWith("yell") || lower.startsWith("shout")) {
             text = text.replaceFirst("(?i)^(say|yell|shout)\\s*[:,\\-]?\\s*", "$1 ");
