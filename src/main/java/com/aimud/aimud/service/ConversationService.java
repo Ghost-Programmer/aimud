@@ -19,14 +19,16 @@ public class ConversationService {
     private final CommunicationService communicationService;
     private final AiService aiService;
     private final CommandService commandService;
+    private final FactionService factionService;
 
-    public ConversationService(MobileService mobileService, CharacterService characterService, RoomService roomService, CommunicationService communicationService, AiService aiService, CommandService commandService) {
+    public ConversationService(MobileService mobileService, CharacterService characterService, RoomService roomService, CommunicationService communicationService, AiService aiService, CommandService commandService, FactionService factionService) {
         this.mobileService = mobileService;
         this.characterService = characterService;
         this.roomService = roomService;
         this.communicationService = communicationService;
         this.aiService = aiService;
         this.commandService = commandService;
+        this.factionService = factionService;
     }
 
     @Scheduled(fixedRate = 15000)
@@ -72,19 +74,38 @@ public class ConversationService {
             }
         }
 
+        List<Mobile> npcsInRoom = mobileService.getMobilesInRoom(room.getId()).stream()
+                .filter(m -> !m.getId().equals(npc.getId()))
+                .collect(Collectors.toList());
+
         StringBuilder prompt = new StringBuilder();
         prompt.append("You are an NPC in a Multi-User Dungeon (MUD).\n");
         prompt.append("You are currently in: ").append(room.getName()).append("\n");
         prompt.append("Room Description: ").append(room.getDescription()).append("\n\n");
         
-        prompt.append("Your name is: ").append(npc.getName()).append("\n");
-        prompt.append("Your Level (Challenge Rating): ").append((int) npc.getChallengeRating()).append("\n");
-        prompt.append("Your faction ID: ").append(npc.getFactionId()).append("\n\n");
+        prompt.append("Your Identity & Stats:\n");
+        prompt.append("- Name: ").append(npc.getName()).append("\n");
+        prompt.append("- Level (Challenge Rating): ").append((int) npc.getChallengeRating()).append("\n");
+        prompt.append("- Intelligence: ").append(npc.getIntelligence()).append(" (High = articulate/smart, Low = simple/dumb)\n");
+        prompt.append("- Wisdom: ").append(npc.getWisdom()).append(" (High = insightful/calm, Low = unobservant/foolish)\n");
+        prompt.append("- Charisma: ").append(npc.getCharisma()).append(" (High = charming/persuasive, Low = rude/abrasive)\n\n");
 
-        prompt.append("Other characters present in the room:\n");
+        prompt.append("Other entities present in the room:\n");
         for (Mobile p : players) {
-            prompt.append("- ").append(p.getName()).append(" (Player)\n");
+            int rating = factionService.getFactionRatingSync(npc, p.getFactionId());
+            prompt.append("- ").append(p.getName()).append(" (Player) [Faction Rating to you: ").append(rating).append("]\n");
+            if (p.getTarget() != null) {
+                prompt.append("  * Currently attacking: ").append(p.getTarget().getName()).append("\n");
+            }
         }
+        for (Mobile n : npcsInRoom) {
+            int rating = factionService.getFactionRatingSync(npc, n.getFactionId());
+            prompt.append("- ").append(n.getName()).append(" (NPC) [Faction Rating to you: ").append(rating).append("]\n");
+            if (n.getTarget() != null) {
+                prompt.append("  * Currently attacking: ").append(n.getTarget().getName()).append("\n");
+            }
+        }
+        prompt.append("\n* Note: Faction rating 80-100 is allied/friendly. 21-79 is neutral. 0-20 is hostile/hating.\n");
         
         prompt.append("\nRecent Chat History in this room:\n");
         if (history.isEmpty()) {
