@@ -99,6 +99,7 @@ export class MobileEditorComponent implements OnInit {
       hateSinger: [false],
       willFollow: [false],
       willLoot: [false],
+      usesAi: [false],
 
       // Equipment
       headId: [null],
@@ -269,6 +270,7 @@ export class MobileEditorComponent implements OnInit {
       hateSinger: false,
       willFollow: false,
       willLoot: false,
+      usesAi: false,
       factionId: null
     });
     this.invSearchTexts = [];

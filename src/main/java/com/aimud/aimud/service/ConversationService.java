@@ -39,17 +39,21 @@ public class ConversationService {
 
     @org.springframework.scheduling.annotation.Scheduled(fixedRate = 30000)
     public void processIdleConversations() {
-        List<Mobile> npcs = mobileService.getActiveMobiles();
-        if (npcs == null) return;
+        List<Mobile> npcs = mobileService.getActiveMobiles().stream().filter(m -> m.isUsesAi())
+                .collect(Collectors.toList());
+        if (npcs == null)
+            return;
 
         for (Mobile npc : npcs) {
             // Skip dead, actively fighting, unplaced, or currently thinking NPCs
-            if (npc == null || npc.getCurrentHp() <= 0 || npc.getTarget() != null || processingNpcs.contains(npc.getId())) {
+            if (npc == null || npc.getCurrentHp() <= 0 || npc.getTarget() != null
+                    || processingNpcs.contains(npc.getId())) {
                 continue;
             }
 
             Long roomId = npc.getCurrentRoomId();
-            if (roomId == null) continue;
+            if (roomId == null)
+                continue;
 
             // Only trigger ambient chatter if the room hasn't been evaluated recently
             java.time.Instant lastEval = lastEvaluationTime.get(roomId);
@@ -60,21 +64,24 @@ public class ConversationService {
     }
 
     public void triggerRoomConversations(Long roomId) {
-        // Throttle evaluation to max once per 2 seconds per room to prevent rapid triggering while processing async
+        // Throttle evaluation to max once per 2 seconds per room to prevent rapid
+        // triggering while processing async
         java.time.Instant lastEval = lastEvaluationTime.get(roomId);
         if (lastEval != null && java.time.Duration.between(lastEval, java.time.Instant.now()).toSeconds() < 2) {
             return;
         }
         lastEvaluationTime.put(roomId, java.time.Instant.now());
 
-        List<Mobile> npcs = mobileService.getMobilesInRoom(roomId);
+        List<Mobile> npcs = mobileService.getMobilesInRoom(roomId).stream().filter(m -> m.isUsesAi())
+                .collect(Collectors.toList());
         if (npcs == null || npcs.isEmpty()) {
             return;
         }
 
         for (Mobile npc : npcs) {
             // Skip dead, actively fighting, or currently processing NPCs
-            if (npc == null || npc.getCurrentHp() <= 0 || npc.getTarget() != null || processingNpcs.contains(npc.getId())) {
+            if (npc == null || npc.getCurrentHp() <= 0 || npc.getTarget() != null
+                    || processingNpcs.contains(npc.getId())) {
                 continue;
             }
 
@@ -174,20 +181,24 @@ public class ConversationService {
             }
         }
 
-
         prompt.append("\nYour Dialogue Rules:\n");
         prompt.append("1. Roleplay strictly. You are completely immersed in a high-fantasy world.\n");
-        prompt.append("2. You have ABSOLUTELY NO knowledge of computers, AI, servers, patches, MUDs, coding, or the real world. NEVER mention them.\n");
+        prompt.append(
+                "2. You have ABSOLUTELY NO knowledge of computers, AI, servers, patches, MUDs, coding, or the real world. NEVER mention them.\n");
         prompt.append("3. You are an NPC entity living your life. You are not a player or an assistant.\n");
-        prompt.append("4. Adjust your vocabulary based on your Stats: Int=" + npc.getIntelligence() + ", Wis=" + npc.getWisdom() + ", Cha=" + npc.getCharisma() + ".\n");
+        prompt.append("4. Adjust your vocabulary based on your Stats: Int=" + npc.getIntelligence() + ", Wis="
+                + npc.getWisdom() + ", Cha=" + npc.getCharisma() + ".\n");
         prompt.append("5. Tone your response based on Faction Ratings (80-100=Allied, 21-79=Neutral, 0-20=Hostile).\n");
         prompt.append("6. Acknowledge your health (HP) and magic (MP) if severely injured.\n");
         prompt.append("7. READ the Chat History carefully. The very last line is what you must react to now.\n");
-        prompt.append("8. DO NOT REPEAT YOURSELF. If you have already said something in the history, say something completely different and new.\n");
-        prompt.append("9. Incorporate your Race (" + raceName + ") and Class (" + className + ") into how you speak and what you know.\n");
-        prompt.append("10. Push the conversation forward. Ask questions, make observations, or demand things based on the players' actions.\n");
+        prompt.append(
+                "8. DO NOT REPEAT YOURSELF. If you have already said something in the history, say something completely different and new.\n");
+        prompt.append("9. Incorporate your Race (" + raceName + ") and Class (" + className
+                + ") into how you speak and what you know.\n");
+        prompt.append(
+                "10. Push the conversation forward. Ask questions, make observations, or demand things based on the players' actions.\n");
         prompt.append("11. ONLY output your action command. DO NOT output internal thoughts, JSON, or markdown.\n");
-        
+
         prompt.append("\nIf there is absolutely nothing to say, output EXACTLY ONE WORD: IGNORE\n");
         prompt.append("Otherwise, output your action using EXACTLY ONE of these formats:\n");
         prompt.append("say <message>\n");
@@ -195,7 +206,8 @@ public class ConversationService {
         prompt.append("shout <message>\n");
         prompt.append("emote <action>\n");
 
-        prompt.append("\nCRITICAL SYNTAX RULE: DO NOT include your own name or the word 'says' in the message! The server does that automatically.\n");
+        prompt.append(
+                "\nCRITICAL SYNTAX RULE: DO NOT include your own name or the word 'says' in the message! The server does that automatically.\n");
         prompt.append("BAD: say " + npc.getName() + " says, 'Hello there!'\n");
         prompt.append("GOOD: say Hello there!\n");
         prompt.append("BAD: emote *looks around*\n");
@@ -235,32 +247,38 @@ public class ConversationService {
 
             // 1. If AI output exactly "Orc says, 'Hello'", swap it to "say Hello"
             if (text.toLowerCase().startsWith(npc.getName().toLowerCase() + " say") ||
-                text.toLowerCase().startsWith(npc.getName().toLowerCase() + " yell") ||
-                text.toLowerCase().startsWith(npc.getName().toLowerCase() + " shout")) {
-                text = "say " + text.replaceFirst("(?i)^" + java.util.regex.Pattern.quote(npc.getName()) + "\\s*(says|yells|shouts|say|yell|shout)[\\s:,]*['\"]?", "");
+                    text.toLowerCase().startsWith(npc.getName().toLowerCase() + " yell") ||
+                    text.toLowerCase().startsWith(npc.getName().toLowerCase() + " shout")) {
+                text = "say " + text.replaceFirst("(?i)^" + java.util.regex.Pattern.quote(npc.getName())
+                        + "\\s*(says|yells|shouts|say|yell|shout)[\\s:,]*['\"]?", "");
             }
 
             // 2. If AI output "say Orc says, 'Hello'", swap it to "say Hello"
-            text = text.replaceFirst("(?i)^(say|yell|shout)\\s+" + java.util.regex.Pattern.quote(npc.getName()) + "\\s*(says|yells|shouts|say|yell|shout)[\\s:,]*['\"]?", "$1 ");
+            text = text.replaceFirst("(?i)^(say|yell|shout)\\s+" + java.util.regex.Pattern.quote(npc.getName())
+                    + "\\s*(says|yells|shouts|say|yell|shout)[\\s:,]*['\"]?", "$1 ");
 
-            // 3. Clean up hanging leading/trailing quotes applied incorrectly to the message
+            // 3. Clean up hanging leading/trailing quotes applied incorrectly to the
+            // message
             text = text.replaceFirst("(?i)^(say|yell|shout)\\s+['\"]", "$1 ");
             if (text.endsWith("'") || text.endsWith("\"")) {
                 text = text.substring(0, text.length() - 1);
             }
 
-            // Destroy emote narration blocks inside asterisks if they forgot the emote syntax
+            // Destroy emote narration blocks inside asterisks if they forgot the emote
+            // syntax
             text = text.replaceAll("\\*.*?\\*", "").trim();
 
             // Enforce the command prefix to have exactly one space after it, ignoring
             // commas/colons/dashes
             String lower = text.toLowerCase();
-            if (lower.startsWith("say") || lower.startsWith("yell") || lower.startsWith("shout") || lower.startsWith("emote") || lower.startsWith("me")) {
+            if (lower.startsWith("say") || lower.startsWith("yell") || lower.startsWith("shout")
+                    || lower.startsWith("emote") || lower.startsWith("me")) {
                 text = text.replaceFirst("(?i)^(say|yell|shout|emote|me)\\s*[:,\\-]?\\s*", "$1 ");
             }
 
             lower = text.toLowerCase();
-            if (lower.startsWith("say ") || lower.startsWith("yell ") || lower.startsWith("shout ") || lower.startsWith("emote ") || lower.startsWith("me ")) {
+            if (lower.startsWith("say ") || lower.startsWith("yell ") || lower.startsWith("shout ")
+                    || lower.startsWith("emote ") || lower.startsWith("me ")) {
                 log.info("NPC AI Command Execution: {}", text);
                 npc.getCommandQueue().add(text);
                 commandService.processCommand(npc).subscribe();

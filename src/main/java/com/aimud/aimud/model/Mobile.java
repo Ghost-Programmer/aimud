@@ -77,6 +77,8 @@ public class Mobile {
     private boolean willFollow;
     @Column("will_loot")
     private boolean willLoot;
+    @Column("uses_ai")
+    private boolean usesAi;
 
     @Transient
     private List<Skill> skills = new ArrayList<>();

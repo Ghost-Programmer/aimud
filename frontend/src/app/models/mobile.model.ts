@@ -42,4 +42,5 @@ export interface Mobile {
   hateSinger?: boolean;
   willFollow?: boolean;
   willLoot?: boolean;
+  usesAi?: boolean;
 }
