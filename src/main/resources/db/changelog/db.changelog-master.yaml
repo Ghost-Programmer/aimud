@@ -13,3 +13,5 @@ databaseChangeLog:
       file: db/changelog/changes/059-add-mobile-macros.sql
   - include:
       file: db/changelog/changes/060-mobile-ai-flag.sql
+  - include:
+      file: db/changelog/changes/061-mobile-ai-instructions.sql

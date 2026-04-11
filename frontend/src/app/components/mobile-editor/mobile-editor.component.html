@@ -193,6 +193,13 @@
         </div>
       </div>
 
+      <div class="form-section mt-3" *ngIf="mobileForm.get('usesAi')?.value">
+        <h4>Specific AI Instructions</h4>
+        <textarea formControlName="aiInstructions" rows="10"
+                  style="width: 100%; border-radius: 4px; padding: 12px; background: rgba(0, 0, 0, 0.3); color: white; border: 1px solid rgba(255, 255, 255, 0.1); resize: vertical; overflow-y: auto; font-family: monospace;"
+                  placeholder="Additional prompt instructions for this NPC..."></textarea>
+      </div>
+
       <div class="form-actions">
         <button [disabled]="mobileForm.invalid" class="btn-save" type="submit">Save Mobile</button>
       </div>

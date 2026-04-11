@@ -37,7 +37,7 @@ public class ConversationService {
     private final java.util.concurrent.ConcurrentHashMap<Long, java.time.Instant> lastEvaluationTime = new java.util.concurrent.ConcurrentHashMap<>();
     private final java.util.Set<Long> processingNpcs = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
-    @org.springframework.scheduling.annotation.Scheduled(fixedRate = 30000)
+    @org.springframework.scheduling.annotation.Scheduled(fixedRate = 10000)
     public void processIdleConversations() {
         List<Mobile> npcs = mobileService.getActiveMobiles().stream().filter(m -> m.isUsesAi())
                 .collect(Collectors.toList());
@@ -198,6 +198,10 @@ public class ConversationService {
         prompt.append(
                 "10. Push the conversation forward. Ask questions, make observations, or demand things based on the players' actions.\n");
         prompt.append("11. ONLY output your action command. DO NOT output internal thoughts, JSON, or markdown.\n");
+
+        if (npc.getAiInstructions() != null && !npc.getAiInstructions().trim().isEmpty()) {
+            prompt.append("12. " + npc.getAiInstructions().trim()).append("\n");
+        }
 
         prompt.append("\nIf there is absolutely nothing to say, output EXACTLY ONE WORD: IGNORE\n");
         prompt.append("Otherwise, output your action using EXACTLY ONE of these formats:\n");

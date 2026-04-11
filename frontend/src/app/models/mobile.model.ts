@@ -43,4 +43,5 @@ export interface Mobile {
   willFollow?: boolean;
   willLoot?: boolean;
   usesAi?: boolean;
+  aiInstructions?: string;
 }
