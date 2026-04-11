@@ -193,12 +193,13 @@ public class ConversationService {
         prompt.append("say <message>\n");
         prompt.append("yell <message>\n");
         prompt.append("shout <message>\n");
+        prompt.append("emote <action>\n");
 
         prompt.append("\nCRITICAL SYNTAX RULE: DO NOT include your own name or the word 'says' in the message! The server does that automatically.\n");
         prompt.append("BAD: say " + npc.getName() + " says, 'Hello there!'\n");
         prompt.append("GOOD: say Hello there!\n");
-        prompt.append("BAD: yell I am yelling!\n");
-        prompt.append("GOOD: yell I am yelling!\n");
+        prompt.append("BAD: emote *looks around*\n");
+        prompt.append("GOOD: emote looks around.\n");
         prompt.append("DO NOT output quotes around your message unless you literally want to quote something.\n");
 
         org.springframework.ai.ollama.api.OllamaOptions options = new org.springframework.ai.ollama.api.OllamaOptions();
@@ -232,15 +233,34 @@ public class ConversationService {
             // Clean up any Ollama JSON/Array/Quote wrapping hallucinations
             text = text.replaceAll("[\\{\\}\\[\\]\"]", "");
 
+            // 1. If AI output exactly "Orc says, 'Hello'", swap it to "say Hello"
+            if (text.toLowerCase().startsWith(npc.getName().toLowerCase() + " say") ||
+                text.toLowerCase().startsWith(npc.getName().toLowerCase() + " yell") ||
+                text.toLowerCase().startsWith(npc.getName().toLowerCase() + " shout")) {
+                text = "say " + text.replaceFirst("(?i)^" + java.util.regex.Pattern.quote(npc.getName()) + "\\s*(says|yells|shouts|say|yell|shout)[\\s:,]*['\"]?", "");
+            }
+
+            // 2. If AI output "say Orc says, 'Hello'", swap it to "say Hello"
+            text = text.replaceFirst("(?i)^(say|yell|shout)\\s+" + java.util.regex.Pattern.quote(npc.getName()) + "\\s*(says|yells|shouts|say|yell|shout)[\\s:,]*['\"]?", "$1 ");
+
+            // 3. Clean up hanging leading/trailing quotes applied incorrectly to the message
+            text = text.replaceFirst("(?i)^(say|yell|shout)\\s+['\"]", "$1 ");
+            if (text.endsWith("'") || text.endsWith("\"")) {
+                text = text.substring(0, text.length() - 1);
+            }
+
+            // Destroy emote narration blocks inside asterisks if they forgot the emote syntax
+            text = text.replaceAll("\\*.*?\\*", "").trim();
+
             // Enforce the command prefix to have exactly one space after it, ignoring
             // commas/colons/dashes
             String lower = text.toLowerCase();
-            if (lower.startsWith("say") || lower.startsWith("yell") || lower.startsWith("shout")) {
-                text = text.replaceFirst("(?i)^(say|yell|shout)\\s*[:,\\-]?\\s*", "$1 ");
+            if (lower.startsWith("say") || lower.startsWith("yell") || lower.startsWith("shout") || lower.startsWith("emote") || lower.startsWith("me")) {
+                text = text.replaceFirst("(?i)^(say|yell|shout|emote|me)\\s*[:,\\-]?\\s*", "$1 ");
             }
 
             lower = text.toLowerCase();
-            if (lower.startsWith("say ") || lower.startsWith("yell ") || lower.startsWith("shout ")) {
+            if (lower.startsWith("say ") || lower.startsWith("yell ") || lower.startsWith("shout ") || lower.startsWith("emote ") || lower.startsWith("me ")) {
                 log.info("NPC AI Command Execution: {}", text);
                 npc.getCommandQueue().add(text);
                 commandService.processCommand(npc).subscribe();
