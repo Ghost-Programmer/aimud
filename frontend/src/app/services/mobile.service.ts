@@ -31,4 +31,12 @@ export class MobileService {
   deleteMobile(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  getMobileActions(id: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${id}/actions`);
+  }
+
+  saveMobileActions(id: number, actions: any[]): Observable<any[]> {
+    return this.http.post<any[]>(`${this.apiUrl}/${id}/actions`, actions);
+  }
 }

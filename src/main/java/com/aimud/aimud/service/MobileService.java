@@ -2,8 +2,10 @@ package com.aimud.aimud.service;
 
 import com.aimud.aimud.model.Item;
 import com.aimud.aimud.model.Mobile;
+import com.aimud.aimud.model.MobileAction;
 import com.aimud.aimud.model.MobileSkill;
 import com.aimud.aimud.model.Room;
+import com.aimud.aimud.repository.MobileActionRepository;
 import com.aimud.aimud.repository.MobileRepository;
 import com.aimud.aimud.repository.MobileSkillRepository;
 import com.aimud.aimud.types.WearLocation;
@@ -29,6 +31,7 @@ public class MobileService {
     private final MobileSkillRepository mobileSkillRepository;
     private final ItemService itemService;
     private final DatabaseClient databaseClient;
+    private final MobileActionRepository mobileActionRepository;
 
     // In-memory storage for active spawned mobiles
     // Keys are UUIDs to allow multiple instances of the same mobile template, 
@@ -38,12 +41,13 @@ public class MobileService {
 
     public MobileService(MobileRepository mobileRepository, StatService statService,
                          MobileSkillRepository mobileSkillRepository, ItemService itemService,
-                         DatabaseClient databaseClient) {
+                         DatabaseClient databaseClient, MobileActionRepository mobileActionRepository) {
         this.mobileRepository = mobileRepository;
         this.statService = statService;
         this.mobileSkillRepository = mobileSkillRepository;
         this.itemService = itemService;
         this.databaseClient = databaseClient;
+        this.mobileActionRepository = mobileActionRepository;
     }
 
     @Cacheable(value = "mobiles")
@@ -94,8 +98,13 @@ public class MobileService {
                 mobile.setCurrentRoomId(room.getId());
                 mobile.setUserId(null);
                 statService.updateMobileStats(mobile);
-                activeMobiles.put(mobile.getId(), mobile);
-                log.info("Spawned mobile: {} (id: {}) into room {}", mobile.getName(), mobile.getId(), room.getId());
+                
+                // Fetch AI actions into transient list
+                getMobileActions(mobile.getId()).collectList().subscribe(actions -> {
+                    mobile.setActions(actions);
+                    activeMobiles.put(mobile.getId(), mobile);
+                    log.info("Spawned mobile: {} (id: {}) into room {}", mobile.getName(), mobile.getId(), room.getId());
+                });
             } else {
                 log.info("Mobile already spawned in room: {} (id: {})", room.getName(), room.getId());
             }
@@ -137,6 +146,26 @@ public class MobileService {
                 .bind("rank", rank)
                 .fetch().rowsUpdated()
                 .then(mobileSkillRepository.findByMobileIdAndName(mobileId, skillName));
+    }
+
+    // --- ACTION MANAGEMENT ---
+
+    public Flux<MobileAction> getMobileActions(Long mobileId) {
+        log.info("Fetching actions for mobile: {}", mobileId);
+        return mobileActionRepository.findByMobileId(mobileId);
+    }
+
+    public Flux<MobileAction> saveMobileActions(Long mobileId, List<MobileAction> actions) {
+        log.info("Saving {} actions for mobile {}", actions.size(), mobileId);
+        return databaseClient.sql("DELETE FROM mobile_actions WHERE mobile_id = :mobileId")
+                .bind("mobileId", mobileId)
+                .fetch().rowsUpdated()
+                .thenMany(Flux.fromIterable(actions)
+                        .flatMap(action -> {
+                            action.setMobileId(mobileId);
+                            action.setId(null); // Ensure fresh insert
+                            return mobileActionRepository.save(action);
+                        }));
     }
 
     // --- INVENTORY MANAGEMENT ---

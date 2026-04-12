@@ -100,7 +100,8 @@ export class MobileEditorComponent implements OnInit {
       willFollow: [false],
       willLoot: [false],
       usesAi: [false],
-      aiInstructions: [''],
+
+      actions: this.fb.array([]),
 
       // Equipment
       headId: [null],
@@ -127,6 +128,21 @@ export class MobileEditorComponent implements OnInit {
       // Skills
       skills: this.fb.array([])
     });
+  }
+
+  get actionsControls() {
+    return this.mobileForm.get('actions') as FormArray;
+  }
+
+  addAction() {
+    this.actionsControls.push(this.fb.group({
+      description: ['', Validators.required],
+      actionCommand: ['', Validators.required]
+    }));
+  }
+
+  removeAction(index: number) {
+    this.actionsControls.removeAt(index);
   }
 
   loadMobiles() {
@@ -247,6 +263,21 @@ export class MobileEditorComponent implements OnInit {
       });
     }
 
+    // Load actions
+    while (this.actionsControls.length) {
+      this.actionsControls.removeAt(0);
+    }
+    if (mobile.id) {
+      this.mobileService.getMobileActions(mobile.id).subscribe(actions => {
+        actions.forEach(a => {
+          this.actionsControls.push(this.fb.group({
+            description: [a.description],
+            actionCommand: [a.actionCommand]
+          }));
+        });
+      });
+    }
+
     this.mobileForm.patchValue(mobile);
   }
 
@@ -272,7 +303,6 @@ export class MobileEditorComponent implements OnInit {
       willFollow: false,
       willLoot: false,
       usesAi: false,
-      aiInstructions: '',
       factionId: null
     });
     this.invSearchTexts = [];
@@ -280,6 +310,7 @@ export class MobileEditorComponent implements OnInit {
     this.factionRatings = {};
     while (this.inventoryControls.length) this.inventoryControls.removeAt(0);
     while (this.skillsControls.length) this.skillsControls.removeAt(0);
+    while (this.actionsControls.length) this.actionsControls.removeAt(0);
   }
 
   save() {
@@ -294,11 +325,13 @@ export class MobileEditorComponent implements OnInit {
     if (formValue.id) {
       this.mobileService.updateMobile(formValue.id, formValue).subscribe({
         next: (updated) => {
-          this.factionService.updateMobileFactionRatings(formValue.id, this.factionRatings).subscribe({
-            next: () => {
-              this.loadMobiles();
-              this.selectedMobile = null;
-            }
+          this.mobileService.saveMobileActions(formValue.id, formValue.actions || []).subscribe(() => {
+            this.factionService.updateMobileFactionRatings(formValue.id, this.factionRatings).subscribe({
+              next: () => {
+                this.loadMobiles();
+                this.selectedMobile = null;
+              }
+            });
           });
         }
       });
@@ -306,12 +339,14 @@ export class MobileEditorComponent implements OnInit {
       this.mobileService.createMobile(formValue).subscribe({
         next: (created: any) => {
           if (created && created.id) {
-            this.factionService.updateMobileFactionRatings(created.id, this.factionRatings).subscribe({
-              next: () => {
-                this.loadMobiles();
-                this.selectedMobile = null;
-              }
-            });
+              this.mobileService.saveMobileActions(created.id, formValue.actions || []).subscribe(() => {
+                this.factionService.updateMobileFactionRatings(created.id, this.factionRatings).subscribe({
+                  next: () => {
+                    this.loadMobiles();
+                    this.selectedMobile = null;
+                  }
+                });
+              });
           } else {
             this.loadMobiles();
             this.selectedMobile = null;

@@ -141,6 +141,11 @@ public class ConversationService {
                 .filter(m -> !m.getId().equals(npc.getId()))
                 .collect(Collectors.toList());
 
+        if (npc.getActions() == null || npc.getActions().isEmpty()) {
+            processingNpcs.remove(npc.getId());
+            return;
+        }
+
         StringBuilder prompt = new StringBuilder();
         prompt.append("You are an NPC in a Multi-User Dungeon (MUD).\n");
         prompt.append("You are currently in: ").append(room.getName()).append("\n");
@@ -187,42 +192,19 @@ public class ConversationService {
             }
         }
 
-        prompt.append("\nYour Dialogue Rules:\n");
-        prompt.append("1. Roleplay strictly. You are completely immersed in a high-fantasy world.\n");
-        prompt.append(
-                "2. You have ABSOLUTELY NO knowledge of computers, AI, servers, patches, MUDs, coding, or the real world. NEVER mention them.\n");
-        prompt.append("3. You are an NPC entity living your life. You are not a player or an assistant.\n");
-        prompt.append("4. Adjust your vocabulary based on your Stats: Int=" + npc.getIntelligence() + ", Wis="
-                + npc.getWisdom() + ", Cha=" + npc.getCharisma() + ".\n");
-        prompt.append("5. Tone your response based on Faction Ratings (80-100=Allied, 21-79=Neutral, 0-20=Hostile).\n");
-        prompt.append("6. Acknowledge your health (HP) and magic (MP) if severely injured.\n");
-        prompt.append("7. READ the Chat History carefully. The very last line is what you must react to now.\n");
-        prompt.append(
-                "8. DO NOT REPEAT YOURSELF. If you have already said something in the history, say something completely different and new.\n");
-        prompt.append("9. Incorporate your Race (" + raceName + ") and Class (" + className
-                + ") into how you speak and what you know.\n");
-        prompt.append(
-                "10. Push the conversation forward. Ask questions, make observations, or demand things based on the players' actions.\n");
-        prompt.append("11. ONLY output your action command. DO NOT output internal thoughts, JSON, or markdown.\n");
-
-        if (npc.getAiInstructions() != null && !npc.getAiInstructions().trim().isEmpty()) {
-            prompt.append("12. " + npc.getAiInstructions().trim()).append("\n");
+        prompt.append("\nAvailable Actions:\n");
+        for (int i = 0; i < npc.getActions().size(); i++) {
+            prompt.append((i + 1)).append(". ").append(npc.getActions().get(i).getDescription()).append("\n");
         }
 
-        prompt.append("\nIf there is absolutely nothing to say, output EXACTLY ONE WORD: IGNORE\n");
-        prompt.append("Otherwise, output your action using EXACTLY ONE of these formats:\n");
-        prompt.append("say <message>\n");
-        prompt.append("yell <message>\n");
-        prompt.append("shout <message>\n");
-        prompt.append("emote <action>\n");
-
-        prompt.append(
-                "\nCRITICAL SYNTAX RULE: DO NOT include your own name or the word 'says' in the message! The server does that automatically.\n");
-        prompt.append("BAD: say " + npc.getName() + " says, 'Hello there!'\n");
-        prompt.append("GOOD: say Hello there!\n");
-        prompt.append("BAD: emote *looks around*\n");
-        prompt.append("GOOD: emote looks around.\n");
-        prompt.append("DO NOT output quotes around your message unless you literally want to quote something.\n");
+        prompt.append("\nYour Decision Rules:\n");
+        prompt.append("1. Roleplay strictly. You are completely immersed in a high-fantasy world.\n");
+        prompt.append("2. READ the Chat History carefully to understand the context.\n");
+        prompt.append("3. Choose ONE OR MORE of the Available Actions based on the context.\n");
+        prompt.append("4. ONLY output a comma-separated list of the numbers of the actions you want to take.\n");
+        prompt.append("5. For example: 1,3\n");
+        prompt.append("6. If there is absolutely nothing to do, output EXACTLY ONE WORD: IGNORE\n");
+        prompt.append("7. DO NOT output internal thoughts, JSON, quotes, or markdown.\n");
 
         org.springframework.ai.ollama.api.OllamaOptions options = new org.springframework.ai.ollama.api.OllamaOptions();
         options.setTemperature(0.95); // Increase temperature drastically
@@ -247,60 +229,25 @@ public class ConversationService {
                 return;
             }
 
-            // Strip out markdown hallucinations just in case
-            if (text.startsWith("```")) {
-                text = text.replaceAll("```[a-zA-Z]*", "").replaceAll("```", "").trim();
-            }
-
-            // Clean up any Ollama JSON/Array/Quote wrapping hallucinations
-            text = text.replaceAll("[\\{\\}\\[\\]\"]", "");
-
-            // 1. If AI output exactly "Orc says, 'Hello'", swap it to "say Hello"
-            if (text.toLowerCase().startsWith(npc.getName().toLowerCase() + " say") ||
-                    text.toLowerCase().startsWith(npc.getName().toLowerCase() + " yell") ||
-                    text.toLowerCase().startsWith(npc.getName().toLowerCase() + " shout")) {
-                text = "say " + text.replaceFirst("(?i)^" + java.util.regex.Pattern.quote(npc.getName())
-                        + "\\s*(says|yells|shouts|say|yell|shout)[\\s:,]*['\"]?", "");
-            }
-
-            // 2. If AI output "say Orc says, 'Hello'", swap it to "say Hello"
-            text = text.replaceFirst("(?i)^(say|yell|shout)\\s+" + java.util.regex.Pattern.quote(npc.getName())
-                    + "\\s*(says|yells|shouts|say|yell|shout)[\\s:,]*['\"]?", "$1 ");
-
-            // 3. Clean up hanging leading/trailing quotes applied incorrectly to the
-            // message
-            text = text.replaceFirst("(?i)^(say|yell|shout)\\s+['\"]", "$1 ");
-            if (text.endsWith("'") || text.endsWith("\"")) {
-                text = text.substring(0, text.length() - 1);
-            }
-
-            // Destroy emote narration blocks inside asterisks if they forgot the emote
-            // syntax
-            text = text.replaceAll("\\*.*?\\*", "").trim();
-
-            // Enforce the command prefix to have exactly one space after it, ignoring
-            // commas/colons/dashes
-            String lower = text.toLowerCase();
-            if (lower.startsWith("say") || lower.startsWith("yell") || lower.startsWith("shout")
-                    || lower.startsWith("emote") || lower.startsWith("me")) {
-                text = text.replaceFirst("(?i)^(say|yell|shout|emote|me)\\s*[:,\\-]?\\s*", "$1 ");
-            }
-
-            lower = text.toLowerCase();
-            if (lower.startsWith("say ") || lower.startsWith("yell ") || lower.startsWith("shout ")
-                    || lower.startsWith("emote ") || lower.startsWith("me ")) {
-                log.info("NPC AI Command Execution: {}", text);
-                npc.getCommandQueue().add(text);
-                commandService.processCommand(npc).subscribe();
-            } else {
-                // Block massive JSON echoes dynamically
-                if (text.contains("effectType") || text.contains("modifier1")) {
-                    log.info("NPC AI hallucinated system json. Ignoring.");
-                    return;
+            // Clean up any Ollama wrapping hallucinations
+            text = text.replaceAll("[a-zA-Z`\\[\\]\\{\\}\"\\n]", "").trim();
+            log.info("NPC AI Response: {}", text);
+            String[] indices = text.split(",");
+            for (String indexStr : indices) {
+                indexStr = indexStr.trim();
+                if (!indexStr.isEmpty()) {
+                    try {
+                        int index = Integer.parseInt(indexStr) - 1;
+                        if (npc.getActions() != null && index >= 0 && index < npc.getActions().size()) {
+                            String command = npc.getActions().get(index).getActionCommand();
+                            log.info("NPC AI Action Execution: {}", command);
+                            npc.getCommandQueue().add(command);
+                            commandService.processCommand(npc).subscribe();
+                        }
+                    } catch (NumberFormatException e) {
+                        log.warn("NPC AI returned invalid index: {}", indexStr);
+                    }
                 }
-                log.info("NPC AI Fallback Say Execution: {}", text);
-                npc.getCommandQueue().add("say " + text);
-                commandService.processCommand(npc).subscribe();
             }
         } finally {
             processingNpcs.remove(npc.getId());

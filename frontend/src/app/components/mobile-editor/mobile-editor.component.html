@@ -194,10 +194,15 @@
       </div>
 
       <div class="form-section mt-3" *ngIf="mobileForm.get('usesAi')?.value">
-        <h4>Specific AI Instructions</h4>
-        <textarea formControlName="aiInstructions" rows="10"
-                  style="width: 100%; border-radius: 4px; padding: 12px; background: rgba(0, 0, 0, 0.3); color: white; border: 1px solid rgba(255, 255, 255, 0.1); resize: vertical; overflow-y: auto; font-family: monospace;"
-                  placeholder="Additional prompt instructions for this NPC..."></textarea>
+        <h4>AI Configuration (Available Actions)</h4>
+        <div formArrayName="actions">
+          <div *ngFor="let aiAction of actionsControls.controls; let i=index" [formGroupName]="i" class="array-row" style="margin-bottom: 10px;">
+            <input formControlName="description" placeholder="AI Option Description (e.g. 'Greet the player')" type="text" style="flex: 2" />
+            <input formControlName="actionCommand" placeholder="MUD Command (e.g. 'say Hello!')" type="text" style="flex: 2" />
+            <button (click)="removeAction(i)" class="btn-remove" type="button">×</button>
+          </div>
+        </div>
+        <button (click)="addAction()" class="btn-add" type="button" style="margin-top: 5px;">Add Option</button>
       </div>
 
       <div class="form-actions">

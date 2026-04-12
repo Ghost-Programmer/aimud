@@ -51,4 +51,14 @@ public class MobileController {
         log.info("REST request to delete mobile: {}", id);
         return mobileService.deleteMobile(id);
     }
+
+    @GetMapping("/{id}/actions")
+    public Flux<com.aimud.aimud.model.MobileAction> getActions(@PathVariable Long id) {
+        return mobileService.getMobileActions(id);
+    }
+
+    @PostMapping("/{id}/actions")
+    public Flux<com.aimud.aimud.model.MobileAction> saveActions(@PathVariable Long id, @RequestBody java.util.List<com.aimud.aimud.model.MobileAction> actions) {
+        return mobileService.saveMobileActions(id, actions);
+    }
 }
