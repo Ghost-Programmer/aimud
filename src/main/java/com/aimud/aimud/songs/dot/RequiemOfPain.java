@@ -32,6 +32,11 @@ public class RequiemOfPain extends Song {
 
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile target) {
+        if (target != null && !this.characterService.canTarget(target)) {
+            this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + target.getName() + ".");
+            return false;
+        }
+
         if (target == null) {
             if (mobile.getUserId() != null) this.communicationService.sendTextMessage(mobile, "\n\nYou must specify a target.");
             return false;

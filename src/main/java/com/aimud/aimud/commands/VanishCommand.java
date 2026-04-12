@@ -91,7 +91,7 @@ public class VanishCommand implements Command {
                 }
                 
                 // Usually vanishing cancels the active target locking
-                m.setTarget(null);
+                this.characterService.setTarget(m, null);
             }
         }
 

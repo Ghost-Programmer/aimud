@@ -95,7 +95,7 @@ public abstract class Spell {
                 }
             });
         }
-        return targets;
+        return targets.stream().filter(this.characterService::canTarget).collect(java.util.stream.Collectors.toList());
     }
 
     int getDamage(Mobile mobile) {
@@ -116,7 +116,7 @@ public abstract class Spell {
             boolean isDebuff = effect.getModifier1() < 0;
             if (isDebuff) {
                 if (caster.getTarget() == null) {
-                    caster.setTarget(mobile);
+                    characterService.setTarget(caster, mobile);
                 }
                 int hateAmount = Math.abs(effect.getModifier1());
                 if (mobile.isHateDebuffer()) hateAmount *= 5;

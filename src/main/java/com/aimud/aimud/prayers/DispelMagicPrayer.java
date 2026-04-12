@@ -48,6 +48,11 @@ public class DispelMagicPrayer extends Prayer {
 
     @Override
     public boolean pray(Mobile mobile, Prayer prayer, Mobile target) {
+        if (target != null && !this.characterService.canTarget(target)) {
+            this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + target.getName() + ".");
+            return false;
+        }
+
         if (target == null) {
             target = getDefaultTarget(mobile);
             if (target == null) {

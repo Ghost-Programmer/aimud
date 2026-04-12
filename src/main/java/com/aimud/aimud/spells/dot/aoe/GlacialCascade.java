@@ -41,6 +41,11 @@ public class GlacialCascade extends Spell {
 
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile primaryTarget) {
+        if (primaryTarget != null && !this.characterService.canTarget(primaryTarget)) {
+            this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + primaryTarget.getName() + ".");
+            return false;
+        }
+
         if (primaryTarget == null) {
             if (mobile.getUserId() != null) {
                 this.communicationService.sendTextMessage(mobile, "\n\nYou must specify a target.");

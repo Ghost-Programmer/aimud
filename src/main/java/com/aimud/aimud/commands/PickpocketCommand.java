@@ -93,7 +93,7 @@ public class PickpocketCommand implements Command {
 
             // Auto-retaliate
             if (target.getTarget() == null) {
-                target.setTarget(thief);
+                if (!this.characterService.setTarget(target, thief)) return Mono.empty();
             }
             return Mono.empty();
         }

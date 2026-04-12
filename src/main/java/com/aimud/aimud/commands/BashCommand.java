@@ -97,10 +97,10 @@ public class BashCommand implements Command {
 
         // Auto-attack if not already attacking
         if (attacker.getTarget() != target) {
-            attacker.setTarget(target);
+            if (!this.characterService.setTarget(attacker, target)) return Mono.empty();
         }
         if (target.getTarget() == null) {
-            target.setTarget(attacker);
+            if (!this.characterService.setTarget(target, attacker)) return Mono.empty();
             if (target.getUserId() != null) {
                 communicationService.sendTextMessage(target, "\n\n" + attacker.getName() + " is attacking you!");
             }

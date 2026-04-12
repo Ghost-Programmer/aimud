@@ -36,6 +36,11 @@ public class BalladOfBlood extends Song {
 
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile primaryTarget) {
+        if (primaryTarget != null && !this.characterService.canTarget(primaryTarget)) {
+            this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + primaryTarget.getName() + ".");
+            return false;
+        }
+
         if (primaryTarget == null) {
             if (mobile.getUserId() != null) this.communicationService.sendTextMessage(mobile, "\n\nYou must specify a target.");
             return false;

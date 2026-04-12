@@ -54,6 +54,11 @@ public class HpRegen extends Spell {
 
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile target) {
+        if (target != null && !this.characterService.canTarget(target)) {
+            this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + target.getName() + ".");
+            return false;
+        }
+
         int skillRank = skillService.getSkillRank(mobile, getSpellSkillName());
         int tickCount = skillService.getSkillRank(mobile, SkillsType.CAST_MAGIC) + 5;
 

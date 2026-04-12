@@ -100,6 +100,7 @@ export class MobileEditorComponent implements OnInit {
       willFollow: [false],
       willLoot: [false],
       usesAi: [false],
+      nonCombat: [false],
 
       actions: this.fb.array([]),
 
@@ -303,6 +304,7 @@ export class MobileEditorComponent implements OnInit {
       willFollow: false,
       willLoot: false,
       usesAi: false,
+      nonCombat: false,
       factionId: null
     });
     this.invSearchTexts = [];

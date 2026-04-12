@@ -31,6 +31,11 @@ public class SonicLance extends Song {
 
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile target) {
+        if (target != null && !this.characterService.canTarget(target)) {
+            this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + target.getName() + ".");
+            return false;
+        }
+
         if (target == null) {
             if (mobile.getUserId() != null) this.communicationService.sendTextMessage(mobile, "\n\nYou must specify a target.");
             return false;
@@ -61,7 +66,7 @@ public class SonicLance extends Song {
         int hateAmount = damage;
         target.addHate(mobile.getId(), hateAmount);
         if (mobile.getTarget() == null) {
-            mobile.setTarget(target);
+            if (!this.characterService.setTarget(mobile, target)) return false;
         }
 
         if (target.getCurrentHp() <= 0) {
@@ -73,11 +78,11 @@ public class SonicLance extends Song {
                 this.communicationService.sendTextMessage(target, deathMsg);
             }
             this.communicationService.roomMessage(target, deathMsg);
-            target.setTarget(null);
-            if (mobile.getTarget() == target) mobile.setTarget(null);
+            this.characterService.setTarget(target, null);
+            if (mobile.getTarget() == target) this.characterService.setTarget(mobile, null);
             this.characterService.findAllByRoomId(target.getCurrentRoomId()).forEach(m -> m.removeHate(target.getId()));
         } else {
-            if (target.getTarget() == null) target.setTarget(mobile);
+            if (target.getTarget() == null) if (!this.characterService.setTarget(target, mobile)) return false;
         }
 
         if (target.getUserId() != null) this.characterService.save(target).subscribe();

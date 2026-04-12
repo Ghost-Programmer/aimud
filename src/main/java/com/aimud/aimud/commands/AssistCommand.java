@@ -46,9 +46,12 @@ public class AssistCommand implements Command {
             return Mono.empty();
         }
 
-        Mobile.setTarget(targetOfTarget);
-        communicationService.sendTextMessage(Mobile, "\n\nYou jump in to assist " + assistTarget.getName() + " in the fight!");
-        communicationService.roomMessage(Mobile, "\n" + Mobile.getName() + " jumps in to assist " + assistTarget.getName() + "!");
+        if (this.characterService.setTarget(Mobile, targetOfTarget)) {
+            communicationService.sendTextMessage(Mobile, "\n\nYou jump in to assist " + assistTarget.getName() + " in the fight!");
+            communicationService.roomMessage(Mobile, "\n" + Mobile.getName() + " jumps in to assist " + assistTarget.getName() + "!");
+        } else {
+            communicationService.sendTextMessage(Mobile, "\n\nYou cannot assist against that target.");
+        }
 
         return Mono.empty();
     }

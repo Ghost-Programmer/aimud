@@ -187,7 +187,7 @@ public class TickService {
     }
 
     private void initiateAssist(Mobile observer, Mobile targetToAttack, Mobile personHelping) {
-        observer.setTarget(targetToAttack);
+        if (!characterService.setTarget(observer, targetToAttack)) return;
         communicationService.roomMessage(observer, "\n" + observer.getName() + " jumps into the fray to assist " + personHelping.getName() + "!");
         if (targetToAttack.getUserId() != null) communicationService.sendTextMessage(targetToAttack, "\n\n" + observer.getName() + " attacks you!");
     }
@@ -201,7 +201,11 @@ public class TickService {
                     .filter(c -> c.getId().equals(topHateId)).findFirst().orElse(null);
                     
                 if (newTarget != null && newTarget.getCurrentHp() > 0) {
-                    attacker.setTarget(newTarget);
+                    if (!characterService.setTarget(attacker, newTarget)) {
+                        attacker.removeHate(highestHateId);
+                        highestHateId = attacker.getHighestHateTargetId();
+                        continue;
+                    }
                     if (attacker.isWillFollow()) attacker.setFollowingId(newTarget.getId());
                     break;
                 } else {
@@ -223,14 +227,14 @@ public class TickService {
             }
             // Do not clear target if willFollow is true, wait until next action
             if (!attacker.isWillFollow()) {
-                attacker.setTarget(null);
+                characterService.setTarget(attacker, null);
             }
             return true;
         }
 
         // Auto-retaliate if target doesn't have a target
         if (target.getTarget() == null) {
-            target.setTarget(attacker);
+            if (!characterService.setTarget(target, attacker)) return false;
             if (target.isWillFollow()) target.setFollowingId(attacker.getId());
             if (target.getUserId() != null) {
                 communicationService.sendTextMessage(target, "\n\n" + attacker.getName() + " is attacking you!");
@@ -553,7 +557,7 @@ public class TickService {
             factionService.handleKillPenalty(attacker, target)
                     .doOnError(e -> log.error("Failed to handle faction kill penalty", e))
                     .subscribe();
-            attacker.setTarget(null);
+            characterService.setTarget(attacker, null);
         } else {
             if (target.getUserId() != null) {
                 communicationService.sendTextMessage(target, "\n\nYou have died...");
@@ -568,7 +572,7 @@ public class TickService {
         characterService.findAllByRoomId(target.getCurrentRoomId())
                 .forEach(m -> m.removeHate(target.getId()));
 
-        target.setTarget(null);
+        characterService.setTarget(target, null);
         
         if (target.getUserId() != null) communicationService.sendCharacterUpdate(target);
         if (attacker != null && attacker.getUserId() != null) communicationService.sendCharacterUpdate(attacker);

@@ -101,6 +101,24 @@ public class CharacterService {
         return Mono.empty();
     }
 
+    public boolean canTarget(Mobile target) {
+        if (target == null) return false;
+        return !target.isNonCombat();
+    }
+
+    public boolean setTarget(Mobile attacker, Mobile target) {
+        if (target == null) {
+            attacker.setTarget(null);
+            return true;
+        }
+
+        if (canTarget(target)) {
+            attacker.setTarget(target);
+            return true;
+        }
+        return false;
+    }
+
     public List<Mobile> getAvailableCharacters() {
         return new ArrayList<>(availableCharacters.values());
     }
@@ -752,20 +770,22 @@ public class CharacterService {
                                     // If character hates resident
                                     if (this.factionService.getFactionRatingSync(character, res.getFactionId()) < 20
                                             && character.getTarget() == null) {
-                                        character.setTarget(res);
-                                        this.communicationService.roomMessage(character, "\n" + character.getName()
-                                                + " attacks " + res.getName() + " on sight!");
-                                        this.communicationService.sendTextMessage(character,
-                                                "\n\nYou attack " + res.getName() + " on sight!");
+                                        if (this.setTarget(character, res)) {
+                                            this.communicationService.roomMessage(character, "\n" + character.getName()
+                                                    + " attacks " + res.getName() + " on sight!");
+                                            this.communicationService.sendTextMessage(character,
+                                                    "\n\nYou attack " + res.getName() + " on sight!");
+                                        }
                                     }
                                     // If resident hates character
                                     if (this.factionService.getFactionRatingSync(res, character.getFactionId()) < 20
                                             && res.getTarget() == null) {
-                                        res.setTarget(character);
-                                        this.communicationService.roomMessage(res, "\n" + res.getName() + " attacks "
-                                                + character.getName() + " on sight!");
-                                        this.communicationService.sendTextMessage(character,
-                                                "\n\n" + res.getName() + " attacks you on sight!");
+                                        if (this.setTarget(res, character)) {
+                                            this.communicationService.roomMessage(res, "\n" + res.getName() + " attacks "
+                                                    + character.getName() + " on sight!");
+                                            this.communicationService.sendTextMessage(character,
+                                                    "\n\n" + res.getName() + " attacks you on sight!");
+                                        }
                                     }
                                 }
 

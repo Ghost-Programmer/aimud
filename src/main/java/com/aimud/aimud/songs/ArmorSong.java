@@ -58,6 +58,11 @@ public class ArmorSong extends Song {
 
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile target) {
+        if (target != null && !this.characterService.canTarget(target)) {
+            this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + target.getName() + ".");
+            return false;
+        }
+
         int skillRank = skillService.getSkillRank(mobile, getSongSkillName());
         int tickCount = Math.min(5, 1 + (skillService.getSkillRank(mobile, SkillsType.SING_SONG) / 20));
 

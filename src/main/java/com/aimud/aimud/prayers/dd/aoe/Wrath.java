@@ -35,6 +35,11 @@ public class Wrath extends Prayer {
 
     @Override
     public boolean pray(Mobile mobile, Prayer prayer, Mobile target) {
+        if (target != null && !this.characterService.canTarget(target)) {
+            this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + target.getName() + ".");
+            return false;
+        }
+
         if (target == null) {
             if (mobile.getUserId() != null) this.communicationService.sendTextMessage(mobile, "\n\nYou need a target to center your wrath.");
             return false;
@@ -63,7 +68,7 @@ public class Wrath extends Prayer {
             tgt.setCurrentHp(tgt.getCurrentHp() - damage);
             tgt.addHate(mobile.getId(), damage);
             if (mobile.getTarget() == null) {
-                mobile.setTarget(tgt);
+                if (!this.characterService.setTarget(mobile, tgt)) continue;
             }
 
             if (tgt.getUserId() != null) {
@@ -79,11 +84,11 @@ public class Wrath extends Prayer {
                     this.communicationService.sendTextMessage(tgt, deathMsg);
                 }
                 this.communicationService.roomMessage(tgt, deathMsg);
-                tgt.setTarget(null);
-                if (mobile.getTarget() == tgt) mobile.setTarget(null);
+                this.characterService.setTarget(tgt, null);
+                if (mobile.getTarget() == tgt) this.characterService.setTarget(mobile, null);
                 this.characterService.findAllByRoomId(tgt.getCurrentRoomId()).forEach(m -> m.removeHate(tgt.getId()));
             } else {
-                if (tgt.getTarget() == null) tgt.setTarget(mobile);
+                if (tgt.getTarget() == null) if (!this.characterService.setTarget(tgt, mobile)) continue;
             }
 
             if (tgt.getUserId() != null) this.characterService.save(tgt).subscribe();

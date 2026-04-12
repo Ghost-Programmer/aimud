@@ -80,6 +80,9 @@ public class Mobile {
     @Column("uses_ai")
     private boolean usesAi;
 
+    @Column("non_combat")
+    private boolean nonCombat;
+
     @Transient
     private List<MobileAction> actions = new ArrayList<>();
 

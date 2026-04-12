@@ -43,5 +43,6 @@ export interface Mobile {
   willFollow?: boolean;
   willLoot?: boolean;
   usesAi?: boolean;
+  nonCombat?: boolean;
   actions?: { id?: number, mobileId?: number, actionCommand: string, description: string }[];
 }

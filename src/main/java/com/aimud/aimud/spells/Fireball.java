@@ -36,6 +36,11 @@ public class Fireball extends Spell {
 
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile target) {
+        if (target != null && !this.characterService.canTarget(target)) {
+            this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + target.getName() + ".");
+            return false;
+        }
+
         if (target == null) {
             this.communicationService.sendTextMessage(mobile, "\n\nYou need a target to center your fireball on.");
             return false;
@@ -92,7 +97,7 @@ public class Fireball extends Spell {
                 hateAmount *= 5;
             tgt.addHate(mobile.getId(), hateAmount);
             if (mobile.getTarget() == null) {
-                mobile.setTarget(tgt);
+                if (!this.characterService.setTarget(mobile, tgt)) continue;
             }
 
             if (tgt.getCurrentHp() <= 0) {
@@ -107,16 +112,16 @@ public class Fireball extends Spell {
                 }
                 this.communicationService.roomMessage(tgt, deathMsg);
 
-                tgt.setTarget(null);
+                this.characterService.setTarget(tgt, null);
                 if (mobile.getTarget() == tgt) {
-                    mobile.setTarget(null);
+                    this.characterService.setTarget(mobile, null);
                 }
 
                 this.characterService.findAllByRoomId(tgt.getCurrentRoomId())
                         .forEach(m -> m.removeHate(tgt.getId()));
             } else {
                 if (tgt.getTarget() == null) {
-                    tgt.setTarget(mobile);
+                    if (!this.characterService.setTarget(tgt, mobile)) continue;
                 }
             }
 

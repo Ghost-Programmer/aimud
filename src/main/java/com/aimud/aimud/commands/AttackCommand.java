@@ -43,9 +43,12 @@ public class AttackCommand implements Command {
                             .orElse(null);
 
                     if (pcTarget != null) {
-                        Mobile.setTarget(pcTarget);
-                        communicationService.sendTextMessage(Mobile, "\n\nYou charge towards " + pcTarget.getName() + " and attack!");
-                        communicationService.roomMessage(Mobile, "\n" + Mobile.getName() + " charges towards " + pcTarget.getName() + " and attacks!");
+                        if (characterService.setTarget(Mobile, pcTarget)) {
+                            communicationService.sendTextMessage(Mobile, "\n\nYou charge towards " + pcTarget.getName() + " and attack!");
+                            communicationService.roomMessage(Mobile, "\n" + Mobile.getName() + " charges towards " + pcTarget.getName() + " and attacks!");
+                        } else {
+                            communicationService.sendTextMessage(Mobile, "\n\nYou cannot attack " + pcTarget.getName() + ".");
+                        }
                         return Mono.empty();
                     }
 
@@ -61,9 +64,12 @@ public class AttackCommand implements Command {
                             .filter(m -> m.getName().toLowerCase().contains(targetName))
                             .findFirst()
                             .map(npcTarget -> {
-                                Mobile.setTarget(npcTarget);
-                                communicationService.sendTextMessage(Mobile, "\n\nYou charge towards " + npcTarget.getName() + " and attack!");
-                                communicationService.roomMessage(Mobile, "\n" + Mobile.getName() + " charges towards " + npcTarget.getName() + " and attacks!");
+                                if (characterService.setTarget(Mobile, npcTarget)) {
+                                    communicationService.sendTextMessage(Mobile, "\n\nYou charge towards " + npcTarget.getName() + " and attack!");
+                                    communicationService.roomMessage(Mobile, "\n" + Mobile.getName() + " charges towards " + npcTarget.getName() + " and attacks!");
+                                } else {
+                                    communicationService.sendTextMessage(Mobile, "\n\nYou cannot attack " + npcTarget.getName() + ".");
+                                }
                                 return Mono.empty();
                             }).orElse(Mono.defer(() -> {
                                 log.info("No mobiles found in room: {} by name: {}", room.getName(), targetName);

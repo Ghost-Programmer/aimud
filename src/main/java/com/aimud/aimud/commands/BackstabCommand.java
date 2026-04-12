@@ -76,6 +76,11 @@ public class BackstabCommand implements Command {
     }
 
     private Mono<Void> executeBackstab(Mobile attacker, Mobile target) {
+        if (!characterService.canTarget(target)) {
+            communicationService.sendTextMessage(attacker, "\n\nYou cannot attack " + target.getName() + ".");
+            return Mono.empty();
+        }
+
         Item weapon = attacker.getPrimary();
         if (weapon == null || !isWeapon(weapon)) {
             communicationService.sendTextMessage(attacker, "\n\nYou need a weapon to backstab!");
@@ -134,10 +139,10 @@ public class BackstabCommand implements Command {
 
         // Auto-retaliate
         if (target.getTarget() == null && target.getCurrentHp() > 0) {
-            target.setTarget(attacker);
+            if (!this.characterService.setTarget(target, attacker)) return Mono.empty();
         }
         if (attacker.getTarget() == null && target.getCurrentHp() > 0) {
-            attacker.setTarget(target);
+            if (!this.characterService.setTarget(attacker, target)) return Mono.empty();
         }
 
         // The death handling will naturally be picked up by the TickService loop on the next pass,

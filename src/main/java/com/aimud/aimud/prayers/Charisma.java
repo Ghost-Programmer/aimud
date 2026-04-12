@@ -58,6 +58,11 @@ public class Charisma extends Prayer {
 
     @Override
     public boolean pray(Mobile mobile, Prayer prayer, Mobile target) {
+        if (target != null && !this.characterService.canTarget(target)) {
+            this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + target.getName() + ".");
+            return false;
+        }
+
         int skillRank = skillService.getSkillRank(mobile, getPrayerSkillName());
         int tickCount = skillService.getSkillRank(mobile, SkillsType.SAY_PRAYER) + 5;
 
