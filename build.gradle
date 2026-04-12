@@ -89,7 +89,8 @@ tasks.named('test') {
 }
 
 node {
-    download = false
+    download = true
+    version = "20.11.0"
     nodeProjectDir = file("${project.projectDir}/frontend")
 }
 
