@@ -39,10 +39,13 @@ public class ConversationService {
 
     @org.springframework.scheduling.annotation.Scheduled(fixedRate = 10000)
     public void processIdleConversations() {
+        log.info("Processing idle conversations...");
         List<Mobile> npcs = mobileService.getActiveMobiles().stream().filter(m -> m.isUsesAi())
                 .collect(Collectors.toList());
-        if (npcs == null)
+        if (npcs == null || npcs.isEmpty()) {
+            log.info("No Mobiles with AI Chat enabled found.");
             return;
+        }
 
         for (Mobile npc : npcs) {
             // Skip dead, actively fighting, unplaced, or currently thinking NPCs
@@ -75,6 +78,7 @@ public class ConversationService {
         List<Mobile> npcs = mobileService.getMobilesInRoom(roomId).stream().filter(m -> m.isUsesAi())
                 .collect(Collectors.toList());
         if (npcs == null || npcs.isEmpty()) {
+            log.info("No Mobiles with AI Chat enabled found in room " + roomId);
             return;
         }
 
@@ -115,6 +119,7 @@ public class ConversationService {
 
         // Skip inference engine entirely if there are zero players in the room!
         if (players.isEmpty()) {
+            log.info("No players in room " + room.getId());
             processingNpcs.remove(npc.getId());
             return;
         }
@@ -123,9 +128,8 @@ public class ConversationService {
         // not trigger again.
         if (!history.isEmpty()) {
             String lastMsg = history.get(history.size() - 1);
-            if (lastMsg.startsWith(npc.getName() + " says") ||
-                    lastMsg.startsWith(npc.getName() + " yells") ||
-                    lastMsg.startsWith(npc.getName() + " shouts")) {
+            if (lastMsg.startsWith(npc.getName())) {
+                log.info("NPC " + npc.getName() + " was the last one to speak");
                 processingNpcs.remove(npc.getId());
                 return;
             }
