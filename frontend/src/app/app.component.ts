@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, OnDestroy} from '@angular/core';
 import {Router, RouterOutlet} from '@angular/router';
 import {RegisterDialogComponent} from './components/register-dialog/register-dialog.component';
 import {LoginDialogComponent} from './components/login-dialog/login-dialog.component';
@@ -6,6 +6,7 @@ import {HttpClient} from '@angular/common/http';
 import {CommonModule} from '@angular/common';
 import {Title} from '@angular/platform-browser';
 import {StatusService, SystemStatus} from './services/status.service';
+import {Subscription, interval} from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -14,7 +15,7 @@ import {StatusService, SystemStatus} from './services/status.service';
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   title = 'frontend';
   systemStatus?: SystemStatus;
 
@@ -26,12 +27,20 @@ export class AppComponent implements OnInit {
   isRegisterDialogOpen = false;
   isLoginDialogOpen = false;
 
+  private statusSubscription?: Subscription;
+
   constructor(
     private http: HttpClient,
     public router: Router,
     private statusService: StatusService,
     private titleService: Title
   ) {
+  }
+
+  ngOnDestroy() {
+    if (this.statusSubscription) {
+      this.statusSubscription.unsubscribe();
+    }
   }
 
   openRegisterDialog() {
@@ -53,20 +62,12 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.titleService.setTitle(this.serverName);
 
-    this.statusService.getSystemStatus().subscribe({
-      next: (data) => {
-        this.systemStatus = data;
-      },
-      error: (error) => {
-        console.error('Error fetching backend status:', error);
-        this.systemStatus = {
-          status: 'OFFLINE',
-          version: '---',
-          uptime: '---',
-          database: 'Disconnected',
-          llmStatus: 'Disconnected',
-          llmModel: '---'
-        };
+    this.fetchSystemStatus();
+    
+    // Poll every 60 seconds (60000 ms) only when on the main page
+    this.statusSubscription = interval(60000).subscribe(() => {
+      if (this.router.url === '/') {
+        this.fetchSystemStatus();
       }
     });
 
@@ -88,6 +89,25 @@ export class AppComponent implements OnInit {
         console.error('Error fetching server settings:', error);
         this.titleService.setTitle(this.serverName || 'AI Mud');
         this.settingsLoaded = true;
+      }
+    });
+  }
+
+  private fetchSystemStatus() {
+    this.statusService.getSystemStatus().subscribe({
+      next: (data) => {
+        this.systemStatus = data;
+      },
+      error: (error) => {
+        console.error('Error fetching backend status:', error);
+        this.systemStatus = {
+          status: 'OFFLINE',
+          version: '---',
+          uptime: '---',
+          database: 'Disconnected',
+          llmStatus: 'Disconnected',
+          llmModel: '---'
+        };
       }
     });
   }
