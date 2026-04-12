@@ -23,6 +23,7 @@ public class CommandService {
     private final CommunicationService communicationService;
 
     private final Map<String, Command> taskMap = new HashMap<>();
+    private final java.util.List<String> emoteCommands = new java.util.ArrayList<>();
 
     public CommandService(ApplicationContext context, CommunicationService communicationService) {
         this.context = context;
@@ -41,6 +42,9 @@ public class CommandService {
             if (annotation != null) {
                 String key = annotation.name();
                 taskMap.put(key, bean);
+                if (annotation.isEmote()) {
+                    emoteCommands.add(key);
+                }
             }
         }
 
@@ -53,6 +57,10 @@ public class CommandService {
 
     public Map<String, Command> getAllTasks() {
         return new HashMap<>(taskMap); // Return a copy for immutability
+    }
+
+    public java.util.List<String> getEmoteCommands() {
+        return java.util.Collections.unmodifiableList(emoteCommands);
     }
 
     public Mono<Void> processCommand(Mobile character) {

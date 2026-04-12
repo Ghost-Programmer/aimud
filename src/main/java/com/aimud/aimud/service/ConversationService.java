@@ -216,6 +216,22 @@ public class ConversationService {
             }
         }
 
+        // Add Emotes
+        for (String emote : commandService.getEmoteCommands()) {
+            com.aimud.aimud.model.MobileAction emoteAct = new com.aimud.aimud.model.MobileAction();
+            emoteAct.setDescription("Emote: " + emote);
+            emoteAct.setActionCommand(emote);
+            availableActions.add(emoteAct);
+            
+            // Allow targeted emotes to players
+            for (Mobile p : players) {
+                com.aimud.aimud.model.MobileAction targetEmoteAct = new com.aimud.aimud.model.MobileAction();
+                targetEmoteAct.setDescription("Emote: " + emote + " at " + p.getName());
+                targetEmoteAct.setActionCommand(emote + " " + p.getName());
+                availableActions.add(targetEmoteAct);
+            }
+        }
+
         log.info("Evaluating NPC conversation for {}. Found {} available actions.", npc.getName(), availableActions.size());
         if (availableActions.isEmpty()) {
             processingNpcs.remove(npc.getId());

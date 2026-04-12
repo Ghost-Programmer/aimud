@@ -11,4 +11,5 @@ import java.lang.annotation.*;
 @Component
 public @interface MudCommand {
     String name();
+    boolean isEmote() default false;
 }
