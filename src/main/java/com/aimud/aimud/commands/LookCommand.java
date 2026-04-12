@@ -23,8 +23,35 @@ public class LookCommand implements Command {
     @Override
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing look command for Mobile: {}", Mobile.getName());
+        String[] parts = commandLine.trim().split("\\s+", 2);
+        boolean isTargetedLook = parts.length > 1;
+
         return roomService.getRoom(Mobile.getCurrentRoomId())
                 .flatMap(room -> {
+                    if (isTargetedLook) {
+                        String targetName = parts[1].toLowerCase();
+                        
+                        // Look inside corpses
+                        for (com.aimud.aimud.model.Item item : roomService.getTransientItemsInRoom(room.getId())) {
+                            if (item.getItemType() == com.aimud.aimud.types.ItemType.CORPSE && item.getName().toLowerCase().contains(targetName)) {
+                                communicationService.sendTextMessage(Mobile, "\n\nUpon " + item.getName() + " you see:");
+                                if (item.getInventory() == null || item.getInventory().isEmpty()) {
+                                    communicationService.sendTextMessage(Mobile, "Nothing of value.");
+                                } else {
+                                    for (com.aimud.aimud.model.Item lootItem : item.getInventory()) {
+                                        communicationService.sendTextMessage(Mobile, " - " + lootItem.getName());
+                                    }
+                                }
+                                return Mono.empty();
+                            }
+                        }
+                        
+                        // We could look at characters or items here later, but default to nothing found for now
+                        communicationService.sendTextMessage(Mobile, "\n\nYou don't see that here.");
+                        return Mono.empty();
+                    }
+
+                    // Otherwise, regular room look
                     communicationService.sendTextMessage(Mobile, "\n\n" + room.getName() + "\n" + room.getDescription());
 
                     characterService.findAllByRoomId(room.getId()).stream()
