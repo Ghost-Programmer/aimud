@@ -86,6 +86,7 @@ public class ConversationService {
             // Skip dead, actively fighting, or currently processing NPCs
             if (npc == null || npc.getCurrentHp() <= 0 || npc.getTarget() != null
                     || processingNpcs.contains(npc.getId())) {
+                log.info("Skipping NPC " + npc.getName() + " - dead, fighting, or processing");
                 continue;
             }
 
@@ -128,7 +129,8 @@ public class ConversationService {
         // not trigger again.
         if (!history.isEmpty()) {
             String lastMsg = history.get(history.size() - 1);
-            if (lastMsg.startsWith(npc.getName())) {
+            if (lastMsg.startsWith(npc.getName())
+                    && (lastMsg.contains("says") || lastMsg.contains("shouts") || lastMsg.contains("whispers"))) {
                 log.info("NPC " + npc.getName() + " was the last one to speak");
                 processingNpcs.remove(npc.getId());
                 return;

@@ -25,6 +25,10 @@ public class EmoteCommand implements Command {
 
         String text = parts[1];
         
+        if (text.length() > 0 && Character.isUpperCase(text.charAt(0))) {
+            text = Character.toLowerCase(text.charAt(0)) + text.substring(1);
+        }
+        
         // Ensure standard emote grammar (Orc smiles.)
         if (!text.endsWith(".") && !text.endsWith("!") && !text.endsWith("?")) {
             text += ".";
