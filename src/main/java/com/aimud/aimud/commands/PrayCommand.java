@@ -54,10 +54,12 @@ public class PrayCommand implements Command {
 
         if (prayer.getPrayerLevel() > this.skillService.getSkillRank(Mobile, SkillsType.SAY_PRAYER)) {
             communicationService.sendTextMessage(Mobile, "\n\nYou don't have the divine connection to say that prayer yet.");
+            return Mono.empty();
         }
 
         if (prayer.getManaCost(Mobile) > Mobile.getCurrentMana()) {
             communicationService.sendTextMessage(Mobile, "\n\nYou don't have enough mana to say that prayer.");
+            return Mono.empty();
         }
 
         Mobile target = prayer.getTarget(Mobile, parts);

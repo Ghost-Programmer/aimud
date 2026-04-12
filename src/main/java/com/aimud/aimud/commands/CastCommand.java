@@ -55,10 +55,12 @@ public class CastCommand implements Command {
 
         if (spell.getSpellLevel() > this.skillService.getSkillRank(Mobile, SkillsType.CAST_MAGIC)) {
             communicationService.sendTextMessage(Mobile, "\n\nYou don't have the magical ability to cast that spell yet.");
+            return Mono.empty();
         }
 
         if (spell.getManaCost(Mobile) > Mobile.getCurrentMana()) {
             communicationService.sendTextMessage(Mobile, "\n\nYou don't have enough mana to cast that spell.");
+            return Mono.empty();
         }
 
         Mobile target = spell.getTarget(Mobile, parts);
