@@ -60,6 +60,9 @@ public class MinorChord extends Song {
         target.setCurrentHp(target.getCurrentHp() - damage);
         int hateAmount = damage;
         target.addHate(mobile.getId(), hateAmount);
+        if (mobile.getTarget() == null) {
+            mobile.setTarget(target);
+        }
 
         if (target.getCurrentHp() <= 0) {
             target.setCurrentHp(0);

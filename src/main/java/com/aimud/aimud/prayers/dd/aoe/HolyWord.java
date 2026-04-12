@@ -62,6 +62,9 @@ public class HolyWord extends Prayer {
 
             tgt.setCurrentHp(tgt.getCurrentHp() - damage);
             tgt.addHate(mobile.getId(), damage);
+            if (mobile.getTarget() == null) {
+                mobile.setTarget(tgt);
+            }
 
             if (tgt.getUserId() != null) {
                 this.communicationService.sendTextMessage(tgt, String.format("\n\nYou are struck by %s's Holy Word for %d holy damage!", mobile.getName(), damage));

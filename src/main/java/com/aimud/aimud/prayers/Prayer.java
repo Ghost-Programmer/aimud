@@ -114,6 +114,9 @@ public abstract class Prayer {
         if (caster != null) {
             boolean isDebuff = effect.getModifier1() < 0;
             if (isDebuff) {
+                if (caster.getTarget() == null) {
+                    caster.setTarget(mobile);
+                }
                 int hateAmount = Math.abs(effect.getModifier1());
                 if (mobile.isHateDebuffer()) hateAmount *= 5;
                 mobile.addHate(caster.getId(), hateAmount);

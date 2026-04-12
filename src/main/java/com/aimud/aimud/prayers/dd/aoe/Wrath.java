@@ -62,6 +62,9 @@ public class Wrath extends Prayer {
 
             tgt.setCurrentHp(tgt.getCurrentHp() - damage);
             tgt.addHate(mobile.getId(), damage);
+            if (mobile.getTarget() == null) {
+                mobile.setTarget(tgt);
+            }
 
             if (tgt.getUserId() != null) {
                 this.communicationService.sendTextMessage(tgt, String.format("\n\nYou are struck by %s's Wrath for %d holy damage!", mobile.getName(), damage));

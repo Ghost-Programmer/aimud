@@ -84,6 +84,9 @@ public class ChainLightning extends Spell {
             int hateAmount = damage;
             if (tgt.isHateWizard()) hateAmount *= 5;
             tgt.addHate(mobile.getId(), hateAmount);
+            if (mobile.getTarget() == null) {
+                mobile.setTarget(tgt);
+            }
 
             if (tgt.getCurrentHp() <= 0) {
                 tgt.setCurrentHp(0);

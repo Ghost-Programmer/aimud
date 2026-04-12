@@ -82,6 +82,9 @@ public class Lightning extends Spell {
         int hateAmount = damage;
         if (target.isHateWizard()) hateAmount *= 5;
         target.addHate(mobile.getId(), hateAmount);
+        if (mobile.getTarget() == null) {
+            mobile.setTarget(target);
+        }
 
         if (target.getCurrentHp() <= 0) {
             target.setCurrentHp(0);
