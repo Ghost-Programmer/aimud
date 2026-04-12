@@ -20,7 +20,6 @@ public class SingCommand implements Command {
     private final SongService songService;
     private final SkillService skillService;
     private final CharacterService characterService;
-    private final com.aimud.aimud.service.MobileService mobileService;
 
     @Override
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
@@ -63,37 +62,16 @@ public class SingCommand implements Command {
             return Mono.empty();
         }
 
-        Long leaderId = Mobile.getPartyLeaderId();
-        java.util.List<Mobile> groupTargets = new java.util.ArrayList<>();
+        Mobile target = song.getTarget(Mobile, parts);
 
-        if (leaderId == null) {
-            groupTargets.add(Mobile);
-        } else {
-            java.util.List<Mobile> allMobilesInRoom = new java.util.ArrayList<>(characterService.findAllByRoomId(Mobile.getCurrentRoomId()));
-            allMobilesInRoom.addAll(mobileService.getMobilesInRoom(Mobile.getCurrentRoomId()));
-
-            for (Mobile m : allMobilesInRoom) {
-                if (leaderId.equals(m.getPartyLeaderId())) {
-                    groupTargets.add(m);
-                }
-            }
-        }
-
-        if (groupTargets.isEmpty()) {
-            communicationService.sendTextMessage(Mobile, "\n\nYou have no valid target.");
+        if (target == null) {
+            communicationService.sendTextMessage(Mobile, "\n\nYou must specify a valid target or be in combat to sing that.");
             return Mono.empty();
         }
 
-        boolean anySuccess = false;
-        Mobile targetForSkillCheck = null;
-
-        for (Mobile tgt : groupTargets) {
-            boolean success = song.sing(Mobile, song, tgt);
-            if (success) {
-                anySuccess = true;
-                targetForSkillCheck = tgt;
-            }
-        }
+        boolean success = song.sing(Mobile, song, target);
+        Mobile targetForSkillCheck = target;
+        boolean anySuccess = success;
 
         Mobile.setCurrentMana(Mobile.getCurrentMana() - song.getManaCost(Mobile));
 

@@ -38,7 +38,11 @@ public class CharacterService {
     // In-memory storage for active/available characters
     private final ConcurrentHashMap<Long, Mobile> availableCharacters = new ConcurrentHashMap<>();
 
-    public CharacterService(MobileRepository mobileRepository, UserRepository userRepository, StatService statService, DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository, CommunicationService communicationService, RoomService roomService, CharacterClassRepository characterClassRepository, SkillRepository skillRepository, ItemService itemService, MobileService mobileService, FactionService factionService, MobileMacroRepository mobileMacroRepository) {
+    public CharacterService(MobileRepository mobileRepository, UserRepository userRepository, StatService statService,
+            DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository,
+            CommunicationService communicationService, RoomService roomService,
+            CharacterClassRepository characterClassRepository, SkillRepository skillRepository, ItemService itemService,
+            MobileService mobileService, FactionService factionService, MobileMacroRepository mobileMacroRepository) {
         this.mobileRepository = mobileRepository;
         this.userRepository = userRepository;
         this.statService = statService;
@@ -59,7 +63,8 @@ public class CharacterService {
         return mobileMacroRepository.findByMobileId(characterId);
     }
 
-    public Flux<com.aimud.aimud.model.MobileMacro> saveCharacterMacros(Long characterId, List<com.aimud.aimud.model.MobileMacro> macros) {
+    public Flux<com.aimud.aimud.model.MobileMacro> saveCharacterMacros(Long characterId,
+            List<com.aimud.aimud.model.MobileMacro> macros) {
         return mobileMacroRepository.deleteByMobileId(characterId)
                 .thenMany(Flux.fromIterable(macros))
                 .flatMap(macro -> {
@@ -129,7 +134,9 @@ public class CharacterService {
                                     List<Long> startingItemIds = characterClass.getStartingItemIds();
                                     if (!startingItemIds.isEmpty()) {
                                         itemsMono = Flux.fromIterable(startingItemIds)
-                                                .flatMap(itemId -> databaseClient.sql("INSERT INTO character_inventory (character_id, item_id) " +
+                                                .flatMap(itemId -> databaseClient
+                                                        .sql("INSERT INTO character_inventory (character_id, item_id) "
+                                                                +
                                                                 "SELECT :characterId, :itemId " +
                                                                 "WHERE EXISTS (SELECT 1 FROM items WHERE id = :itemIdCheck)")
                                                         .bind("characterId", savedCharacter.getId())
@@ -139,14 +146,16 @@ public class CharacterService {
                                                         .rowsUpdated()
                                                         .doOnNext(rowsUpdated -> {
                                                             if (rowsUpdated == 0) {
-                                                                log.warn("Skipping missing starting item {} for character {}", itemId, savedCharacter.getId());
+                                                                log.warn(
+                                                                        "Skipping missing starting item {} for character {}",
+                                                                        itemId, savedCharacter.getId());
                                                             }
                                                         })
                                                         .onErrorResume(e -> {
-                                                            log.error("Failed to add starting item {} to character {}", itemId, savedCharacter.getId(), e);
+                                                            log.error("Failed to add starting item {} to character {}",
+                                                                    itemId, savedCharacter.getId(), e);
                                                             return Mono.just(0L);
-                                                        })
-                                                )
+                                                        }))
                                                 .then(Mono.just(savedCharacter));
                                     }
 
@@ -163,7 +172,9 @@ public class CharacterService {
                                                     skill.setRank(1);
                                                     return skillRepository.save(skill)
                                                             .onErrorResume(e -> {
-                                                                log.error("Failed to add starting skill {} to character {}", skillName, c.getId(), e);
+                                                                log.error(
+                                                                        "Failed to add starting skill {} to character {}",
+                                                                        skillName, c.getId(), e);
                                                                 return Mono.empty();
                                                             });
                                                 })
@@ -232,10 +243,12 @@ public class CharacterService {
     }
 
     private Mono<Mobile> updateInventory(Mobile character, List<Item> inventory) {
-        if (inventory == null) return Mono.just(character);
+        if (inventory == null)
+            return Mono.just(character);
         log.debug("Updating inventory for character: {}", character.getId());
 
-        // Extract unique item IDs from the inventory list to prevent duplicate key exceptions
+        // Extract unique item IDs from the inventory list to prevent duplicate key
+        // exceptions
         List<Long> uniqueItemIds = inventory.stream()
                 .map(Item::getId)
                 .filter(java.util.Objects::nonNull)
@@ -246,12 +259,12 @@ public class CharacterService {
                 .bind("characterId", character.getId())
                 .then()
                 .thenMany(Flux.fromIterable(uniqueItemIds)) // Iterate over unique IDs
-                .flatMap(itemId -> databaseClient.sql("INSERT INTO character_inventory (character_id, item_id) VALUES (:characterId, :itemId)")
+                .flatMap(itemId -> databaseClient
+                        .sql("INSERT INTO character_inventory (character_id, item_id) VALUES (:characterId, :itemId)")
                         .bind("characterId", character.getId())
                         .bind("itemId", itemId)
                         .fetch()
-                        .rowsUpdated()
-                )
+                        .rowsUpdated())
                 .then(Mono.just(character));
     }
 
@@ -363,9 +376,11 @@ public class CharacterService {
             }
         }
 
-        // Special handling for 2H weapons: if it's a 2H weapon, it goes to primary and we might need to clear offhand
+        // Special handling for 2H weapons: if it's a 2H weapon, it goes to primary and
+        // we might need to clear offhand
         if (itemToEquip.getItemType() == com.aimud.aimud.types.ItemType.TWO_HANDED_WEAPON) {
-            // If it wasn't already assigned to primary (which it should be if wear location is PRIMARY)
+            // If it wasn't already assigned to primary (which it should be if wear location
+            // is PRIMARY)
             if (character.getPrimary() != itemToEquip) {
                 oldItem1 = character.getPrimary();
                 character.setPrimary(itemToEquip);
@@ -415,7 +430,8 @@ public class CharacterService {
                 .flatMap(savedChar -> getCharacterById(savedChar.getId()))
                 .doOnNext(savedChar -> {
                     communicationService.sendTextMessage(savedChar, "\n\nYou drop " + itemToDrop.getName() + ".");
-                    communicationService.roomMessage(savedChar, "\n" + savedChar.getName() + " drops " + itemToDrop.getName() + ".");
+                    communicationService.roomMessage(savedChar,
+                            "\n" + savedChar.getName() + " drops " + itemToDrop.getName() + ".");
                     communicationService.sendCharacterUpdate(savedChar);
                 });
     }
@@ -552,8 +568,10 @@ public class CharacterService {
                             .flatMap(savedChar -> updateInventory(savedChar, currentInventory))
                             .flatMap(savedChar -> getCharacterById(savedChar.getId()))
                             .doOnNext(savedChar -> {
-                                communicationService.sendTextMessage(savedChar, "\n\nYou take " + itemToTake.getName() + ".");
-                                communicationService.roomMessage(savedChar, "\n" + savedChar.getName() + " takes " + itemToTake.getName() + ".");
+                                communicationService.sendTextMessage(savedChar,
+                                        "\n\nYou take " + itemToTake.getName() + ".");
+                                communicationService.roomMessage(savedChar,
+                                        "\n" + savedChar.getName() + " takes " + itemToTake.getName() + ".");
                                 communicationService.sendCharacterUpdate(savedChar);
                             });
                 });
@@ -613,24 +631,24 @@ public class CharacterService {
                 .findFirst()
                 .ifPresent(c -> {
                     String cleanCmd = command.trim();
-                    if (cleanCmd.isEmpty()) return;
-                    
+                    if (cleanCmd.isEmpty())
+                        return;
+
                     String firstWord = cleanCmd.split("\\s+")[0].toLowerCase();
-                    boolean isMovement = firstWord.equals("n") || firstWord.equals("s") 
-                                      || firstWord.equals("e") || firstWord.equals("w") 
-                                      || firstWord.equals("u") || firstWord.equals("d")
-                                      || firstWord.equals("north") || firstWord.equals("south")
-                                      || firstWord.equals("east") || firstWord.equals("west")
-                                      || firstWord.equals("up") || firstWord.equals("down");
-                                      
+                    boolean isMovement = firstWord.equals("n") || firstWord.equals("s")
+                            || firstWord.equals("e") || firstWord.equals("w")
+                            || firstWord.equals("u") || firstWord.equals("d")
+                            || firstWord.equals("north") || firstWord.equals("south")
+                            || firstWord.equals("east") || firstWord.equals("west")
+                            || firstWord.equals("up") || firstWord.equals("down");
+
                     if (isMovement && c.getCommandQueue().isEmpty()) {
                         c.setIdle(0);
                         com.aimud.aimud.commands.Command task = commandService.getTask(firstWord);
                         if (task != null) {
                             task.execute(c, command).subscribe(
-                                null,
-                                e -> log.error("Error executing immediate movement command", e)
-                            );
+                                    null,
+                                    e -> log.error("Error executing immediate movement command", e));
                         } else {
                             c.getCommandQueue().add(command);
                         }
@@ -648,7 +666,10 @@ public class CharacterService {
                     log.debug("Updating spell effects for character: {}", savedCharacter.getId());
                     return characterEffectRepository.deleteByCharacterId(savedCharacter.getId())
                             .thenMany(Flux.fromIterable(character.getSpellEffects()))
-                            .doOnNext(effect -> effect.setCharacterId(savedCharacter.getId()))
+                            .doOnNext(effect -> {
+                                effect.setId(null); 
+                                effect.setCharacterId(savedCharacter.getId());
+                            })
                             .flatMap(characterEffectRepository::save)
                             .collectList()
                             .doOnNext(savedCharacter::setSpellEffects)
@@ -676,38 +697,47 @@ public class CharacterService {
                 .flatMap(room -> {
                     if (character.getCurrentRoomId() != null) {
                         if (!character.isHidden() && !character.isInvisible()) {
-                            this.communicationService.roomMessage(character, "\n" + character.getName() + " has left the room.");
+                            this.communicationService.roomMessage(character,
+                                    "\n" + character.getName() + " has left the room.");
                         }
+                        // Trigger conversation engine in the old room they just left
+                        this.conversationService.triggerRoomConversations(character.getCurrentRoomId());
                     }
 
                     character.setCurrentRoomId(room.getId());
                     return this.save(character)
                             .doOnNext(savedChar -> {
                                 if (!savedChar.isHidden() && !savedChar.isInvisible()) {
-                                    this.communicationService.roomMessage(savedChar, "\n" + savedChar.getName() + " has entered the room.");
+                                    this.communicationService.roomMessage(savedChar,
+                                            "\n" + savedChar.getName() + " has entered the room.");
                                 }
 
-                                this.conversationService.triggerRoomConversations(room.getId());
+                                this.communicationService.sendTextMessage(character,
+                                        "\n\nYou have entered " + room.getName() + ".");
+                                this.communicationService.sendTextMessage(character,
+                                        "\n\n" + room.getDescription() + "\n\n");
 
-                                this.communicationService.sendTextMessage(character, "\n\nYou have entered " + room.getName() + ".");
-                                this.communicationService.sendTextMessage(character, "\n\n" + room.getDescription() + "\n\n");
-
-                                this.findAllByRoomId(room.getId()).stream().filter(c -> !c.getId().equals(character.getId())).forEach(c -> {
-                                    if (!c.isHidden() && !c.isInvisible()) {
-                                        this.communicationService.sendTextMessage(character, "\nYou see " + c.getName() + " here.");
-                                    }
-                                });
+                                this.findAllByRoomId(room.getId()).stream()
+                                        .filter(c -> !c.getId().equals(character.getId())).forEach(c -> {
+                                            if (!c.isHidden() && !c.isInvisible()) {
+                                                this.communicationService.sendTextMessage(character,
+                                                        "\nYou see " + c.getName() + " here.");
+                                            }
+                                        });
 
                                 this.mobileService.getMobilesInRoom(room.getId()).forEach(m -> {
                                     if (!m.isHidden() && !m.isInvisible()) {
-                                        this.communicationService.sendTextMessage(character, "\nYou see " + m.getName() + " here.");
+                                        this.communicationService.sendTextMessage(character,
+                                                "\nYou see " + m.getName() + " here.");
                                     }
                                 });
 
+                                this.conversationService.triggerRoomConversations(room.getId());
+
                                 room.getItemIds().stream().forEach(itemId -> {
                                     this.itemService.getItem(itemId)
-                                            .doOnNext(item ->
-                                                    this.communicationService.sendTextMessage(character, "\nYou see " + item.getName() + " laying here."))
+                                            .doOnNext(item -> this.communicationService.sendTextMessage(character,
+                                                    "\nYou see " + item.getName() + " laying here."))
                                             .subscribe();
                                 });
 
@@ -715,19 +745,27 @@ public class CharacterService {
                                 java.util.List<Mobile> targets = new ArrayList<>(this.findAllByRoomId(room.getId()));
                                 targets.addAll(this.mobileService.getMobilesInRoom(room.getId()));
                                 for (Mobile res : targets) {
-                                    if (res.getId().equals(character.getId()) || res.isHidden() || res.isInvisible() || character.isHidden() || character.isInvisible()) continue;
-                                    
+                                    if (res.getId().equals(character.getId()) || res.isHidden() || res.isInvisible()
+                                            || character.isHidden() || character.isInvisible())
+                                        continue;
+
                                     // If character hates resident
-                                    if (this.factionService.getFactionRatingSync(character, res.getFactionId()) < 20 && character.getTarget() == null) {
+                                    if (this.factionService.getFactionRatingSync(character, res.getFactionId()) < 20
+                                            && character.getTarget() == null) {
                                         character.setTarget(res);
-                                        this.communicationService.roomMessage(character, "\n" + character.getName() + " attacks " + res.getName() + " on sight!");
-                                        this.communicationService.sendTextMessage(character, "\n\nYou attack " + res.getName() + " on sight!");
+                                        this.communicationService.roomMessage(character, "\n" + character.getName()
+                                                + " attacks " + res.getName() + " on sight!");
+                                        this.communicationService.sendTextMessage(character,
+                                                "\n\nYou attack " + res.getName() + " on sight!");
                                     }
                                     // If resident hates character
-                                    if (this.factionService.getFactionRatingSync(res, character.getFactionId()) < 20 && res.getTarget() == null) {
+                                    if (this.factionService.getFactionRatingSync(res, character.getFactionId()) < 20
+                                            && res.getTarget() == null) {
                                         res.setTarget(character);
-                                        this.communicationService.roomMessage(res, "\n" + res.getName() + " attacks " + character.getName() + " on sight!");
-                                        this.communicationService.sendTextMessage(character, "\n\n" + res.getName() + " attacks you on sight!");
+                                        this.communicationService.roomMessage(res, "\n" + res.getName() + " attacks "
+                                                + character.getName() + " on sight!");
+                                        this.communicationService.sendTextMessage(character,
+                                                "\n\n" + res.getName() + " attacks you on sight!");
                                     }
                                 }
 
@@ -750,7 +788,8 @@ public class CharacterService {
                                 if (room.getDownId() != null) {
                                     exits.add("Down");
                                 }
-                                this.communicationService.sendTextMessage(character, "\n\nExits: " + String.join(", ", exits));
+                                this.communicationService.sendTextMessage(character,
+                                        "\n\nExits: " + String.join(", ", exits));
                             })
                             .then();
                 });

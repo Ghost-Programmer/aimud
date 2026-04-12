@@ -62,6 +62,11 @@ public class PrayCommand implements Command {
 
         Mobile target = prayer.getTarget(Mobile, parts);
 
+        if (target == null) {
+            communicationService.sendTextMessage(Mobile, "\n\nYou must specify a valid target or be in combat to pray for that.");
+            return Mono.empty();
+        }
+
         boolean success = prayer.pray(Mobile, prayer, target);
 
         Mobile.setCurrentMana(Mobile.getCurrentMana() - prayer.getManaCost(Mobile));

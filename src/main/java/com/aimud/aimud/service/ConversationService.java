@@ -20,10 +20,13 @@ public class ConversationService {
     private final CommandService commandService;
     private final FactionService factionService;
     private final ConfigService configService;
+    private final SpellService spellService;
+    private final SongService songService;
+    private final PrayerService prayerService;
 
     public ConversationService(MobileService mobileService, CharacterService characterService, RoomService roomService,
             CommunicationService communicationService, AiService aiService, CommandService commandService,
-            FactionService factionService, ConfigService configService) {
+            FactionService factionService, ConfigService configService, SpellService spellService, SongService songService, PrayerService prayerService) {
         this.mobileService = mobileService;
         this.characterService = characterService;
         this.roomService = roomService;
@@ -32,6 +35,9 @@ public class ConversationService {
         this.commandService = commandService;
         this.factionService = factionService;
         this.configService = configService;
+        this.spellService = spellService;
+        this.songService = songService;
+        this.prayerService = prayerService;
     }
 
     private final java.util.concurrent.ConcurrentHashMap<Long, java.time.Instant> lastEvaluationTime = new java.util.concurrent.ConcurrentHashMap<>();
@@ -125,15 +131,19 @@ public class ConversationService {
             return;
         }
 
-        // Prevent infinite self-talking loops. If the NPC was the last one to speak, do
-        // not trigger again.
+        // Prevent infinite self-talking loops. If the NPC was the last one to speak,
+        // it has a 20% chance to trigger again to keep convo flowing.
         if (!history.isEmpty()) {
             String lastMsg = history.get(history.size() - 1);
             if (lastMsg.startsWith(npc.getName())
                     && (lastMsg.contains("says") || lastMsg.contains("shouts") || lastMsg.contains("whispers"))) {
-                log.info("NPC " + npc.getName() + " was the last one to speak");
-                processingNpcs.remove(npc.getId());
-                return;
+                if (Math.random() > 0.20) {
+                    log.info("NPC " + npc.getName() + " was the last to speak, skipping");
+                    processingNpcs.remove(npc.getId());
+                    return;
+                } else {
+                    log.info("NPC " + npc.getName() + " was the last to speak, but hit 20% chance to speak again!");
+                }
             }
         }
 
@@ -141,7 +151,73 @@ public class ConversationService {
                 .filter(m -> !m.getId().equals(npc.getId()))
                 .collect(Collectors.toList());
 
-        if (npc.getActions() == null || npc.getActions().isEmpty()) {
+        List<com.aimud.aimud.model.MobileAction> availableActions = new java.util.ArrayList<>();
+        if (npc.getActions() != null) {
+            availableActions.addAll(npc.getActions());
+        }
+
+        if (npc.getSkills() != null) {
+            for (java.util.Map.Entry<String, com.aimud.aimud.spells.Spell> entry : spellService.getSpellMap().entrySet()) {
+                String spellName = entry.getKey();
+                String skillName = entry.getValue().getSpellSkillName();
+                boolean knowsSpell = npc.getSkills().stream().anyMatch(s -> s.getRank() > 0 && s.getName().equalsIgnoreCase(skillName));
+                if (knowsSpell) {
+                    com.aimud.aimud.model.MobileAction act = new com.aimud.aimud.model.MobileAction();
+                    act.setDescription("Cast the spell '" + spellName + "'");
+                    act.setActionCommand("cast " + spellName);
+                    availableActions.add(act);
+                }
+            }
+            for (java.util.Map.Entry<String, com.aimud.aimud.prayers.Prayer> entry : prayerService.getPrayerMap().entrySet()) {
+                String prayerName = entry.getKey();
+                String skillName = entry.getValue().getPrayerSkillName();
+                boolean knowsPrayer = npc.getSkills().stream().anyMatch(s -> s.getRank() > 0 && s.getName().equalsIgnoreCase(skillName));
+                if (knowsPrayer) {
+                    com.aimud.aimud.model.MobileAction act = new com.aimud.aimud.model.MobileAction();
+                    act.setDescription("Pray for '" + prayerName + "'");
+                    act.setActionCommand("pray " + prayerName);
+                    availableActions.add(act);
+                }
+            }
+            for (java.util.Map.Entry<String, com.aimud.aimud.songs.Song> entry : songService.getSongMap().entrySet()) {
+                String songName = entry.getKey();
+                String skillName = entry.getValue().getSongSkillName();
+                boolean knowsSong = npc.getSkills().stream().anyMatch(s -> s.getRank() > 0 && s.getName().equalsIgnoreCase(skillName));
+                if (knowsSong) {
+                    com.aimud.aimud.model.MobileAction act = new com.aimud.aimud.model.MobileAction();
+                    act.setDescription("Sing the song '" + songName + "'");
+                    act.setActionCommand("sing " + songName);
+                    availableActions.add(act);
+                }
+            }
+        }
+
+        boolean hasBash = npc.getSkills() != null && npc.getSkills().stream().anyMatch(s -> s.getRank() > 0 && s.getName().equalsIgnoreCase("Bash"));
+        boolean hasDisarm = npc.getSkills() != null && npc.getSkills().stream().anyMatch(s -> s.getRank() > 0 && s.getName().equalsIgnoreCase("Disarm"));
+
+        for (Mobile p : players) {
+            com.aimud.aimud.model.MobileAction atkAct = new com.aimud.aimud.model.MobileAction();
+            atkAct.setDescription("Attack " + p.getName());
+            atkAct.setActionCommand("attack " + p.getName());
+            availableActions.add(atkAct);
+
+            if (hasBash) {
+                com.aimud.aimud.model.MobileAction bashAct = new com.aimud.aimud.model.MobileAction();
+                bashAct.setDescription("Bash " + p.getName());
+                bashAct.setActionCommand("bash " + p.getName());
+                availableActions.add(bashAct);
+            }
+
+            if (hasDisarm) {
+                com.aimud.aimud.model.MobileAction disarmAct = new com.aimud.aimud.model.MobileAction();
+                disarmAct.setDescription("Disarm " + p.getName());
+                disarmAct.setActionCommand("disarm " + p.getName());
+                availableActions.add(disarmAct);
+            }
+        }
+
+        log.info("Evaluating NPC conversation for {}. Found {} available actions.", npc.getName(), availableActions.size());
+        if (availableActions.isEmpty()) {
             processingNpcs.remove(npc.getId());
             return;
         }
@@ -193,8 +269,8 @@ public class ConversationService {
         }
 
         prompt.append("\nAvailable Actions:\n");
-        for (int i = 0; i < npc.getActions().size(); i++) {
-            prompt.append((i + 1)).append(". ").append(npc.getActions().get(i).getDescription()).append("\n");
+        for (int i = 0; i < availableActions.size(); i++) {
+            prompt.append((i + 1)).append(". ").append(availableActions.get(i).getDescription()).append("\n");
         }
 
         prompt.append("\nYour Decision Rules:\n");
@@ -215,15 +291,16 @@ public class ConversationService {
         aiService.processPromptNoTools(prompt.toString(), options)
                 .reduce("", String::concat)
                 .subscribe(
-                        response -> processAiResponse(npc, response),
+                        response -> processAiResponse(npc, availableActions, response),
                         error -> log.error("Error generating conversation for NPC {}", npc.getName(), error));
     }
 
-    private void processAiResponse(Mobile npc, String response) {
+    private void processAiResponse(Mobile npc, List<com.aimud.aimud.model.MobileAction> availableActions, String response) {
         try {
             if (response == null)
                 return;
             String text = response.trim();
+            log.info("NPC AI Response: {}", text);
 
             if (text.isEmpty() || text.equalsIgnoreCase("IGNORE") || text.contains("IGNORE")) {
                 return;
@@ -238,8 +315,8 @@ public class ConversationService {
                 if (!indexStr.isEmpty()) {
                     try {
                         int index = Integer.parseInt(indexStr) - 1;
-                        if (npc.getActions() != null && index >= 0 && index < npc.getActions().size()) {
-                            String command = npc.getActions().get(index).getActionCommand();
+                        if (index >= 0 && index < availableActions.size()) {
+                            String command = availableActions.get(index).getActionCommand();
                             log.info("NPC AI Action Execution: {}", command);
                             npc.getCommandQueue().add(command);
                             commandService.processCommand(npc).subscribe();

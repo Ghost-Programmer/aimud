@@ -55,7 +55,7 @@ public abstract class Spell {
         if (parts.length == 2) {
             return this.getDefaultTarget(mobile);
         }
-        if (parts.length > 3) {
+        if (parts.length >= 3) {
 
             String name = parts[2].toLowerCase();
 

@@ -63,6 +63,11 @@ public class CastCommand implements Command {
 
         Mobile target = spell.getTarget(Mobile, parts);
 
+        if (target == null) {
+            communicationService.sendTextMessage(Mobile, "\n\nYou must specify a valid target or be in combat to cast that.");
+            return Mono.empty();
+        }
+
         boolean success = spell.cast(Mobile, spell, target);
 
         Mobile.setCurrentMana(Mobile.getCurrentMana() - spell.getManaCost(Mobile));
