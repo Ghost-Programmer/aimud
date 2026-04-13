@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
+import {tap} from 'rxjs/operators';
 
 export interface Store {
   id?: number;
@@ -13,6 +14,7 @@ export interface Store {
 })
 export class StoreService {
   private apiUrl = '/api/stores';
+  public storesUpdated$ = new Subject<void>();
 
   constructor(private http: HttpClient) {}
 
@@ -25,15 +27,21 @@ export class StoreService {
   }
 
   createStore(store: Store): Observable<Store> {
-    return this.http.post<Store>(this.apiUrl, store);
+    return this.http.post<Store>(this.apiUrl, store).pipe(
+      tap(() => this.storesUpdated$.next())
+    );
   }
 
   updateStore(id: number, store: Store): Observable<Store> {
-    return this.http.put<Store>(`${this.apiUrl}/${id}`, store);
+    return this.http.put<Store>(`${this.apiUrl}/${id}`, store).pipe(
+      tap(() => this.storesUpdated$.next())
+    );
   }
 
   deleteStore(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+      tap(() => this.storesUpdated$.next())
+    );
   }
 
   getStoreItems(storeId: number): Observable<any[]> {

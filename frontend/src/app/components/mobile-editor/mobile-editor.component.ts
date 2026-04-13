@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, OnDestroy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MobileService} from '../../services/mobile.service';
@@ -10,6 +10,8 @@ import {Faction} from '../../models/faction.model';
 import {StoreService, Store} from '../../services/store.service';
 import {SearchableDropdownComponent} from '../searchable-dropdown/searchable-dropdown.component';
 
+import {Subscription} from 'rxjs';
+
 @Component({
   selector: 'app-mobile-editor',
   standalone: true,
@@ -17,7 +19,7 @@ import {SearchableDropdownComponent} from '../searchable-dropdown/searchable-dro
   templateUrl: './mobile-editor.component.html',
   styleUrls: ['./mobile-editor.component.css']
 })
-export class MobileEditorComponent implements OnInit {
+export class MobileEditorComponent implements OnInit, OnDestroy {
   mobiles: Mobile[] = [];
   selectedMobile: Mobile | null = null;
   mobileForm!: FormGroup;
@@ -39,6 +41,8 @@ export class MobileEditorComponent implements OnInit {
   // Search models for the UI
   equipSearchTexts: { [key: string]: string } = {};
   invSearchTexts: string[] = [];
+
+  private storeSub!: Subscription;
 
   constructor(
     private fb: FormBuilder,
@@ -64,8 +68,20 @@ export class MobileEditorComponent implements OnInit {
     this.loadItems();
     this.loadSkills();
     this.loadRacesAndClasses();
-    this.loadRacesAndClasses();
     this.factionService.getAllFactions().subscribe(f => this.factions = f);
+    this.loadStores();
+    this.storeSub = this.storeService.storesUpdated$.subscribe(() => {
+      this.loadStores();
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.storeSub) {
+      this.storeSub.unsubscribe();
+    }
+  }
+
+  loadStores() {
     this.storeService.getAllStores().subscribe({
       next: (data) => this.stores = [...data].sort((a, b) => a.name.localeCompare(b.name)),
       error: (err) => console.error('Error loading stores', err)
