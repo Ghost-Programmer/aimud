@@ -165,6 +165,18 @@
   font-size: 1.05rem;
 }
 
+.item-name {
+  cursor: pointer;
+  color: var(--primary);
+  transition: color 0.15s ease;
+  font-weight: 500;
+}
+
+.item-name:hover {
+  text-decoration: underline;
+  color: #60a5fa;
+}
+
 .empty-state {
   text-align: center;
   padding: 40px 20px !important;

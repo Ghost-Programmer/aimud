@@ -1,9 +1,10 @@
 import {Component, Inject, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {MAT_DIALOG_DATA, MatDialogRef, MatDialogModule} from '@angular/material/dialog';
+import {MAT_DIALOG_DATA, MatDialogRef, MatDialogModule, MatDialog} from '@angular/material/dialog';
 import {StoreService} from '../../services/store.service';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
+import {ItemStatsDialogComponent} from '../item-stats-dialog/item-stats-dialog.component';
 
 @Component({
   selector: 'app-store-dialog',
@@ -20,7 +21,8 @@ export class StoreDialogComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<StoreDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { storeId: number, characterId: number },
-    private storeService: StoreService
+    private storeService: StoreService,
+    private matDialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -77,5 +79,13 @@ export class StoreDialogComponent implements OnInit {
 
   close() {
     this.dialogRef.close();
+  }
+
+  showItemStats(item: any) {
+    if (!item) return;
+    this.matDialog.open(ItemStatsDialogComponent, {
+      width: '400px',
+      data: { item }
+    });
   }
 }

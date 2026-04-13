@@ -27,7 +27,7 @@
             </thead>
             <tbody>
               <tr *ngFor="let si of storeData.storeItems">
-                <td>{{ si.item.name }}</td>
+                <td class="item-name" (click)="showItemStats(si.item)">{{ si.item.name }}</td>
                 <td>{{ si.available === -1 ? '∞' : si.available }}</td>
                 <td class="price-buy">{{ si.buyPrice }}g</td>
                 <td>
@@ -56,7 +56,7 @@
             </thead>
             <tbody>
               <tr *ngFor="let pi of storeData.playerInventory">
-                <td>{{ pi.item.name }}</td>
+                <td class="item-name" (click)="showItemStats(pi.item)">{{ pi.item.name }}</td>
                 <td class="price-sell">{{ pi.sellPrice }}g</td>
                 <td>
                   <button class="btn-sell" (click)="sellItem(pi.itemId)">Sell</button>
