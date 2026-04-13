@@ -4,9 +4,6 @@
       Store: {{ storeData?.shopkeeperName || 'Merchant' }}
       <span class="gold-balance">Your Gold: {{ storeData?.playerGold || 0 }}</span>
     </h2>
-    <div class="modifiers-hud" *ngIf="storeData">
-      <small>Faction: {{ storeData.factionRating }}% | Charisma: {{ storeData.charisma }}</small>
-    </div>
     <button mat-icon-button (click)="close()" class="close-btn"><mat-icon>close</mat-icon></button>
   </div>
 
