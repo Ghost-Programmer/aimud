@@ -172,11 +172,19 @@ public class MobileService {
 
     public Flux<Item> getMobileInventory(Long mobileId) {
         log.info("Fetching inventory for mobile: {}", mobileId);
-        return databaseClient.sql("SELECT item_id FROM mobile_inventory WHERE mobile_id = :mobileId")
+        return databaseClient.sql("SELECT item_id, item_count FROM mobile_inventory WHERE mobile_id = :mobileId")
                 .bind("mobileId", mobileId)
-                .map(row -> row.get("item_id", Long.class))
+                .map((row, metadata) -> new Object[]{row.get("item_id", Long.class), row.get("item_count", Integer.class)})
                 .all()
-                .flatMap(itemService::getItem);
+                .flatMap(arr -> {
+                    Long itemId = (Long) arr[0];
+                    Integer count = (Integer) arr[1];
+                    return itemService.getItem(itemId)
+                            .map(item -> {
+                                item.setCount(count != null ? count : 1);
+                                return item;
+                            });
+                });
     }
 
     public Mono<Mobile> addItemToInventory(Long mobileId, Long itemId) {
@@ -185,12 +193,20 @@ public class MobileService {
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Mobile not found: " + mobileId)))
                 .flatMap(mobile -> itemService.getItem(itemId)
                         .switchIfEmpty(Mono.error(new IllegalArgumentException("Item not found: " + itemId)))
-                        .then(databaseClient.sql(
-                                        "INSERT INTO mobile_inventory (mobile_id, item_id) VALUES (:mobileId, :itemId) ON CONFLICT DO NOTHING")
+                        .flatMap(item -> {
+                            String sql;
+                            if (item.isStackable()) {
+                                sql = "INSERT INTO mobile_inventory (mobile_id, item_id, item_count) VALUES (:mobileId, :itemId, 1) " +
+                                      "ON CONFLICT (mobile_id, item_id) DO UPDATE SET item_count = mobile_inventory.item_count + 1";
+                            } else {
+                                sql = "INSERT INTO mobile_inventory (mobile_id, item_id) VALUES (:mobileId, :itemId) ON CONFLICT DO NOTHING";
+                            }
+                            return databaseClient.sql(sql)
                                 .bind("mobileId", mobileId)
                                 .bind("itemId", itemId)
-                                .fetch().rowsUpdated())
-                        .thenReturn(mobile));
+                                .fetch().rowsUpdated()
+                                .thenReturn(mobile);
+                        }));
     }
 
     // --- WEAR LOCATION MANAGEMENT ---

@@ -267,21 +267,30 @@ public class CharacterService {
             return Mono.just(character);
         log.debug("Updating inventory for character: {}", character.getId());
 
-        // Extract unique item IDs from the inventory list to prevent duplicate key
-        // exceptions
-        List<Long> uniqueItemIds = inventory.stream()
-                .map(Item::getId)
-                .filter(java.util.Objects::nonNull)
-                .collect(Collectors.toList());
+        // Deduplicate items and sum counts to prevent duplicate key exceptions
+        java.util.Map<Long, Item> uniqueItemsMap = new java.util.HashMap<>();
+        for (Item item : inventory) {
+            if (item != null && item.getId() != null) {
+                if (uniqueItemsMap.containsKey(item.getId())) {
+                    Item existing = uniqueItemsMap.get(item.getId());
+                    existing.setCount(existing.getCount() + item.getCount());
+                } else {
+                    uniqueItemsMap.put(item.getId(), item);
+                }
+            }
+        }
+        
+        List<Item> uniqueItems = new java.util.ArrayList<>(uniqueItemsMap.values());
 
         return databaseClient.sql("DELETE FROM character_inventory WHERE character_id = :characterId")
                 .bind("characterId", character.getId())
                 .then()
-                .thenMany(Flux.fromIterable(uniqueItemIds)) // Iterate over unique IDs
-                .flatMap(itemId -> databaseClient
-                        .sql("INSERT INTO character_inventory (character_id, item_id) VALUES (:characterId, :itemId)")
+                .thenMany(Flux.fromIterable(uniqueItems))
+                .flatMap(item -> databaseClient
+                        .sql("INSERT INTO character_inventory (character_id, item_id, item_count) VALUES (:characterId, :itemId, :count)")
                         .bind("characterId", character.getId())
-                        .bind("itemId", itemId)
+                        .bind("itemId", item.getId())
+                        .bind("count", item.getCount())
                         .fetch()
                         .rowsUpdated())
                 .then(Mono.defer(() -> {

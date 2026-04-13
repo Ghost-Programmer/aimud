@@ -121,7 +121,38 @@ public class StoreTradeService {
 
                 // Add to inventory
                 List<Item> currentInventory = new ArrayList<>(character.getInventory());
-                currentInventory.add(storeItem.getItem());
+                Item boughtItem = storeItem.getItem();
+                
+                boolean itemAdded = false;
+                if (boughtItem.isStackable()) {
+                    for (Item invItem : currentInventory) {
+                        if (invItem.getId().equals(boughtItem.getId())) {
+                            invItem.setCount(invItem.getCount() + 1);
+                            itemAdded = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!itemAdded) {
+                    Item newItem = new Item();
+                    newItem.setId(boughtItem.getId());
+                    newItem.setItemType(boughtItem.getItemType());
+                    newItem.setWearLocation(boughtItem.getWearLocation());
+                    newItem.setNoPickup(boughtItem.isNoPickup());
+                    newItem.setStackable(boughtItem.isStackable());
+                    newItem.setCount(1);
+                    newItem.setName(boughtItem.getName());
+                    newItem.setDescription(boughtItem.getDescription());
+                    newItem.setProperty1(boughtItem.getProperty1());
+                    newItem.setProperty2(boughtItem.getProperty2());
+                    newItem.setProperty3(boughtItem.getProperty3());
+                    newItem.setProperty4(boughtItem.getProperty4());
+                    newItem.setEffects(boughtItem.getEffects());
+                    newItem.setValue(boughtItem.getValue());
+                    currentInventory.add(newItem);
+                }
+                
                 character.setInventory(currentInventory);
 
                 return characterService.save(character)
@@ -157,7 +188,9 @@ public class StoreTradeService {
             }
 
             return storeService.getStore(storeId).flatMap(store -> {
-                int price = calculateSellPrice(itemToSell, factionRating, charisma);
+                int unitPrice = calculateSellPrice(itemToSell, factionRating, charisma);
+                int totalQuantity = itemToSell.isStackable() ? itemToSell.getCount() : 1;
+                int price = unitPrice * totalQuantity;
 
                 // Process transaction
                 character.setGold(character.getGold() + price);
@@ -172,14 +205,14 @@ public class StoreTradeService {
 
                 if (existingStoreItem != null) {
                     if (existingStoreItem.getAvailable() > 0) {
-                        existingStoreItem.setAvailable(existingStoreItem.getAvailable() + 1);
+                        existingStoreItem.setAvailable(existingStoreItem.getAvailable() + totalQuantity);
                     }
                 } else {
                     StoreItem newTransientSi = new StoreItem();
                     newTransientSi.setStoreId(storeId);
                     newTransientSi.setItemId(itemId);
                     newTransientSi.setItem(itemToSell);
-                    newTransientSi.setAvailable(1);
+                    newTransientSi.setAvailable(totalQuantity);
                     store.getItems().add(newTransientSi);
                 }
 

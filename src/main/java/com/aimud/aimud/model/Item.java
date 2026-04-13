@@ -37,6 +37,11 @@ public class Item {
     @Column("no_pickup")
     private boolean noPickup = false;
 
+    @Column("stackable")
+    private boolean stackable = false;
+
+    private int count = 1;
+
     private String name;
     private String description;
 

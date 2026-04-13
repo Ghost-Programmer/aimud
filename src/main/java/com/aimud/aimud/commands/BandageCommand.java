@@ -139,7 +139,11 @@ public class BandageCommand implements Command {
 
         // Remove bandage from inventory
         List<Item> newInv = new ArrayList<>(medic.getInventory());
-        newInv.remove(bandage);
+        if (bandage.getCount() > 1) {
+            bandage.setCount(bandage.getCount() - 1);
+        } else {
+            newInv.remove(bandage);
+        }
         medic.setInventory(newInv);
 
         // 3. Send Messages

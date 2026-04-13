@@ -338,7 +338,9 @@
           </thead>
           <tbody>
           <tr *ngFor="let item of sortedInventory">
-            <td (click)="onShowItemStats(item)" class="item-name">{{ item.name }}</td>
+            <td (click)="onShowItemStats(item)" class="item-name">
+              {{ item.name }} <span *ngIf="item.stackable" class="item-count">(x{{ item.count }})</span>
+            </td>
             <td (click)="onShowItemStats(item)">{{ item.itemType }}</td>
             <td (click)="onShowItemStats(item)">{{ item.wearLocation }}</td>
             <td (click)="onShowItemStats(item)" class="item-value">{{ item.value }}g</td>
