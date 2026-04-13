@@ -13,7 +13,7 @@
 }
 
 .dialog-content {
-  background: var(--color-hex-1a1d24);
+  background: var(--dialog-bg);
   border: 1px solid var(--glass-border);
   padding: 2rem;
   border-radius: 1rem;
@@ -47,7 +47,7 @@ input {
   padding: 0.75rem;
   border-radius: 0.5rem;
   border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
+  background: var(--input-bg);
   color: var(--text-main);
   font-family: inherit;
   transition: border-color 0.2s;

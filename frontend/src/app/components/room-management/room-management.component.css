@@ -20,10 +20,10 @@
 }
 
 .search-input, .filter-select, .id-input {
-  background: rgba(20, 20, 30, 0.8);
-  border: 1px solid rgba(255, 215, 0, 0.2);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  color: var(--color-hex-fff);
+  color: var(--text-main);
   padding: 0.5rem;
   font-size: 0.9rem;
 }
@@ -39,7 +39,7 @@
 .refresh-btn {
   margin-left: auto;
   background: var(--color-hex-333);
-  color: var(--color-hex-fff);
+  color: var(--text-main);
   border: 1px solid #555;
   padding: 0.6rem 1rem;
   border-radius: 4px;
@@ -149,7 +149,7 @@
 
 .pag-btn {
   background: var(--glass-10);
-  color: var(--color-hex-fff);
+  color: var(--text-main);
   border: 1px solid var(--glass-20);
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -168,5 +168,5 @@
 
 select.filter-select option {
   background-color: var(--color-hex-1a1d24); /* Dark background matching the theme */
-  color: var(--color-hex-e6eaf0); /* Light text matching the theme */
+  color: var(--text-main); /* Light text matching the theme */
 }

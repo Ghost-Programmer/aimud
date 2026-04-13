@@ -62,7 +62,7 @@ input, textarea, select {
   padding: 10px;
   border-radius: 4px;
   border: 1px solid var(--glass-border);
-  background-color: var(--panel-20);
+  background-color: var(--input-bg);
   color: var(--text-main);
   font-family: inherit;
 }
@@ -252,7 +252,7 @@ tr:hover {
 }
 
 .dialog-content {
-  background: var(--color-hex-1a1d24);
+  background: var(--dialog-bg);
   border: 1px solid var(--glass-border);
   padding: 2rem;
   border-radius: 1rem;
@@ -321,7 +321,7 @@ tr:hover {
 .section-header .btn-secondary {
   background-color: var(--color-hex-ffd700);
   color: var(--color-hex-000);
-  border-color: var(--color-hex-ffd700);
+  border-color: var(--input-focus-border);
   font-weight: bold;
 }
 

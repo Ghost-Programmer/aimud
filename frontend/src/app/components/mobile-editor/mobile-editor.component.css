@@ -3,7 +3,7 @@
   min-height: 100%;
   height: auto;
   gap: 20px;
-  background: var(--surface-bg, rgba(20, 25, 30, 0.6));
+  background: transparent;
   padding: 15px;
   border-radius: 8px;
 }
@@ -62,7 +62,7 @@
 
 .btn-create, .btn-add {
   background: var(--color-hex-409cff);
-  color: white;
+  color: var(--text-main);
   border: none;
   padding: 5px 10px;
   border-radius: 4px;
@@ -111,7 +111,8 @@
 .form-section h4 {
   margin-top: 0;
   margin-bottom: 15px;
-  color: var(--color-hex-aaa);
+  color: var(--text-main);
+  font-weight: bold;
   border-bottom: 1px solid var(--glass-005);
   padding-bottom: 5px;
 }
@@ -136,6 +137,7 @@
 .form-row label, .equip-row label {
   flex: 0 0 120px;
   color: var(--color-hex-ccc);
+  font-weight: bold;
 }
 
 .search-select-group {
@@ -151,9 +153,9 @@
 .form-row input, .equip-row select, .search-input {
   flex: 1;
   padding: 8px;
-  background: var(--panel-30);
+  background: var(--input-bg);
   border: 1px solid var(--glass-10);
-  color: white;
+  color: var(--text-main);
   border-radius: 4px;
 }
 
@@ -181,14 +183,15 @@
 .stats-grid label {
   margin-bottom: 5px;
   color: var(--color-hex-ccc);
+  font-weight: bold;
   font-size: 0.9rem;
 }
 
 .stats-grid input {
   padding: 8px;
-  background: var(--panel-30);
+  background: var(--input-bg);
   border: 1px solid var(--glass-10);
-  color: white;
+  color: var(--text-main);
   border-radius: 4px;
 }
 
@@ -201,9 +204,9 @@
 .array-row select, .array-row input {
   flex: 1;
   padding: 8px;
-  background: var(--panel-30);
+  background: var(--input-bg);
   border: 1px solid var(--glass-10);
-  color: white;
+  color: var(--text-main);
   border-radius: 4px;
 }
 
@@ -217,7 +220,7 @@
 
 .btn-save {
   background: var(--color-hex-28a745);
-  color: white;
+  color: var(--text-main);
   border: none;
   padding: 10px 20px;
   border-radius: 4px;

@@ -208,8 +208,23 @@ body {
   --glass-018: rgba(0, 0, 0, 0.18);
   --glass-20: rgba(0, 0, 0, 0.2);
   --glass-30: rgba(0, 0, 0, 0.3);
-  --glass-40: rgba(0, 0, 0, 0.4);
   --glass-50: rgba(0, 0, 0, 0.5);
+}
+
+/* Standardized Global Inputs & Dialogs */
+:root {
+  --input-bg: rgba(20, 20, 30, 0.8);
+  --input-border: rgba(255, 215, 0, 0.2);
+  --input-focus-border: var(--color-hex-ffd700);
+  --dialog-bg: var(--color-hex-1a1a2e);
+  --dialog-border: rgba(255, 215, 0, 0.3);
+}
+:root[data-theme='light'] {
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
+  --input-focus-border: var(--primary);
+  --dialog-bg: #ffffff;
+  --dialog-border: #e2e8f0;
 }
 
 /* Auto-generated Panel Background Mappings */

@@ -27,7 +27,7 @@
 .btn {
   background: var(--glass-10);
   border: 1px solid var(--glass-20);
-  color: var(--color-hex-fff);
+  color: var(--text-main);
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
@@ -67,10 +67,10 @@
 }
 
 .input {
-  background: rgba(20, 20, 30, 0.8);
-  border: 1px solid rgba(255, 215, 0, 0.2);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  color: var(--color-hex-e6eaf0);
+  color: var(--text-main);
   padding: 0.5rem;
   font-size: 0.9rem;
   min-width: 160px;
@@ -78,12 +78,12 @@
 
 .input:focus {
   outline: none;
-  border-color: var(--color-hex-ffd700);
+  border-color: var(--input-focus-border);
 }
 
 select.input option {
   background-color: var(--color-hex-1a1d24);
-  color: var(--color-hex-e6eaf0);
+  color: var(--text-main);
 }
 
 .table-wrapper {

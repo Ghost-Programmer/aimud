@@ -12,7 +12,7 @@
 .dialog-container {
   width: 520px;
   max-width: 95vw;
-  background: rgba(20, 24, 28, 0.8);
+  background: var(--dialog-bg);
   border: 1px solid var(--glass-border, #334);
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
