@@ -25,13 +25,13 @@ input, select {
   padding: 10px;
   border-radius: 4px;
   border: 1px solid var(--glass-border);
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--glass-005);
   color: var(--text-main);
   font-family: inherit;
 }
 
 select option {
-  background-color: #1a1d24;
+  background-color: var(--color-hex-1a1d24);
   color: var(--text-main);
 }
 
@@ -67,8 +67,8 @@ select option {
 }
 
 .stats-table th {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: #ffd700;
+  background-color: var(--glass-005);
+  color: var(--color-hex-ffd700);
   font-weight: 600;
   border-bottom: 2px solid rgba(255, 215, 0, 0.3);
 }
@@ -80,7 +80,7 @@ select option {
 .derived-stats-container {
   width: 100%;
   margin-bottom: 20px;
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: var(--glass-002);
   padding: 15px;
   border-radius: 8px;
   border: 1px solid var(--glass-border);
@@ -135,12 +135,12 @@ select option {
 
 .icon-btn:hover {
   color: var(--primary);
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--glass-10);
 }
 
 .save-btn {
-  background-color: #ffd700;
-  color: #000;
+  background-color: var(--color-hex-ffd700);
+  color: var(--color-hex-000);
   border: none;
   padding: 10px 20px;
   border-radius: 4px;
@@ -150,11 +150,11 @@ select option {
 }
 
 .save-btn:hover {
-  background-color: #ffea00;
+  background-color: var(--color-hex-ffea00);
 }
 
 .save-btn:disabled {
   background-color: var(--glass-border);
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--glass-30);
   cursor: not-allowed;
 }

@@ -13,7 +13,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--panel-50);
   border-bottom: 1px solid var(--glass-border);
   color: var(--text-muted);
   font-size: 0.9rem;
@@ -30,14 +30,14 @@
   align-items: center;
 }
 
-.ai-icon {
+.ai-icon, .theme-icon {
   cursor: pointer;
   font-size: 1.5rem;
   transition: transform 0.2s;
   padding: 0 10px;
 }
 
-.ai-icon:hover {
+.ai-icon:hover, .theme-icon:hover {
   transform: scale(1.2);
 }
 
@@ -103,7 +103,7 @@
 
 .tab-button:hover {
   color: var(--text-main);
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--glass-005);
 }
 
 .tab-button.active {
@@ -118,7 +118,7 @@
   box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
   0 8px 10px 1px rgba(0, 0, 0, 0.14),
   0 3px 14px 2px rgba(0, 0, 0, 0.12);
-  background-color: #1a1d24;
+  background-color: var(--color-hex-1a1d24);
   color: var(--text-main);
   padding: 10px 20px;
   font-size: 1rem;
@@ -154,13 +154,13 @@
 
 .close-tab:hover {
   opacity: 1;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--glass-10);
   color: var(--error);
 }
 
 .tab-content {
   flex: 1;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--panel-20);
   border-radius: 8px;
   padding: 20px;
   border: 1px solid var(--glass-border);
@@ -211,7 +211,7 @@ th, td {
 }
 
 th {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--glass-005);
   color: var(--text-muted);
   font-weight: 600;
   text-transform: uppercase;
@@ -219,7 +219,7 @@ th {
 }
 
 tr:hover {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: var(--glass-002);
 }
 
 .world-builder-container {
@@ -232,14 +232,14 @@ tr:hover {
 .accordion-item {
   border: 1px solid var(--glass-border);
   border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: var(--glass-003);
   overflow: hidden;
   transition: all 0.3s ease;
 }
 
 .accordion-item.active {
   border-color: var(--primary);
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: var(--glass-006);
 }
 
 .accordion-header {
@@ -253,7 +253,7 @@ tr:hover {
 }
 
 .accordion-header:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--glass-005);
 }
 
 .accordion-title {

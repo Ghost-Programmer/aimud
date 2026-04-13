@@ -15,6 +15,7 @@ import {MobileEditorComponent} from '../../components/mobile-editor/mobile-edito
 import {StoreManagementComponent} from '../../components/store-management/store-management.component';
 import {GameWebSocketService} from '../../services/game-websocket.service';
 import {Subscription} from 'rxjs';
+import {ThemeService} from '../../services/theme.service';
 
 interface Tab {
   id: string;
@@ -65,7 +66,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private gameWebSocketService: GameWebSocketService
+    private gameWebSocketService: GameWebSocketService,
+    public themeService: ThemeService
   ) {
   }
 

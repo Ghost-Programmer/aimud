@@ -1,12 +1,13 @@
-import {Component, OnInit, OnDestroy} from '@angular/core';
+import {Component, OnInit, OnDestroy, Inject, PLATFORM_ID} from '@angular/core';
 import {Router, RouterOutlet} from '@angular/router';
 import {RegisterDialogComponent} from './components/register-dialog/register-dialog.component';
 import {LoginDialogComponent} from './components/login-dialog/login-dialog.component';
 import {HttpClient} from '@angular/common/http';
-import {CommonModule} from '@angular/common';
+import {CommonModule, isPlatformBrowser} from '@angular/common';
 import {Title} from '@angular/platform-browser';
 import {StatusService, SystemStatus} from './services/status.service';
 import {Subscription, interval} from 'rxjs';
+import {ThemeService} from './services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -33,7 +34,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private http: HttpClient,
     public router: Router,
     private statusService: StatusService,
-    private titleService: Title
+    private titleService: Title,
+    public themeService: ThemeService
   ) {
   }
 

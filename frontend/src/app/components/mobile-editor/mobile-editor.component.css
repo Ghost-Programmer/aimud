@@ -12,8 +12,8 @@
   flex: 0 0 250px;
   display: flex;
   flex-direction: column;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--panel-20);
+  border: 1px solid var(--glass-10);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -23,14 +23,14 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 15px;
-  background: rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--glass-005);
+  border-bottom: 1px solid var(--glass-10);
 }
 
 .panel-header h3 {
   margin: 0;
   font-size: 1.1rem;
-  color: #fff;
+  color: var(--color-hex-fff);
 }
 
 .mobile-list {
@@ -47,21 +47,21 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--glass-005);
   transition: background 0.2s;
 }
 
 .mobile-list li:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--glass-10);
 }
 
 .mobile-list li.selected {
   background: rgba(64, 156, 255, 0.2);
-  border-left: 3px solid #409cff;
+  border-left: 3px solid var(--color-hex-409cff);
 }
 
 .btn-create, .btn-add {
-  background: #409cff;
+  background: var(--color-hex-409cff);
   color: white;
   border: none;
   padding: 5px 10px;
@@ -70,12 +70,12 @@
 }
 
 .btn-create:hover, .btn-add:hover {
-  background: #2a80db;
+  background: var(--color-hex-2a80db);
 }
 
 .btn-delete, .btn-remove {
   background: transparent;
-  color: #ff4d4d;
+  color: var(--color-hex-ff4d4d);
   border: none;
   font-size: 1.2rem;
   cursor: pointer;
@@ -83,13 +83,13 @@
 }
 
 .btn-delete:hover, .btn-remove:hover {
-  color: #ff1a1a;
+  color: var(--color-hex-ff1a1a);
 }
 
 .editor-panel {
   flex: 1;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--panel-20);
+  border: 1px solid var(--glass-10);
   border-radius: 6px;
   padding: 20px;
 }
@@ -98,11 +98,11 @@
   margin-top: 0;
   margin-bottom: 20px;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--glass-10);
 }
 
 .form-section {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--glass-003);
   padding: 15px;
   border-radius: 6px;
   margin-bottom: 20px;
@@ -111,8 +111,8 @@
 .form-section h4 {
   margin-top: 0;
   margin-bottom: 15px;
-  color: #aaa;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--color-hex-aaa);
+  border-bottom: 1px solid var(--glass-005);
   padding-bottom: 5px;
 }
 
@@ -135,7 +135,7 @@
 
 .form-row label, .equip-row label {
   flex: 0 0 120px;
-  color: #ccc;
+  color: var(--color-hex-ccc);
 }
 
 .search-select-group {
@@ -151,8 +151,8 @@
 .form-row input, .equip-row select, .search-input {
   flex: 1;
   padding: 8px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--panel-30);
+  border: 1px solid var(--glass-10);
   color: white;
   border-radius: 4px;
 }
@@ -180,14 +180,14 @@
 
 .stats-grid label {
   margin-bottom: 5px;
-  color: #ccc;
+  color: var(--color-hex-ccc);
   font-size: 0.9rem;
 }
 
 .stats-grid input {
   padding: 8px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--panel-30);
+  border: 1px solid var(--glass-10);
   color: white;
   border-radius: 4px;
 }
@@ -201,8 +201,8 @@
 .array-row select, .array-row input {
   flex: 1;
   padding: 8px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--panel-30);
+  border: 1px solid var(--glass-10);
   color: white;
   border-radius: 4px;
 }
@@ -212,11 +212,11 @@
   justify-content: flex-end;
   margin-top: 20px;
   padding-top: 15px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--glass-10);
 }
 
 .btn-save {
-  background: #28a745;
+  background: var(--color-hex-28a745);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -226,7 +226,7 @@
 }
 
 .btn-save:hover:not(:disabled) {
-  background: #218838;
+  background: var(--color-hex-218838);
 }
 
 .btn-save:disabled {

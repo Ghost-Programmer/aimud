@@ -31,11 +31,11 @@
 }
 
 .gold-balance {
-  color: #fbbf24;
+  color: var(--color-hex-fbbf24);
   font-family: monospace;
   font-weight: 600;
   font-size: 0.95rem;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--panel-40);
   padding: 6px 10px;
   border-radius: 6px;
   border: 1px solid rgba(251, 191, 36, 0.2);
@@ -48,7 +48,7 @@
   transform: translate(-50%, -50%);
   color: var(--text-muted);
   font-size: 0.85rem;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--panel-20);
   padding: 4px 12px;
   border-radius: 12px;
 }
@@ -79,7 +79,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--panel-20);
   border-radius: 12px;
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(4px);
@@ -108,7 +108,7 @@
   width: 8px;
 }
 .table-container::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.1);
+  background: var(--panel-10);
 }
 .table-container::-webkit-scrollbar-thumb {
   background: var(--glass-border);
@@ -174,7 +174,7 @@
 
 .item-name:hover {
   text-decoration: underline;
-  color: #60a5fa;
+  color: var(--color-hex-60a5fa);
 }
 
 .empty-state {

@@ -13,7 +13,7 @@
 }
 
 .dialog-content {
-  background: #1a1d24;
+  background: var(--color-hex-1a1d24);
   border: 1px solid var(--glass-border);
   padding: 2rem;
   border-radius: 1rem;
@@ -49,14 +49,14 @@ input, select {
   padding: 0.75rem;
   border-radius: 0.5rem;
   border: 1px solid var(--glass-border);
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--panel-20);
   color: var(--text-main);
   font-family: inherit;
   transition: border-color 0.2s;
 }
 
 select option {
-  background-color: #1a1d24;
+  background-color: var(--color-hex-1a1d24);
   color: var(--text-main);
 }
 
@@ -109,13 +109,13 @@ input:focus, select:focus {
 }
 
 .stats-table th {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--glass-005);
   color: var(--text-muted);
   font-weight: 600;
 }
 
 .stats-table tr:hover {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: var(--glass-002);
 }
 
 .stats-table input {
@@ -126,7 +126,7 @@ input:focus, select:focus {
 .derived-stats-container {
   width: 100%;
   margin-bottom: 20px;
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: var(--glass-002);
   padding: 15px;
   border-radius: 8px;
   border: 1px solid var(--glass-border);
@@ -198,6 +198,6 @@ button[type="button"] {
 }
 
 button[type="button"]:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--glass-005);
   color: var(--text-main);
 }

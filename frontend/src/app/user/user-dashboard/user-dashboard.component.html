@@ -18,6 +18,9 @@
       <div (click)="openAiDialog()" *ngIf="role === 'MUD_ADMIN'" class="status-item ai-icon" title="AI Assistant">
         <span class="value">🤖</span>
       </div>
+      <div (click)="themeService.toggleTheme()" class="status-item theme-icon" title="Toggle Theme">
+        <span class="value">{{ themeService.isLightTheme ? '🌙' : '☀️' }}</span>
+      </div>
       <button (click)="logout()" class="logout-btn">Logout</button>
     </div>
   </div>

@@ -6,7 +6,7 @@
 h2 {
   text-align: center;
   margin-bottom: 20px;
-  color: #ffd700;
+  color: var(--color-hex-ffd700);
 }
 
 .character-grid {
@@ -16,7 +16,7 @@ h2 {
 }
 
 .character-card {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--glass-005);
   border: 1px solid var(--glass-border);
   border-radius: 8px;
   padding: 15px;
@@ -31,7 +31,7 @@ h2 {
   background-color: rgba(255, 215, 0, 0.08);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  border-color: #ffd700;
+  border-color: var(--color-hex-ffd700);
 }
 
 .card-header {
@@ -45,7 +45,7 @@ h2 {
 
 .character-card h3 {
   margin: 0;
-  color: #ffd700;
+  color: var(--color-hex-ffd700);
   font-size: 1.2rem;
 }
 
@@ -62,7 +62,7 @@ h2 {
 
 .resource-bar {
   height: 20px;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: var(--panel-30);
   border-radius: 10px;
   position: relative;
   overflow: hidden;
@@ -74,11 +74,11 @@ h2 {
 }
 
 .hp-bar .bar-fill {
-  background-color: #ef4444;
+  background-color: var(--color-hex-ef4444);
 }
 
 .mana-bar .bar-fill {
-  background-color: #3b82f6;
+  background-color: var(--color-hex-3b82f6);
 }
 
 .bar-text {
@@ -102,7 +102,7 @@ h2 {
   gap: 8px;
   font-size: 0.85rem;
   color: var(--text-muted);
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: var(--panel-20);
   padding: 10px;
   border-radius: 4px;
 }
@@ -111,7 +111,7 @@ h2 {
   grid-column: 1 / -1;
   text-align: center;
   padding: 40px;
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: var(--glass-002);
   border-radius: 8px;
   color: var(--text-muted);
 }

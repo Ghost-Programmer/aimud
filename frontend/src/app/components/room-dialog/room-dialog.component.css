@@ -14,8 +14,8 @@
 
 .dialog-container {
   padding: 1.5rem;
-  background: #1a1a2e;
-  color: #e0e0e0;
+  background: var(--color-hex-1a1a2e);
+  color: var(--color-hex-e0e0e0);
   border: 1px solid rgba(255, 215, 0, 0.3);
   border-radius: 8px;
   width: 90%;
@@ -24,7 +24,7 @@
 }
 
 h2 {
-  color: #ffd700;
+  color: var(--color-hex-ffd700);
   margin-top: 0;
   border-bottom: 1px solid rgba(255, 215, 0, 0.2);
   padding-bottom: 0.5rem;
@@ -45,7 +45,7 @@ h2 {
 
 label {
   font-size: 0.85rem;
-  color: #aaa;
+  color: var(--color-hex-aaa);
   margin-bottom: 0.3rem;
 }
 
@@ -53,27 +53,27 @@ label {
   background: rgba(20, 20, 30, 0.8);
   border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 4px;
-  color: #fff;
+  color: var(--color-hex-fff);
   padding: 0.6rem;
   font-size: 0.9rem;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #ffd700;
+  border-color: var(--color-hex-ffd700);
   background: rgba(30, 30, 45, 0.9);
 }
 
 .exits-section {
   margin-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--glass-10);
   padding-top: 1rem;
 }
 
 h3 {
   margin: 0;
   font-size: 1.1rem;
-  color: #ffd700;
+  color: var(--color-hex-ffd700);
   margin-bottom: 1rem;
 }
 
@@ -81,10 +81,10 @@ h3 {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--glass-005);
   padding: 12px;
   border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-10);
 }
 
 .exit-row {
@@ -96,14 +96,14 @@ h3 {
 
 .exit-row.header {
   font-weight: bold;
-  color: #888;
+  color: var(--color-hex-888);
   font-size: 0.8em;
   padding-bottom: 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--glass-10);
 }
 
 .exit-row .dir {
-  color: #aaa;
+  color: var(--color-hex-aaa);
 }
 
 .exit-row input[type="checkbox"] {
@@ -127,8 +127,8 @@ h3 {
 }
 
 .save-btn {
-  background: #ffd700;
-  color: #000;
+  background: var(--color-hex-ffd700);
+  color: var(--color-hex-000);
   border: none;
   padding: 0.6rem 1.5rem;
   border-radius: 4px;
@@ -138,7 +138,7 @@ h3 {
 
 .cancel-btn {
   background: transparent;
-  color: #aaa;
+  color: var(--color-hex-aaa);
   border: 1px solid #555;
   padding: 0.6rem 1.2rem;
   border-radius: 4px;
@@ -147,7 +147,7 @@ h3 {
 
 .items-section {
   margin-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--glass-10);
   padding-top: 1rem;
 }
 
@@ -162,7 +162,7 @@ h3 {
 }
 
 .add-btn {
-  background: #4a4ae2;
+  background: var(--color-hex-4a4ae2);
   color: white;
   border: none;
   padding: 0 1.2rem;
@@ -171,8 +171,8 @@ h3 {
 }
 
 .add-btn:disabled {
-  background: #333;
-  color: #666;
+  background: var(--color-hex-333);
+  color: var(--color-hex-666);
   cursor: not-allowed;
 }
 
@@ -180,10 +180,10 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--panel-20);
   padding: 12px;
   border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-005);
   min-height: 40px;
 }
 
@@ -201,7 +201,7 @@ h3 {
 .remove-btn {
   background: transparent;
   border: none;
-  color: #ff4d4d;
+  color: var(--color-hex-ff4d4d);
   font-size: 1.2rem;
   line-height: 1;
   cursor: pointer;
@@ -212,7 +212,7 @@ h3 {
 }
 
 .empty-list {
-  color: #666;
+  color: var(--color-hex-666);
   font-style: italic;
   font-size: 0.9rem;
 }

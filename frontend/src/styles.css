@@ -14,6 +14,22 @@
   --error: #ef4444;
 }
 
+:root[data-theme="light"] {
+  --bg-dark: #f8fafc;
+  --bg-gradient: radial-gradient(circle at 50% 0%, #ffffff 0%, #f1f5f9 100%);
+  --glass-bg: rgba(0, 0, 0, 0.03);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --primary: #4f46e5;
+  --primary-glow: rgba(79, 70, 229, 0.4);
+  --primary-hover: #4338ca;
+  --secondary: rgba(0, 0, 0, 0.05);
+  --secondary-hover: rgba(0, 0, 0, 0.1);
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --success: #059669;
+  --error: #dc2626;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -27,4 +43,193 @@ body {
 
 * {
   box-sizing: border-box;
+}
+
+/* Auto-generated Hex Variable Mappings */
+:root {
+  --color-hex-000000: #000000;
+  --color-hex-000: #000;
+  --color-hex-0b1020: #0b1020;
+  --color-hex-0f1115: #0f1115;
+  --color-hex-0f172a: #0f172a;
+  --color-hex-1a1a1a: #1a1a1a;
+  --color-hex-1a1a2e: #1a1a2e;
+  --color-hex-1a1d24: #1a1d24;
+  --color-hex-1e293b: #1e293b;
+  --color-hex-222222: #222222;
+  --color-hex-2b2b2b: #2b2b2b;
+  --color-hex-333333: #333333;
+  --color-hex-333: #333;
+  --color-hex-333344: #333344;
+  --color-hex-3a3a3a: #3a3a3a;
+  --color-hex-444444: #444444;
+  --color-hex-444: #444;
+  --color-hex-475569: #475569;
+  --color-hex-555555: #555555;
+  --color-hex-666666: #666666;
+  --color-hex-666: #666;
+  --color-hex-777777: #777777;
+  --color-hex-777: #777;
+  --color-hex-888888: #888888;
+  --color-hex-888: #888;
+  --color-hex-94a3b8: #94a3b8;
+  --color-hex-aaaaaa: #aaaaaa;
+  --color-hex-aaa: #aaa;
+  --color-hex-cccccc: #cccccc;
+  --color-hex-ccc: #ccc;
+  --color-hex-e0e0e0: #e0e0e0;
+  --color-hex-e2e8f0: #e2e8f0;
+  --color-hex-e6eaf0: #e6eaf0;
+  --color-hex-f1f5f9: #f1f5f9;
+  --color-hex-f8fafc: #f8fafc;
+  --color-hex-ffffff: #ffffff;
+  --color-hex-fff: #fff;
+  --color-hex-1e40af: #1e40af;
+  --color-hex-2a80db: #2a80db;
+  --color-hex-3b82f6: #3b82f6;
+  --color-hex-409cff: #409cff;
+  --color-hex-4338ca: #4338ca;
+  --color-hex-4a4ae2: #4a4ae2;
+  --color-hex-4ea1ff: #4ea1ff;
+  --color-hex-4f46e5: #4f46e5;
+  --color-hex-60a5fa: #60a5fa;
+  --color-hex-6366f1: #6366f1;
+  --color-hex-a5b4fc: #a5b4fc;
+  --color-hex-059669: #059669;
+  --color-hex-10b981: #10b981;
+  --color-hex-218838: #218838;
+  --color-hex-28a745: #28a745;
+  --color-hex-4caf50: #4caf50;
+  --color-hex-81c784: #81c784;
+  --color-hex-991b1b: #991b1b;
+  --color-hex-dc2626: #dc2626;
+  --color-hex-ef4444: #ef4444;
+  --color-hex-e57373: #e57373;
+  --color-hex-f44336: #f44336;
+  --color-hex-ff1a1a: #ff1a1a;
+  --color-hex-ff4d4d: #ff4d4d;
+  --color-hex-d1b26f: #d1b26f;
+  --color-hex-fbbf24: #fbbf24;
+  --color-hex-ff9800: #ff9800;
+  --color-hex-ffd700: #ffd700;
+  --color-hex-ffea00: #ffea00;
+}
+
+:root[data-theme="light"] {
+  --color-hex-000000: #ffffff;
+  --color-hex-000: #ffffff;
+  --color-hex-0b1020: #f8fafc;
+  --color-hex-0f1115: #f1f5f9;
+  --color-hex-0f172a: #e2e8f0;
+  --color-hex-1a1a1a: #ffffff;
+  --color-hex-1a1a2e: #f8fafc;
+  --color-hex-1a1d24: #ffffff;
+  --color-hex-1e293b: #cbd5e1;
+  --color-hex-222222: #f1f5f9;
+  --color-hex-2b2b2b: #e2e8f0;
+  --color-hex-333333: #cbd5e1;
+  --color-hex-333: #cbd5e1;
+  --color-hex-333344: #cbd5e1;
+  --color-hex-3a3a3a: #e2e8f0;
+  --color-hex-444444: #cbd5e1;
+  --color-hex-444: #cbd5e1;
+  --color-hex-475569: #94a3b8;
+  --color-hex-555555: #94a3b8;
+  --color-hex-666666: #64748b;
+  --color-hex-666: #64748b;
+  --color-hex-777777: #475569;
+  --color-hex-777: #475569;
+  --color-hex-888888: #475569;
+  --color-hex-888: #475569;
+  --color-hex-94a3b8: #334155;
+  --color-hex-aaaaaa: #334155;
+  --color-hex-aaa: #334155;
+  --color-hex-cccccc: #1e293b;
+  --color-hex-ccc: #1e293b;
+  --color-hex-e0e0e0: #0f172a;
+  --color-hex-e2e8f0: #0f172a;
+  --color-hex-e6eaf0: #0f172a;
+  --color-hex-f1f5f9: #020617;
+  --color-hex-f8fafc: #020617;
+  --color-hex-ffffff: #000000;
+  --color-hex-fff: #000000;
+  --color-hex-1e40af: #3b82f6;
+  --color-hex-2a80db: #2563eb;
+  --color-hex-3b82f6: #1d4ed8;
+  --color-hex-409cff: #2563eb;
+  --color-hex-4338ca: #3730a3;
+  --color-hex-4a4ae2: #3730a3;
+  --color-hex-4ea1ff: #2563eb;
+  --color-hex-4f46e5: #4338ca;
+  --color-hex-60a5fa: #2563eb;
+  --color-hex-6366f1: #4f46e5;
+  --color-hex-a5b4fc: #4f46e5;
+  --color-hex-059669: #047857;
+  --color-hex-10b981: #059669;
+  --color-hex-218838: #166534;
+  --color-hex-28a745: #15803d;
+  --color-hex-4caf50: #16a34a;
+  --color-hex-81c784: #16a34a;
+  --color-hex-991b1b: #dc2626;
+  --color-hex-dc2626: #b91c1c;
+  --color-hex-ef4444: #dc2626;
+  --color-hex-e57373: #ef4444;
+  --color-hex-f44336: #dc2626;
+  --color-hex-ff1a1a: #dc2626;
+  --color-hex-ff4d4d: #ef4444;
+  --color-hex-d1b26f: #92400e;
+  --color-hex-fbbf24: #d97706;
+  --color-hex-ff9800: #ea580c;
+  --color-hex-ffd700: #b45309;
+  --color-hex-ffea00: #d97706;
+}
+
+/* Auto-generated Alpha Variable Mappings */
+:root {
+  --glass-002: rgba(255, 255, 255, 0.02);
+  --glass-003: rgba(255, 255, 255, 0.03);
+  --glass-005: rgba(255, 255, 255, 0.05);
+  --glass-006: rgba(255, 255, 255, 0.06);
+  --glass-10: rgba(255, 255, 255, 0.1);
+  --glass-012: rgba(255, 255, 255, 0.12);
+  --glass-018: rgba(255, 255, 255, 0.18);
+  --glass-20: rgba(255, 255, 255, 0.2);
+  --glass-30: rgba(255, 255, 255, 0.3);
+  --glass-40: rgba(255, 255, 255, 0.4);
+  --glass-50: rgba(255, 255, 255, 0.5);
+}
+:root[data-theme='light'] {
+  --glass-002: rgba(0, 0, 0, 0.02);
+  --glass-003: rgba(0, 0, 0, 0.03);
+  --glass-005: rgba(0, 0, 0, 0.05);
+  --glass-006: rgba(0, 0, 0, 0.06);
+  --glass-10: rgba(0, 0, 0, 0.1);
+  --glass-012: rgba(0, 0, 0, 0.12);
+  --glass-018: rgba(0, 0, 0, 0.18);
+  --glass-20: rgba(0, 0, 0, 0.2);
+  --glass-30: rgba(0, 0, 0, 0.3);
+  --glass-40: rgba(0, 0, 0, 0.4);
+  --glass-50: rgba(0, 0, 0, 0.5);
+}
+
+/* Auto-generated Panel Background Mappings */
+:root {
+  --panel-10: rgba(0, 0, 0, 0.1);
+  --panel-012: rgba(0, 0, 0, 0.12);
+  --panel-014: rgba(0, 0, 0, 0.14);
+  --panel-20: rgba(0, 0, 0, 0.2);
+  --panel-30: rgba(0, 0, 0, 0.3);
+  --panel-40: rgba(0, 0, 0, 0.4);
+  --panel-50: rgba(0, 0, 0, 0.5);
+  --panel-60: rgba(0, 0, 0, 0.6);
+}
+:root[data-theme='light'] {
+  --panel-10: rgba(0, 0, 0, 0.02);
+  --panel-012: rgba(0, 0, 0, 0.02);
+  --panel-014: rgba(0, 0, 0, 0.02);
+  --panel-20: rgba(0, 0, 0, 0.03);
+  --panel-30: rgba(0, 0, 0, 0.04);
+  --panel-40: rgba(0, 0, 0, 0.05);
+  --panel-50: rgba(0, 0, 0, 0.06);
+  --panel-60: rgba(0, 0, 0, 0.08);
 }
