@@ -32,10 +32,16 @@
       </div>
 
       <div class="form-row">
-        <div class="form-group checkbox-group">
+        <div class="form-group checkbox-group half">
           <label class="checkbox-label">
             <input [(ngModel)]="item.noPickup" name="noPickup" type="checkbox">
-            No Pickup (item cannot be taken from the room)
+            No Pickup
+          </label>
+        </div>
+        <div class="form-group checkbox-group half">
+          <label class="checkbox-label">
+            <input [(ngModel)]="item.stackable" name="stackable" type="checkbox">
+            Stackable
           </label>
         </div>
       </div>

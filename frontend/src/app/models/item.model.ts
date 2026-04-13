@@ -54,6 +54,8 @@ export interface Item {
   effects: Effect[];
   value?: number;
   noPickup?: boolean;
+  stackable?: boolean;
+  count?: number;
   inventory?: Item[];
 }
 
