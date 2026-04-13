@@ -11,11 +11,17 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.data.annotation.Transient;
 
 @Getter
 @Setter
 @Table("stores")
 public class Store {
+
+    @Transient
+    private List<StoreItem> items = new ArrayList<>();
 
     @Id
     private Long id;

@@ -10,11 +10,18 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
+import org.springframework.data.annotation.Transient;
 
 @Getter
 @Setter
 @Table("store_items")
 public class StoreItem {
+
+    @Transient
+    private int available = -1;
+
+    @Transient
+    private Item item;
 
     @Column("store_id")
     private Long storeId;
