@@ -60,8 +60,7 @@ class McpToolServiceTest {
                 null,
                 null,
                 null,
-                null
-        );
+                null);
 
         assertThat(savedItem).isNotNull();
         assertThat(savedItem.getItemType()).isEqualTo(ItemType.LIGHT_ARMOR);
@@ -74,16 +73,15 @@ class McpToolServiceTest {
         when(itemService.saveItem(any(Item.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         StepVerifier.create(Mono.fromCallable(() -> mcpToolService.createItem(
-                                "Vorpal Blade",
-                                "A powerful sword with the ability to cleave through armor.",
-                                "WEAPON",
-                                "PRIMARY",
-                                11,
-                                22,
-                                33,
-                                44
-                        ))
-                        .subscribeOn(Schedulers.parallel()))
+                "Vorpal Blade",
+                "A powerful sword with the ability to cleave through armor.",
+                "WEAPON",
+                "PRIMARY",
+                11,
+                22,
+                33,
+                44))
+                .subscribeOn(Schedulers.parallel()))
                 .assertNext(savedItem -> {
                     assertThat(savedItem.getName()).isEqualTo("Vorpal Blade");
                     assertThat(savedItem.getItemType()).isEqualTo(ItemType.WEAPON);
@@ -108,8 +106,7 @@ class McpToolServiceTest {
                 null,
                 null,
                 null,
-                null
-        );
+                null);
 
         assertThat(savedItem).isNotNull();
         assertThat(savedItem.getItemType()).isEqualTo(ItemType.BOOK);
@@ -147,8 +144,7 @@ class McpToolServiceTest {
                 101,
                 102,
                 null,
-                null
-        );
+                null);
 
         assertThat(savedItem).isNotNull();
         assertThat(savedItem.getName()).isEqualTo("New Sword");

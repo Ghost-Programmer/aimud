@@ -23,7 +23,8 @@ class McpToolIntegrationTest {
 
     @Test
     void toolMetadataIsPresent() {
-        // Just verify the beans are there, specific Tool metadata extraction is more involved 
+        // Just verify the beans are there, specific Tool metadata extraction is more
+        // involved
         // and usually handled by Spring AI internally.
         McpToolService toolService = applicationContext.getBean(McpToolService.class);
         assertThat(toolService.getAllRooms()).isNotNull();

@@ -14,15 +14,14 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
+import java.util.stream.Collectors;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-/**
- * Service providing MCP Tools for AI to manage Rooms, Items, and Effects in AIMUD.
- */
 @Service
 @Slf4j
 public class McpToolService {
@@ -34,518 +33,501 @@ public class McpToolService {
     private final EffectService effectService;
     private final MobileService mobileService;
     private final ConfigService configService;
+    private final StoreService storeService;
 
     public McpToolService(RoomService roomService, ItemService itemService, EffectService effectService,
-                          MobileService mobileService, ConfigService configService) {
+            MobileService mobileService, ConfigService configService, StoreService storeService) {
         this.roomService = roomService;
         this.itemService = itemService;
         this.effectService = effectService;
         this.mobileService = mobileService;
         this.configService = configService;
+        this.storeService = storeService;
     }
 
-    // --- ROOM TOOLS ---
+    // --- ENUM REFERENCE LISTS ---
 
-    @Tool(description = "Create a new room in the world")
-    public Room createRoom(
-            @ToolParam(description = "The name of the room") String name,
-            @ToolParam(description = "The description of the room") String description,
-            @ToolParam(description = "The type of the room (e.g. CITY, FIELD, FOREST, etc.)") String roomType) {
-        log.info("MCP Tool: Creating room: {}", name);
-        Room room = new Room();
-        room.setName(name);
-        room.setDescription(description);
-        if (roomType != null) {
-            try {
-                room.setRoomType(RoomType.valueOf(roomType.toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid roomType: {}", roomType);
-            }
-        }
-        return await(roomService.saveRoom(room), "create room");
+    @Tool(description = "Get a list of all Wear Locations for Items")
+    public List<String> getWearLocations() {
+        log.info("MCP API Call: getWearLocations");
+        return Arrays.stream(WearLocation.values()).map(Enum::name).collect(Collectors.toList());
     }
 
-    @Tool(description = "Update an existing room")
-    public Room updateRoom(
-            @ToolParam(description = "The ID of the room to update") Long id,
-            @ToolParam(description = "The name of the room") String name,
-            @ToolParam(description = "The description of the room") String description,
-            @ToolParam(description = "The type of the room") String roomType) {
-        log.info("MCP Tool: Updating room: {} (id: {})", name, id);
-        Room room = new Room();
-        room.setId(id);
-        room.setName(name);
-        room.setDescription(description);
-        if (roomType != null) {
-            try {
-                room.setRoomType(RoomType.valueOf(roomType.toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid roomType: {}", roomType);
-            }
-        }
-        return await(roomService.saveRoom(room), "update room");
+    @Tool(description = "Get a list of all Item Types")
+    public List<String> getItemTypes() {
+        log.info("MCP API Call: getItemTypes");
+        return Arrays.stream(ItemType.values()).map(Enum::name).collect(Collectors.toList());
     }
 
-    @Tool(description = "Set a directional door and destination room for an existing room")
-    public Room setRoomDoor(
-            @ToolParam(description = "The ID of the source room") Long roomId,
-            @ToolParam(description = "The direction for the door (NORTH, SOUTH, EAST, WEST, UP, DOWN or N/S/E/W/U/D)") String direction,
-            @ToolParam(description = "The ID of the destination room") Long destinationRoomId,
-            @ToolParam(description = "Whether the door starts open") boolean doorOpen) {
-        String normalizedDirection = normalizeDoorDirection(direction);
-        log.info("MCP Tool: Setting {} door from room {} to room {} (open={})",
-                normalizedDirection, roomId, destinationRoomId, doorOpen);
-
-        return roomService.getRoom(roomId)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Room not found: " + roomId)))
-                .flatMap(room -> roomService.getRoom(destinationRoomId)
-                        .switchIfEmpty(Mono.error(new IllegalArgumentException("Destination room not found: " + destinationRoomId)))
-                        .thenReturn(room))
-                .map(room -> {
-                    applyDoorSettings(room, normalizedDirection, destinationRoomId, doorOpen);
-                    return room;
-                })
-                .flatMap(roomService::saveRoom)
-                .as(mono -> await(mono, "set room door"));
+    @Tool(description = "Get a list of all Room Types")
+    public List<String> getRoomTypes() {
+        log.info("MCP API Call: getRoomTypes");
+        return Arrays.stream(RoomType.values()).map(Enum::name).collect(Collectors.toList());
     }
 
-    private String normalizeDoorDirection(String direction) {
-        if (direction == null || direction.isBlank()) {
-            throw new IllegalArgumentException("Direction is required");
-        }
-
-        String normalizedValue = normalizeEnumValue(direction);
-
-        return switch (normalizedValue) {
-            case "N", "NORTH" -> "NORTH";
-            case "S", "SOUTH" -> "SOUTH";
-            case "E", "EAST" -> "EAST";
-            case "W", "WEST" -> "WEST";
-            case "U", "UP" -> "UP";
-            case "D", "DOWN" -> "DOWN";
-            default -> throw new IllegalArgumentException("Invalid direction: " + direction);
-        };
+    @Tool(description = "Get a list of all Skill Types (Registries)")
+    public List<String> getSkillTypes() {
+        log.info("MCP API Call: getSkillTypes");
+        return awaitList(configService.getAllSkills().map(SkillRegistry::getName), "get skills");
     }
 
-    private void applyDoorSettings(Room room, String direction, Long destinationRoomId, boolean doorOpen) {
-        switch (direction) {
-            case "NORTH" -> {
-                room.setNorthId(destinationRoomId);
-                room.setNorthDoor(true);
-                room.setNorthDoorOpen(doorOpen);
-            }
-            case "SOUTH" -> {
-                room.setSouthId(destinationRoomId);
-                room.setSouthDoor(true);
-                room.setSouthDoorOpen(doorOpen);
-            }
-            case "EAST" -> {
-                room.setEastId(destinationRoomId);
-                room.setEastDoor(true);
-                room.setEastDoorOpen(doorOpen);
-            }
-            case "WEST" -> {
-                room.setWestId(destinationRoomId);
-                room.setWestDoor(true);
-                room.setWestDoorOpen(doorOpen);
-            }
-            case "UP" -> {
-                room.setUpId(destinationRoomId);
-                room.setUpDoor(true);
-                room.setUpDoorOpen(doorOpen);
-            }
-            case "DOWN" -> {
-                room.setDownId(destinationRoomId);
-                room.setDownDoor(true);
-                room.setDownDoorOpen(doorOpen);
-            }
-            default -> throw new IllegalArgumentException("Invalid direction: " + direction);
-        }
+    @Tool(description = "Get a list of all base Effect Types")
+    public List<String> getEffectTypes() {
+        log.info("MCP API Call: getEffectTypes");
+        return Arrays.stream(EffectType.values()).map(Enum::name).collect(Collectors.toList());
     }
 
-    @Tool(description = "Retrieve a room by its ID")
-    public Room getRoom(@ToolParam(description = "The unique ID of the room") Long id) {
-        log.info("MCP Tool: Getting room with id: {}", id);
-        return await(roomService.getRoom(id), "get room");
+    @Tool(description = "Get a list of all active Effect entities")
+    public List<Effect> getEffects() {
+        log.info("MCP API Call: getEffects");
+        return awaitList(effectService.getAllEffects(), "get effects");
     }
 
-    @Tool(description = "Retrieve all rooms in the world")
-    public List<Room> getAllRooms() {
-        log.info("MCP Tool: Getting all rooms");
-        return awaitList(roomService.getAllRooms(), "get all rooms");
-    }
+    // --- ITEM CRUD ---
 
-    @Tool(description = "Add an item to a room's item list")
-    public Room addItemToRoom(
-            @ToolParam(description = "The ID of the room") Long roomId,
-            @ToolParam(description = "The ID of the item to add") Long itemId) {
-        log.info("MCP Tool: Adding item {} to room {}", itemId, roomId);
-        return roomService.getRoom(roomId)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Room not found: " + roomId)))
-                .then(itemService.getItem(itemId)
-                        .switchIfEmpty(Mono.error(new IllegalArgumentException("Item not found: " + itemId))))
-                .then(roomService.addItemToRoom(roomId, itemId))
-                .as(mono -> await(mono, "add item to room"));
-    }
-
-    // --- ITEM TOOLS ---
-
-    @Tool(description = "Create a new item template")
+    @Tool(description = "Create a new item")
     public Item createItem(
-            @ToolParam(description = "The name of the item") String name,
-            @ToolParam(description = "The description of the item") String description,
-            @ToolParam(description = "The type of the item (e.g. WEAPON, TWO_HANDED_WEAPON, RANGED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, POTION, etc.)") String itemType,
-            @ToolParam(description = "The wear location of the item (e.g. HEAD, CHEST, LEGS, FEET, PRIMARY, OFFHAND, etc.)") String wearLocation,
-            @ToolParam(description = "Optional item property 1 (defaults to 0)") Integer property1,
-            @ToolParam(description = "Optional item property 2 (defaults to 0)") Integer property2,
-            @ToolParam(description = "Optional item property 3 (defaults to 0)") Integer property3,
-            @ToolParam(description = "Optional item property 4 (defaults to 0)") Integer property4) {
-        log.info("MCP Tool: Creating item: {}", name);
-        log.info("Item details - Description: {}, Type: {}, Wear Location: {}", description, itemType, wearLocation);
+            @ToolParam(description = "Item name") String name,
+            @ToolParam(description = "Item description") String description,
+            @ToolParam(description = "Item type. Must be EXACTLY ONE OF: WEAPON, TWO_HANDED_WEAPON, RANGED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, FOOD, DRINK, POTION, BOOK, SCROLL, MONEY, WAND, QUEST, KEY, LIGHT, CONTAINER, TRASH, MISC, NONE") String itemType,
+            @ToolParam(description = "Wear location. Must be EXACTLY ONE OF: HEAD, CHEST, LEGS, FEET, ARMS, HANDS, FINGER, WRIST, NECK, EAR, FACE, WAIST, PRIMARY, OFFHAND, NONE") String wearLocation,
+            @ToolParam(description = "Is stackable") Boolean stackable,
+            @ToolParam(description = "Property 1 cost/value") Integer property1,
+            @ToolParam(description = "Property 2") Integer property2,
+            @ToolParam(description = "Property 3") Integer property3,
+            @ToolParam(description = "Property 4") Integer property4,
+            @ToolParam(description = "Comma-separated list of Effect IDs (e.g. '1, 2')") String effectIdsStr) {
+
+        List<Long> effectIds = parseIds(effectIdsStr);
+        log.info(
+                "MCP API Call: createItem(name={}, itemType={}, wearLocation={}, stackable={}, effectIdsStr={}(parsed={}))",
+                name, itemType, wearLocation, stackable, effectIdsStr, effectIds);
+
         Item item = new Item();
         item.setName(name);
         item.setDescription(description);
-        item.setItemType(parseItemType(itemType));
-        item.setWearLocation(parseWearLocation(wearLocation));
-        item.setProperty1(resolveNewPropertyValue(property1));
-        item.setProperty2(resolveNewPropertyValue(property2));
-        item.setProperty3(resolveNewPropertyValue(property3));
-        item.setProperty4(resolveNewPropertyValue(property4));
-        return await(itemService.saveItem(item), "create item");
-    }
-
-    @Tool(description = "Update an existing item template")
-    public Item updateItem(
-            @ToolParam(description = "The ID of the item to update") Long id,
-            @ToolParam(description = "The name of the item") String name,
-            @ToolParam(description = "The description of the item") String description,
-            @ToolParam(description = "The type of the item") String itemType,
-            @ToolParam(description = "The wear location of the item") String wearLocation,
-            @ToolParam(description = "Optional item property 1") Integer property1,
-            @ToolParam(description = "Optional item property 2") Integer property2,
-            @ToolParam(description = "Optional item property 3") Integer property3,
-            @ToolParam(description = "Optional item property 4") Integer property4) {
-        log.info("MCP Tool: Updating item: {} (id: {})", name, id);
-        return itemService.getItem(id)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Item not found: " + id)))
-                .map(item -> {
-                    item.setName(name);
-                    item.setDescription(description);
-                    item.setItemType(parseItemType(itemType));
-                    item.setWearLocation(parseWearLocation(wearLocation));
-                    item.setProperty1(resolveExistingPropertyValue(item.getProperty1(), property1));
-                    item.setProperty2(resolveExistingPropertyValue(item.getProperty2(), property2));
-                    item.setProperty3(resolveExistingPropertyValue(item.getProperty3(), property3));
-                    item.setProperty4(resolveExistingPropertyValue(item.getProperty4(), property4));
-                    return item;
-                })
-                .flatMap(itemService::saveItem)
-                .as(mono -> await(mono, "update item"));
-    }
-
-    private int resolveNewPropertyValue(Integer incomingValue) {
-        return incomingValue == null ? 0 : incomingValue;
-    }
-
-    private int resolveExistingPropertyValue(int existingValue, Integer incomingValue) {
-        return incomingValue == null ? existingValue : incomingValue;
-    }
-
-    private ItemType parseItemType(String itemType) {
-        if (itemType == null || itemType.isBlank()) {
-            return ItemType.NONE;
+        if (itemType != null) {
+            ItemType parsedType = ItemType.fromString(itemType);
+            if (parsedType == ItemType.NONE && !itemType.equalsIgnoreCase("NONE")) {
+                log.error("Invalid itemType: {}", itemType);
+                throw new IllegalArgumentException(
+                        "Invalid itemType: " + itemType + ". Allowed: " + Arrays.toString(ItemType.values()));
+            }
+            item.setItemType(parsedType);
         }
-
-        String normalizedValue = normalizeEnumValue(itemType);
-
-        return switch (normalizedValue) {
-            case "ARMOR" -> {
-                log.info("Mapping generic itemType '{}' to LIGHT_ARMOR", itemType);
-                yield ItemType.LIGHT_ARMOR;
+        if (wearLocation != null) {
+            WearLocation parsedLoc = WearLocation.fromString(wearLocation);
+            if (parsedLoc == WearLocation.NONE && !wearLocation.equalsIgnoreCase("NONE")) {
+                log.error("Invalid wearLocation: {}", wearLocation);
+                throw new IllegalArgumentException("Invalid wearLocation: " + wearLocation + ". Allowed: "
+                        + Arrays.toString(WearLocation.values()));
             }
-            case "ONE_HANDED_WEAPON", "ONE_HANDED", "MELEE_WEAPON" -> ItemType.WEAPON;
-            case "TWO_HANDED", "TWO_HANDER", "TWOHAND" -> ItemType.TWO_HANDED_WEAPON;
-            case "RANGED", "BOW", "CROSSBOW" -> ItemType.RANGED_WEAPON;
-            default -> {
-                ItemType parsedType = ItemType.fromString(itemType);
-                if (parsedType != ItemType.NONE || "NONE".equals(normalizedValue)) {
-                    yield parsedType;
-                }
-                log.warn("Invalid itemType: {}. Defaulting to NONE.", itemType);
-                yield ItemType.NONE;
-            }
-        };
-    }
-
-    private WearLocation parseWearLocation(String wearLocation) {
-        if (wearLocation == null || wearLocation.isBlank()) {
-            return WearLocation.NONE;
+            item.setWearLocation(parsedLoc);
         }
+        if (stackable != null)
+            item.setStackable(stackable);
+        item.setProperty1(property1 == null ? 0 : property1);
+        item.setProperty2(property2 == null ? 0 : property2);
+        item.setProperty3(property3 == null ? 0 : property3);
+        item.setProperty4(property4 == null ? 0 : property4);
 
-        String normalizedValue = normalizeEnumValue(wearLocation);
-
-        return switch (normalizedValue) {
-            case "TORSO", "BODY" -> WearLocation.CHEST;
-            case "RIGHT_FINGER", "LEFT_FINGER", "FINGERS", "RING" -> WearLocation.FINGER;
-            case "RIGHT_WRIST", "LEFT_WRIST", "WRISTS" -> WearLocation.WRIST;
-            case "RIGHT_EAR", "LEFT_EAR", "EARS" -> WearLocation.EAR;
-            case "MAIN_HAND", "MAINHAND", "RIGHT_HAND", "WEAPON_HAND" -> WearLocation.PRIMARY;
-            case "LEFT_HAND", "OFF_HAND", "SHIELD_HAND" -> WearLocation.OFFHAND;
-            default -> {
-                WearLocation parsedLocation = WearLocation.fromString(wearLocation);
-                if (parsedLocation != WearLocation.NONE || "NONE".equals(normalizedValue)) {
-                    yield parsedLocation;
-                }
-                log.warn("Invalid wearLocation: {}. Defaulting to NONE.", wearLocation);
-                yield WearLocation.NONE;
+        return await(itemService.saveItem(item).flatMap(saved -> {
+            if (!effectIds.isEmpty()) {
+                return Flux.fromIterable(effectIds)
+                        .flatMap(effectId -> effectService.linkItemAndEffect(saved.getId(), effectId))
+                        .then(itemService.getItem(saved.getId()));
             }
-        };
+            return Mono.just(saved);
+        }), "create item");
     }
 
-    private String normalizeEnumValue(String value) {
-        return value.trim()
-                .replace('-', '_')
-                .replace(' ', '_')
-                .toUpperCase(Locale.ROOT);
-    }
-
-    @Tool(description = "Retrieve an item template by its ID")
-    public Item getItem(@ToolParam(description = "The unique ID of the item") Long id) {
-        log.info("MCP Tool: Getting item with id: {}", id);
+    @Tool(description = "Retrieve an item")
+    public Item getItem(Long id) {
+        log.info("MCP API Call: getItem(id={})", id);
         return await(itemService.getItem(id), "get item");
     }
 
-    @Tool(description = "Retrieve all item templates")
-    public List<Item> getAllItems() {
-        log.info("MCP Tool: Getting all items");
-        return awaitList(itemService.getAllItems(), "get all items");
-    }
+    @Tool(description = "Update an existing item")
+    public Item updateItem(
+            @ToolParam(description = "Item ID") Long id,
+            @ToolParam(description = "Item name") String name,
+            @ToolParam(description = "Item description") String description,
+            @ToolParam(description = "Item type. Must be EXACTLY ONE OF: WEAPON, TWO_HANDED_WEAPON, RANGED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, FOOD, DRINK, POTION, BOOK, SCROLL, MONEY, WAND, QUEST, KEY, LIGHT, CONTAINER, TRASH, MISC, NONE") String itemType,
+            @ToolParam(description = "Wear location. Must be EXACTLY ONE OF: HEAD, CHEST, LEGS, FEET, ARMS, HANDS, FINGER, WRIST, NECK, EAR, FACE, WAIST, PRIMARY, OFFHAND, NONE") String wearLocation,
+            @ToolParam(description = "Is stackable") Boolean stackable,
+            @ToolParam(description = "Property 1") Integer property1,
+            @ToolParam(description = "Property 2") Integer property2,
+            @ToolParam(description = "Property 3") Integer property3,
+            @ToolParam(description = "Property 4") Integer property4,
+            @ToolParam(description = "Comma-separated list of Effect IDs (e.g. '1, 2')") String effectIdsStr) {
 
-    // --- EFFECT TOOLS ---
+        List<Long> effectIds = parseIds(effectIdsStr);
+        log.info(
+                "MCP API Call: updateItem(id={}, name={}, itemType={}, wearLocation={}, stackable={}, effectIdsStr={}(parsed={}))",
+                id, name, itemType, wearLocation, stackable, effectIdsStr, effectIds);
 
-    @Tool(description = "Create a new effect")
-    public Effect createEffect(
-            @ToolParam(description = "The type of the effect (e.g. SLASHING_DAMAGE, STRENGTH, ARMOR, etc.)") String effectType,
-            @ToolParam(description = "The first modifier value (e.g. number of dice, or bonus amount)") int modifier1,
-            @ToolParam(description = "The second modifier value (e.g. size of dice)") int modifier2,
-            @ToolParam(description = "The third modifier value") int modifier3,
-            @ToolParam(description = "The fourth modifier value") int modifier4) {
-        log.info("MCP Tool: Creating effect: {}", effectType);
-        Effect effect = new Effect();
-        if (effectType != null) {
-            try {
-                effect.setEffectType(EffectType.valueOf(effectType.toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid effectType: {}", effectType);
+        return await(itemService.getItem(id).flatMap(item -> {
+            if (name != null)
+                item.setName(name);
+            if (description != null)
+                item.setDescription(description);
+            if (itemType != null) {
+                ItemType parsedType = ItemType.fromString(itemType);
+                if (parsedType == ItemType.NONE && !itemType.equalsIgnoreCase("NONE")) {
+                    throw new IllegalArgumentException(
+                            "Invalid itemType: " + itemType + ". Allowed: " + Arrays.toString(ItemType.values()));
+                }
+                item.setItemType(parsedType);
             }
-        }
-        effect.setModifier1(modifier1);
-        effect.setModifier2(modifier2);
-        effect.setModifier3(modifier3);
-        effect.setModifier4(modifier4);
-
-        return await(effectService.saveEffect(effect), "create effect");
-    }
-
-    @Tool(description = "Associate an existing effect with an existing item")
-    public Effect linkEffectToItem(
-            @ToolParam(description = "The ID of the item to associate this effect with") Long itemId,
-            @ToolParam(description = "The ID of the effect to associate with the item") Long effectId) {
-        log.info("MCP Tool: Linking effect {} to item {}", effectId, itemId);
-        return effectService.linkItemAndEffect(itemId, effectId)
-                .then(effectService.getEffect(effectId))
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Effect not found: " + effectId)))
-                .as(mono -> await(mono, "link effect to item"));
-    }
-
-    @Tool(description = "Update an existing effect")
-    public Effect updateEffect(
-            @ToolParam(description = "The ID of the effect to update") Long id,
-            @ToolParam(description = "The ID of the item associated with this effect") Long itemId,
-            @ToolParam(description = "The type of the effect") String effectType,
-            @ToolParam(description = "The first modifier value") int modifier1,
-            @ToolParam(description = "The second modifier value") int modifier2,
-            @ToolParam(description = "The third modifier value") int modifier3,
-            @ToolParam(description = "The fourth modifier value") int modifier4) {
-        log.info("MCP Tool: Updating effect: {} (id: {})", effectType, id);
-        Effect effect = new Effect();
-        effect.setId(id);
-        if (effectType != null) {
-            try {
-                effect.setEffectType(EffectType.valueOf(effectType.toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid effectType: {}", effectType);
+            if (wearLocation != null) {
+                WearLocation parsedLoc = WearLocation.fromString(wearLocation);
+                if (parsedLoc == WearLocation.NONE && !wearLocation.equalsIgnoreCase("NONE")) {
+                    throw new IllegalArgumentException("Invalid wearLocation: " + wearLocation + ". Allowed: "
+                            + Arrays.toString(WearLocation.values()));
+                }
+                item.setWearLocation(parsedLoc);
             }
-        }
-        effect.setModifier1(modifier1);
-        effect.setModifier2(modifier2);
-        effect.setModifier3(modifier3);
-        effect.setModifier4(modifier4);
+            if (stackable != null)
+                item.setStackable(stackable);
+            if (property1 != null)
+                item.setProperty1(property1);
+            if (property2 != null)
+                item.setProperty2(property2);
+            if (property3 != null)
+                item.setProperty3(property3);
+            if (property4 != null)
+                item.setProperty4(property4);
 
-        return effectService.saveEffect(effect)
-                .flatMap(savedEffect -> {
-                    if (itemId != null) {
-                        return effectService.linkItemAndEffect(itemId, savedEffect.getId())
-                                .onErrorResume(e -> Mono.empty())
-                                .thenReturn(savedEffect);
-                    }
-                    return Mono.just(savedEffect);
-                })
-                .as(mono -> await(mono, "update effect"));
+            return itemService.saveItem(item).flatMap(saved -> {
+                if (effectIdsStr != null) {
+                    return effectService.deleteByItemId(saved.getId())
+                            .thenMany(Flux.fromIterable(effectIds))
+                            .flatMap(effectId -> effectService.linkItemAndEffect(saved.getId(), effectId))
+                            .then(itemService.getItem(saved.getId()));
+                }
+                return Mono.just(saved);
+            });
+        }), "update item");
     }
 
-    @Tool(description = "Retrieve an effect by its ID")
-    public Effect getEffect(@ToolParam(description = "The unique ID of the effect") Long id) {
-        log.info("MCP Tool: Getting effect with id: {}", id);
-        return await(effectService.getEffect(id), "get effect");
+    @Tool(description = "List all items")
+    public List<Item> listItems() {
+        log.info("MCP API Call: listItems");
+        return awaitList(itemService.getAllItems(), "list items");
     }
 
-    @Tool(description = "Retrieve all effects associated with a specific item")
-    public List<Effect> getEffectsByItem(@ToolParam(description = "The ID of the item to retrieve effects for") Long itemId) {
-        log.info("MCP Tool: Getting effects for item: {}", itemId);
-        return awaitList(effectService.getEffectsByItem(itemId), "get effects by item");
-    }
+    // --- MOBILE CRUD ---
 
-    // --- MOBILE / NPC TOOLS ---
-
-    @Tool(description = "Create a new NPC (mobile) with base stats")
+    @Tool(description = "Create a new Mobile (NPC)")
     public Mobile createMobile(
-            @ToolParam(description = "The name of the NPC") String name,
-            @ToolParam(description = "The race ID of the NPC (optional)") Long raceId,
-            @ToolParam(description = "The class ID of the NPC (optional)") Long classId,
-            @ToolParam(description = "Strength stat") int strength,
-            @ToolParam(description = "Dexterity stat") int dexterity,
-            @ToolParam(description = "Constitution stat") int constitution,
-            @ToolParam(description = "Intelligence stat") int intelligence,
-            @ToolParam(description = "Wisdom stat") int wisdom,
-            @ToolParam(description = "Charisma stat") int charisma) {
-        log.info("MCP Tool: Creating mobile: {}", name);
+            @ToolParam(description = "Name") String name,
+            @ToolParam(description = "Room ID") Long roomId,
+            @ToolParam(description = "Strength") Integer strength,
+            @ToolParam(description = "Dexterity") Integer dexterity,
+            @ToolParam(description = "Constitution") Integer constitution,
+            @ToolParam(description = "Intelligence") Integer intelligence,
+            @ToolParam(description = "Wisdom") Integer wisdom,
+            @ToolParam(description = "Charisma") Integer charisma,
+            @ToolParam(description = "Comma-separated list of Inventory Item IDs") String inventoryItemIdsStr) {
+
+        List<Long> inventoryItemIds = parseIds(inventoryItemIdsStr);
+        log.info("MCP API Call: createMobile(name={}, roomId={}, inventoryItemIdsStr={}(parsed={}))", name, roomId,
+                inventoryItemIdsStr, inventoryItemIds);
+
         Mobile mobile = new Mobile();
         mobile.setName(name);
-        mobile.setRaceId(raceId);
-        mobile.setClassId(classId);
-        mobile.setStrength(strength);
-        mobile.setDexterity(dexterity);
-        mobile.setConstitution(constitution);
-        mobile.setIntelligence(intelligence);
-        mobile.setWisdom(wisdom);
-        mobile.setCharisma(charisma);
-        return await(mobileService.saveMobile(mobile), "create mobile");
+        if (roomId != null)
+            mobile.setCurrentRoomId(roomId);
+        if (strength != null)
+            mobile.setStrength(strength);
+        if (dexterity != null)
+            mobile.setDexterity(dexterity);
+        if (constitution != null)
+            mobile.setConstitution(constitution);
+        if (intelligence != null)
+            mobile.setIntelligence(intelligence);
+        if (wisdom != null)
+            mobile.setWisdom(wisdom);
+        if (charisma != null)
+            mobile.setCharisma(charisma);
+
+        return await(mobileService.saveMobile(mobile).flatMap(saved -> {
+            if (!inventoryItemIds.isEmpty()) {
+                return Flux.fromIterable(inventoryItemIds)
+                        .flatMap(itemId -> mobileService.addItemToInventory(saved.getId(), itemId))
+                        .then(Mono.just(saved));
+            }
+            return Mono.just(saved);
+        }), "create mobile");
     }
 
-    @Tool(description = "Update an existing NPC's base stats")
-    public Mobile updateMobileStats(
-            @ToolParam(description = "The ID of the NPC to update") Long id,
-            @ToolParam(description = "The name of the NPC") String name,
-            @ToolParam(description = "The race ID of the NPC (optional)") Long raceId,
-            @ToolParam(description = "The class ID of the NPC (optional)") Long classId,
-            @ToolParam(description = "Strength stat") int strength,
-            @ToolParam(description = "Dexterity stat") int dexterity,
-            @ToolParam(description = "Constitution stat") int constitution,
-            @ToolParam(description = "Intelligence stat") int intelligence,
-            @ToolParam(description = "Wisdom stat") int wisdom,
-            @ToolParam(description = "Charisma stat") int charisma) {
-        log.info("MCP Tool: Updating mobile stats: {} (id: {})", name, id);
-        return mobileService.getMobile(id)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Mobile not found: " + id)))
-                .map(mobile -> {
-                    mobile.setName(name);
-                    mobile.setRaceId(raceId);
-                    mobile.setClassId(classId);
-                    mobile.setStrength(strength);
-                    mobile.setDexterity(dexterity);
-                    mobile.setConstitution(constitution);
-                    mobile.setIntelligence(intelligence);
-                    mobile.setWisdom(wisdom);
-                    mobile.setCharisma(charisma);
-                    return mobile;
-                })
-                .flatMap(mobileService::saveMobile)
-                .as(mono -> await(mono, "update mobile stats"));
-    }
-
-    @Tool(description = "Retrieve an NPC by its ID")
-    public Mobile getMobile(
-            @ToolParam(description = "The unique ID of the NPC") Long id) {
-        log.info("MCP Tool: Getting mobile with id: {}", id);
+    @Tool(description = "Retrieve a Mobile")
+    public Mobile getMobile(Long id) {
+        log.info("MCP API Call: getMobile(id={})", id);
         return await(mobileService.getMobile(id), "get mobile");
     }
 
-    @Tool(description = "Assign the current room for an NPC")
-    public Mobile setMobileRoom(
-            @ToolParam(description = "The ID of the NPC") Long mobileId,
-            @ToolParam(description = "The ID of the room to place the NPC in") Long roomId) {
-        log.info("MCP Tool: Setting room {} for mobile {}", roomId, mobileId);
-        return roomService.getRoom(roomId)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Room not found: " + roomId)))
-                .then(mobileService.setMobileRoom(mobileId, roomId))
-                .as(mono -> await(mono, "set mobile room"));
+    @Tool(description = "Update an existing Mobile")
+    public Mobile updateMobile(
+            @ToolParam(description = "Mobile ID") Long id,
+            @ToolParam(description = "Name") String name,
+            @ToolParam(description = "Room ID") Long roomId,
+            @ToolParam(description = "Strength") Integer strength,
+            @ToolParam(description = "Dexterity") Integer dexterity,
+            @ToolParam(description = "Constitution") Integer constitution,
+            @ToolParam(description = "Intelligence") Integer intelligence,
+            @ToolParam(description = "Wisdom") Integer wisdom,
+            @ToolParam(description = "Charisma") Integer charisma,
+            @ToolParam(description = "Comma-separated list of Inventory Item IDs") String inventoryItemIdsStr) {
+
+        List<Long> inventoryItemIds = parseIds(inventoryItemIdsStr);
+        log.info("MCP API Call: updateMobile(id={}, name={}, roomId={}, inventoryItemIdsStr={}(parsed={}))", id, name,
+                roomId, inventoryItemIdsStr, inventoryItemIds);
+
+        return await(mobileService.getMobile(id).flatMap(mobile -> {
+            if (name != null)
+                mobile.setName(name);
+            if (roomId != null)
+                mobile.setCurrentRoomId(roomId);
+            if (strength != null)
+                mobile.setStrength(strength);
+            if (dexterity != null)
+                mobile.setDexterity(dexterity);
+            if (constitution != null)
+                mobile.setConstitution(constitution);
+            if (intelligence != null)
+                mobile.setIntelligence(intelligence);
+            if (wisdom != null)
+                mobile.setWisdom(wisdom);
+            if (charisma != null)
+                mobile.setCharisma(charisma);
+
+            return mobileService.saveMobile(mobile).flatMap(saved -> {
+                if (inventoryItemIdsStr != null && !inventoryItemIds.isEmpty()) {
+                    return Flux.fromIterable(inventoryItemIds)
+                            .flatMap(itemId -> mobileService.addItemToInventory(saved.getId(), itemId))
+                            .then(Mono.just(saved));
+                }
+                return Mono.just(saved);
+            });
+        }), "update mobile");
     }
 
-    @Tool(description = "Assign a skill to an NPC, or update its rank if the skill already exists")
-    public MobileSkill assignSkillToMobile(
-            @ToolParam(description = "The ID of the NPC") Long mobileId,
-            @ToolParam(description = "The name of the skill (e.g. 'One Handed Weapon', 'Bandage')") String skillName,
-            @ToolParam(description = "The rank of the skill (1-100)") int rank) {
-        log.info("MCP Tool: Assigning skill '{}' rank {} to mobile {}", skillName, rank, mobileId);
-        return mobileService.getMobile(mobileId)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Mobile not found: " + mobileId)))
-                .then(mobileService.assignSkill(mobileId, skillName, rank))
-                .as(mono -> await(mono, "assign skill to mobile"));
+    @Tool(description = "List all Mobiles")
+    public List<Mobile> listMobiles() {
+        log.info("MCP API Call: listMobiles");
+        return awaitList(mobileService.getAllMobiles(), "list mobiles");
     }
 
-    @Tool(description = "Get all skills assigned to an NPC")
-    public List<MobileSkill> getMobileSkills(
-            @ToolParam(description = "The ID of the NPC") Long mobileId) {
-        log.info("MCP Tool: Getting skills for mobile {}", mobileId);
-        return awaitList(mobileService.getMobileSkills(mobileId), "get mobile skills");
+    // --- ROOM CRUD ---
+
+    @Tool(description = "Create a new Room")
+    public Room createRoom(
+            @ToolParam(description = "Room name") String name,
+            @ToolParam(description = "Room description") String description,
+            @ToolParam(description = "Room type. Must be EXACTLY ONE OF: INDOORS, CITY, FIELD, FOREST, HILLS, MOUNTAIN, DESERT, ARCTIC, SWAMP, WATER_SURFACE, UNDERWATER, AIR, UNDERGROUND_CAVE, UNDERGROUND_DUNGEON, UNKNOWN") String roomType,
+            @ToolParam(description = "Location North Room ID") Long northId,
+            @ToolParam(description = "Location South Room ID") Long southId,
+            @ToolParam(description = "Location East Room ID") Long eastId,
+            @ToolParam(description = "Location West Room ID") Long westId,
+            @ToolParam(description = "Location Up Room ID") Long upId,
+            @ToolParam(description = "Location Down Room ID") Long downId) {
+
+        log.info("MCP API Call: createRoom(name={}, roomType={}, N={}, S={}, E={}, W={}, U={}, D={})", name, roomType,
+                northId, southId, eastId, westId, upId, downId);
+
+        Room room = new Room();
+        room.setName(name);
+        room.setDescription(description);
+        if (roomType != null) {
+            try {
+                room.setRoomType(RoomType.valueOf(roomType.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(
+                        "Invalid roomType: " + roomType + ". Allowed: " + Arrays.toString(RoomType.values()));
+            }
+        }
+
+        if (northId != null) {
+            room.setNorthId(northId);
+            room.setNorthDoor(true);
+        }
+        if (southId != null) {
+            room.setSouthId(southId);
+            room.setSouthDoor(true);
+        }
+        if (eastId != null) {
+            room.setEastId(eastId);
+            room.setEastDoor(true);
+        }
+        if (westId != null) {
+            room.setWestId(westId);
+            room.setWestDoor(true);
+        }
+        if (upId != null) {
+            room.setUpId(upId);
+            room.setUpDoor(true);
+        }
+        if (downId != null) {
+            room.setDownId(downId);
+            room.setDownDoor(true);
+        }
+
+        return await(roomService.saveRoom(room), "create room");
     }
 
-    @Tool(description = "Get all available skills from the global skill registry")
-    public List<SkillRegistry> getAllSkills() {
-        log.info("MCP Tool: Getting all skills from registry");
-        return awaitList(configService.getAllSkills(), "get all skills");
+    @Tool(description = "Retrieve a Room")
+    public Room getRoom(Long id) {
+        log.info("MCP API Call: getRoom(id={})", id);
+        return await(roomService.getRoom(id), "get room");
     }
 
-    @Tool(description = "Assign an item to a specific wear location on an NPC. For FINGER, fills right then left; for WRIST, fills right then left; for EAR, fills left then right.")
-    public Mobile assignItemToMobileWearLocation(
-            @ToolParam(description = "The ID of the NPC") Long mobileId,
-            @ToolParam(description = "The ID of the item to equip") Long itemId,
-            @ToolParam(description = "The wear location (HEAD, CHEST, LEGS, FEET, ARMS, HANDS, FINGER, WRIST, NECK, EAR, FACE, WAIST, PRIMARY, OFFHAND)") String wearLocation) {
-        log.info("MCP Tool: Assigning item {} to wear location {} on mobile {}", itemId, wearLocation, mobileId);
-        WearLocation loc = parseWearLocation(wearLocation);
-        return await(mobileService.assignItemToWearLocation(mobileId, itemId, loc), "assign item to mobile wear location");
+    @Tool(description = "Update an existing Room")
+    public Room updateRoom(
+            @ToolParam(description = "Room ID") Long id,
+            @ToolParam(description = "Room name") String name,
+            @ToolParam(description = "Room description") String description,
+            @ToolParam(description = "Room type. Must be EXACTLY ONE OF: INDOORS, CITY, FIELD, FOREST, HILLS, MOUNTAIN, DESERT, ARCTIC, SWAMP, WATER_SURFACE, UNDERWATER, AIR, UNDERGROUND_CAVE, UNDERGROUND_DUNGEON, UNKNOWN") String roomType,
+            @ToolParam(description = "Location North Room ID") Long northId,
+            @ToolParam(description = "Location South Room ID") Long southId,
+            @ToolParam(description = "Location East Room ID") Long eastId,
+            @ToolParam(description = "Location West Room ID") Long westId,
+            @ToolParam(description = "Location Up Room ID") Long upId,
+            @ToolParam(description = "Location Down Room ID") Long downId) {
+
+        log.info("MCP API Call: updateRoom(id={}, name={}, roomType={}, N={}, S={}, E={}, W={}, U={}, D={})", id, name,
+                roomType, northId, southId, eastId, westId, upId, downId);
+
+        return await(roomService.getRoom(id).flatMap(room -> {
+            if (name != null)
+                room.setName(name);
+            if (description != null)
+                room.setDescription(description);
+            if (roomType != null) {
+                try {
+                    room.setRoomType(RoomType.valueOf(roomType.toUpperCase()));
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException(
+                            "Invalid roomType: " + roomType + ". Allowed: " + Arrays.toString(RoomType.values()));
+                }
+            }
+            if (northId != null) {
+                room.setNorthId(northId);
+                room.setNorthDoor(true);
+            }
+            if (southId != null) {
+                room.setSouthId(southId);
+                room.setSouthDoor(true);
+            }
+            if (eastId != null) {
+                room.setEastId(eastId);
+                room.setEastDoor(true);
+            }
+            if (westId != null) {
+                room.setWestId(westId);
+                room.setWestDoor(true);
+            }
+            if (upId != null) {
+                room.setUpId(upId);
+                room.setUpDoor(true);
+            }
+            if (downId != null) {
+                room.setDownId(downId);
+                room.setDownDoor(true);
+            }
+
+            return roomService.saveRoom(room);
+        }), "update room");
     }
 
-    @Tool(description = "Add an item to an NPC's inventory (carried but not worn)")
-    public Mobile addItemToMobileInventory(
-            @ToolParam(description = "The ID of the NPC") Long mobileId,
-            @ToolParam(description = "The ID of the item to add") Long itemId) {
-        log.info("MCP Tool: Adding item {} to inventory of mobile {}", itemId, mobileId);
-        return await(mobileService.addItemToInventory(mobileId, itemId), "add item to mobile inventory");
+    @Tool(description = "List all Rooms")
+    public List<Room> listRooms() {
+        log.info("MCP API Call: listRooms");
+        return awaitList(roomService.getAllRooms(), "list rooms");
     }
 
-    @Tool(description = "Get all items currently worn/equipped by an NPC")
-    public List<Item> getMobileWornItems(
-            @ToolParam(description = "The ID of the NPC") Long mobileId) {
-        log.info("MCP Tool: Getting worn items for mobile {}", mobileId);
-        return awaitList(mobileService.getMobileWornItems(mobileId), "get mobile worn items");
+    // --- STORES CRUD ---
+
+    @Tool(description = "Create a new Store")
+    public Store createStore(
+            @ToolParam(description = "Store name") String name,
+            @ToolParam(description = "Store description") String description,
+            @ToolParam(description = "Comma-separated list of Item IDs available in store") String itemIdsStr) {
+
+        List<Long> itemIds = parseIds(itemIdsStr);
+        log.info("MCP API Call: createStore(name={}, itemIdsStr={}(parsed={}))", name, itemIdsStr, itemIds);
+
+        Store store = new Store();
+        store.setName(name);
+        store.setDescription(description);
+
+        return await(storeService.createStore(store).flatMap(saved -> {
+            if (!itemIds.isEmpty()) {
+                return Flux.fromIterable(itemIds)
+                        .flatMap(itemId -> storeService.addStoreItem(saved.getId(), itemId))
+                        .then(Mono.just(saved));
+            }
+            return Mono.just(saved);
+        }), "create store");
     }
 
-    @Tool(description = "Get the inventory (carried items) of an NPC")
-    public List<Item> getMobileInventory(
-            @ToolParam(description = "The ID of the NPC") Long mobileId) {
-        log.info("MCP Tool: Getting inventory for mobile {}", mobileId);
-        return awaitList(mobileService.getMobileInventory(mobileId), "get mobile inventory");
+    @Tool(description = "Retrieve a Store")
+    public Store getStore(Long id) {
+        log.info("MCP API Call: getStore(id={})", id);
+        return await(storeService.getStore(id), "get store");
+    }
+
+    @Tool(description = "Update an existing Store")
+    public Store updateStore(
+            @ToolParam(description = "Store ID") Long id,
+            @ToolParam(description = "Store name") String name,
+            @ToolParam(description = "Store description") String description,
+            @ToolParam(description = "Comma-separated list of Item IDs to add to store") String addItemIdsStr) {
+
+        List<Long> addItemIds = parseIds(addItemIdsStr);
+        log.info("MCP API Call: updateStore(id={}, name={}, addItemIdsStr={}(parsed={}))", id, name, addItemIdsStr,
+                addItemIds);
+
+        Store store = new Store();
+        if (name != null)
+            store.setName(name);
+        if (description != null)
+            store.setDescription(description);
+
+        return await(storeService.updateStore(id, store).flatMap(saved -> {
+            if (addItemIdsStr != null && !addItemIds.isEmpty()) {
+                return Flux.fromIterable(addItemIds)
+                        .flatMap(itemId -> storeService.addStoreItem(saved.getId(), itemId))
+                        .then(Mono.just(saved));
+            }
+            return Mono.just(saved);
+        }), "update store");
+    }
+
+    @Tool(description = "List all Stores")
+    public List<Store> listStores() {
+        log.info("MCP API Call: listStores");
+        return awaitList(storeService.getAllStores(), "list stores");
+    }
+
+    // --- HELPER METHODS ---
+
+    private List<Long> parseIds(String idString) {
+        if (idString == null || idString.isBlank()) {
+            return Collections.emptyList();
+        }
+        return Arrays.stream(idString.replace("[", "").replace("]", "").split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
     }
 
     private <T> T await(Mono<T> mono, String operation) {
-        log.info("MCP Tool call started: {}", operation);
         try {
             T result = mono.subscribeOn(Schedulers.boundedElastic())
                     .toFuture()
                     .get(TOOL_TIMEOUT.toSeconds(), TimeUnit.SECONDS);
-            log.info("MCP Tool call completed: {}", operation);
             return result;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -561,7 +543,6 @@ public class McpToolService {
 
     private <T> List<T> awaitList(Flux<T> flux, String operation) {
         List<T> results = await(flux.collectList(), operation);
-        log.info("MCP Tool call returned {} records for {}", results.size(), operation);
         return results;
     }
 }
