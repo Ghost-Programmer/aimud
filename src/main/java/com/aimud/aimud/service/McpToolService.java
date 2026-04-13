@@ -50,19 +50,28 @@ public class McpToolService {
     @Tool(description = "Get a list of all Wear Locations for Items")
     public List<String> getWearLocations() {
         log.info("MCP API Call: getWearLocations");
-        return Arrays.stream(WearLocation.values()).map(Enum::name).collect(Collectors.toList());
+        return Arrays.stream(WearLocation.values())
+                .filter(w -> w != WearLocation.NONE)
+                .map(Enum::name)
+                .collect(Collectors.toList());
     }
 
     @Tool(description = "Get a list of all Item Types")
     public List<String> getItemTypes() {
         log.info("MCP API Call: getItemTypes");
-        return Arrays.stream(ItemType.values()).map(Enum::name).collect(Collectors.toList());
+        return Arrays.stream(ItemType.values())
+                .filter(t -> t != ItemType.NONE)
+                .map(Enum::name)
+                .collect(Collectors.toList());
     }
 
     @Tool(description = "Get a list of all Room Types")
     public List<String> getRoomTypes() {
         log.info("MCP API Call: getRoomTypes");
-        return Arrays.stream(RoomType.values()).map(Enum::name).collect(Collectors.toList());
+        return Arrays.stream(RoomType.values())
+                .filter(r -> r != RoomType.UNKNOWN)
+                .map(Enum::name)
+                .collect(Collectors.toList());
     }
 
     @Tool(description = "Get a list of all Skill Types (Registries)")
@@ -87,10 +96,10 @@ public class McpToolService {
 
     @Tool(description = "Create a new item")
     public Item createItem(
-            @ToolParam(description = "Item name") String name,
-            @ToolParam(description = "Item description") String description,
-            @ToolParam(description = "Item type. Must be EXACTLY ONE OF: WEAPON, TWO_HANDED_WEAPON, RANGED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, FOOD, DRINK, POTION, BOOK, SCROLL, MONEY, WAND, QUEST, KEY, LIGHT, CONTAINER, TRASH, MISC, NONE") String itemType,
-            @ToolParam(description = "Wear location. Must be EXACTLY ONE OF: HEAD, CHEST, LEGS, FEET, ARMS, HANDS, FINGER, WRIST, NECK, EAR, FACE, WAIST, PRIMARY, OFFHAND, NONE") String wearLocation,
+            @ToolParam(description = "Item name. REQUIRED.") String name,
+            @ToolParam(description = "Item description. REQUIRED.") String description,
+            @ToolParam(description = "Item type. REQUIRED. Must be EXACTLY ONE OF: WEAPON, TWO_HANDED_WEAPON, RANGED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, FOOD, DRINK, POTION, BOOK, SCROLL, MONEY, WAND, QUEST, KEY, LIGHT, CONTAINER, TRASH, MISC") String itemType,
+            @ToolParam(description = "Wear location. REQUIRED. Must be EXACTLY ONE OF: HEAD, CHEST, LEGS, FEET, ARMS, HANDS, FINGER, WRIST, NECK, EAR, FACE, WAIST, PRIMARY, OFFHAND") String wearLocation,
             @ToolParam(description = "Is stackable") Boolean stackable,
             @ToolParam(description = "Property 1 cost/value") Integer property1,
             @ToolParam(description = "Property 2") Integer property2,
@@ -103,27 +112,36 @@ public class McpToolService {
                 "MCP API Call: createItem(name={}, itemType={}, wearLocation={}, stackable={}, effectIdsStr={}(parsed={}))",
                 name, itemType, wearLocation, stackable, effectIdsStr, effectIds);
 
+        if (name == null || name.isBlank())
+            throw new IllegalArgumentException("Item name is required.");
+        if (description == null || description.isBlank())
+            throw new IllegalArgumentException("Item description is required.");
+        if (itemType == null || itemType.isBlank())
+            throw new IllegalArgumentException("Item type is required.");
+        if (wearLocation == null || wearLocation.isBlank())
+            throw new IllegalArgumentException("Wear location is required.");
+
         Item item = new Item();
         item.setName(name);
         item.setDescription(description);
-        if (itemType != null) {
-            ItemType parsedType = ItemType.fromString(itemType);
-            if (parsedType == ItemType.NONE && !itemType.equalsIgnoreCase("NONE")) {
-                log.error("Invalid itemType: {}", itemType);
-                throw new IllegalArgumentException(
-                        "Invalid itemType: " + itemType + ". Allowed: " + Arrays.toString(ItemType.values()));
-            }
-            item.setItemType(parsedType);
+
+        ItemType parsedType = ItemType.fromString(itemType);
+        if (parsedType == ItemType.NONE) {
+            String allowed = Arrays.stream(ItemType.values()).filter(v -> v != ItemType.NONE).map(Enum::name)
+                    .collect(Collectors.joining(", "));
+            throw new IllegalArgumentException("Invalid itemType: " + itemType + ". Allowed: [" + allowed + "]");
         }
-        if (wearLocation != null) {
-            WearLocation parsedLoc = WearLocation.fromString(wearLocation);
-            if (parsedLoc == WearLocation.NONE && !wearLocation.equalsIgnoreCase("NONE")) {
-                log.error("Invalid wearLocation: {}", wearLocation);
-                throw new IllegalArgumentException("Invalid wearLocation: " + wearLocation + ". Allowed: "
-                        + Arrays.toString(WearLocation.values()));
-            }
-            item.setWearLocation(parsedLoc);
+        item.setItemType(parsedType);
+
+        WearLocation parsedLoc = WearLocation.fromString(wearLocation);
+        if (parsedLoc == WearLocation.NONE) {
+            String allowed = Arrays.stream(WearLocation.values()).filter(v -> v != WearLocation.NONE).map(Enum::name)
+                    .collect(Collectors.joining(", "));
+            throw new IllegalArgumentException(
+                    "Invalid wearLocation: " + wearLocation + ". Allowed: [" + allowed + "]");
         }
+        item.setWearLocation(parsedLoc);
+
         if (stackable != null)
             item.setStackable(stackable);
         item.setProperty1(property1 == null ? 0 : property1);
@@ -152,8 +170,8 @@ public class McpToolService {
             @ToolParam(description = "Item ID") Long id,
             @ToolParam(description = "Item name") String name,
             @ToolParam(description = "Item description") String description,
-            @ToolParam(description = "Item type. Must be EXACTLY ONE OF: WEAPON, TWO_HANDED_WEAPON, RANGED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, FOOD, DRINK, POTION, BOOK, SCROLL, MONEY, WAND, QUEST, KEY, LIGHT, CONTAINER, TRASH, MISC, NONE") String itemType,
-            @ToolParam(description = "Wear location. Must be EXACTLY ONE OF: HEAD, CHEST, LEGS, FEET, ARMS, HANDS, FINGER, WRIST, NECK, EAR, FACE, WAIST, PRIMARY, OFFHAND, NONE") String wearLocation,
+            @ToolParam(description = "Item type. REQUIRED. Must be EXACTLY ONE OF: WEAPON, TWO_HANDED_WEAPON, RANGED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR, FOOD, DRINK, POTION, BOOK, SCROLL, MONEY, WAND, QUEST, KEY, LIGHT, CONTAINER, TRASH, MISC") String itemType,
+            @ToolParam(description = "Wear location. REQUIRED. Must be EXACTLY ONE OF: HEAD, CHEST, LEGS, FEET, ARMS, HANDS, FINGER, WRIST, NECK, EAR, FACE, WAIST, PRIMARY, OFFHAND") String wearLocation,
             @ToolParam(description = "Is stackable") Boolean stackable,
             @ToolParam(description = "Property 1") Integer property1,
             @ToolParam(description = "Property 2") Integer property2,
@@ -173,17 +191,21 @@ public class McpToolService {
                 item.setDescription(description);
             if (itemType != null) {
                 ItemType parsedType = ItemType.fromString(itemType);
-                if (parsedType == ItemType.NONE && !itemType.equalsIgnoreCase("NONE")) {
+                if (parsedType == ItemType.NONE) {
+                    String allowed = Arrays.stream(ItemType.values()).filter(v -> v != ItemType.NONE).map(Enum::name)
+                            .collect(Collectors.joining(", "));
                     throw new IllegalArgumentException(
-                            "Invalid itemType: " + itemType + ". Allowed: " + Arrays.toString(ItemType.values()));
+                            "Invalid itemType: " + itemType + ". Allowed: [" + allowed + "]");
                 }
                 item.setItemType(parsedType);
             }
             if (wearLocation != null) {
                 WearLocation parsedLoc = WearLocation.fromString(wearLocation);
-                if (parsedLoc == WearLocation.NONE && !wearLocation.equalsIgnoreCase("NONE")) {
-                    throw new IllegalArgumentException("Invalid wearLocation: " + wearLocation + ". Allowed: "
-                            + Arrays.toString(WearLocation.values()));
+                if (parsedLoc == WearLocation.NONE) {
+                    String allowed = Arrays.stream(WearLocation.values()).filter(v -> v != WearLocation.NONE)
+                            .map(Enum::name).collect(Collectors.joining(", "));
+                    throw new IllegalArgumentException(
+                            "Invalid wearLocation: " + wearLocation + ". Allowed: [" + allowed + "]");
                 }
                 item.setWearLocation(parsedLoc);
             }
@@ -220,8 +242,8 @@ public class McpToolService {
 
     @Tool(description = "Create a new Mobile (NPC)")
     public Mobile createMobile(
-            @ToolParam(description = "Name") String name,
-            @ToolParam(description = "Room ID") Long roomId,
+            @ToolParam(description = "Name. REQUIRED.") String name,
+            @ToolParam(description = "Room ID. REQUIRED.") Long roomId,
             @ToolParam(description = "Strength") Integer strength,
             @ToolParam(description = "Dexterity") Integer dexterity,
             @ToolParam(description = "Constitution") Integer constitution,
@@ -234,10 +256,14 @@ public class McpToolService {
         log.info("MCP API Call: createMobile(name={}, roomId={}, inventoryItemIdsStr={}(parsed={}))", name, roomId,
                 inventoryItemIdsStr, inventoryItemIds);
 
+        if (name == null || name.isBlank())
+            throw new IllegalArgumentException("Mobile name is required.");
+        if (roomId == null)
+            throw new IllegalArgumentException("Room ID is required.");
+
         Mobile mobile = new Mobile();
         mobile.setName(name);
-        if (roomId != null)
-            mobile.setCurrentRoomId(roomId);
+        mobile.setCurrentRoomId(roomId);
         if (strength != null)
             mobile.setStrength(strength);
         if (dexterity != null)
@@ -323,9 +349,9 @@ public class McpToolService {
 
     @Tool(description = "Create a new Room")
     public Room createRoom(
-            @ToolParam(description = "Room name") String name,
-            @ToolParam(description = "Room description") String description,
-            @ToolParam(description = "Room type. Must be EXACTLY ONE OF: INDOORS, CITY, FIELD, FOREST, HILLS, MOUNTAIN, DESERT, ARCTIC, SWAMP, WATER_SURFACE, UNDERWATER, AIR, UNDERGROUND_CAVE, UNDERGROUND_DUNGEON, UNKNOWN") String roomType,
+            @ToolParam(description = "Room name. REQUIRED.") String name,
+            @ToolParam(description = "Room description. REQUIRED.") String description,
+            @ToolParam(description = "Room type. REQUIRED. Must be EXACTLY ONE OF: INDOORS, CITY, FIELD, FOREST, HILLS, MOUNTAIN, DESERT, ARCTIC, SWAMP, WATER_SURFACE, UNDERWATER, AIR, UNDERGROUND_CAVE, UNDERGROUND_DUNGEON") String roomType,
             @ToolParam(description = "Location North Room ID") Long northId,
             @ToolParam(description = "Location South Room ID") Long southId,
             @ToolParam(description = "Location East Room ID") Long eastId,
@@ -336,16 +362,25 @@ public class McpToolService {
         log.info("MCP API Call: createRoom(name={}, roomType={}, N={}, S={}, E={}, W={}, U={}, D={})", name, roomType,
                 northId, southId, eastId, westId, upId, downId);
 
+        if (name == null || name.isBlank())
+            throw new IllegalArgumentException("Room name is required.");
+        if (description == null || description.isBlank())
+            throw new IllegalArgumentException("Room description is required.");
+        if (roomType == null || roomType.isBlank())
+            throw new IllegalArgumentException("Room type is required.");
+
         Room room = new Room();
         room.setName(name);
         room.setDescription(description);
-        if (roomType != null) {
-            try {
-                room.setRoomType(RoomType.valueOf(roomType.toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException(
-                        "Invalid roomType: " + roomType + ". Allowed: " + Arrays.toString(RoomType.values()));
-            }
+        try {
+            RoomType parsed = RoomType.valueOf(roomType.toUpperCase());
+            if (parsed == RoomType.UNKNOWN)
+                throw new IllegalArgumentException();
+            room.setRoomType(parsed);
+        } catch (IllegalArgumentException e) {
+            String allowed = Arrays.stream(RoomType.values()).filter(v -> v != RoomType.UNKNOWN).map(Enum::name)
+                    .collect(Collectors.joining(", "));
+            throw new IllegalArgumentException("Invalid roomType: " + roomType + ". Allowed: [" + allowed + "]");
         }
 
         if (northId != null) {
@@ -387,7 +422,7 @@ public class McpToolService {
             @ToolParam(description = "Room ID") Long id,
             @ToolParam(description = "Room name") String name,
             @ToolParam(description = "Room description") String description,
-            @ToolParam(description = "Room type. Must be EXACTLY ONE OF: INDOORS, CITY, FIELD, FOREST, HILLS, MOUNTAIN, DESERT, ARCTIC, SWAMP, WATER_SURFACE, UNDERWATER, AIR, UNDERGROUND_CAVE, UNDERGROUND_DUNGEON, UNKNOWN") String roomType,
+            @ToolParam(description = "Room type. Must be EXACTLY ONE OF: INDOORS, CITY, FIELD, FOREST, HILLS, MOUNTAIN, DESERT, ARCTIC, SWAMP, WATER_SURFACE, UNDERWATER, AIR, UNDERGROUND_CAVE, UNDERGROUND_DUNGEON") String roomType,
             @ToolParam(description = "Location North Room ID") Long northId,
             @ToolParam(description = "Location South Room ID") Long southId,
             @ToolParam(description = "Location East Room ID") Long eastId,
@@ -405,10 +440,15 @@ public class McpToolService {
                 room.setDescription(description);
             if (roomType != null) {
                 try {
-                    room.setRoomType(RoomType.valueOf(roomType.toUpperCase()));
+                    RoomType parsed = RoomType.valueOf(roomType.toUpperCase());
+                    if (parsed == RoomType.UNKNOWN)
+                        throw new IllegalArgumentException();
+                    room.setRoomType(parsed);
                 } catch (IllegalArgumentException e) {
+                    String allowed = Arrays.stream(RoomType.values()).filter(v -> v != RoomType.UNKNOWN).map(Enum::name)
+                            .collect(Collectors.joining(", "));
                     throw new IllegalArgumentException(
-                            "Invalid roomType: " + roomType + ". Allowed: " + Arrays.toString(RoomType.values()));
+                            "Invalid roomType: " + roomType + ". Allowed: [" + allowed + "]");
                 }
             }
             if (northId != null) {
@@ -450,16 +490,20 @@ public class McpToolService {
 
     @Tool(description = "Create a new Store")
     public Store createStore(
-            @ToolParam(description = "Store name") String name,
+            @ToolParam(description = "Store name. REQUIRED.") String name,
             @ToolParam(description = "Store description") String description,
             @ToolParam(description = "Comma-separated list of Item IDs available in store") String itemIdsStr) {
 
         List<Long> itemIds = parseIds(itemIdsStr);
         log.info("MCP API Call: createStore(name={}, itemIdsStr={}(parsed={}))", name, itemIdsStr, itemIds);
 
+        if (name == null || name.isBlank())
+            throw new IllegalArgumentException("Store name is required.");
+
         Store store = new Store();
         store.setName(name);
-        store.setDescription(description);
+        if (description != null)
+            store.setDescription(description);
 
         return await(storeService.createStore(store).flatMap(saved -> {
             if (!itemIds.isEmpty()) {
