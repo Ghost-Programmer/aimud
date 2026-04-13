@@ -64,6 +64,8 @@ public class Mobile {
     @Column("current_mana")
     private int currentMana;
 
+    private int gold;
+
     @Column("hate_healer")
     private boolean hateHealer;
     @Column("hate_debuffer")

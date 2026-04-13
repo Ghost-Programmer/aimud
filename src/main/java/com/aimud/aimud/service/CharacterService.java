@@ -140,6 +140,7 @@ public class CharacterService {
                             .map(preparedCharacter -> {
                                 preparedCharacter.setCurrentHp(preparedCharacter.getMaxHp());
                                 preparedCharacter.setCurrentMana(preparedCharacter.getMaxMana());
+                                preparedCharacter.setGold(100);
                                 return preparedCharacter;
                             })
                             .flatMap(mobileRepository::save);

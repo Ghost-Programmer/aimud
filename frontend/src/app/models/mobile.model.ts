@@ -45,4 +45,5 @@ export interface Mobile {
   usesAi?: boolean;
   nonCombat?: boolean;
   actions?: { id?: number, mobileId?: number, actionCommand: string, description: string }[];
+  gold?: number;
 }
