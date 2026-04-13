@@ -102,7 +102,8 @@ public class CharacterService {
     }
 
     public boolean canTarget(Mobile target) {
-        if (target == null) return false;
+        if (target == null)
+            return false;
         return !target.isNonCombat();
     }
 
@@ -685,7 +686,7 @@ public class CharacterService {
                     return characterEffectRepository.deleteByCharacterId(savedCharacter.getId())
                             .thenMany(Flux.fromIterable(character.getSpellEffects()))
                             .doOnNext(effect -> {
-                                effect.setId(null); 
+                                effect.setId(null);
                                 effect.setCharacterId(savedCharacter.getId());
                             })
                             .flatMap(characterEffectRepository::save)
@@ -747,6 +748,10 @@ public class CharacterService {
                                     if (!m.isHidden() && !m.isInvisible()) {
                                         this.communicationService.sendTextMessage(character,
                                                 "\nYou see " + m.getName() + " here.");
+                                        if (m.getStoreId() != null) {
+                                            this.communicationService.sendTextMessage(character,
+                                                    "\n" + m.getName() + " appears to be running a store.");
+                                        }
                                     }
                                 });
 
@@ -781,8 +786,9 @@ public class CharacterService {
                                     if (this.factionService.getFactionRatingSync(res, character.getFactionId()) < 20
                                             && res.getTarget() == null) {
                                         if (this.setTarget(res, character)) {
-                                            this.communicationService.roomMessage(res, "\n" + res.getName() + " attacks "
-                                                    + character.getName() + " on sight!");
+                                            this.communicationService.roomMessage(res,
+                                                    "\n" + res.getName() + " attacks "
+                                                            + character.getName() + " on sight!");
                                             this.communicationService.sendTextMessage(character,
                                                     "\n\n" + res.getName() + " attacks you on sight!");
                                         }

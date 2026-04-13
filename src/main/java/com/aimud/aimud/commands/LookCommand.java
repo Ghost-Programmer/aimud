@@ -62,6 +62,9 @@ public class LookCommand implements Command {
                             .filter(m -> !m.isHidden() && !m.isInvisible())
                             .forEach(m -> {
                         communicationService.sendTextMessage(Mobile, "\nYou see " + m.getName() + " here.");
+                        if (m.getStoreId() != null) {
+                            communicationService.sendTextMessage(Mobile, m.getName() + " appears to be running a store.");
+                        }
                     });
 
                     room.getItemIds().forEach(itemId -> {
