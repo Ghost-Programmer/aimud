@@ -7,6 +7,7 @@ import {ItemService} from '../../services/item.service';
 import {ConfigService} from '../../services/config.service';
 import {FactionService} from '../../services/faction.service';
 import {Faction} from '../../models/faction.model';
+import {StoreService, Store} from '../../services/store.service';
 import {SearchableDropdownComponent} from '../searchable-dropdown/searchable-dropdown.component';
 
 @Component({
@@ -25,6 +26,7 @@ export class MobileEditorComponent implements OnInit {
   availableSkills: any[] = [];
   availableRaces: any[] = [];
   availableClasses: any[] = [];
+  stores: Store[] = [];
   factions: Faction[] = [];
   factionRatings: { [key: number]: number } = {};
 
@@ -43,7 +45,8 @@ export class MobileEditorComponent implements OnInit {
     private mobileService: MobileService,
     private itemService: ItemService,
     private configService: ConfigService,
-    private factionService: FactionService
+    private factionService: FactionService,
+    private storeService: StoreService
   ) {
     this.createForm();
   }
@@ -61,7 +64,12 @@ export class MobileEditorComponent implements OnInit {
     this.loadItems();
     this.loadSkills();
     this.loadRacesAndClasses();
+    this.loadRacesAndClasses();
     this.factionService.getAllFactions().subscribe(f => this.factions = f);
+    this.storeService.getAllStores().subscribe({
+      next: (data) => this.stores = [...data].sort((a, b) => a.name.localeCompare(b.name)),
+      error: (err) => console.error('Error loading stores', err)
+    });
   }
 
   loadRacesAndClasses() {
@@ -89,6 +97,7 @@ export class MobileEditorComponent implements OnInit {
       currentMana: [50],
       currentRoomId: [1],
       factionId: [null],
+      storeId: [null],
       raceId: [null],
       classId: [null],
 
@@ -305,7 +314,8 @@ export class MobileEditorComponent implements OnInit {
       willLoot: false,
       usesAi: false,
       nonCombat: false,
-      factionId: null
+      factionId: null,
+      storeId: null
     });
     this.invSearchTexts = [];
     this.equipSearchTexts = {};

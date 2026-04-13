@@ -12,6 +12,7 @@ import {RoomManagementComponent} from '../../components/room-management/room-man
 import {AiDialogComponent} from '../../components/ai-dialog/ai-dialog.component';
 import {EffectDashboardComponent} from '../../components/effect-dashboard/effect-dashboard.component';
 import {MobileEditorComponent} from '../../components/mobile-editor/mobile-editor.component';
+import {StoreManagementComponent} from '../../components/store-management/store-management.component';
 import {GameWebSocketService} from '../../services/game-websocket.service';
 import {Subscription} from 'rxjs';
 
@@ -42,7 +43,8 @@ interface PlayTabData {
     RoomManagementComponent,
     AiDialogComponent,
     EffectDashboardComponent,
-    MobileEditorComponent
+    MobileEditorComponent,
+    StoreManagementComponent
   ],
   templateUrl: './user-dashboard.component.html',
   styleUrl: './user-dashboard.component.css'

@@ -1,0 +1,295 @@
+.store-management-container {
+  display: flex;
+  height: 100vh;
+  background-color: var(--surface-d);
+  color: var(--text-color);
+  font-family: var(--font-family);
+  overflow: hidden;
+}
+
+.list-panel {
+  width: 300px;
+  background-color: var(--surface-a);
+  border-right: 1px solid var(--surface-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  padding: 1rem;
+  background-color: var(--surface-b);
+  border-bottom: 1px solid var(--surface-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.btn-create {
+  background-color: var(--primary-color);
+  color: var(--primary-color-text);
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.btn-create:hover {
+  background-color: var(--primary-color-hover);
+}
+
+.store-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.store-list li {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--surface-border);
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.store-list li:hover {
+  background-color: var(--surface-c);
+}
+
+.store-list li.selected {
+  background-color: var(--primary-color);
+  color: var(--primary-color-text);
+}
+
+.store-name {
+  font-weight: 500;
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-delete {
+  background: none;
+  border: none;
+  color: var(--text-color-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 0.5rem;
+  line-height: 1;
+}
+
+.btn-delete:hover {
+  color: var(--pink-500);
+}
+
+.store-list li.selected .btn-delete {
+  color: var(--primary-color-text);
+}
+
+/* Editor Panel */
+.editor-panel {
+  flex-grow: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  background-color: var(--surface-d);
+}
+
+.editor-panel h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 0.5rem;
+  display: inline-block;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 1200px;
+}
+
+.editor-columns {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.editor-column {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-section {
+  background-color: var(--surface-a);
+  padding: 1.25rem;
+  border-radius: 6px;
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-section h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--surface-border);
+  padding-bottom: 0.5rem;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.form-row label {
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+  color: var(--text-color-secondary);
+  font-size: 0.9rem;
+}
+
+input[type="text"],
+input[type="number"],
+textarea,
+select {
+  padding: 0.5rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 4px;
+  background-color: var(--surface-b);
+  color: var(--text-color);
+  font-family: var(--font-family);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+textarea {
+  resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+/* Assigned Items List */
+.assigned-items-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.assigned-items-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.btn-remove {
+  background: none;
+  border: none;
+  color: var(--pink-500);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-item-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.add-item-row app-searchable-dropdown {
+  flex-grow: 1;
+}
+
+.btn-add {
+  background-color: var(--green-500);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-add:hover {
+  background-color: var(--green-600);
+}
+
+.btn-add:disabled {
+  background-color: var(--surface-border);
+  cursor: not-allowed;
+}
+
+/* Actions */
+.form-actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-save {
+  background-color: var(--primary-color);
+  color: var(--primary-color-text);
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.btn-save:hover:not(:disabled) {
+  background-color: var(--primary-color-hover);
+  transform: translateY(-1px);
+}
+
+.btn-save:disabled {
+  background-color: var(--surface-border);
+  color: var(--text-color-secondary);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.mt-3 {
+  margin-top: 1rem;
+}
+
+.text-hint {
+  font-size: 0.85rem;
+  color: var(--text-color-secondary);
+  margin-bottom: 0.5rem;
+}

@@ -110,6 +110,17 @@
                   <app-effect-dashboard></app-effect-dashboard>
                 </div>
               </div>
+
+              <!-- Store Management Accordion -->
+              <div [class.active]="activeWorldSection === 'stores'" class="accordion-item">
+                <div (click)="toggleWorldSection('stores')" class="accordion-header">
+                  <span class="accordion-title">Store Management</span>
+                  <span class="accordion-icon">{{ activeWorldSection === 'stores' ? '▼' : '▶' }}</span>
+                </div>
+                <div class="accordion-content" style="padding: 0;">
+                  <app-store-management></app-store-management>
+                </div>
+              </div>
             </div>
           </div>
         </div>

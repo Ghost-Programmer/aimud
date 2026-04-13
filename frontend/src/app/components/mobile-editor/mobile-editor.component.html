@@ -57,6 +57,13 @@
                 placeholder="Select Class...">
               </app-searchable-dropdown>
             </div>
+            <div class="form-row">
+              <label>Assigned Store</label>
+              <select formControlName="storeId">
+                <option [ngValue]="null">No Store</option>
+                <option *ngFor="let s of stores" [ngValue]="s.id">{{ s.name }}</option>
+              </select>
+            </div>
           </div>
 
           <div class="form-section">

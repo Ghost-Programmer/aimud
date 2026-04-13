@@ -1,0 +1,71 @@
+<div class="store-management-container">
+
+  <!-- Left Panel: List of Stores -->
+  <div class="list-panel">
+    <div class="panel-header">
+      <h3>Stores</h3>
+      <button (click)="createNew()" class="btn-create">+ New</button>
+    </div>
+    <ul class="store-list">
+      <li (click)="selectStore(s)"
+          *ngFor="let s of stores"
+          [class.selected]="selectedStore?.id === s.id">
+        <span class="store-name">{{ s.name }}</span>
+        <button (click)="deleteStore(s); $event.stopPropagation()" class="btn-delete">×</button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Right Panel: Editor -->
+  <div *ngIf="storeForm" class="editor-panel">
+    <h3 *ngIf="!selectedStore">Create New Store</h3>
+    <h3 *ngIf="selectedStore">Edit {{ selectedStore.name }}</h3>
+
+    <form (ngSubmit)="save()" [formGroup]="storeForm">
+      <div class="editor-columns">
+        <div class="editor-column">
+          <div class="form-section">
+            <h4>Store Info</h4>
+            <div class="form-row">
+              <label>Name</label>
+              <input formControlName="name" placeholder="Store Name"/>
+            </div>
+            <div class="form-row">
+              <label>Description</label>
+              <textarea formControlName="description" placeholder="Store Description" rows="4"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="editor-column" *ngIf="selectedStore">
+          <div class="form-section">
+            <h4>Infinite Items Setting</h4>
+            <p class="text-hint">Add items to this store that will never run out of stock.</p>
+            <ul class="assigned-items-list">
+              <li *ngFor="let item of storeItems">
+                <span>{{ item.name }} ({{ item.id }})</span>
+                <button (click)="removeStoreItem(item)" type="button" class="btn-remove">×</button>
+              </li>
+            </ul>
+
+            <div class="add-item-row mt-3">
+              <app-searchable-dropdown
+                [(ngModel)]="selectedItemIdToAdd"
+                [ngModelOptions]="{standalone: true}"
+                [options]="availableItems"
+                bindValue="id"
+                [displayFn]="itemDisplayFn"
+                placeholder="Select Item to Add">
+              </app-searchable-dropdown>
+              <button type="button" class="btn-add" (click)="addStoreItem()" [disabled]="!selectedItemIdToAdd">Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button [disabled]="storeForm.invalid" class="btn-save" type="submit">Save Store</button>
+      </div>
+    </form>
+  </div>
+</div>

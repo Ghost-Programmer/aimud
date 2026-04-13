@@ -6936,3 +6936,26 @@ CREATE TABLE IF NOT EXISTS mobile_factions (
     rating INT NOT NULL DEFAULT 50,
     PRIMARY KEY(mobile_id, faction_id)
 );
+
+--changeset jeff:1002
+CREATE TABLE IF NOT EXISTS stores (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255) DEFAULT 'system',
+    modified_by VARCHAR(255) DEFAULT 'system'
+);
+
+CREATE TABLE IF NOT EXISTS store_items (
+    store_id BIGINT NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+    item_id BIGINT NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255) DEFAULT 'system',
+    modified_by VARCHAR(255) DEFAULT 'system',
+    PRIMARY KEY(store_id, item_id)
+);
+
+ALTER TABLE mobiles ADD COLUMN store_id BIGINT REFERENCES stores(id);
