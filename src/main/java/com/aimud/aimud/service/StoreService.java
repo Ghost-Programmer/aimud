@@ -27,7 +27,8 @@ public class StoreService {
 
     private final ConcurrentHashMap<Long, Store> cachedStores = new ConcurrentHashMap<>();
 
-    public StoreService(StoreRepository storeRepository, StoreItemRepository storeItemRepository, ItemRepository itemRepository, ItemService itemService) {
+    public StoreService(StoreRepository storeRepository, StoreItemRepository storeItemRepository,
+            ItemRepository itemRepository, ItemService itemService) {
         this.storeRepository = storeRepository;
         this.storeItemRepository = storeItemRepository;
         this.itemRepository = itemRepository;
@@ -43,7 +44,7 @@ public class StoreService {
                     cachedStores.put(store.getId(), store);
                     return storeItemRepository.findByStoreId(store.getId())
                             .flatMap(storeItem -> {
-                                storeItem.setAvailable(-1); // Default to infinite
+                                storeItem.setAvailable(Integer.MAX_VALUE); // Default to infinite
                                 return itemService.getItem(storeItem.getItemId())
                                         .map(item -> {
                                             storeItem.setItem(item);
@@ -53,10 +54,10 @@ public class StoreService {
                             });
                 })
                 .subscribe(
-                        storeItem -> {},
+                        storeItem -> {
+                        },
                         error -> log.error("Error loading stores: ", error),
-                        () -> log.info("Successfully loaded {} stores into memory", cachedStores.size())
-                );
+                        () -> log.info("Successfully loaded {} stores into memory", cachedStores.size()));
     }
 
     public Flux<Store> getAllStores() {

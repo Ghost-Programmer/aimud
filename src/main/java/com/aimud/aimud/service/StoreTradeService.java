@@ -45,7 +45,8 @@ public class StoreTradeService {
     }
 
     private Mobile findMerchant(Long storeId, Mobile character) {
-        if (character.getCurrentRoomId() == null) return null;
+        if (character.getCurrentRoomId() == null)
+            return null;
         return mobileService.getMobilesInRoom(character.getCurrentRoomId()).stream()
                 .filter(m -> storeId.equals(m.getStoreId()))
                 .findFirst()
@@ -55,25 +56,30 @@ public class StoreTradeService {
     public Mono<StoreDialogPayload> getStoreDialogPayload(Long storeId, Long characterId) {
         return characterService.getCharacterById(characterId).flatMap(character -> {
             Mobile merchant = findMerchant(storeId, character);
-            if (merchant == null) return Mono.empty();
+            if (merchant == null)
+                return Mono.empty();
 
             int factionRating = factionService.getFactionRatingSync(character, merchant.getFactionId());
             int charisma = character.getCurrentCharisma() > 0 ? character.getCurrentCharisma() : 250;
 
             return storeService.getStore(storeId).map(store -> {
-                List<StoreItemDTO> storeItems = (store.getItems() != null ? store.getItems() : new ArrayList<StoreItem>())
+                List<StoreItemDTO> storeItems = (store.getItems() != null ? store.getItems()
+                        : new ArrayList<StoreItem>())
                         .stream()
-                        .map(si -> new StoreItemDTO(si.getItemId(), si.getItem(), si.getAvailable(), calculateBuyPrice(si.getItem(), factionRating, charisma)))
+                        .map(si -> new StoreItemDTO(si.getItemId(), si.getItem(), si.getAvailable(),
+                                calculateBuyPrice(si.getItem(), factionRating, charisma)))
                         .collect(Collectors.toList());
 
                 List<PlayerItemDTO> playerItems = new ArrayList<>();
                 if (character.getInventory() != null) {
                     for (Item item : character.getInventory()) {
-                        playerItems.add(new PlayerItemDTO(item.getId(), item, calculateSellPrice(item, factionRating, charisma)));
+                        playerItems.add(new PlayerItemDTO(item.getId(), item,
+                                calculateSellPrice(item, factionRating, charisma)));
                     }
                 }
 
-                return new StoreDialogPayload(storeId, merchant.getName(), factionRating, charisma, character.getGold(), storeItems, playerItems);
+                return new StoreDialogPayload(storeId, merchant.getName(), factionRating, charisma, character.getGold(),
+                        storeItems, playerItems);
             });
         });
     }
@@ -81,7 +87,8 @@ public class StoreTradeService {
     public Mono<StoreDialogPayload> buyItem(Long storeId, Long itemId, Long characterId) {
         return characterService.getCharacterById(characterId).flatMap(character -> {
             Mobile merchant = findMerchant(storeId, character);
-            if (merchant == null) return Mono.empty();
+            if (merchant == null)
+                return Mono.empty();
 
             int factionRating = factionService.getFactionRatingSync(character, merchant.getFactionId());
             int charisma = character.getCurrentCharisma() > 0 ? character.getCurrentCharisma() : 250;
@@ -119,9 +126,11 @@ public class StoreTradeService {
 
                 return characterService.save(character)
                         .flatMap(savedChar -> characterService.updateInventory(savedChar, currentInventory))
+                        .flatMap(savedChar -> characterService.getCharacterById(savedChar.getId()))
                         .flatMap(savedChar -> {
                             communicationService.sendCharacterUpdate(savedChar);
-                            communicationService.sendTextMessage(savedChar, "You bought " + storeItem.getItem().getName() + " for " + price + " gold.");
+                            communicationService.sendTextMessage(savedChar,
+                                    "You bought " + storeItem.getItem().getName() + " for " + price + " gold.");
                             return getStoreDialogPayload(storeId, characterId);
                         });
             });
@@ -131,7 +140,8 @@ public class StoreTradeService {
     public Mono<StoreDialogPayload> sellItem(Long storeId, Long itemId, Long characterId) {
         return characterService.getCharacterById(characterId).flatMap(character -> {
             Mobile merchant = findMerchant(storeId, character);
-            if (merchant == null) return Mono.empty();
+            if (merchant == null)
+                return Mono.empty();
 
             int factionRating = factionService.getFactionRatingSync(character, merchant.getFactionId());
             int charisma = character.getCurrentCharisma() > 0 ? character.getCurrentCharisma() : 250;
@@ -175,9 +185,11 @@ public class StoreTradeService {
 
                 return characterService.save(character)
                         .flatMap(savedChar -> characterService.updateInventory(savedChar, currentInventory))
+                        .flatMap(savedChar -> characterService.getCharacterById(savedChar.getId()))
                         .flatMap(savedChar -> {
                             communicationService.sendCharacterUpdate(savedChar);
-                            communicationService.sendTextMessage(savedChar, "You sold " + itemToSell.getName() + " for " + price + " gold.");
+                            communicationService.sendTextMessage(savedChar,
+                                    "You sold " + itemToSell.getName() + " for " + price + " gold.");
                             return getStoreDialogPayload(storeId, characterId);
                         });
             });

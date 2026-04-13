@@ -171,27 +171,27 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
     if (!this.character?.id) return;
     this.wsSubscription = this.gameWebSocketService.getCharacterUpdates(this.character.id).subscribe({
       next: (update) => {
-        if (update.type === 'character') {
-          // Apply updates in place to maintain reference for parent
-          Object.assign(this.character, update.data);
-        } else if (update.type === 'text') {
-          this.textMessages.push(update.data);
-          this.scrollToBottom();
-        } else if (update.type === 'target') {
-          this.target = update.data;
-        } else if (update.type === 'party') {
-          this.partyData = update.data;
-        } else if (update.type === 'storeDialog') {
-          console.log('Received storeDialog WS payload:', update);
-          this.ngZone.run(() => {
+        this.ngZone.run(() => {
+          if (update.type === 'character') {
+            // Apply updates by reassigning to trigger change detection accurately
+            this.character = { ...this.character, ...update.data };
+          } else if (update.type === 'text') {
+            this.textMessages.push(update.data);
+            this.scrollToBottom();
+          } else if (update.type === 'target') {
+            this.target = update.data;
+          } else if (update.type === 'party') {
+            this.partyData = update.data;
+          } else if (update.type === 'storeDialog') {
+            console.log('Received storeDialog WS payload:', update);
             this.dialog.open(StoreDialogComponent, {
               width: '1000px',
               height: '650px',
               maxWidth: '95vw',
               data: { storeId: update.data.storeId, characterId: update.data.characterId }
             });
-          });
-        }
+          }
+        });
       },
       error: (err) => console.error('WebSocket error', err)
     });

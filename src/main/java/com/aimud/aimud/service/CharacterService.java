@@ -272,7 +272,6 @@ public class CharacterService {
         List<Long> uniqueItemIds = inventory.stream()
                 .map(Item::getId)
                 .filter(java.util.Objects::nonNull)
-                .distinct() // This ensures only unique item IDs are processed
                 .collect(Collectors.toList());
 
         return databaseClient.sql("DELETE FROM character_inventory WHERE character_id = :characterId")
@@ -285,7 +284,10 @@ public class CharacterService {
                         .bind("itemId", itemId)
                         .fetch()
                         .rowsUpdated())
-                .then(Mono.just(character));
+                .then(Mono.defer(() -> {
+                     character.setInventory(inventory);
+                     return Mono.just(character);
+                }));
     }
 
     public Mono<Mobile> equipItem(Mobile character, Long itemId) {
