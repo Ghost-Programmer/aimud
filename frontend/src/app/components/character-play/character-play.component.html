@@ -302,8 +302,8 @@
     </div>
 
     <div *ngIf="activeStatTab === 'inventory'" class="stat-content">
-      <div class="gold-display" style="margin-bottom: 10px; font-weight: bold; color: gold;">
-        Gold: {{ character.gold || 0 }}
+      <div class="gold-display" style="margin-bottom: 10px; font-weight: bold; color: gold; display: flex; align-items: center; gap: 4px;">
+        <mat-icon style="transform: scale(1.1);">monetization_on</mat-icon> {{ character.gold || 0 }}
       </div>
       <div class="inventory-container">
         <table class="inventory-table">

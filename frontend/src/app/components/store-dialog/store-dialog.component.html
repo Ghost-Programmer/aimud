@@ -2,7 +2,9 @@
   <div class="dialog-header">
     <h2 mat-dialog-title>
       Store: {{ storeData?.shopkeeperName || 'Merchant' }}
-      <span class="gold-balance">Your Gold: {{ storeData?.playerGold || 0 }}</span>
+      <span class="gold-balance" style="display: inline-flex; align-items: center; gap: 4px;">
+        <mat-icon style="color: gold; transform: scale(1.1);">monetization_on</mat-icon> {{ storeData?.playerGold || 0 }}
+      </span>
     </h2>
     <button mat-icon-button (click)="close()" class="close-btn"><mat-icon>close</mat-icon></button>
   </div>
