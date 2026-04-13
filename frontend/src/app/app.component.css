@@ -172,6 +172,7 @@
 }
 
 .label {
+  font-weight: bold;
   font-size: 0.7rem;
   color: var(--text-muted);
   text-transform: uppercase;

@@ -213,6 +213,7 @@
 }
 
 .macro-label {
+  font-weight: bold;
   font-size: 0.7rem;
   text-transform: uppercase;
   white-space: nowrap;
@@ -310,6 +311,7 @@
 }
 
 .stat-label {
+  font-weight: bold;
   color: var(--text-muted);
 }
 
@@ -320,7 +322,7 @@
 
 .stat-group-label {
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: bold;
   text-transform: uppercase;
   color: var(--color-hex-ffd700);
   margin-bottom: 10px;

@@ -44,6 +44,7 @@ h2 {
 }
 
 label {
+  font-weight: bold;
   font-size: 0.85rem;
   color: var(--color-hex-aaa);
   margin-bottom: 0.3rem;

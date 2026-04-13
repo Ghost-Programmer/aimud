@@ -42,7 +42,7 @@
 }
 
 .label {
-  font-weight: 600;
+  font-weight: bold;
   margin-right: 8px;
   color: var(--text-muted);
 }

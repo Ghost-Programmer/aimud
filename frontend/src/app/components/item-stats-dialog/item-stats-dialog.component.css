@@ -29,6 +29,7 @@ h2[mat-dialog-title] {
 }
 
 .info-label {
+  font-weight: bold;
   color: var(--color-hex-aaa);
 }
 
@@ -79,6 +80,7 @@ h2[mat-dialog-title] {
 }
 
 .stat-label {
+  font-weight: bold;
   color: var(--color-hex-aaa);
 }
 
