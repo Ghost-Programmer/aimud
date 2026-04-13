@@ -1,4 +1,4 @@
-import {Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, AfterViewInit, HostListener} from '@angular/core';
+import {Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, AfterViewInit, HostListener, NgZone} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {DragDropModule} from '@angular/cdk/drag-drop';
@@ -8,6 +8,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import {ItemStatsDialogComponent} from '../item-stats-dialog/item-stats-dialog.component';
 import {MacroEditDialogComponent} from '../macro-edit-dialog/macro-edit-dialog.component';
+import {StoreDialogComponent} from '../store-dialog/store-dialog.component';
 import {MobileMacro} from '../../models/mobile-macro.model';
 import {CharacterService} from '../../services/character.service';
 import {GameWebSocketService} from '../../services/game-websocket.service';
@@ -48,7 +49,8 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
   constructor(
     private characterService: CharacterService,
     private gameWebSocketService: GameWebSocketService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private ngZone: NgZone
   ) {
   }
 
@@ -179,6 +181,16 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
           this.target = update.data;
         } else if (update.type === 'party') {
           this.partyData = update.data;
+        } else if (update.type === 'storeDialog') {
+          console.log('Received storeDialog WS payload:', update);
+          this.ngZone.run(() => {
+            this.dialog.open(StoreDialogComponent, {
+              width: '1000px',
+              height: '650px',
+              maxWidth: '95vw',
+              data: { storeId: update.data.storeId, characterId: update.data.characterId }
+            });
+          });
         }
       },
       error: (err) => console.error('WebSocket error', err)

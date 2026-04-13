@@ -1,0 +1,84 @@
+<div class="store-dialog-container">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>
+      Store: {{ storeData?.shopkeeperName || 'Merchant' }}
+      <span class="gold-balance">Your Gold: {{ storeData?.playerGold || 0 }}</span>
+    </h2>
+    <div class="modifiers-hud" *ngIf="storeData">
+      <small>Faction: {{ storeData.factionRating }}% | Charisma: {{ storeData.charisma }}</small>
+    </div>
+    <button mat-icon-button (click)="close()" class="close-btn"><mat-icon>close</mat-icon></button>
+  </div>
+
+  <div class="dialog-content" *ngIf="!loading && storeData">
+    <div class="columns-wrapper">
+      
+      <!-- Store Inventory (Buy) -->
+      <div class="store-column column-panel">
+        <h3>Items for Sale</h3>
+        <div class="table-container">
+          <table class="store-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Stock</th>
+                <th>Price</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let si of storeData.storeItems">
+                <td>{{ si.item.name }}</td>
+                <td>{{ si.available === -1 ? '∞' : si.available }}</td>
+                <td class="price-buy">{{ si.buyPrice }}g</td>
+                <td>
+                  <button class="btn-buy" [disabled]="storeData.playerGold < si.buyPrice || si.available === 0" (click)="buyItem(si.itemId)">Buy</button>
+                </td>
+              </tr>
+              <tr *ngIf="storeData.storeItems.length === 0">
+                <td colspan="4" class="empty-state">No items available.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Player Inventory (Sell) -->
+      <div class="player-column column-panel">
+        <h3>Your Inventory</h3>
+        <div class="table-container">
+          <table class="store-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Price</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let pi of storeData.playerInventory">
+                <td>{{ pi.item.name }}</td>
+                <td class="price-sell">{{ pi.sellPrice }}g</td>
+                <td>
+                  <button class="btn-sell" (click)="sellItem(pi.itemId)">Sell</button>
+                </td>
+              </tr>
+              <tr *ngIf="storeData.playerInventory.length === 0">
+                <td colspan="3" class="empty-state">Your inventory is empty.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="dialog-loading" *ngIf="loading">
+    <p>Loading market data...</p>
+  </div>
+  
+  <div class="error-msg" *ngIf="error">
+    {{ error }}
+  </div>
+</div>

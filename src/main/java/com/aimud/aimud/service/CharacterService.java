@@ -262,7 +262,7 @@ public class CharacterService {
                         }));
     }
 
-    private Mono<Mobile> updateInventory(Mobile character, List<Item> inventory) {
+    public Mono<Mobile> updateInventory(Mobile character, List<Item> inventory) {
         if (inventory == null)
             return Mono.just(character);
         log.debug("Updating inventory for character: {}", character.getId());

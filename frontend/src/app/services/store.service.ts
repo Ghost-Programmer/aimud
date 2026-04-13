@@ -55,4 +55,16 @@ export class StoreService {
   removeStoreItem(storeId: number, itemId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${storeId}/items/${itemId}`);
   }
+
+  getStoreDialog(storeId: number, characterId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${storeId}/dialog?characterId=${characterId}`);
+  }
+
+  buyItem(storeId: number, itemId: number, characterId: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${storeId}/buy/${itemId}?characterId=${characterId}`, {});
+  }
+
+  sellItem(storeId: number, itemId: number, characterId: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${storeId}/sell/${itemId}?characterId=${characterId}`, {});
+  }
 }

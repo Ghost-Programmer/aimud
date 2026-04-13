@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {webSocket, WebSocketSubject} from 'rxjs/webSocket';
-import {filter, Observable, retry, shareReplay} from 'rxjs';
+import {filter, Observable, retry, shareReplay, tap} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -32,7 +32,8 @@ export class GameWebSocketService {
 
   public getCharacterUpdates(characterId: number): Observable<any> {
     return this.messages$.pipe(
-      filter(msg => {
+      tap((msg: any) => console.log('WS Filter checking msg:', msg)),
+      filter((msg: any) => {
         if (!msg) return false;
         // Match targeted messages or broadcast messages (id: -1)
         // Use string conversion to handle potential type differences (string vs number)
@@ -42,6 +43,8 @@ export class GameWebSocketService {
   }
 
   public getAllMessages(): Observable<any> {
-    return this.messages$;
+    return this.messages$.pipe(
+      tap((msg: any) => console.log('WS Raw msg:', msg))
+    );
   }
 }

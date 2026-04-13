@@ -102,8 +102,24 @@ public class GameWebSocketHandler implements WebSocketHandler {
                     }
                 });
 
+        Flux<String> storeDialogs = communicationService.getStoreDialogs()
+                .flatMap(storeDialog -> {
+                    try {
+                        String json = objectMapper.writeValueAsString(Map.of(
+                                "type", "storeDialog",
+                                "id", storeDialog.getCharacterId(),
+                                "data", storeDialog
+                        ));
+                        log.info("Sending WS Payload: {}", json);
+                        return Mono.just(json);
+                    } catch (Exception e) {
+                        log.error("Error serializing store dialog", e);
+                        return Mono.empty();
+                    }
+                });
+
         return session.send(
-                Flux.merge(characterUpdates, textMessages, logoutMessages, targetUpdates, partyUpdates)
+                Flux.merge(characterUpdates, textMessages, logoutMessages, targetUpdates, partyUpdates, storeDialogs)
                         .map(session::textMessage)
         );
     }

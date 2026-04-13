@@ -14,11 +14,12 @@ import reactor.core.publisher.Sinks;
 @Slf4j
 public class CommunicationService {
 
-    private final Sinks.Many<Mobile> characterUpdates = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<Mobile> characterUpdates = Sinks.many().multicast().directBestEffort();
     private final Sinks.Many<TextMessage> textMessages = Sinks.many().replay().limit(20);
     private final Sinks.Many<Mobile> logoutMessages = Sinks.many().replay().limit(10);
-    private final Sinks.Many<TargetUpdate> targetUpdates = Sinks.many().multicast().onBackpressureBuffer();
-    private final Sinks.Many<PartyUpdate> partyUpdates = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<TargetUpdate> targetUpdates = Sinks.many().multicast().directBestEffort();
+    private final Sinks.Many<PartyUpdate> partyUpdates = Sinks.many().multicast().directBestEffort();
+    private final Sinks.Many<com.aimud.aimud.model.StoreDialogEvent> storeDialogs = Sinks.many().multicast().directBestEffort();
 
     @Setter
     private CharacterService characterService;
@@ -51,6 +52,10 @@ public class CommunicationService {
         return partyUpdates.asFlux();
     }
 
+    public Flux<com.aimud.aimud.model.StoreDialogEvent> getStoreDialogs() {
+        return storeDialogs.asFlux();
+    }
+
     public void sendCharacterUpdate(Mobile character) {
         if (character.getUserId() == null) {
             return;
@@ -62,6 +67,13 @@ public class CommunicationService {
     public void sendPartyUpdate(PartyUpdate partyUpdate) {
         log.info("Sending party update for character {}", partyUpdate.getCharacterId());
         partyUpdates.tryEmitNext(partyUpdate);
+    }
+
+    public void sendStoreDialog(com.aimud.aimud.model.StoreDialogEvent event) {
+        if (event.getCharacterId() == null) return;
+        log.info("Sending store dialog for character {} and store {}", event.getCharacterId(), event.getStoreId());
+        Sinks.EmitResult result = storeDialogs.tryEmitNext(event);
+        log.info("StoreDialog Emit result: {}", result);
     }
 
     public void sendTargetUpdate(Mobile character, Mobile target) {

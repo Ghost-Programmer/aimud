@@ -16,6 +16,7 @@ import reactor.core.publisher.Mono;
 public class StoreController {
 
     private final StoreService storeService;
+    private final com.aimud.aimud.service.StoreTradeService storeTradeService;
 
     @GetMapping
     public Flux<Store> getAllStores() {
@@ -60,5 +61,21 @@ public class StoreController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> removeStoreItem(@PathVariable Long id, @PathVariable Long itemId) {
         return storeService.removeStoreItem(id, itemId);
+    }
+
+    // Trade Endpoints
+    @GetMapping("/{id}/dialog")
+    public Mono<com.aimud.aimud.model.StorePayloads.StoreDialogPayload> getStoreDialog(@PathVariable Long id, @RequestParam Long characterId) {
+        return storeTradeService.getStoreDialogPayload(id, characterId);
+    }
+
+    @PostMapping("/{id}/buy/{itemId}")
+    public Mono<com.aimud.aimud.model.StorePayloads.StoreDialogPayload> buyItem(@PathVariable Long id, @PathVariable Long itemId, @RequestParam Long characterId) {
+        return storeTradeService.buyItem(id, itemId, characterId);
+    }
+
+    @PostMapping("/{id}/sell/{itemId}")
+    public Mono<com.aimud.aimud.model.StorePayloads.StoreDialogPayload> sellItem(@PathVariable Long id, @PathVariable Long itemId, @RequestParam Long characterId) {
+        return storeTradeService.sellItem(id, itemId, characterId);
     }
 }
