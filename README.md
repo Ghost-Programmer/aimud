@@ -4,6 +4,15 @@ Welcome to **AIMud**! AIMud is a modern, full-stack, AI-driven Multi-User Dungeo
 
 AIMud actively integrates local Large Language Models via Ollama to generate immersive NPC behavior, natural language processing, dynamic world-building, and procedural interactions alongside traditional MUD mechanics like Spells, Songs, Prayers, Combat, and Exploration.
 
+## 🤖 AI Integration Overview
+
+Unlike traditional MUDs reliant heavily on static scripts, AIMud utilizes offline inferencing via **Ollama** running locally alongside the database. The system uses a dual-model approach to fundamentally change how game masters operate and how NPCs interact within the simulation:
+
+1. **The Builder/Creator Agent (`llama3.2`)**: An administrative tool-calling LLM that can dynamically edit the database in real-time. It understands tool callbacks via the Model Context Protocol (MCP) and evaluates natural language commands to rapidly prototype rooms, generate NPCs, distribute items, and manage merchants.
+2. **The NPC Conversational Engine (`hermes3`)**: A deterministic, sandboxed system evaluating the active game state frequently. Depending on player presence, faction hostility levels, chat history, and identity rules, NPCs autonomously choose to use abilities, communicate intelligently, or physically attack without requiring any pre-authored chat scripts.
+
+For a full technical deep dive into these systems, see our dedicated [AI Integration Documentation](./docs/AI.md).
+
 ---
 
 ## 🛠️ Tech Stack & Requirements
@@ -17,15 +26,27 @@ To run this project locally, make sure you have the following installed on your 
 
 ## 🚀 Setup & Execution
 
-### 1. Spin up the infrastructure
-You need to have the database and the AI backend running locally before the server can initialize. Start the containers using our combined Docker Compose setup:
-```bash
-docker compose up -d
-```
-*(This pulls down and runs a local Postgres database and an Ollama instance).*
+You can run the application fully containerized (best for trying it out), or run the infrastructure in Docker and the engine locally (best for development).
 
-### 2. Run the Engine
-The backend engine is tightly integrated with our frontend compilation task. When you run the Spring backend using Gradle, it automatically builds the Angular frontend (`buildFrontend` task) and serves it out of the static assets folder.
+### Option A: Fully Dockerized Setup (Easiest)
+Because our `docker-compose.yml` includes the Java backend as a defined service, you can build and start the entire stack (Postgres, Ollama, Open-WebUI, and the AIMud app) with a single command:
+```bash
+docker compose up --build -d
+```
+Once the containers are running and the initial model pull is complete, access the client by visiting **`http://localhost:8080/`**.
+
+### Option B: Local Development Setup
+If you are modifying code, you'll want to run the Spring Boot engine locally to avoid rebuilding the Docker image on every change.
+
+**1. Spin up only the infrastructure**
+Start *only* the database and AI backend containers so the app port (8080) remains free:
+
+```bash
+docker compose up -d postgres ollama
+```
+
+**2. Run the Engine**
+When you run the Spring backend using Gradle, it automatically builds the Angular frontend (`buildFrontend` task) and serves it out of the static assets folder.
 
 From the repository root (e.g., using PowerShell/Command Prompt on Windows):
 ```bash
@@ -60,6 +81,11 @@ All Unit Tests and `IntegrationTests` utilize Mockito and `reactor-test` nativel
 
 Detailed documentation on classes, mechanics, scaling factors, abilities, and in-game magic can be found in our `/docs/` repository. 
 
+* [**AI Integration Document**](./docs/AI.md) — Complete overview of AI model execution, tool-calling capabilities, and NPC conversational integration.
+* [**WebSocket & API Protocol**](./docs/websocket-protocol.md) — Breakdown of the JSON payload contract and real-time streaming architecture.
+* [**Player Commands Reference**](./docs/commands.md) — Complete directory of all valid movements, combat maneuvers, magical commands, and roleplay emotes.
+* [**Database Schema Overview**](./docs/database-schema.md) — Relational mappings, PostgreSQL layout, and explicit enumerated validations.
+* [**World Building Guide**](./docs/world-building.md) — How to append new maps and entities either manually via Liquibase or natively via the AI Builder assistant.
 * [**Magic Abilities & Spell Roster**](./docs/abilities.md) — A comprehensive table outlining every single Magic Spell, Bard Song, and Divine Prayer natively available grouped by required level.
 * [**Combat & Utility Abilities**](./docs/combat_abilities.md) — A breakdown of all traditional, non-magical abilities (like Pickpocket, Bash, Backstab, etc.) that do not use level restrictions and scale from Rank 1 natively.
 
