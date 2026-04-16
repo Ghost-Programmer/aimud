@@ -24,11 +24,20 @@ public class PrayerService {
     private final Map<String, Prayer> prayerMap = new LinkedHashMap<>();
     private final SkillService skillService;
 
+    /**
+     * Constructs a new PrayerService.
+     *
+     * @param context      the application context for bean resolution
+     * @param skillService the skill service to register prayer skills
+     */
     public PrayerService(ApplicationContext context, SkillService skillService) {
         this.context = context;
         this.skillService = skillService;
     }
 
+    /**
+     * Scans the application context for components implementing {@link Prayer} and registers them.
+     */
     @PostConstruct
     public void registerPrayers() {
         prayerMap.clear();
@@ -59,6 +68,9 @@ public class PrayerService {
                 String.join(", ", prayerMap.keySet()));
     }
 
+    /**
+     * Synchronizes registered prayers with the skill database upon application startup.
+     */
     @EventListener(ApplicationReadyEvent.class)
     public void syncPrayerSkills() {
         for (Prayer prayer : prayerMap.values()) {
@@ -71,14 +83,30 @@ public class PrayerService {
         }
     }
 
+    /**
+     * Retrieves a specialized prayer implementation by its registered name.
+     *
+     * @param name the name of the prayer
+     * @return the {@link Prayer} instance, or null if not found
+     */
     public Prayer getPrayer(String name) {
         return prayerMap.get(name);
     }
 
+    /**
+     * Retrieves a list of all registered prayer implementations.
+     *
+     * @return a list of all prayers
+     */
     public List<Prayer> getAllPrayers() {
         return new ArrayList<>(prayerMap.values());
     }
 
+    /**
+     * Retrieves the backing map of all registered prayers.
+     *
+     * @return a map of prayer names to their implementations
+     */
     public Map<String, Prayer> getPrayerMap() {
         return new LinkedHashMap<>(prayerMap);
     }

@@ -24,11 +24,20 @@ public class SpellService {
     private final Map<String, Spell> spellMap = new LinkedHashMap<>();
     private final SkillService skillService;
 
+    /**
+     * Constructs a new SpellService.
+     *
+     * @param context      the application context for bean resolution
+     * @param skillService the skill service to register spell skills
+     */
     public SpellService(ApplicationContext context, SkillService skillService) {
         this.context = context;
         this.skillService = skillService;
     }
 
+    /**
+     * Scans the application context for components implementing {@link Spell} and registers them.
+     */
     @PostConstruct
     public void registerSpells() {
         spellMap.clear();
@@ -59,6 +68,9 @@ public class SpellService {
                 String.join(", ", spellMap.keySet()));
     }
 
+    /**
+     * Synchronizes registered spells with the skill database upon application startup.
+     */
     @EventListener(ApplicationReadyEvent.class)
     public void syncSpellSkills() {
         for (Spell spell : spellMap.values()) {
@@ -71,14 +83,30 @@ public class SpellService {
         }
     }
 
+    /**
+     * Retrieves a specialized spell implementation by its registered name.
+     *
+     * @param name the name of the spell
+     * @return the {@link Spell} instance, or null if not found
+     */
     public Spell getSpell(String name) {
         return spellMap.get(name);
     }
 
+    /**
+     * Retrieves a list of all registered spell implementations.
+     *
+     * @return a list of all spells
+     */
     public List<Spell> getAllSpells() {
         return new ArrayList<>(spellMap.values());
     }
 
+    /**
+     * Retrieves the backing map of all registered spells.
+     *
+     * @return a map of spell names to their implementations
+     */
     public Map<String, Spell> getSpellMap() {
         return new LinkedHashMap<>(spellMap);
     }

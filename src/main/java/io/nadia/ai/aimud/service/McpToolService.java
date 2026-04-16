@@ -1,7 +1,6 @@
 package io.nadia.ai.aimud.service;
 
 import io.nadia.ai.aimud.model.*;
-import io.nadia.ai.aimud.model.*;
 import io.nadia.ai.aimud.types.EffectType;
 import io.nadia.ai.aimud.types.ItemType;
 import io.nadia.ai.aimud.types.RoomType;
@@ -36,6 +35,16 @@ public class McpToolService {
     private final ConfigService configService;
     private final StoreService storeService;
 
+    /**
+     * Constructs a new McpToolService.
+     *
+     * @param roomService   the room service
+     * @param itemService   the item service
+     * @param effectService the effect service
+     * @param mobileService the mobile service
+     * @param configService the config service
+     * @param storeService  the store service
+     */
     public McpToolService(RoomService roomService, ItemService itemService, EffectService effectService,
             MobileService mobileService, ConfigService configService, StoreService storeService) {
         this.roomService = roomService;
@@ -48,6 +57,11 @@ public class McpToolService {
 
     // --- ENUM REFERENCE LISTS ---
 
+    /**
+     * Retrieves all possible wear locations as a list of strings for the MCP to consume.
+     *
+     * @return a list of valid wear location strings
+     */
     @Tool(description = "Get a list of all Wear Locations for Items")
     public List<String> getWearLocations() {
         log.info("MCP API Call: getWearLocations");
@@ -57,6 +71,11 @@ public class McpToolService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves all possible item types as a list of strings.
+     *
+     * @return a list of valid item type strings
+     */
     @Tool(description = "Get a list of all Item Types")
     public List<String> getItemTypes() {
         log.info("MCP API Call: getItemTypes");
@@ -66,6 +85,11 @@ public class McpToolService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves all possible room types as a list of strings.
+     *
+     * @return a list of valid room type strings
+     */
     @Tool(description = "Get a list of all Room Types")
     public List<String> getRoomTypes() {
         log.info("MCP API Call: getRoomTypes");
@@ -75,18 +99,33 @@ public class McpToolService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves all registered skill types by querying the config service.
+     *
+     * @return a list of valid skill names
+     */
     @Tool(description = "Get a list of all Skill Types (Registries)")
     public List<String> getSkillTypes() {
         log.info("MCP API Call: getSkillTypes");
         return awaitList(configService.getAllSkills().map(SkillRegistry::getName), "get skills");
     }
 
+    /**
+     * Retrieves all base effect enumeration types as strings.
+     *
+     * @return a list of valid effect type names
+     */
     @Tool(description = "Get a list of all base Effect Types")
     public List<String> getEffectTypes() {
         log.info("MCP API Call: getEffectTypes");
         return Arrays.stream(EffectType.values()).map(Enum::name).collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves all active configured effect entities from the database.
+     *
+     * @return a list of effects
+     */
     @Tool(description = "Get a list of all active Effect entities")
     public List<Effect> getEffects() {
         log.info("MCP API Call: getEffects");
@@ -95,6 +134,22 @@ public class McpToolService {
 
     // --- ITEM CRUD ---
 
+    /**
+     * Exposes an MCP tool for creating an entirely new item via the LLM agent.
+     * Validates enumerated types and parses effect IDs before persisting.
+     *
+     * @param name         the item name
+     * @param description  the item description
+     * @param itemType     the exact string matching an ItemType enum
+     * @param wearLocation the exact string matching a WearLocation enum
+     * @param stackable    true if stackable
+     * @param property1    property slot 1
+     * @param property2    property slot 2
+     * @param property3    property slot 3
+     * @param property4    property slot 4
+     * @param effectIdsStr a string of comma-separated effect IDs
+     * @return the saved database entity
+     */
     @Tool(description = "Create a new item")
     public Item createItem(
             @ToolParam(description = "Item name. REQUIRED.") String name,
@@ -160,12 +215,34 @@ public class McpToolService {
         }), "create item");
     }
 
+    /**
+     * Retrieves a single item by its ID.
+     *
+     * @param id the item's database ID
+     * @return the fully populated item
+     */
     @Tool(description = "Retrieve an item")
     public Item getItem(Long id) {
         log.info("MCP API Call: getItem(id={})", id);
         return await(itemService.getItem(id), "get item");
     }
 
+    /**
+     * Exposes an MCP tool for updating properties of an existing item.
+     *
+     * @param id           the item ID to modify
+     * @param name         the updated item name
+     * @param description  the updated item description
+     * @param itemType     the updated string matching an ItemType enum
+     * @param wearLocation the updated string matching a WearLocation enum
+     * @param stackable    the updated stackable boolean
+     * @param property1    property slot 1
+     * @param property2    property slot 2
+     * @param property3    property slot 3
+     * @param property4    property slot 4
+     * @param effectIdsStr the updated comma-separated effect IDs
+     * @return the saved database item
+     */
     @Tool(description = "Update an existing item")
     public Item updateItem(
             @ToolParam(description = "Item ID") Long id,
@@ -233,6 +310,11 @@ public class McpToolService {
         }), "update item");
     }
 
+    /**
+     * Retrieves an unfiltered list of all item entities.
+     *
+     * @return the complete item list
+     */
     @Tool(description = "List all items")
     public List<Item> listItems() {
         log.info("MCP API Call: listItems");
@@ -241,6 +323,20 @@ public class McpToolService {
 
     // --- MOBILE CRUD ---
 
+    /**
+     * Allows an MCP agent to construct a new mobile (NPC) and attach initial inventory.
+     *
+     * @param name                the mobile's display name
+     * @param roomId              the room ID where the mobile rests
+     * @param strength            the base strength stat
+     * @param dexterity           the base dexterity stat
+     * @param constitution        the base constitution stat
+     * @param intelligence        the base intelligence stat
+     * @param wisdom              the base wisdom stat
+     * @param charisma            the base charisma stat
+     * @param inventoryItemIdsStr comma-separated list of item IDs to place in inventory
+     * @return the created mobile
+     */
     @Tool(description = "Create a new Mobile (NPC)")
     public Mobile createMobile(
             @ToolParam(description = "Name. REQUIRED.") String name,
@@ -288,12 +384,33 @@ public class McpToolService {
         }), "create mobile");
     }
 
+    /**
+     * Retrieves a single mobile by its ID.
+     *
+     * @param id the mobile's ID
+     * @return the fully populated mobile
+     */
     @Tool(description = "Retrieve a Mobile")
     public Mobile getMobile(Long id) {
         log.info("MCP API Call: getMobile(id={})", id);
         return await(mobileService.getMobile(id), "get mobile");
     }
 
+    /**
+     * Allows an MCP agent to update attributes on an existing generic mobile.
+     *
+     * @param id                  the mobile's ID
+     * @param name                the mobile's updated display name
+     * @param roomId              the updated room ID to move the mobile
+     * @param strength            the base strength stat
+     * @param dexterity           the base dexterity stat
+     * @param constitution        the base constitution stat
+     * @param intelligence        the base intelligence stat
+     * @param wisdom              the base wisdom stat
+     * @param charisma            the base charisma stat
+     * @param inventoryItemIdsStr comma-separated list of items to ensure exist in inventory
+     * @return the saved mobile
+     */
     @Tool(description = "Update an existing Mobile")
     public Mobile updateMobile(
             @ToolParam(description = "Mobile ID") Long id,
@@ -340,6 +457,11 @@ public class McpToolService {
         }), "update mobile");
     }
 
+    /**
+     * Retrieves an unfiltered list of all mobile entities.
+     *
+     * @return the complete mobile list
+     */
     @Tool(description = "List all Mobiles")
     public List<Mobile> listMobiles() {
         log.info("MCP API Call: listMobiles");
@@ -348,6 +470,20 @@ public class McpToolService {
 
     // --- ROOM CRUD ---
 
+    /**
+     * Exposes an MCP tool for the generation and linkage of a newly mapped geographical room.
+     *
+     * @param name        the display name of the room
+     * @param description the verbose environment description
+     * @param roomType    a string perfectly matching a RoomType enum
+     * @param northId     the ID of the room to logically link to the North
+     * @param southId     the ID of the room to logically link to the South
+     * @param eastId      the ID of the room to logically link to the East
+     * @param westId      the ID of the room to logically link to the West
+     * @param upId        the ID of the room to logically link to the Up
+     * @param downId      the ID of the room to logically link to the Down
+     * @return the newly committed room instance
+     */
     @Tool(description = "Create a new Room")
     public Room createRoom(
             @ToolParam(description = "Room name. REQUIRED.") String name,
@@ -412,12 +548,33 @@ public class McpToolService {
         return await(roomService.saveRoom(room), "create room");
     }
 
+    /**
+     * Retrieves a singular room via ID.
+     *
+     * @param id the internal ID assigned to a room
+     * @return a single room object
+     */
     @Tool(description = "Retrieve a Room")
     public Room getRoom(Long id) {
         log.info("MCP API Call: getRoom(id={})", id);
         return await(roomService.getRoom(id), "get room");
     }
 
+    /**
+     * Exposes an MCP tool for modifying the parameters or exits of an existing room.
+     *
+     * @param id          the room's unique ID
+     * @param name        the display name of the room
+     * @param description the verbose environment description
+     * @param roomType    a string perfectly matching a RoomType enum
+     * @param northId     the ID of the room to logically link to the North
+     * @param southId     the ID of the room to logically link to the South
+     * @param eastId      the ID of the room to logically link to the East
+     * @param westId      the ID of the room to logically link to the West
+     * @param upId        the ID of the room to logically link to the Up
+     * @param downId      the ID of the room to logically link to the Down
+     * @return the successfully modified room object
+     */
     @Tool(description = "Update an existing Room")
     public Room updateRoom(
             @ToolParam(description = "Room ID") Long id,
@@ -481,6 +638,11 @@ public class McpToolService {
         }), "update room");
     }
 
+    /**
+     * Retrieves an unfiltered list of all rooms.
+     *
+     * @return the list
+     */
     @Tool(description = "List all Rooms")
     public List<Room> listRooms() {
         log.info("MCP API Call: listRooms");
@@ -489,6 +651,14 @@ public class McpToolService {
 
     // --- STORES CRUD ---
 
+    /**
+     * Provides an MCP tool logic allowing AI to create in-game merchant stores.
+     *
+     * @param name        the name of the store abstraction
+     * @param description contextual data about the store
+     * @param itemIdsStr  comma separated IDs of the items immediately available to sell
+     * @return the persistent store entity representation
+     */
     @Tool(description = "Create a new Store")
     public Store createStore(
             @ToolParam(description = "Store name. REQUIRED.") String name,
@@ -516,12 +686,27 @@ public class McpToolService {
         }), "create store");
     }
 
+    /**
+     * Retrieves a single in-game store entity representation.
+     *
+     * @param id the identifier of a store abstraction
+     * @return the fully resolved Store instance
+     */
     @Tool(description = "Retrieve a Store")
     public Store getStore(Long id) {
         log.info("MCP API Call: getStore(id={})", id);
         return await(storeService.getStore(id), "get store");
     }
 
+    /**
+     * Provides an MCP tool logic allowing AI to update the stock or description of an existing store.
+     *
+     * @param id            the integer ID
+     * @param name          the optionally modified string
+     * @param description   the optionally modified text explanation
+     * @param addItemIdsStr an optional string representing new IDs to supplement the existing items
+     * @return the updated Store element
+     */
     @Tool(description = "Update an existing Store")
     public Store updateStore(
             @ToolParam(description = "Store ID") Long id,
@@ -549,6 +734,11 @@ public class McpToolService {
         }), "update store");
     }
 
+    /**
+     * Retrieves a fully unbounded list of configured store entities in the active persistence matrix.
+     *
+     * @return the configured lists array
+     */
     @Tool(description = "List all Stores")
     public List<Store> listStores() {
         log.info("MCP API Call: listStores");

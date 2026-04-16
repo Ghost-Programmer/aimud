@@ -25,6 +25,15 @@ public class StoreTradeService {
     private final ItemService itemService;
     private final MobileService mobileService;
 
+    /**
+     * Calculates the price a player must pay to buy an item from a store,
+     * factoring in faction reputation and charisma.
+     *
+     * @param item          the item to buy
+     * @param factionRating the player's faction rating with the merchant
+     * @param charisma      the player's charisma stat
+     * @return the calculated gold price
+     */
     public int calculateBuyPrice(Item item, int factionRating, int charisma) {
         int baseValue = item.getValue() > 0 ? item.getValue() : itemService.calculateItemValue(item);
         double factionModifier = (50 - factionRating) / 50.0 * 0.25;
@@ -33,6 +42,15 @@ public class StoreTradeService {
         return Math.max(1, (int) (baseValue * (1.0 + totalModifier)));
     }
 
+    /**
+     * Calculates the price a player receives for selling an item to a store,
+     * factoring in faction reputation and charisma, capped at a hard maximum markup.
+     *
+     * @param item          the item to sell
+     * @param factionRating the player's faction rating with the merchant
+     * @param charisma      the player's charisma stat
+     * @return the calculated gold price
+     */
     public int calculateSellPrice(Item item, int factionRating, int charisma) {
         int baseValue = item.getValue() > 0 ? item.getValue() : itemService.calculateItemValue(item);
         double factionModifier = (50 - factionRating) / 50.0 * 0.25;
@@ -43,6 +61,13 @@ public class StoreTradeService {
         return Math.max(1, (int) (baseSellPrice * (1.0 - totalModifier)));
     }
 
+    /**
+     * Locates a merchant mobile in the given character's current room matching the store ID.
+     *
+     * @param storeId   the ID of the store
+     * @param character the character instance
+     * @return the merchant mobile, or null if not found
+     */
     private Mobile findMerchant(Long storeId, Mobile character) {
         if (character.getCurrentRoomId() == null)
             return null;
@@ -52,6 +77,13 @@ public class StoreTradeService {
                 .orElse(null);
     }
 
+    /**
+     * Assembles the required data for displaying the interactive store dialog to a player.
+     *
+     * @param storeId     the ID of the store
+     * @param characterId the ID of the character opening the dialog
+     * @return a {@link Mono} containing the configured dialog payload
+     */
     public Mono<StoreDialogPayload> getStoreDialogPayload(Long storeId, Long characterId) {
         return characterService.getCharacterById(characterId).flatMap(character -> {
             Mobile merchant = findMerchant(storeId, character);
@@ -83,6 +115,15 @@ public class StoreTradeService {
         });
     }
 
+    /**
+     * Processes a transaction where a player buys an item from a store.
+     * Validates stock, funds, deducts gold, and adds to inventory.
+     *
+     * @param storeId     the ID of the store
+     * @param itemId      the ID of the item to buy
+     * @param characterId the ID of the purchasing character
+     * @return a {@link Mono} returning the updated store dialog payload
+     */
     public Mono<StoreDialogPayload> buyItem(Long storeId, Long itemId, Long characterId) {
         return characterService.getCharacterById(characterId).flatMap(character -> {
             Mobile merchant = findMerchant(storeId, character);
@@ -167,6 +208,15 @@ public class StoreTradeService {
         });
     }
 
+    /**
+     * Processes a transaction where a player sells an item to a store.
+     * Validates item possession, awards gold, and adjusts merchant stock.
+     *
+     * @param storeId     the ID of the store
+     * @param itemId      the ID of the item to sell
+     * @param characterId the ID of the selling character
+     * @return a {@link Mono} returning the updated store dialog payload
+     */
     public Mono<StoreDialogPayload> sellItem(Long storeId, Long itemId, Long characterId) {
         return characterService.getCharacterById(characterId).flatMap(character -> {
             Mobile merchant = findMerchant(storeId, character);

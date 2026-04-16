@@ -63,6 +63,7 @@ class PrayerPackageCoverageTest {
         assertThat(classes).hasSizeGreaterThan(20);
     }
 
+    @SuppressWarnings("unchecked")
     static Stream<Class<? extends Prayer>> prayerClasses() {
         java.util.List<Class<? extends Prayer>> classes = findClasses("io.nadia.ai.aimud.prayers")
                 .filter(Prayer.class::isAssignableFrom)
@@ -99,6 +100,7 @@ class PrayerPackageCoverageTest {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static <T extends Prayer> T instantiate(Class<T> clazz) {
         try {
             Constructor<?> ctor = Arrays.stream(clazz.getDeclaredConstructors())

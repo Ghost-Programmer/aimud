@@ -24,11 +24,20 @@ public class SongService {
     private final Map<String, Song> songMap = new LinkedHashMap<>();
     private final SkillService skillService;
 
+    /**
+     * Constructs a new SongService.
+     *
+     * @param context      the application context for bean resolution
+     * @param skillService the skill service to register song skills
+     */
     public SongService(ApplicationContext context, SkillService skillService) {
         this.context = context;
         this.skillService = skillService;
     }
 
+    /**
+     * Scans the application context for components implementing {@link Song} and registers them.
+     */
     @PostConstruct
     public void registerSongs() {
         songMap.clear();
@@ -59,6 +68,9 @@ public class SongService {
                 String.join(", ", songMap.keySet()));
     }
 
+    /**
+     * Synchronizes registered songs with the skill database upon application startup.
+     */
     @EventListener(ApplicationReadyEvent.class)
     public void syncSongSkills() {
         for (Song song : songMap.values()) {
@@ -71,14 +83,30 @@ public class SongService {
         }
     }
 
+    /**
+     * Retrieves a specialized song implementation by its registered name.
+     *
+     * @param name the name of the song
+     * @return the {@link Song} instance, or null if not found
+     */
     public Song getSong(String name) {
         return songMap.get(name);
     }
 
+    /**
+     * Retrieves a list of all registered song implementations.
+     *
+     * @return a list of all songs
+     */
     public List<Song> getAllSongs() {
         return new ArrayList<>(songMap.values());
     }
 
+    /**
+     * Retrieves the backing map of all registered songs.
+     *
+     * @return a map of song names to their implementations
+     */
     public Map<String, Song> getSongMap() {
         return new LinkedHashMap<>(songMap);
     }

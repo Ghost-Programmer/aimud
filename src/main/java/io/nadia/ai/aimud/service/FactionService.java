@@ -23,11 +23,24 @@ public class FactionService {
     // Cache: mobileId -> Map<targetFactionId, rating>
     private final Map<Long, Map<Long, Integer>> ratingCache = new ConcurrentHashMap<>();
 
+    /**
+     * Retrieves a faction by its ID.
+     *
+     * @param id the ID of the faction
+     * @return a {@link Mono} containing the faction, if found
+     */
     public Mono<Faction> getFaction(Long id) {
         if (id == null) return Mono.empty();
         return factionRepository.findById(id);
     }
 
+    /**
+     * Retrieves the faction rating between a mobile entity and a target faction asynchronously.
+     *
+     * @param mobile          the character checking their standing
+     * @param targetFactionId the ID of the target faction
+     * @return a {@link Mono} containing the faction rating (0-100)
+     */
     public Mono<Integer> getFactionRating(Mobile mobile, Long targetFactionId) {
         if (targetFactionId == null || mobile.getFactionId() == null) {
             return Mono.just(50); // Neutral default
@@ -53,6 +66,13 @@ public class FactionService {
                 });
     }
 
+    /**
+     * Retrieves the faction rating synchronously, falling back to a blocking database call if necessary.
+     *
+     * @param mobile          the character checking their standing
+     * @param targetFactionId the ID of the target faction
+     * @return the numerical faction rating
+     */
     public int getFactionRatingSync(Mobile mobile, Long targetFactionId) {
         if (targetFactionId == null || mobile.getFactionId() == null) {
             return 50; 
@@ -85,10 +105,21 @@ public class FactionService {
         }
     }
 
+    /**
+     * Retrieves all available factions.
+     *
+     * @return a {@link Flux} emitting all factions
+     */
     public reactor.core.publisher.Flux<Faction> findAllFactions() {
         return factionRepository.findAll();
     }
 
+    /**
+     * Retrieves a map of all specific faction ratings for a given mobile ID.
+     *
+     * @param mobileId the ID of the mobile entity
+     * @return a {@link Mono} containing a map of faction IDs to integer ratings
+     */
     public Mono<Map<Long, Integer>> getMobileRatings(Long mobileId) {
         if (mobileId == null) return Mono.just(Map.of());
         return databaseClient.sql("SELECT faction_id, rating FROM mobile_factions WHERE mobile_id = :mobileId")
@@ -101,6 +132,13 @@ public class FactionService {
                 .collectMap(Map.Entry::getKey, Map.Entry::getValue);
     }
 
+    /**
+     * Updates one or more faction ratings for a mobile entity.
+     *
+     * @param mobileId the ID of the mobile entity
+     * @param ratings  a map of target faction IDs to their new ratings
+     * @return a {@link Mono} indicating completion
+     */
     public Mono<Void> updateMobileRatings(Long mobileId, Map<Long, Integer> ratings) {
         if (mobileId == null || ratings == null || ratings.isEmpty()) return Mono.empty();
         
@@ -125,6 +163,14 @@ public class FactionService {
                 .then();
     }
 
+    /**
+     * Modifies an existing faction rating by a specified amount (adding or subtracting).
+     *
+     * @param mobile          the character experiencing the reputation change
+     * @param targetFactionId the faction being influenced
+     * @param amount          the numerical modifier to apply
+     * @return a {@link Mono} indicating completion
+     */
     public Mono<Void> modifyFactionRating(Mobile mobile, Long targetFactionId, int amount) {
         if (targetFactionId == null || mobile.getId() == null) {
             return Mono.empty();
@@ -149,6 +195,13 @@ public class FactionService {
                 });
     }
 
+    /**
+     * Hands out a reputation penalty for killing a member of a given faction.
+     *
+     * @param attacker the entity that dealt the killing blow
+     * @param victim   the entity that was killed
+     * @return a {@link Mono} indicating completion
+     */
     public Mono<Void> handleKillPenalty(Mobile attacker, Mobile victim) {
         if (victim.getFactionId() != null) {
             return modifyFactionRating(attacker, victim.getFactionId(), -5); 

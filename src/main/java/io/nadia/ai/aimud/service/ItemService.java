@@ -19,11 +19,22 @@ public class ItemService {
     private final ItemRepository itemRepository;
     private final EffectService effectService;
 
+    /**
+     * Constructs a new ItemService.
+     *
+     * @param itemRepository the item repository
+     * @param effectService  the effect service
+     */
     public ItemService(ItemRepository itemRepository, EffectService effectService) {
         this.itemRepository = itemRepository;
         this.effectService = effectService;
     }
 
+    /**
+     * Retrieves all items from the database, loads their effects and calculates their value.
+     *
+     * @return a {@link Flux} emitting all items
+     */
     @Cacheable(value = "items")
     public Flux<Item> getAllItems() {
         log.info("Fetching all items");
@@ -32,6 +43,12 @@ public class ItemService {
                 .cache();
     }
 
+    /**
+     * Retrieves a specific item by its ID, loading its effects and calculating its value.
+     *
+     * @param id the ID of the item
+     * @return a {@link Mono} containing the item
+     */
     @Cacheable(value = "item", key = "#id")
     public Mono<Item> getItem(Long id) {
         log.info("Fetching item with id: {}", id);
@@ -40,6 +57,12 @@ public class ItemService {
                 .cache();
     }
 
+    /**
+     * Internal method to load effects for an item and calculate its total value.
+     *
+     * @param item the item to populate
+     * @return a {@link Mono} containing the populated item
+     */
     private Mono<Item> loadEffectsAndValue(Item item) {
         log.debug("Loading effects for item: {} (id: {})", item.getName(), item.getId());
         return effectService.getEffectsByItem(item.getId())
@@ -51,6 +74,13 @@ public class ItemService {
                 });
     }
 
+    /**
+     * Saves an item to the database, along with any associated effects.
+     * Evicts item caches upon completion.
+     *
+     * @param item the item to save
+     * @return a {@link Mono} containing the saved item
+     */
     @CacheEvict(value = {"items", "item"}, allEntries = true)
     public Mono<Item> saveItem(Item item) {
         log.info("Saving item: {} (id: {})", item.getName(), item.getId());
@@ -83,6 +113,12 @@ public class ItemService {
                 });
     }
 
+    /**
+     * Deletes an item and cleans up its associated effect links.
+     *
+     * @param id the ID of the item to delete
+     * @return a {@link Mono} indicating completion
+     */
     @CacheEvict(value = {"items", "item"}, allEntries = true)
     public Mono<Void> deleteItem(Long id) {
         log.info("Deleting item with id: {}", id);
@@ -90,6 +126,12 @@ public class ItemService {
                 .then(itemRepository.deleteById(id));
     }
 
+    /**
+     * Calculates the total value of an item based on a base value and its attached effects.
+     *
+     * @param item the item to evaluate
+     * @return the calculated value in gold
+     */
     public int calculateItemValue(Item item) {
         if (item == null) {
             return 0;
@@ -108,6 +150,12 @@ public class ItemService {
         return Math.max(1, value); // Ensure item value is at least 1 gold
     }
 
+    /**
+     * Internal method to calculate the gold value contribution of a specific effect.
+     *
+     * @param effect the effect to evaluate
+     * @return the calculated value modifier
+     */
     private int calculateEffectValue(Effect effect) {
         int modifier = effect.getModifier1();
         int effectValue = 0;
@@ -164,6 +212,12 @@ public class ItemService {
         return effectValue;
     }
 
+    /**
+     * Determines whether an effect is considered a status effect (which shouldn't penalize value).
+     *
+     * @param effect the effect to check
+     * @return true if it's a status effect, false otherwise
+     */
     private boolean isStatusEffect(Effect effect) {
         return switch (effect.getEffectType()) {
             case FLY, WATER_BREATHING, INVISIBLE -> true;

@@ -23,11 +23,22 @@ public class StatusService {
     @Value("${spring.ai.ollama.chat.options.model:qwen3.5}")
     private String modelName;
 
+    /**
+     * Constructs a new StatusService.
+     *
+     * @param databaseClient  the database client
+     * @param ollamaChatModel the Ollama chat model
+     */
     public StatusService(DatabaseClient databaseClient, OllamaChatModel ollamaChatModel) {
         this.databaseClient = databaseClient;
         this.ollamaChatModel = ollamaChatModel;
     }
 
+    /**
+     * Retrieves the overall system status including uptime, database connectivity, and LLM connection.
+     *
+     * @return a {@link Mono} emitting a map of status key-value pairs
+     */
     public Mono<Map<String, Object>> getSystemStatus() {
         log.info("Retrieving system status");
         RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();

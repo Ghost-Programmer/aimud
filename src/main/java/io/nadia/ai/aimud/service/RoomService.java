@@ -21,24 +21,39 @@ import java.util.stream.Collectors;
 public class RoomService {
 
     private final RoomRepository roomRepository;
-    private final CommunicationService communicationService;
     private final MobileService mobileService;
 
     // In-memory storage for transient room items (e.g., corpses) — never persisted to DB
     private final ConcurrentHashMap<Long, CopyOnWriteArrayList<Item>> transientRoomItems = new ConcurrentHashMap<>();
 
-    public RoomService(RoomRepository roomRepository, CommunicationService communicationService, @Lazy MobileService mobileService) {
+    /**
+     * Constructs a new RoomService.
+     *
+     * @param roomRepository       the room repository
+     * @param mobileService        the mobile service
+     */
+    public RoomService(RoomRepository roomRepository, @Lazy MobileService mobileService) {
         this.roomRepository = roomRepository;
-        this.communicationService = communicationService;
         this.mobileService = mobileService;
     }
 
+    /**
+     * Retrieves all rooms from the database, grouped by caching.
+     *
+     * @return a {@link Flux} emitting all rooms
+     */
     @Cacheable(value = "rooms")
     public Flux<Room> getAllRooms() {
         log.info("Fetching all rooms");
         return roomRepository.findAll().cache();
     }
 
+    /**
+     * Retrieves a specific room by its ID, and spawns its specific mobiles.
+     *
+     * @param id the ID of the room
+     * @return a {@link Mono} containing the room
+     */
     @Cacheable(value = "room", key = "#id")
     public Mono<Room> getRoom(Long id) {
         log.info("Fetching room with id: {}", id);
@@ -51,18 +66,37 @@ public class RoomService {
                 .cache();
     }
 
+    /**
+     * Saves a room entity and flushes the related caches.
+     *
+     * @param room the room to save
+     * @return a {@link Mono} containing the saved room
+     */
     @CacheEvict(value = {"rooms", "room"}, allEntries = true)
     public Mono<Room> saveRoom(Room room) {
         log.info("Saving room: {} (id: {})", room.getName(), room.getId());
         return roomRepository.save(room);
     }
 
+    /**
+     * Deletes a room by its ID and flushes the related caches.
+     *
+     * @param id the ID of the room to delete
+     * @return a {@link Mono} indicating completion
+     */
     @CacheEvict(value = {"rooms", "room"}, allEntries = true)
     public Mono<Void> deleteRoom(Long id) {
         log.info("Deleting room with id: {}", id);
         return roomRepository.deleteById(id);
     }
 
+    /**
+     * Formats and appends an item ID to a room's persisted item list.
+     *
+     * @param roomId the ID of the room
+     * @param itemId the ID of the item
+     * @return a {@link Mono} containing the saved room
+     */
     @CacheEvict(value = {"rooms", "room"}, allEntries = true)
     public Mono<Room> addItemToRoom(Long roomId, Long itemId) {
         log.info("Adding item {} to room {}", itemId, roomId);
@@ -78,6 +112,13 @@ public class RoomService {
                 });
     }
 
+    /**
+     * Removes an item ID from a room's persisted item list.
+     *
+     * @param roomId the ID of the room
+     * @param itemId the ID of the item to remove
+     * @return a {@link Mono} containing the saved room
+     */
     @CacheEvict(value = {"rooms", "room"}, allEntries = true)
     public Mono<Room> removeItemFromRoom(Long roomId, Long itemId) {
         log.info("Removing item {} from room {}", itemId, roomId);
@@ -95,6 +136,13 @@ public class RoomService {
                 });
     }
 
+    /**
+     * Formats and appends a mobile ID to a room's persisted mobile list.
+     *
+     * @param roomId   the ID of the room
+     * @param mobileId the ID of the mobile
+     * @return a {@link Mono} containing the saved room
+     */
     @CacheEvict(value = {"rooms", "room"}, allEntries = true)
     public Mono<Room> addMobileToRoom(Long roomId, Long mobileId) {
         log.info("Adding mobile {} to room {}", mobileId, roomId);
@@ -110,6 +158,13 @@ public class RoomService {
                 });
     }
 
+    /**
+     * Removes a mobile ID from a room's persisted mobile list.
+     *
+     * @param roomId   the ID of the room
+     * @param mobileId the ID of the mobile to remove
+     * @return a {@link Mono} containing the saved room
+     */
     @CacheEvict(value = {"rooms", "room"}, allEntries = true)
     public Mono<Room> removeMobileFromRoom(Long roomId, Long mobileId) {
         log.info("Removing mobile {} from room {}", mobileId, roomId);
@@ -127,15 +182,33 @@ public class RoomService {
                 });
     }
 
+    /**
+     * Adds an item to a room's transient in-memory state (e.g. a corpse) which will not be persisted.
+     *
+     * @param roomId the ID of the room
+     * @param item   the item to add
+     */
     public void addTransientItemToRoom(Long roomId, Item item) {
         transientRoomItems.computeIfAbsent(roomId, k -> new CopyOnWriteArrayList<>()).add(item);
         log.info("Added transient item '{}' to room {}", item.getName(), roomId);
     }
 
+    /**
+     * Retrieves all transient in-memory items located in a specific room.
+     *
+     * @param roomId the ID of the room
+     * @return a list of transient items
+     */
     public List<Item> getTransientItemsInRoom(Long roomId) {
         return transientRoomItems.getOrDefault(roomId, new CopyOnWriteArrayList<>());
     }
 
+    /**
+     * Removes an item from a room's transient in-memory state.
+     *
+     * @param roomId the ID of the room
+     * @param item   the item to remove
+     */
     public void removeTransientItemFromRoom(Long roomId, Item item) {
         CopyOnWriteArrayList<Item> items = transientRoomItems.get(roomId);
         if (items != null) {

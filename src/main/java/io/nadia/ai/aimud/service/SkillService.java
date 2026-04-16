@@ -32,8 +32,11 @@ public class SkillService {
     private final DatabaseClient databaseClient;
 
     /**
-     * Add skill - Create a new skill assigned to a character with a value of 1,
-     * if the character does not have the skill.
+     * Adds a new skill to a character with a starting rank of 1, if they don't already have it.
+     *
+     * @param character the mobile character
+     * @param skillName the name of the skill to add
+     * @return a {@link Mono} containing the newly created or existing skill
      */
     public Mono<Skill> addSkill(Mobile character, String skillName) {
         return character.getSkills().stream()
@@ -52,6 +55,12 @@ public class SkillService {
                 });
     }
 
+    /**
+     * Retrieves the string name of a skill by its database ID.
+     *
+     * @param skillId the ID of the skill
+     * @return a {@link Mono} emitting the skill name
+     */
     public Mono<String> getSkillNameById(Long skillId) {
         if (skillId == null) {
             return Mono.empty();
@@ -63,7 +72,11 @@ public class SkillService {
 
 
     /**
-     * Get Skill - Given a mobile and skill name, return the rank.
+     * Retrieves the current rank of a specific skill for a character.
+     *
+     * @param mobile    the mobile character
+     * @param skillName the name of the skill
+     * @return the rank of the skill, or 0 if not possessed
      */
     public int getSkillRank(Mobile mobile, String skillName) {
         if (mobile.getSkills() == null) return 0;
@@ -75,15 +88,13 @@ public class SkillService {
     }
 
     /**
-     * Check Skill - Test if skill value should be increased by 1.
-     * This method evaluates if the skill should improve and increments it if so.
+     * Tests if a skill value should be increased, and increments it if successful.
      *
-     * @param mobile     The mobile using the skill
-     * @param skillName  The name of the skill
-     * @param targetCr   The Challenge Rating of the target (NPC/Challenge)
-     * @param wasSuccess Whether the skill attempt succeeded in-game
-     *
-     * @return Mono<Skill> The updated skill if it improved, or empty Mono if not.
+     * @param mobile     the mobile using the skill
+     * @param skillName  the name of the skill
+     * @param targetCr   the Challenge Rating of the target (NPC/Challenge)
+     * @param wasSuccess whether the skill attempt succeeded in-game
+     * @return a {@link Mono} emitting the updated skill if it improved, or empty Mono if not
      */
     public Mono<Skill> checkSkill(Mobile mobile, String skillName, float targetCr, boolean wasSuccess) {
         if (mobile.getSkills() == null) return Mono.empty();
@@ -107,14 +118,13 @@ public class SkillService {
     }
 
     /**
-     * Determines if a skill should improve based on usage.
+     * Determines if a skill should improve based on usage probability math.
      *
-     * @param currentSkillLevel The player's current proficiency (0-100)
-     * @param playerLevel       The player's character level (using CR as proxy)
-     * @param targetCr          The Challenge Rating of the NPC
-     * @param wasSuccess        Whether the skill attempt actually succeeded in-game
-     *
-     * @return true if the skill improved by 1%
+     * @param currentSkillLevel the player's current proficiency
+     * @param playerLevel       the player's character level (using CR as proxy)
+     * @param targetCr          the Challenge Rating of the NPC
+     * @param wasSuccess        whether the skill attempt actually succeeded in-game
+     * @return true if the skill improved by 1 rank
      */
     public boolean shouldSkillImprove(int currentSkillLevel, float playerLevel, float targetCr, boolean wasSuccess) {
         // 1. Trivial Challenge Check
@@ -153,7 +163,9 @@ public class SkillService {
 
     /**
      * Logic for applying diminishing returns at very high skill levels.
-     * Could be used to calculate how many "points" are needed to reach the next % rank.
+     *
+     * @param skillLevel the current skill proficiency level
+     * @return the probability multiplier
      */
     public double getDiminishingReturnMultiplier(int skillLevel) {
         if (skillLevel < 75) return 1.0;
@@ -161,6 +173,12 @@ public class SkillService {
         return 0.1; // Hardest to gain from 90 to 100
     }
 
+    /**
+     * Synchronously creates or updates a skill in the global registry table.
+     *
+     * @param spellSkillName the name of the skill
+     * @param skillId        the database ID for the skill
+     */
     public void createSkill(String spellSkillName, Long skillId) {
         Long rowsUpdated = await(databaseClient.sql("""
                         INSERT INTO skills_registry (id, name)
@@ -175,10 +193,24 @@ public class SkillService {
         log.info("Registered or updated skill in registry: {} (id={}, rowsUpdated={})", spellSkillName, skillId, rowsUpdated);
     }
 
+    /**
+     * Synchronously checks if a skill exists in the global registry.
+     *
+     * @param spellSkillName the name of the skill
+     * @return true if the skill exists, false otherwise
+     */
     public boolean existsSkill(String spellSkillName) {
         return Boolean.TRUE.equals(await(skillRegistryRepository.existsByName(spellSkillName), "check skill existence"));
     }
 
+    /**
+     * Internal helper to synchronously await a Mono, used for startup initialization tasks.
+     *
+     * @param mono      the Mono to subscribe to
+     * @param operation the name of the operation for logging
+     * @param <T>       the type of the Mono
+     * @return the resolved result
+     */
     private <T> T await(Mono<T> mono, String operation) {
         try {
             return mono.subscribeOn(Schedulers.boundedElastic())

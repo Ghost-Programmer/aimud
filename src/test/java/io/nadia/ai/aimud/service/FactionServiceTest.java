@@ -63,6 +63,7 @@ class FactionServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void getFactionRating_CachesResultAfterFirstLookup() {
         Mobile mobile = new Mobile();
         mobile.setId(1L);

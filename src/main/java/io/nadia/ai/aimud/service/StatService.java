@@ -2,8 +2,6 @@ package io.nadia.ai.aimud.service;
 
 import io.nadia.ai.aimud.model.*;
 import io.nadia.ai.aimud.repository.*;
-import io.nadia.ai.aimud.model.*;
-import io.nadia.ai.aimud.repository.*;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -22,6 +20,18 @@ public class StatService {
     private final ItemService itemService;
     private final SkillRepository skillRepository;
 
+    /**
+     * Constructs a new StatService.
+     *
+     * @param raceRepository            the race repository
+     * @param characterClassRepository  the character class repository
+     * @param roomService               the room service
+     * @param itemRepository            the item repository
+     * @param effectRepository          the effect repository
+     * @param characterEffectRepository the character effect repository
+     * @param itemService               the item service
+     * @param skillRepository           the skill repository
+     */
     public StatService(RaceRepository raceRepository, CharacterClassRepository characterClassRepository, RoomService roomService, ItemRepository itemRepository, EffectRepository effectRepository, CharacterEffectRepository characterEffectRepository, ItemService itemService, SkillRepository skillRepository) {
         this.raceRepository = raceRepository;
         this.characterClassRepository = characterClassRepository;
@@ -33,6 +43,12 @@ public class StatService {
         this.skillRepository = skillRepository;
     }
 
+    /**
+     * Updates a mobile's derived stats and combat percentages based on their base attributes and equipment.
+     * This operates synchronously and modifies the given instance in place.
+     *
+     * @param mobile the mobile instance to update
+     */
     public void updateMobileStats(Mobile mobile) {
         mobile.setCurrentStrength(mobile.getStrength());
         mobile.setCurrentDexterity(mobile.getDexterity());
@@ -48,7 +64,6 @@ public class StatService {
         int con = mobile.getCurrentConstitution();
         int intel = mobile.getCurrentIntelligence();
         int wis = mobile.getCurrentWisdom();
-        int cha = mobile.getCurrentCharisma();
 
         mobile.setMaxHp(100 + (con * 15) + (str * 5));
         mobile.setMaxMana(50 + (intel * 20));
@@ -79,6 +94,13 @@ public class StatService {
         mobile.setChallengeRating(cr);
     }
 
+    /**
+     * Computes a character's current and derived stats, taking into account their race, class, and equipment.
+     * Operates reactively and resolves any missing related models from the database before recalculating.
+     *
+     * @param character the character instance to update
+     * @return a {@link Mono} containing the modified character
+     */
     public Mono<Mobile> updateCurrentStats(Mobile character) {
         Mono<Race> raceMono = character.getRaceId() != null ? raceRepository.findById(character.getRaceId()) : Mono.empty();
         Mono<CharacterClass> classMono = character.getClassId() != null ? characterClassRepository.findById(character.getClassId()) : Mono.empty();
@@ -108,7 +130,6 @@ public class StatService {
                                 int con = c.getCurrentConstitution();
                                 int intel = c.getCurrentIntelligence();
                                 int wis = c.getCurrentWisdom();
-                                int cha = c.getCurrentCharisma();
 
                                 // Health & Resource Pools
                                 c.setMaxHp(100 + (con * 15) + (str * 5));
@@ -157,6 +178,12 @@ public class StatService {
                 .flatMap(mono -> mono);
     }
 
+    /**
+     * Calculates the overall challenge rating of a mobile based on a weighted formula.
+     *
+     * @param c the mobile instance
+     * @return the calculated challenge rating (CR)
+     */
     private float calculateChallengeRating(Mobile c) {
         // Base stats contribution
         float statsScore = (c.getCurrentStrength() + c.getCurrentDexterity() + c.getCurrentConstitution() +
@@ -176,6 +203,11 @@ public class StatService {
         return Math.round(cr * 10.0f) / 10.0f; // Round to 1 decimal place
     }
 
+    /**
+     * Merges stats from all worn equipment and active spell effects into the mobile's current capacity.
+     *
+     * @param c the mobile instance
+     */
     private void applyEquipmentBonuses(Mobile c) {
         Item[] equipment = {
                 c.getHead(), c.getChest(), c.getLegs(), c.getFeet(), c.getArms(), c.getHands(),
@@ -203,6 +235,12 @@ public class StatService {
         }
     }
 
+    /**
+     * Applies a specific effect modifier to the appropriate character stat or attribute.
+     *
+     * @param c      the mobile instance
+     * @param effect the effect to apply
+     */
     private void applyEffect(Mobile c, Effect effect) {
         if (effect.getEffectType() != null) {
             switch (effect.getEffectType()) {
@@ -226,6 +264,12 @@ public class StatService {
         }
     }
 
+    /**
+     * Scans all equipment slots and queries the database to load the complete Item entities and their effects.
+     *
+     * @param character the character instance
+     * @return a {@link Mono} containing the character with equipment populated
+     */
     private Mono<Mobile> loadEquipment(Mobile character) {
         List<Mono<Item>> monos = new ArrayList<>();
         monos.add(loadItemWithEffects(character.getHeadId()).doOnNext(character::setHead).defaultIfEmpty(new Item()));
@@ -252,6 +296,12 @@ public class StatService {
                 .flatMap(results -> loadSkills(character));
     }
 
+    /**
+     * Queries the database to load and attach all skills belonging to the character.
+     *
+     * @param character the character instance
+     * @return a {@link Mono} containing the character with skills populated
+     */
     private Mono<Mobile> loadSkills(Mobile character) {
         if (character.getId() == null) return Mono.just(character);
 
@@ -263,6 +313,12 @@ public class StatService {
                 });
     }
 
+    /**
+     * Queries the database to load and attach all active spell effects belonging to the character.
+     *
+     * @param character the character instance
+     * @return a {@link Mono} containing the character with spell effects populated
+     */
     private Mono<Mobile> loadSpellEffects(Mobile character) {
         if (character.getId() == null) return Mono.just(character);
 
@@ -279,6 +335,12 @@ public class StatService {
                 });
     }
 
+    /**
+     * Queries the database to load and attach all inventory items and their associated effects.
+     *
+     * @param character the character instance
+     * @return a {@link Mono} containing the character with inventory populated
+     */
     private Mono<Mobile> loadInventory(Mobile character) {
         if (character.getId() == null) return Mono.just(character);
 
@@ -297,6 +359,12 @@ public class StatService {
                 });
     }
 
+    /**
+     * Internal helper to load an item entity and its attached effects from the database.
+     *
+     * @param itemId the ID of the item
+     * @return a {@link Mono} containing the populated item
+     */
     private Mono<Item> loadItemWithEffects(Long itemId) {
         if (itemId == null) return Mono.empty();
         return itemRepository.findById(itemId)

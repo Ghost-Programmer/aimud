@@ -39,6 +39,16 @@ public class MobileService {
     // For now, we'll key them by their DB ID, assuming 1 DB entry = 1 instance.
     private final ConcurrentHashMap<Long, Mobile> activeMobiles = new ConcurrentHashMap<>();
 
+    /**
+     * Constructs a new MobileService.
+     *
+     * @param mobileRepository       the mobile repository
+     * @param statService            the stat service
+     * @param mobileSkillRepository  the mobile skill repository
+     * @param itemService            the item service
+     * @param databaseClient         the R2DBC database client
+     * @param mobileActionRepository the mobile action repository
+     */
     public MobileService(MobileRepository mobileRepository, StatService statService,
                          MobileSkillRepository mobileSkillRepository, ItemService itemService,
                          DatabaseClient databaseClient, MobileActionRepository mobileActionRepository) {
@@ -50,18 +60,35 @@ public class MobileService {
         this.mobileActionRepository = mobileActionRepository;
     }
 
+    /**
+     * Retrieves all non-player character mobiles from the database.
+     *
+     * @return a {@link Flux} emitting all NPC mobiles
+     */
     @Cacheable(value = "mobiles")
     public Flux<Mobile> getAllMobiles() {
         log.info("Fetching all mobiles");
         return mobileRepository.findByUserIdIsNull().cache();
     }
 
+    /**
+     * Retrieves a mobile by its ID from the database or cache.
+     *
+     * @param id the ID of the mobile
+     * @return a {@link Mono} containing the mobile
+     */
     @Cacheable(value = "mobile", key = "#id")
     public Mono<Mobile> getMobile(Long id) {
         log.info("Fetching mobile with id: {}", id);
         return mobileRepository.findById(id).cache();
     }
 
+    /**
+     * Saves a mobile entity to the database and updates it in memory if active.
+     *
+     * @param mobile the mobile to save
+     * @return a {@link Mono} containing the saved mobile
+     */
     @CacheEvict(value = {"mobiles", "mobile", "mobiles"}, allEntries = true)
     public Mono<Mobile> saveMobile(Mobile mobile) {
         log.info("Saving mobile: {} (id: {})", mobile.getName(), mobile.getId());
@@ -74,6 +101,12 @@ public class MobileService {
                 });
     }
 
+    /**
+     * Deletes a mobile entity from the database and removes it from active memory.
+     *
+     * @param id the ID of the mobile to delete
+     * @return a {@link Mono} indicating completion
+     */
     @CacheEvict(value = {"mobiles", "mobile", "mobiles"}, allEntries = true)
     public Mono<Void> deleteMobile(Long id) {
         log.info("Deleting mobile with id: {}", id);
@@ -81,13 +114,22 @@ public class MobileService {
                 .doOnSuccess(v -> activeMobiles.remove(id));
     }
 
+    /**
+     * Retrieves all mobiles assigned to a specific room from the database.
+     *
+     * @param roomId the ID of the room
+     * @return a {@link Flux} emitting mobiles located in the room
+     */
     @Cacheable(value = "mobiles")
     public Flux<Mobile> getMobilesByRoom(Long roomId) {
         return mobileRepository.findByCurrentRoomIdAndUserIdIsNull(roomId);
     }
 
     /**
-     * Scans the room for assigned mobile IDs, and loads them into memory if not already present.
+     * Scans the room for assigned mobile IDs, dropping them into memory and 
+     * caching them with all stats and actions if not already present.
+     *
+     * @param room the room to spawn mobiles for
      */
     public void spawnMobilesForRoom(Room room) {
         log.info("Spawning mobiles for room: {} (id: {})", room.getName(), room.getId());
@@ -112,7 +154,10 @@ public class MobileService {
     }
 
     /**
-     * Gets all active mobiles currently located in a specific room.
+     * Gets all active (spawned, in-memory) mobiles currently located in a specific room.
+     *
+     * @param roomId the ID of the room
+     * @return a list of active mobiles in the room
      */
     public List<Mobile> getMobilesInRoom(Long roomId) {
         return activeMobiles.values().stream()
@@ -120,10 +165,20 @@ public class MobileService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves all currently active and tracked mobiles in memory.
+     *
+     * @return a list of all active mobiles
+     */
     public List<Mobile> getActiveMobiles() {
         return new ArrayList<>(activeMobiles.values());
     }
 
+    /**
+     * Removes an active mobile from in-memory tracking.
+     *
+     * @param mobileId the ID of the mobile to remove
+     */
     public void removeActiveMobile(Long mobileId) {
         activeMobiles.remove(mobileId);
         log.info("Removed mobile {} from active list", mobileId);
@@ -131,11 +186,25 @@ public class MobileService {
 
     // --- SKILL MANAGEMENT ---
 
+    /**
+     * Retrieves all skills associated with a specific mobile.
+     *
+     * @param mobileId the ID of the mobile
+     * @return a {@link Flux} emitting the mobile's skills
+     */
     public Flux<MobileSkill> getMobileSkills(Long mobileId) {
         log.info("Fetching skills for mobile: {}", mobileId);
         return mobileSkillRepository.findByMobileId(mobileId);
     }
 
+    /**
+     * Assigns or updates a skill to a mobile with a specific rank.
+     *
+     * @param mobileId  the ID of the mobile
+     * @param skillName the name of the skill
+     * @param rank      the rank of the skill
+     * @return a {@link Mono} containing the updated or created mobile skill
+     */
     public Mono<MobileSkill> assignSkill(Long mobileId, String skillName, int rank) {
         log.info("Assigning skill '{}' rank {} to mobile {}", skillName, rank, mobileId);
         return databaseClient.sql(
@@ -150,11 +219,24 @@ public class MobileService {
 
     // --- ACTION MANAGEMENT ---
 
+    /**
+     * Retrieves the AI actions configured for a mobile.
+     *
+     * @param mobileId the ID of the mobile
+     * @return a {@link Flux} emitting the mobile's available actions
+     */
     public Flux<MobileAction> getMobileActions(Long mobileId) {
         log.info("Fetching actions for mobile: {}", mobileId);
         return mobileActionRepository.findByMobileId(mobileId);
     }
 
+    /**
+     * Saves a complete list of AI actions for a mobile, replacing existing ones.
+     *
+     * @param mobileId the ID of the mobile
+     * @param actions  the list of actions to save
+     * @return a {@link Flux} emitting the saved actions
+     */
     public Flux<MobileAction> saveMobileActions(Long mobileId, List<MobileAction> actions) {
         log.info("Saving {} actions for mobile {}", actions.size(), mobileId);
         return databaseClient.sql("DELETE FROM mobile_actions WHERE mobile_id = :mobileId")
@@ -170,6 +252,12 @@ public class MobileService {
 
     // --- INVENTORY MANAGEMENT ---
 
+    /**
+     * Retrieves the inventory items for a mobile, populating their total counts.
+     *
+     * @param mobileId the ID of the mobile
+     * @return a {@link Flux} emitting inventory items
+     */
     public Flux<Item> getMobileInventory(Long mobileId) {
         log.info("Fetching inventory for mobile: {}", mobileId);
         return databaseClient.sql("SELECT item_id, item_count FROM mobile_inventory WHERE mobile_id = :mobileId")
@@ -187,6 +275,13 @@ public class MobileService {
                 });
     }
 
+    /**
+     * Adds an item to a mobile's inventory. If stackable, augments the count.
+     *
+     * @param mobileId the ID of the mobile
+     * @param itemId   the ID of the item
+     * @return a {@link Mono} returning the mobile context
+     */
     public Mono<Mobile> addItemToInventory(Long mobileId, Long itemId) {
         log.info("Adding item {} to inventory of mobile {}", itemId, mobileId);
         return getMobile(mobileId)
@@ -211,6 +306,14 @@ public class MobileService {
 
     // --- WEAR LOCATION MANAGEMENT ---
 
+    /**
+     * Equips an item to a specific wear location on a mobile.
+     *
+     * @param mobileId the ID of the mobile
+     * @param itemId   the ID of the item to equip
+     * @param location the location to equip the item to
+     * @return a {@link Mono} returning the saved mobile context
+     */
     @CacheEvict(value = {"mobiles", "mobile"}, allEntries = true)
     public Mono<Mobile> assignItemToWearLocation(Long mobileId, Long itemId, WearLocation location) {
         log.info("Assigning item {} to wear location {} on mobile {}", itemId, location, mobileId);
@@ -224,6 +327,12 @@ public class MobileService {
                         }));
     }
 
+    /**
+     * Retrieves all items currently worn or equipped by a mobile.
+     *
+     * @param mobileId the ID of the mobile
+     * @return a {@link Flux} emitting the equipped items
+     */
     public Flux<Item> getMobileWornItems(Long mobileId) {
         log.info("Fetching worn items for mobile: {}", mobileId);
         return getMobile(mobileId)
@@ -253,6 +362,13 @@ public class MobileService {
 
     // --- ROOM ASSIGNMENT ---
 
+    /**
+     * Sets the room a mobile is currently located in.
+     *
+     * @param mobileId the ID of the mobile
+     * @param roomId   the ID of the room
+     * @return a {@link Mono} returning the saved mobile context
+     */
     @CacheEvict(value = {"mobiles", "mobile"}, allEntries = true)
     public Mono<Mobile> setMobileRoom(Long mobileId, Long roomId) {
         log.info("Setting room {} for mobile {}", roomId, mobileId);
@@ -264,6 +380,13 @@ public class MobileService {
                 });
     }
 
+    /**
+     * Applies an item to the designated wear location property of a mobile.
+     *
+     * @param mobile   the mobile context
+     * @param item     the item being equipped
+     * @param location the location the item will occupy
+     */
     private void applyWearLocation(Mobile mobile, Item item, WearLocation location) {
         switch (location) {
             case HEAD -> mobile.setHead(item);

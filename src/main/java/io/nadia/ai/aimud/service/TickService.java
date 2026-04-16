@@ -34,6 +34,17 @@ public class TickService {
     private final FactionService factionService;
     private final Random random = new Random();
 
+    /**
+     * Constructs a new TickService.
+     *
+     * @param characterService     the character service
+     * @param mobileService        the mobile service
+     * @param commandService       the command service
+     * @param communicationService the communication service
+     * @param skillService         the skill service
+     * @param roomService          the room service
+     * @param factionService       the faction service
+     */
     public TickService(CharacterService characterService, MobileService mobileService, CommandService commandService, CommunicationService communicationService, SkillService skillService, RoomService roomService, FactionService factionService) {
         this.characterService = characterService;
         this.mobileService = mobileService;
@@ -44,6 +55,11 @@ public class TickService {
         this.factionService = factionService;
     }
 
+    /**
+     * The core game loop method, executed repeatedly on a fixed schedule.
+     * Processes player and NPC active actions, statuses, regeneration, combat,
+     * party updates, and chat history cleanup.
+     */
     @Scheduled(fixedRate = 2000)
     public void processTick() {
         // Process PCs
@@ -133,6 +149,12 @@ public class TickService {
         });
     }
 
+    /**
+     * Evaluates whether an observer NPC should intervene in an ongoing fight
+     * between two other mobiles in the same room, based on faction ratings.
+     *
+     * @param observer the mobile evaluating the room's combat situation
+     */
     private void processFactionAssist(Mobile observer) {
         if (observer.getCurrentRoomId() == null) return;
         if (observer.getCurrentHp() <= 0) return;
@@ -188,12 +210,26 @@ public class TickService {
         }
     }
 
+    /**
+     * Internal helper to initiate an attack from an assisting NPC.
+     *
+     * @param observer       the assisting NPC
+     * @param targetToAttack the character the NPC will attack
+     * @param personHelping  the character the NPC is defending
+     */
     private void initiateAssist(Mobile observer, Mobile targetToAttack, Mobile personHelping) {
         if (!characterService.setTarget(observer, targetToAttack)) return;
         communicationService.roomMessage(observer, "\n" + observer.getName() + " jumps into the fray to assist " + personHelping.getName() + "!");
         if (targetToAttack.getUserId() != null) communicationService.sendTextMessage(targetToAttack, "\n\n" + observer.getName() + " attacks you!");
     }
 
+    /**
+     * Manages a single round of combat for an attacking mobile, including
+     * target selection, skill checks (e.g., dual wield, multi-attack), and attack execution.
+     *
+     * @param attacker the attacking mobile
+     * @return true if an attack cycle occurred, false otherwise
+     */
     private boolean processAttack(Mobile attacker) {
         if (attacker.getUserId() == null) {
             Long highestHateId = attacker.getHighestHateTargetId();
@@ -290,6 +326,11 @@ public class TickService {
         return true;
     }
 
+    /**
+     * Broadcasts the target's updated status to everyone in the room currently attacking them.
+     *
+     * @param target the target mobile whose state has changed
+     */
     private void sendTargetUpdates(Mobile target) {
         if (target.getCurrentRoomId() == null) {
             return;
@@ -302,6 +343,16 @@ public class TickService {
         }
     }
 
+    /**
+     * Executes a single instance of a physical attack with a specific weapon or empty hand.
+     * Calculates hit chance, dodges, blocks, parries, and exact applied damage.
+     *
+     * @param attacker the attacking mobile
+     * @param target   the target mobile
+     * @param weapon   the item used for the attack, or null if unarmed
+     * @param hand     a string identifier for the hand used (e.g., "primary", "offhand")
+     * @return true if the attack hits, false if it misses, is dodged, parried, or blocked
+     */
     private boolean performSingleAttack(Mobile attacker, Mobile target, Item weapon, String hand) {
         if (target.getCurrentHp() <= 0) return false;
 
@@ -408,6 +459,14 @@ public class TickService {
         return true;
     }
 
+    /**
+     * Triggers a check to see if a mobile's skill improves based on usage.
+     *
+     * @param mobile     the mobile potentially improving their skill
+     * @param skillName  the name of the skill to check
+     * @param target     the target of the skill (used for difficulty scaling)
+     * @param wasSuccess whether the skill usage was successful
+     */
     private void checkSkillImprovement(Mobile mobile, String skillName, Mobile target, boolean wasSuccess) {
         skillService.checkSkill(mobile, skillName, (int) target.getChallengeRating(), wasSuccess)
                 .doOnNext(improvedSkill -> {
@@ -418,6 +477,15 @@ public class TickService {
                 .subscribe();
     }
 
+    /**
+     * Broadcasts formatted combat texts appropriately to the attacker, the target, and the rest of the room.
+     *
+     * @param attacker    the attacking character
+     * @param target      the defending character
+     * @param attackerMsg the message sent specifically to the attacker
+     * @param targetMsg   the message sent specifically to the target
+     * @param roomMsg     the message sent to everyone else in the room
+     */
     private void sendCombatMessage(Mobile attacker, Mobile target, String attackerMsg, String targetMsg, String roomMsg) {
         if (attacker.getUserId() != null) {
             communicationService.sendTextMessage(attacker, "\n" + attackerMsg);
@@ -435,6 +503,13 @@ public class TickService {
         }
     }
 
+    /**
+     * Determines the rank of a specific skill for a mobile.
+     *
+     * @param mobile    the mobile
+     * @param skillName the name of the skill
+     * @return the numerical rank of the skill, or 0 if unlearned
+     */
     private int getSkillRank(Mobile mobile, String skillName) {
         if (mobile.getSkills() == null) return 0;
         for (Skill skill : mobile.getSkills()) {
@@ -445,10 +520,22 @@ public class TickService {
         return 0;
     }
 
+    /**
+     * Checks if a given item counts as a weapon type.
+     *
+     * @param item the item
+     * @return true if the item is a weapon
+     */
     private boolean isWeapon(Item item) {
         return item.getItemType() == ItemType.WEAPON || item.getItemType() == ItemType.TWO_HANDED_WEAPON || item.getItemType() == ItemType.RANGED_WEAPON;
     }
 
+    /**
+     * Checks if a given item counts as a shield, based on its wear location and armor type.
+     *
+     * @param item the item
+     * @return true if the item functions as a shield
+     */
     private boolean isShield(Item item) {
         // Typically a shield is MEDIUM_ARMOR or HEAVY_ARMOR worn in the OFFHAND.
         // For simplicity, we check if it's armor in the offhand.
@@ -456,6 +543,12 @@ public class TickService {
                 (item.getItemType() == ItemType.LIGHT_ARMOR || item.getItemType() == ItemType.MEDIUM_ARMOR || item.getItemType() == ItemType.HEAVY_ARMOR);
     }
 
+    /**
+     * Determines whether a specific effect type represents direct attribute damage.
+     *
+     * @param type the effect type
+     * @return true if the effect does damage
+     */
     private boolean isDamageEffect(EffectType type) {
         return type == EffectType.BASHING_DAMAGE || type == EffectType.SLASHING_DAMAGE ||
                 type == EffectType.PIERCING_DAMAGE || type == EffectType.FIRE_DAMAGE ||
@@ -463,6 +556,13 @@ public class TickService {
                 type == EffectType.POISON_DAMAGE || type == EffectType.ELECTRICAL_DAMAGE;
     }
 
+    /**
+     * Constructs a transient corpse item upon a mobile's death, filling it with their
+     * inventory and equipment, allowing a killer to loot it, or dropping it in the room.
+     *
+     * @param deceased the mobile who died
+     * @param killerId the ID of the mobile who scored the killing blow
+     */
     public void createCorpse(Mobile deceased, Long killerId) {
         log.info("Creating corpse for {}", deceased.getName());
 
@@ -531,12 +631,24 @@ public class TickService {
         }
     }
 
+    /**
+     * Helper to add a non-null item to a list.
+     *
+     * @param list the list
+     * @param item the item to conditionally add
+     */
     private void addIfPresent(List<Item> list, Item item) {
         if (item != null && item.getId() != null) {
             list.add(item);
         }
     }
 
+    /**
+     * Handles the comprehensive death sequence for a mobile, broadcasting messages,
+     * applying penalties, spawning a corpse, and removing the entity from active play.
+     *
+     * @param target the mobile that just died
+     */
     private void processDeath(Mobile target) {
         target.setCurrentHp(0);
         String deathMsg = "\n" + target.getName() + " is DEAD!!";
@@ -580,6 +692,13 @@ public class TickService {
         if (attacker != null && attacker.getUserId() != null) communicationService.sendCharacterUpdate(attacker);
     }
 
+    /**
+     * Reviews a mobile's active spell effects, applies recurring damage over time,
+     * decrements duration ticks, and removes expired effects.
+     *
+     * @param mobile the mobile to process effects for
+     * @return true if the mobile's HP or effects list was modified
+     */
     private boolean processSpellEffects(Mobile mobile) {
         if (mobile.getSpellEffects() == null || mobile.getSpellEffects().isEmpty()) {
             return false;
@@ -636,6 +755,12 @@ public class TickService {
         return hpChangedOrRemoved;
     }
 
+    /**
+     * Applies standard passive health and mana regeneration to a mobile if they are out of combat.
+     *
+     * @param mobile the mobile
+     * @return true if resources regenerated, false if full or engaged in combat
+     */
     private boolean processRegen(Mobile mobile) {
         boolean updated = false;
         int oldHp = mobile.getCurrentHp();

@@ -25,11 +25,21 @@ public class CommandService {
     private final Map<String, Command> taskMap = new HashMap<>();
     private final java.util.List<String> emoteCommands = new java.util.ArrayList<>();
 
+    /**
+     * Constructs a new CommandService.
+     *
+     * @param context              the Spring application context used to discover command beans
+     * @param communicationService the communication service to send messages to characters
+     */
     public CommandService(ApplicationContext context, CommunicationService communicationService) {
         this.context = context;
         this.communicationService = communicationService;
     }
 
+    /**
+     * Initializes the command map by discovering all beans implementing the {@link Command} interface
+     * and annotated with {@link MudCommand}. Also tracks which commands are emotes.
+     */
     @PostConstruct
     public void registerTasks() {
         // Retrieve all beans that implement the specific interface
@@ -51,18 +61,40 @@ public class CommandService {
         log.info("Registered {} commands: {}", taskMap.size(), taskMap.keySet().stream().collect(Collectors.joining(", ")));
     }
 
+    /**
+     * Retrieves a registered command by its name.
+     *
+     * @param name the name of the command
+     * @return the {@link Command} instance, or null if not found
+     */
     public Command getTask(String name) {
         return taskMap.get(name);
     }
 
+    /**
+     * Retrieves all registered commands.
+     *
+     * @return a map of command names to their corresponding {@link Command} instances
+     */
     public Map<String, Command> getAllTasks() {
         return new HashMap<>(taskMap); // Return a copy for immutability
     }
 
+    /**
+     * Retrieves a list of all commands that are marked as emotes.
+     *
+     * @return an unmodifiable list of emote command names
+     */
     public java.util.List<String> getEmoteCommands() {
         return java.util.Collections.unmodifiableList(emoteCommands);
     }
 
+    /**
+     * Processes the next command in the character's command queue.
+     *
+     * @param character the mobile entity executing the command
+     * @return a {@link Mono} representing the completion of command execution
+     */
     public Mono<Void> processCommand(Mobile character) {
         String command = character.getCommandQueue().remove(0);
         String[] commands = command.trim().split("\\s+");
