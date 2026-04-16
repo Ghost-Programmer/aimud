@@ -15,7 +15,7 @@ plugins {
     id 'org.liquibase.gradle' version '3.1.0'
 }
 
-group = 'com.aimud'
+group = 'io.nadia.ai'
 version = '0.0.1-SNAPSHOT'
 description = 'Demo project for Spring Boot'
 

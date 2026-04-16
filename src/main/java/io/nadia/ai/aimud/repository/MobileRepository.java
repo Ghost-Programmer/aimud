@@ -1,0 +1,18 @@
+package io.nadia.ai.aimud.repository;
+
+import io.nadia.ai.aimud.model.Mobile;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
+
+@Repository
+public interface MobileRepository extends ReactiveCrudRepository<Mobile, Long> {
+
+    Flux<Mobile> findByCurrentRoomId(Long roomId);
+
+    Flux<Mobile> findByUserId(Long userId);
+
+    Flux<Mobile> findByUserIdIsNull();
+
+    Flux<Mobile> findByCurrentRoomIdAndUserIdIsNull(Long roomId);
+}
