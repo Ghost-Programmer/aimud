@@ -9,8 +9,8 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import reactor.test.StepVerifier;
 
 import java.util.List;
@@ -25,7 +25,7 @@ class AiIntegrationTest {
     @Autowired
     private ApplicationContext applicationContext;
 
-    @MockBean
+    @MockitoBean
     private OllamaChatModel chatModel;
 
     @Autowired

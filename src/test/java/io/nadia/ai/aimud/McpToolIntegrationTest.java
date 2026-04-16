@@ -27,7 +27,7 @@ class McpToolIntegrationTest {
         // involved
         // and usually handled by Spring AI internally.
         McpToolService toolService = applicationContext.getBean(McpToolService.class);
-        assertThat(toolService.getAllRooms()).isNotNull();
-        assertThat(toolService.getAllItems()).isNotNull();
+        assertThat(toolService.listRooms()).isNotNull();
+        assertThat(toolService.listItems()).isNotNull();
     }
 }

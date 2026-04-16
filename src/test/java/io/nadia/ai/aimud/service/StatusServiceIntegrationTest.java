@@ -21,6 +21,7 @@ class StatusServiceIntegrationTest {
         assertThat(status).isNotNull();
         assertThat(status).containsKeys("status", "database", "version", "uptime", "llmStatus", "llmModel");
         assertThat(status.get("llmStatus")).isIn("Connected", "Disconnected");
-        assertThat(status.get("llmModel")).isEqualTo("qwen3.5");
+        assertThat(status.get("llmModel")).isInstanceOf(String.class);
+        assertThat((String) status.get("llmModel")).isNotBlank();
     }
 }

@@ -18,7 +18,6 @@ import reactor.test.StepVerifier;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,22 +40,28 @@ class McpToolServiceTest {
     @Mock
     private ConfigService configService;
 
+    @Mock
+    private StoreService storeService;
+
     private McpToolService mcpToolService;
 
     @BeforeEach
     void setUp() {
-        mcpToolService = new McpToolService(roomService, itemService, effectService, mobileService, configService);
+        mcpToolService = new McpToolService(roomService, itemService, effectService, mobileService, configService,
+                storeService);
     }
 
     @Test
-    void createItemMapsAiAliasesToPersistableEnums() {
+    void createItemMapsToPersistableEnums() {
         when(itemService.saveItem(any(Item.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         Item savedItem = mcpToolService.createItem(
                 "Chain Shirt",
                 "A simple protective shirt made from linked rings.",
-                "ARMOR",
-                "TORSO",
+                "LIGHT_ARMOR",
+                "CHEST",
+                null,
+                null,
                 null,
                 null,
                 null,
@@ -77,10 +82,12 @@ class McpToolServiceTest {
                 "A powerful sword with the ability to cleave through armor.",
                 "WEAPON",
                 "PRIMARY",
+                false,
                 11,
                 22,
                 33,
-                44))
+                44,
+                null))
                 .subscribeOn(Schedulers.parallel()))
                 .assertNext(savedItem -> {
                     assertThat(savedItem.getName()).isEqualTo("Vorpal Blade");
@@ -102,7 +109,9 @@ class McpToolServiceTest {
                 "Book of Lore",
                 "A dusty tome containing old guild techniques.",
                 "Book",
-                "NONE",
+                "PRIMARY",
+                null,
+                null,
                 null,
                 null,
                 null,
@@ -110,7 +119,7 @@ class McpToolServiceTest {
 
         assertThat(savedItem).isNotNull();
         assertThat(savedItem.getItemType()).isEqualTo(ItemType.BOOK);
-        assertThat(savedItem.getWearLocation()).isEqualTo(WearLocation.NONE);
+        assertThat(savedItem.getWearLocation()).isEqualTo(WearLocation.PRIMARY);
         assertThat(savedItem.getProperty1()).isZero();
         assertThat(savedItem.getProperty2()).isZero();
         assertThat(savedItem.getProperty3()).isZero();
@@ -141,8 +150,10 @@ class McpToolServiceTest {
                 "New description",
                 "WEAPON",
                 "PRIMARY",
+                null,
                 101,
                 102,
+                null,
                 null,
                 null);
 
@@ -163,36 +174,23 @@ class McpToolServiceTest {
         when(itemService.getAllItems()).thenReturn(Flux.empty());
         when(roomService.getAllRooms()).thenReturn(Flux.empty());
 
-        assertThat(mcpToolService.getAllItems()).isEmpty();
-        assertThat(mcpToolService.getAllRooms()).isEmpty();
+        assertThat(mcpToolService.listItems()).isEmpty();
+        assertThat(mcpToolService.listRooms()).isEmpty();
     }
 
     @Test
-    void setRoomDoorUpdatesDirectionalDoorFields() {
+    void updateRoomSetsDirectionalDoorFieldsWhenExitProvided() {
         Room source = new Room();
         source.setId(10L);
         source.setName("Hall");
 
-        Room destination = new Room();
-        destination.setId(11L);
-        destination.setName("Armory");
-
         when(roomService.getRoom(10L)).thenReturn(Mono.just(source));
-        when(roomService.getRoom(11L)).thenReturn(Mono.just(destination));
         when(roomService.saveRoom(any(Room.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
-        Room updated = mcpToolService.setRoomDoor(10L, "n", 11L, true);
+        Room updated = mcpToolService.updateRoom(10L, null, null, null, 11L, null, null, null, null, null);
 
         assertThat(updated.getNorthId()).isEqualTo(11L);
         assertThat(updated.isNorthDoor()).isTrue();
-        assertThat(updated.isNorthDoorOpen()).isTrue();
         verify(roomService).saveRoom(source);
-    }
-
-    @Test
-    void setRoomDoorRejectsInvalidDirection() {
-        assertThatThrownBy(() -> mcpToolService.setRoomDoor(10L, "sideways", 11L, false))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Invalid direction");
     }
 }

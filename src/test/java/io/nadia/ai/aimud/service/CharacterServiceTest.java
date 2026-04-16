@@ -74,6 +74,18 @@ class CharacterServiceTest {
                 factionService,
                 mobileMacroRepository
         );
+
+        lenient().when(characterEffectRepository.deleteByCharacterId(any())).thenReturn(Mono.empty());
+        lenient().when(characterEffectRepository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        configureInventoryDatabaseClientMock();
+    }
+
+    private void configureInventoryDatabaseClientMock() {
+        DatabaseClient.GenericExecuteSpec executeSpec = mock(DatabaseClient.GenericExecuteSpec.class, RETURNS_DEEP_STUBS);
+        lenient().when(databaseClient.sql(anyString())).thenReturn(executeSpec);
+        lenient().when(executeSpec.bind(anyString(), any())).thenReturn(executeSpec);
+        lenient().when(executeSpec.then()).thenReturn(Mono.empty());
+        lenient().when(executeSpec.fetch().rowsUpdated()).thenReturn(Mono.just(1L));
     }
 
     @Test
@@ -182,9 +194,6 @@ class CharacterServiceTest {
         when(mobileRepository.findById(1L)).thenReturn(Mono.just(character));
         when(statService.updateCurrentStats(any(Mobile.class))).thenReturn(Mono.just(character));
 
-        // Mocking databaseClient for updateInventory
-        when(databaseClient.sql(anyString())).thenReturn(mock(DatabaseClient.GenericExecuteSpec.class, RETURNS_DEEP_STUBS));
-
         // Act
         StepVerifier.create(characterService.equipItem(character, 11L))
                 .assertNext(updatedChar -> {
@@ -224,9 +233,6 @@ class CharacterServiceTest {
         when(mobileRepository.save(any(Mobile.class))).thenReturn(Mono.just(character));
         when(mobileRepository.findById(1L)).thenReturn(Mono.just(character));
         when(statService.updateCurrentStats(any(Mobile.class))).thenReturn(Mono.just(character));
-
-        // Mocks for DB
-        when(databaseClient.sql(anyString())).thenReturn(mock(DatabaseClient.GenericExecuteSpec.class, RETURNS_DEEP_STUBS));
 
         // Test 1: Right finger empty -> goes to Right
         characterService.equipItem(character, 22L).block();
@@ -278,7 +284,6 @@ class CharacterServiceTest {
         when(mobileRepository.save(any(Mobile.class))).thenReturn(Mono.just(character));
         when(mobileRepository.findById(1L)).thenReturn(Mono.just(character));
         when(statService.updateCurrentStats(any(Mobile.class))).thenReturn(Mono.just(character));
-        when(databaseClient.sql(anyString())).thenReturn(mock(DatabaseClient.GenericExecuteSpec.class, RETURNS_DEEP_STUBS));
 
         // Act
         StepVerifier.create(characterService.dropItem(character, 55L))
