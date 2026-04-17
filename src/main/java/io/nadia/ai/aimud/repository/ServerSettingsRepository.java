@@ -4,6 +4,9 @@ import io.nadia.ai.aimud.model.ServerSettings;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Data access repository for ServerSettingsRepository entities.
+ */
 @Repository
 public interface ServerSettingsRepository extends R2dbcRepository<ServerSettings, Long> {
 }

@@ -4,6 +4,9 @@ import io.nadia.ai.aimud.model.Faction;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Data access repository for FactionRepository entities.
+ */
 @Repository
 public interface FactionRepository extends ReactiveCrudRepository<Faction, Long> {
 }
