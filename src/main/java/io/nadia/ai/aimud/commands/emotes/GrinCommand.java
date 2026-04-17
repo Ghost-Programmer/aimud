@@ -6,8 +6,18 @@ import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.MobileService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * Implementation of the grin social interaction.
+ */
 @MudCommand(name = "grin", isEmote = true)
 public class GrinCommand extends BaseEmoteCommand {
+    /**
+     * Constructs the grin emote command handler relying on common autowired domain services.
+     *
+     * @param communicationService the underlying real-time emitter payload engine
+     * @param characterService     registry tracking available acting entities
+     * @param mobileService        secondary registry routing for generic AI agents
+     */
     @Autowired
     public GrinCommand(CommunicationService communicationService, CharacterService characterService, MobileService mobileService) {
         super(communicationService, characterService, mobileService);
@@ -16,3 +26,4 @@ public class GrinCommand extends BaseEmoteCommand {
     @Override protected String getSelfMessage() { return "You grin evilly."; }
     @Override protected String getRoomMessage() { return "grins evilly."; }
 }
+

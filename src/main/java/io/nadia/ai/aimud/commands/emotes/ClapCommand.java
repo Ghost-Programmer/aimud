@@ -6,8 +6,18 @@ import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.MobileService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * Implementation of the clap social interaction.
+ */
 @MudCommand(name = "clap", isEmote = true)
 public class ClapCommand extends BaseEmoteCommand {
+    /**
+     * Constructs the clap emote command handler relying on common autowired domain services.
+     *
+     * @param communicationService the underlying real-time emitter payload engine
+     * @param characterService     registry tracking available acting entities
+     * @param mobileService        secondary registry routing for generic AI agents
+     */
     @Autowired
     public ClapCommand(CommunicationService communicationService, CharacterService characterService, MobileService mobileService) {
         super(communicationService, characterService, mobileService);
@@ -16,3 +26,4 @@ public class ClapCommand extends BaseEmoteCommand {
     @Override protected String getSelfMessage() { return "You clap your hands."; }
     @Override protected String getRoomMessage() { return "claps their hands."; }
 }
+
