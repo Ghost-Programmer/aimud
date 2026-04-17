@@ -10,28 +10,52 @@ import io.nadia.ai.aimud.types.EffectType;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+/**
+ * Implementation of the dispel_magic spell.
+ */
 @MagicSpell(name = "dispel_magic")
 public class DispelMagicSpell extends Spell {
 
+    /**
+     * Constructs the dispel_magic dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     protected DispelMagicSpell(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSpellName() {
         return "Dispel Magic";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSpellId() {
         return 1002L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSpellLevel() {
         return 10;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Removes one negative magical effect or damage-over-time condition from the target. Usage: cast dispel_magic [target]";
@@ -42,11 +66,17 @@ public class DispelMagicSpell extends Spell {
         return mobile.getTarget() != null ? mobile.getTarget() : mobile;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) {
         return 20;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -114,3 +144,4 @@ public class DispelMagicSpell extends Spell {
         return false;
     }
 }
+

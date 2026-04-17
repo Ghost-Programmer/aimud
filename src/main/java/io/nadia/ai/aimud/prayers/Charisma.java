@@ -7,28 +7,52 @@ import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.types.SkillsType;
 
+/**
+ * Implementation of the charisma prayer.
+ */
 @DivinePrayer(name = "charisma")
 public class Charisma extends Prayer {
 
+    /**
+     * Constructs the charisma dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     protected Charisma(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getPrayerName() {
         return "Divine Charisma";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getPrayerId() {
         return 2001L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getPrayerLevel() {
         return 4;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Blesses the target with divine charisma. Usage: pray charisma [target]";
@@ -39,6 +63,9 @@ public class Charisma extends Prayer {
         return mobile;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) {
         int prayerSkill = skillService.getSkillRank(mobile, getPrayerSkillName());
@@ -57,6 +84,9 @@ public class Charisma extends Prayer {
         return cost;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean pray(Mobile mobile, Prayer prayer, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -106,3 +136,4 @@ public class Charisma extends Prayer {
         return true;
     }
 }
+

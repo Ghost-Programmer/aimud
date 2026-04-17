@@ -7,28 +7,52 @@ import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.types.SkillsType;
 
+/**
+ * Implementation of the invisible bard song.
+ */
 @BardSong(name = "invisible")
 public class InvisibleSong extends Song {
 
+    /**
+     * Constructs the invisible dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     protected InvisibleSong(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSongName() {
         return "Song of Shadows";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSongId() {
         return 3006L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSongLevel() {
         return 15;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Renders the target invisible by weaving a song of shadows. Usage: sing invisible [target]";
@@ -39,6 +63,9 @@ public class InvisibleSong extends Song {
         return mobile;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) {
         int songSkill = skillService.getSkillRank(mobile, getSongSkillName());
@@ -57,6 +84,9 @@ public class InvisibleSong extends Song {
         return cost;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -93,3 +123,4 @@ public class InvisibleSong extends Song {
         return true;
     }
 }
+

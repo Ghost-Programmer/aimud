@@ -9,28 +9,55 @@ import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.types.SkillsType;
 import org.springframework.stereotype.Component;
 
+/**
+ * Implementation of the lullabyofagony bard song.
+ */
 @Component
 @BardSong(name = "lullabyofagony")
 public class LullabyOfAgony extends Song {
 
+    /**
+     * Constructs the lullabyofagony dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public LullabyOfAgony(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSongName() { return "Lullaby of Agony"; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSongId() { return 3511L; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSongLevel() { return 80; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "A level 80 Damage-Over-Time song. Usage: sing 'lullabyofagony' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -66,3 +93,4 @@ public class LullabyOfAgony extends Song {
         }
     }
 }
+

@@ -9,28 +9,55 @@ import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.types.SkillsType;
 import org.springframework.stereotype.Component;
 
+/**
+ * Implementation of the hauntingmelody bard song.
+ */
 @Component
 @BardSong(name = "hauntingmelody")
 public class HauntingMelody extends Song {
 
+    /**
+     * Constructs the hauntingmelody dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public HauntingMelody(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSongName() { return "Haunting Melody"; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSongId() { return 3508L; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSongLevel() { return 4; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "A level 4 Damage-Over-Time song. Usage: sing 'hauntingmelody' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -66,3 +93,4 @@ public class HauntingMelody extends Song {
         }
     }
 }
+

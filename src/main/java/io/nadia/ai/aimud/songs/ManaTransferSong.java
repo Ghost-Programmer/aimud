@@ -5,39 +5,69 @@ import io.nadia.ai.aimud.model.Mobile;
 import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.service.*;
 
+/**
+ * Implementation of the magic_drain bard song.
+ */
 @BardSong(name = "magic_drain")
 public class ManaTransferSong extends Song {
 
+    /**
+     * Constructs the magic_drain dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     protected ManaTransferSong(SkillService skillService, MobileService mopbileService,
                                CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSongName() {
         return "Magic Drain Song";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSongId() {
         return 3008L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSongLevel() {
         return 15;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Sacrifices the bard's own mana to invigorate all other party members immediately. Usage: sing magic_drain";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) {
         return 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -101,3 +131,4 @@ public class ManaTransferSong extends Song {
         return true;
     }
 }
+

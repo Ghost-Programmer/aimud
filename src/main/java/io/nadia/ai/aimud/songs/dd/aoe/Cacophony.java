@@ -9,31 +9,61 @@ import io.nadia.ai.aimud.service.*;
 import org.springframework.stereotype.Component;
 import java.util.List;
 
+/**
+ * Implementation of the cacophony bard song.
+ */
 @Component
 @BardSong(name = "cacophony")
 public class Cacophony extends Song {
 
+    /**
+     * Constructs the cacophony dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public Cacophony(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSongName() { return "Cacophony"; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSongId() { return 3504L; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSongLevel() { return 15; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) { return super.getManaCost(mobile) * 2; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "A level 15 AoE direct damage song. Usage: sing 'cacophony' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile primaryTarget) {
         if (primaryTarget != null && !this.characterService.canTarget(primaryTarget)) {
@@ -98,3 +128,4 @@ public class Cacophony extends Song {
         return true;
     }
 }
+

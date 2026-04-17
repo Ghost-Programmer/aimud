@@ -8,38 +8,68 @@ import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.spells.Spell;
 import java.util.List;
 
+/**
+ * Implementation of the flamebreath spell.
+ */
 @MagicSpell(name = "flamebreath")
 public class FlameBreath extends Spell {
 
+    /**
+     * Constructs the flamebreath dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public FlameBreath(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSpellName() {
         return "Flame Breath";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSpellId() {
         return 1101L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSpellLevel() {
         return 30;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) {
         return super.getManaCost(mobile) * 2;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "An AoE level 30 spell that unleashes Flame Breath on targets.. Damage and duration scale with skill rank. Usage: cast 'flamebreath' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile primaryTarget) {
         if (primaryTarget != null && !this.characterService.canTarget(primaryTarget)) {
@@ -94,3 +124,4 @@ public class FlameBreath extends Spell {
         }
     }
 }
+

@@ -9,31 +9,61 @@ import io.nadia.ai.aimud.service.*;
 import org.springframework.stereotype.Component;
 import java.util.List;
 
+/**
+ * Implementation of the consecration prayer.
+ */
 @Component
 @DivinePrayer(name = "consecration")
 public class Consecration extends Prayer {
 
+    /**
+     * Constructs the consecration dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public Consecration(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getPrayerName() { return "Consecration"; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getPrayerId() { return 2512L; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getPrayerLevel() { return 14; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) { return super.getManaCost(mobile) * 2; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "A level 14 AoE Damage-Over-Time holy prayer. Usage: pray 'consecration' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean pray(Mobile mobile, Prayer prayer, Mobile primaryTarget) {
         if (primaryTarget != null && !this.characterService.canTarget(primaryTarget)) {
@@ -74,3 +104,4 @@ public class Consecration extends Prayer {
         }
     }
 }
+

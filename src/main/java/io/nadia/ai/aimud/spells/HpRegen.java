@@ -7,29 +7,53 @@ import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.types.SkillsType;
 
+/**
+ * Implementation of the hpregen spell.
+ */
 @MagicSpell(name = "hpregen")
 public class HpRegen extends Spell {
 
+    /**
+     * Constructs the hpregen dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     protected HpRegen(SkillService skillService, MobileService mopbileService, CharacterService characterService,
                       CommunicationService communicationService, EffectService effectService) {
         super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSpellName() {
         return "HP Regen";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSpellId() {
         return 1005L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSpellLevel() {
         return 5;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Accelerates health regeneration over time. Usage: cast hpregen";
@@ -40,6 +64,9 @@ public class HpRegen extends Spell {
         return mobile;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) {
         int spellSkill = skillService.getSkillRank(mobile, getSpellSkillName());
@@ -53,6 +80,9 @@ public class HpRegen extends Spell {
         return 250;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -101,5 +131,6 @@ public class HpRegen extends Spell {
         return false;
     }
 }
+
 
 

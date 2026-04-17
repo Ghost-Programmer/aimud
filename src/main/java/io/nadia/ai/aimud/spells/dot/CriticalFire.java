@@ -7,33 +7,60 @@ import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.spells.Spell;
 
+/**
+ * Implementation of the critical fire spell.
+ */
 @MagicSpell(name = "critical fire")
 public class CriticalFire extends Spell {
 
+    /**
+     * Constructs the critical fire dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public CriticalFire(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSpellName() {
         return "Critical Fire";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSpellId() {
         return 1015L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSpellLevel() {
         return 80;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "A level 80 spell that ignites the target in flames. Damage and duration scale with skill rank. Usage: cast 'critical fire' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -75,3 +102,4 @@ public class CriticalFire extends Spell {
         }
     }
 }
+

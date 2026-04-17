@@ -6,34 +6,61 @@ import io.nadia.ai.aimud.model.Mobile;
 import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.service.*;
 
+/**
+ * Implementation of the missile spell.
+ */
 @MagicSpell(name = "missile")
 public class MagicMissile extends Spell {
 
 
+    /**
+     * Constructs the missile dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     protected MagicMissile(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSpellName() {
         return "Magic Missile";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSpellId() {
         return 1008L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSpellLevel() {
         return 1;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Fires a bolt of magic at your target dealing <skill> d 6 damage + bonus damage. Damage increases at higher levels. Usage: cast missile <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -101,4 +128,5 @@ public class MagicMissile extends Spell {
         return !resist;
     }
 }
+
 

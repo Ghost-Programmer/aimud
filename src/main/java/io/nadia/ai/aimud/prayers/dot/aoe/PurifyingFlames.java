@@ -9,31 +9,61 @@ import io.nadia.ai.aimud.service.*;
 import org.springframework.stereotype.Component;
 import java.util.List;
 
+/**
+ * Implementation of the purifyingflames prayer.
+ */
 @Component
 @DivinePrayer(name = "purifyingflames")
 public class PurifyingFlames extends Prayer {
 
+    /**
+     * Constructs the purifyingflames dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public PurifyingFlames(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getPrayerName() { return "Purifying Flames"; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getPrayerId() { return 2514L; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getPrayerLevel() { return 55; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) { return super.getManaCost(mobile) * 2; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "A level 55 AoE Damage-Over-Time holy prayer. Usage: pray 'purifyingflames' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean pray(Mobile mobile, Prayer prayer, Mobile primaryTarget) {
         if (primaryTarget != null && !this.characterService.canTarget(primaryTarget)) {
@@ -74,3 +104,4 @@ public class PurifyingFlames extends Prayer {
         }
     }
 }
+

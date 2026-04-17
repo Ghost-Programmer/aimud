@@ -7,33 +7,60 @@ import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.spells.Spell;
 
+/**
+ * Implementation of the minor poison spell.
+ */
 @MagicSpell(name = "minor poison")
 public class MinorPoison extends Spell {
 
+    /**
+     * Constructs the minor poison dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public MinorPoison(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSpellName() {
         return "Minor Poison";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSpellId() {
         return 1028L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSpellLevel() {
         return 4;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "A level 4 spell that poisons the target. Damage and duration scale with skill rank. Usage: cast 'minor poison' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -75,3 +102,4 @@ public class MinorPoison extends Spell {
         }
     }
 }
+

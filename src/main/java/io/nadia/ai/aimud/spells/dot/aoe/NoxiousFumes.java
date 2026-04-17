@@ -8,38 +8,68 @@ import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.spells.Spell;
 import java.util.List;
 
+/**
+ * Implementation of the noxiousfumes spell.
+ */
 @MagicSpell(name = "noxiousfumes")
 public class NoxiousFumes extends Spell {
 
+    /**
+     * Constructs the noxiousfumes dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public NoxiousFumes(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSpellName() {
         return "Noxious Fumes";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSpellId() {
         return 1112L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSpellLevel() {
         return 14;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) {
         return super.getManaCost(mobile) * 2;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "An AoE level 14 spell that unleashes Noxious Fumes on targets.. Damage and duration scale with skill rank. Usage: cast 'noxiousfumes' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile primaryTarget) {
         if (primaryTarget != null && !this.characterService.canTarget(primaryTarget)) {
@@ -94,3 +124,4 @@ public class NoxiousFumes extends Spell {
         }
     }
 }
+

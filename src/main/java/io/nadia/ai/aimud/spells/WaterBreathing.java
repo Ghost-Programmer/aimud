@@ -6,28 +6,52 @@ import io.nadia.ai.aimud.model.Mobile;
 import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.service.*;
 
+/**
+ * Implementation of the water breathing spell.
+ */
 @MagicSpell(name = "water breathing")
 public class WaterBreathing extends Spell {
 
+    /**
+     * Constructs the water breathing dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     protected WaterBreathing(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSpellName() {
         return "Water Breathing";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSpellId() {
         return 1011L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSpellLevel() {
         return 10;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Allows the target to breathe underwater. Usage: cast water breathing [target]";
@@ -38,11 +62,17 @@ public class WaterBreathing extends Spell {
         return mobile;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) {
         return 50;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -84,3 +114,4 @@ public class WaterBreathing extends Spell {
         return true;
     }
 }
+

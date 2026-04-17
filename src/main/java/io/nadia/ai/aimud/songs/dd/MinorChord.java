@@ -8,28 +8,55 @@ import io.nadia.ai.aimud.songs.Song;
 import io.nadia.ai.aimud.service.*;
 import org.springframework.stereotype.Component;
 
+/**
+ * Implementation of the minorchord bard song.
+ */
 @Component
 @BardSong(name = "minorchord")
 public class MinorChord extends Song {
 
+    /**
+     * Constructs the minorchord dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public MinorChord(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSongName() { return "Minor Chord"; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSongId() { return 3500L; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSongLevel() { return 5; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "A level 5 direct damage song. Usage: sing 'minorchord' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -92,3 +119,4 @@ public class MinorChord extends Song {
         return !resist;
     }
 }
+

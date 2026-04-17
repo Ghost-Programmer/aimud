@@ -9,31 +9,61 @@ import io.nadia.ai.aimud.service.*;
 import org.springframework.stereotype.Component;
 import java.util.List;
 
+/**
+ * Implementation of the symphonyofdestruction bard song.
+ */
 @Component
 @BardSong(name = "symphonyofdestruction")
 public class SymphonyOfDestruction extends Song {
 
+    /**
+     * Constructs the symphonyofdestruction dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public SymphonyOfDestruction(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSongName() { return "Symphony of Destruction"; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSongId() { return 3507L; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSongLevel() { return 95; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) { return super.getManaCost(mobile) * 2; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "A level 95 AoE direct damage song. Usage: sing 'symphonyofdestruction' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile primaryTarget) {
         if (primaryTarget != null && !this.characterService.canTarget(primaryTarget)) {
@@ -98,3 +128,4 @@ public class SymphonyOfDestruction extends Song {
         return true;
     }
 }
+

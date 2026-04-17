@@ -7,28 +7,52 @@ import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.types.SkillsType;
 
+/**
+ * Implementation of the armor prayer.
+ */
 @DivinePrayer(name = "armor")
 public class ArmorPrayer extends Prayer {
 
+    /**
+     * Constructs the armor dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     protected ArmorPrayer(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getPrayerName() {
         return "Divine Armor";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getPrayerId() {
         return 2000L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getPrayerLevel() {
         return 1;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Protects the target from physical attacks by increasing their armor class through divine power. Usage: pray armor [target]";
@@ -39,6 +63,9 @@ public class ArmorPrayer extends Prayer {
         return mobile;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) {
         int prayerSkill = skillService.getSkillRank(mobile, getPrayerSkillName());
@@ -57,6 +84,9 @@ public class ArmorPrayer extends Prayer {
         return cost;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean pray(Mobile mobile, Prayer prayer, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -106,3 +136,4 @@ public class ArmorPrayer extends Prayer {
         return true;
     }
 }
+

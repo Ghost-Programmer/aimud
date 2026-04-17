@@ -11,30 +11,54 @@ import io.nadia.ai.aimud.service.*;
 @MudCommand(name = "pray 'greater stupify'")
 public class GreaterStupify extends Prayer {
 
+    /**
+     * Constructs the pray 'greater stupify' dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public GreaterStupify(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getPrayerName() {
         return "Greater Stupify";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getPrayerId() {
         return 2024L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getPrayerLevel() {
         return 50;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Lowers Wisdom and Intelligence and Charisma. Magnitude and duration scale with your skill. Usage: pray 'greater stupify' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean pray(Mobile mobile, Prayer prayer, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -96,3 +120,4 @@ public class GreaterStupify extends Prayer {
         }
     }
 }
+

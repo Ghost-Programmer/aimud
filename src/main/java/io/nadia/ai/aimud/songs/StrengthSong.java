@@ -7,28 +7,52 @@ import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.types.SkillsType;
 
+/**
+ * Implementation of the strength bard song.
+ */
 @BardSong(name = "strength")
 public class StrengthSong extends Song {
 
+    /**
+     * Constructs the strength dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     protected StrengthSong(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSongName() {
         return "Song of Strength";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSongId() {
         return 3010L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSongLevel() {
         return 20;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Inspires the target with physical might. Usage: sing strength [target]";
@@ -39,6 +63,9 @@ public class StrengthSong extends Song {
         return mobile;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) {
         int songSkill = skillService.getSkillRank(mobile, getSongSkillName());
@@ -57,6 +84,9 @@ public class StrengthSong extends Song {
         return cost;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -106,3 +136,4 @@ public class StrengthSong extends Song {
         return true;
     }
 }
+

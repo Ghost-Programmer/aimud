@@ -8,34 +8,61 @@ import io.nadia.ai.aimud.service.*;
 
 import java.util.List;
 
+/**
+ * Implementation of the fireball spell.
+ */
 @MagicSpell(name = "fireball")
 public class Fireball extends Spell {
 
+    /**
+     * Constructs the fireball dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public Fireball(SkillService skillService, MobileService mobileService, CharacterService characterService,
                     CommunicationService communicationService, EffectService effectService) {
         super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSpellName() {
         return "Fireball";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSpellId() {
         return 1003L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSpellLevel() {
         return 20;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Unleashes a massive ball of fire that engulfs your target and others around them in flames. Usage: cast fireball <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -137,3 +164,4 @@ public class Fireball extends Spell {
         return true;
     }
 }
+

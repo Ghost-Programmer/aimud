@@ -6,28 +6,52 @@ import io.nadia.ai.aimud.model.Mobile;
 import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.service.*;
 
+/**
+ * Implementation of the invisible spell.
+ */
 @MagicSpell(name = "invisible")
 public class Invisible extends Spell {
 
+    /**
+     * Constructs the invisible dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     protected Invisible(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSpellName() {
         return "Invisible";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSpellId() {
         return 1006L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSpellLevel() {
         return 15;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Renders the target invisible to the naked eye. Usage: cast invisible [target]";
@@ -38,11 +62,17 @@ public class Invisible extends Spell {
         return mobile;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) {
         return 50;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -84,3 +114,4 @@ public class Invisible extends Spell {
         return true;
     }
 }
+

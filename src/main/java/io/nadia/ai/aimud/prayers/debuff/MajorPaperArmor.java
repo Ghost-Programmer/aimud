@@ -11,30 +11,54 @@ import io.nadia.ai.aimud.service.*;
 @MudCommand(name = "pray 'major paperarmor'")
 public class MajorPaperArmor extends Prayer {
 
+    /**
+     * Constructs the pray 'major paperarmor' dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public MajorPaperArmor(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getPrayerName() {
         return "Major PaperArmor";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getPrayerId() {
         return 2030L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getPrayerLevel() {
         return 30;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Lowers Armor. Magnitude and duration scale with your skill. Usage: pray 'major paperarmor' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean pray(Mobile mobile, Prayer prayer, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -96,3 +120,4 @@ public class MajorPaperArmor extends Prayer {
         }
     }
 }
+

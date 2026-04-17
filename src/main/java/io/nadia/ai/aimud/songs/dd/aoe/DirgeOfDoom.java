@@ -9,31 +9,61 @@ import io.nadia.ai.aimud.service.*;
 import org.springframework.stereotype.Component;
 import java.util.List;
 
+/**
+ * Implementation of the dirgeofdoom bard song.
+ */
 @Component
 @BardSong(name = "dirgeofdoom")
 public class DirgeOfDoom extends Song {
 
+    /**
+     * Constructs the dirgeofdoom dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public DirgeOfDoom(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSongName() { return "Dirge of Doom"; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSongId() { return 3506L; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSongLevel() { return 60; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) { return super.getManaCost(mobile) * 2; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "A level 60 AoE direct damage song. Usage: sing 'dirgeofdoom' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile primaryTarget) {
         if (primaryTarget != null && !this.characterService.canTarget(primaryTarget)) {
@@ -98,3 +128,4 @@ public class DirgeOfDoom extends Song {
         return true;
     }
 }
+

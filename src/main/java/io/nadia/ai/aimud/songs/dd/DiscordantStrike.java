@@ -8,28 +8,55 @@ import io.nadia.ai.aimud.songs.Song;
 import io.nadia.ai.aimud.service.*;
 import org.springframework.stereotype.Component;
 
+/**
+ * Implementation of the discordantstrike bard song.
+ */
 @Component
 @BardSong(name = "discordantstrike")
 public class DiscordantStrike extends Song {
 
+    /**
+     * Constructs the discordantstrike dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public DiscordantStrike(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSongName() { return "Discordant Strike"; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSongId() { return 3501L; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSongLevel() { return 25; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "A level 25 direct damage song. Usage: sing 'discordantstrike' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -92,3 +119,4 @@ public class DiscordantStrike extends Song {
         return !resist;
     }
 }
+

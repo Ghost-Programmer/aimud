@@ -8,28 +8,55 @@ import io.nadia.ai.aimud.songs.Song;
 import io.nadia.ai.aimud.service.*;
 import org.springframework.stereotype.Component;
 
+/**
+ * Implementation of the soniclance bard song.
+ */
 @Component
 @BardSong(name = "soniclance")
 public class SonicLance extends Song {
 
+    /**
+     * Constructs the soniclance dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public SonicLance(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSongName() { return "Sonic Lance"; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSongId() { return 3503L; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSongLevel() { return 85; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "A level 85 direct damage song. Usage: sing 'soniclance' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -92,3 +119,4 @@ public class SonicLance extends Song {
         return !resist;
     }
 }
+

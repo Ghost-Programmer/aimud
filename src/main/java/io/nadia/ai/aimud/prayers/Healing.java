@@ -5,29 +5,53 @@ import io.nadia.ai.aimud.model.Mobile;
 import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.service.*;
 
+/**
+ * Implementation of the healing prayer.
+ */
 @DivinePrayer(name = "healing")
 public class Healing extends Prayer {
 
+    /**
+     * Constructs the healing dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     protected Healing(SkillService skillService, MobileService mopbileService, CharacterService characterService,
                       CommunicationService communicationService, EffectService effectService) {
         super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getPrayerName() {
         return "Healing";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getPrayerId() {
         return 2006L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getPrayerLevel() {
         return 25;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Heals a standard amount of hit points. Usage: pray healing [target]";
@@ -38,11 +62,17 @@ public class Healing extends Prayer {
         return mobile;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) {
         return super.getManaCost(mobile) * 10;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean pray(Mobile mobile, Prayer prayer, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -77,3 +107,4 @@ public class Healing extends Prayer {
         return true;
     }
 }
+

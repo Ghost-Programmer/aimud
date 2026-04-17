@@ -9,6 +9,11 @@ import io.nadia.ai.aimud.types.SkillsType;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Abstract foundational class representing entirely all Bard Song skills.
+ * Defines the common execution workflow, mana cost algorithms, target resolution,
+ * and unified damage/effect application logic for musical abilities.
+ */
 public abstract class Song {
 
     protected final SkillService skillService;
@@ -17,6 +22,15 @@ public abstract class Song {
     protected final CommunicationService communicationService;
     protected final EffectService effectService;
 
+    /**
+     * Constructs the foundational Song dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mopbileService       registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     protected Song(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         this.skillService = skillService;
         this.mopbileService = mopbileService;
@@ -25,21 +39,60 @@ public abstract class Song {
         this.effectService = effectService;
     }
 
+    /**
+     * Retrieves the structural, short human-readable name of the song.
+     *
+     * @return the song name
+     */
     abstract public String getSongName();
 
+    /**
+     * Obtains the unique database identifier mapped to this song's foundational skill.
+     *
+     * @return the formal skill ID
+     */
     abstract public Long getSongId();
 
+    /**
+     * Determines the minimum class level required for a character to learn this song.
+     *
+     * @return minimum level constraint
+     */
     abstract public Integer getSongLevel();
 
+    /**
+     * Provides the multi-line help string describing what the song does in-game.
+     *
+     * @return formatting help documentation text
+     */
     abstract public String getDescription();
 
+    /**
+     * The primary invocation hook firing the song's immediate combat or supportive effects.
+     *
+     * @param mobile the actor reciting the song
+     * @param song   the skill payload being enacted
+     * @param target the specific entity receiving the action (may be null for AoE)
+     * @return true if singing succeeded, false if interrupted or failed
+     */
     abstract public boolean sing(Mobile mobile, Song song, Mobile target);
 
-
+    /**
+     * Returns the fully qualified logical name utilized internally in the SkillRegistry.
+     *
+     * @return the internal skill lookup key
+     */
     public String getSongSkillName() {
         return "Song: " + this.getSongName();
     }
 
+    /**
+     * Evaluates the dynamic mana cost required to cast this song based on current skill proficiency.
+     * Note the formula reduces costs slightly as skill increases drastically beyond the minimum requirement.
+     *
+     * @param mobile the actor paying the mana
+     * @return the calculated integer amount of mana to drain
+     */
     public Integer getManaCost(Mobile mobile) {
         int castSkill = skillService.getSkillRank(mobile, SkillsType.SING_SONG);
         int songSkill = skillService.getSkillRank(mobile, getSongSkillName());
@@ -47,10 +100,23 @@ public abstract class Song {
         return 9 + songSkill + (castSkill - getSongLevel());
     }
 
+    /**
+     * Resolves the default designated engagement target for the actor.
+     *
+     * @param mobile the actor looking for a target
+     * @return the actively locked combat target, or null
+     */
     public Mobile getDefaultTarget(Mobile mobile) {
         return mobile.getTarget();
     }
 
+    /**
+     * Resolves a target entity based on explicit user terminal parameter strings, falling back to default.
+     *
+     * @param mobile the actor looking for a target
+     * @param parts  the split command line arguments array
+     * @return the matched target, or null if none are found in the room
+     */
     public Mobile getTarget(Mobile mobile, String[] parts) {
         if (parts.length == 2) {
             return this.getDefaultTarget(mobile);
@@ -77,6 +143,14 @@ public abstract class Song {
         return null;
     }
 
+    /**
+     * Resolves a collection of broad Room targets relative to the invoking actor, adhering to party PVP safety rules.
+     * Avoids striking party members or peaceful NPCs without explicit directives.
+     *
+     * @param caster        the actor emitting the area-of-effect
+     * @param primaryTarget the anchor target establishing the aggression vector
+     * @return list of valid target mobiles within the same room
+     */
     public java.util.List<Mobile> getAoeTargets(Mobile caster, Mobile primaryTarget) {
         java.util.List<Mobile> targets = new java.util.ArrayList<>();
         if (primaryTarget == null) return targets;
@@ -98,6 +172,13 @@ public abstract class Song {
         return targets.stream().filter(this.characterService::canTarget).collect(java.util.stream.Collectors.toList());
     }
 
+    /**
+     * Calculates the baseline raw damage applied by detrimental offensive songs based on the caster's
+     * total class-level and inherent singing proficiency.
+     *
+     * @param mobile the offensive actor
+     * @return calculated integer damage output
+     */
     protected int getDamage(Mobile mobile) {
         int castSkill = skillService.getSkillRank(mobile, SkillsType.SING_SONG);
         int songSkill = skillService.getSkillRank(mobile, getSongSkillName());
@@ -107,10 +188,31 @@ public abstract class Song {
         return new Dice(dice, 6).getTotal() + (9 + songSkill + (castSkill - getSongLevel())) % 6;
     }
 
+    /**
+     * Attaches an effect buff or debuff to the target without assigning an aggressive caster.
+     * Useful for supportive, non-combat song mechanics.
+     *
+     * @param mobile    the recipient entity
+     * @param name      the unique identifier key of the effect
+     * @param effect    the stat modifier payload
+     * @param tickCount duration in game ticks
+     * @return true if the effect applied successfully
+     */
     public boolean applyEffect(Mobile mobile, String name, Effect effect, Integer tickCount) {
         return applyEffect(mobile, null, name, effect, tickCount);
     }
 
+    /**
+     * Attaches an effect buff or debuff to a target, optionally generating threat hate for the caster.
+     * Prioritizes overwriting weaker/shorter identical effects.
+     *
+     * @param mobile    the recipient entity
+     * @param caster    the explicit actor invoking the effect (driving threat generation)
+     * @param name      the unique identifier key of the effect
+     * @param effect    the stat modifier payload
+     * @param tickCount duration in game ticks
+     * @return true if the effect applied successfully
+     */
     public boolean applyEffect(Mobile mobile, Mobile caster, String name, Effect effect, Integer tickCount) {
         if (caster != null) {
             boolean isDebuff = effect.getModifier1() < 0;

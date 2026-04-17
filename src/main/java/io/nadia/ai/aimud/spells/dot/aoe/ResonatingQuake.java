@@ -8,38 +8,68 @@ import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.spells.Spell;
 import java.util.List;
 
+/**
+ * Implementation of the resonatingquake spell.
+ */
 @MagicSpell(name = "resonatingquake")
 public class ResonatingQuake extends Spell {
 
+    /**
+     * Constructs the resonatingquake dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public ResonatingQuake(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSpellName() {
         return "Resonating Quake";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSpellId() {
         return 1118L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSpellLevel() {
         return 55;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) {
         return super.getManaCost(mobile) * 2;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "An AoE level 55 spell that unleashes Resonating Quake on targets.. Damage and duration scale with skill rank. Usage: cast 'resonatingquake' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile primaryTarget) {
         if (primaryTarget != null && !this.characterService.canTarget(primaryTarget)) {
@@ -94,3 +124,4 @@ public class ResonatingQuake extends Spell {
         }
     }
 }
+

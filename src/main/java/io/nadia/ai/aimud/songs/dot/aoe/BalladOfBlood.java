@@ -10,31 +10,61 @@ import io.nadia.ai.aimud.types.SkillsType;
 import org.springframework.stereotype.Component;
 import java.util.List;
 
+/**
+ * Implementation of the balladofblood bard song.
+ */
 @Component
 @BardSong(name = "balladofblood")
 public class BalladOfBlood extends Song {
 
+    /**
+     * Constructs the balladofblood dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public BalladOfBlood(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSongName() { return "Ballad of Blood"; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSongId() { return 3514L; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSongLevel() { return 55; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) { return super.getManaCost(mobile) * 2; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "A level 55 AoE Damage-Over-Time song. Usage: sing 'balladofblood' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile primaryTarget) {
         if (primaryTarget != null && !this.characterService.canTarget(primaryTarget)) {
@@ -78,3 +108,4 @@ public class BalladOfBlood extends Song {
         }
     }
 }
+

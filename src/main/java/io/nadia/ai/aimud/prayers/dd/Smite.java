@@ -8,28 +8,55 @@ import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.service.*;
 import org.springframework.stereotype.Component;
 
+/**
+ * Implementation of the smite prayer.
+ */
 @Component
 @DivinePrayer(name = "smite")
 public class Smite extends Prayer {
 
+    /**
+     * Constructs the smite dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public Smite(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getPrayerName() { return "Smite"; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getPrayerId() { return 2501L; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getPrayerLevel() { return 25; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "A level 25 direct damage prayer. Usage: pray 'smite' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean pray(Mobile mobile, Prayer prayer, Mobile target) {
         if (target != null && !this.characterService.canTarget(target)) {
@@ -92,3 +119,4 @@ public class Smite extends Prayer {
         return !resist;
     }
 }
+

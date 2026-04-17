@@ -8,38 +8,68 @@ import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.spells.Spell;
 import java.util.List;
 
+/**
+ * Implementation of the plaguemiasma spell.
+ */
 @MagicSpell(name = "plaguemiasma")
 public class PlagueMiasma extends Spell {
 
+    /**
+     * Constructs the plaguemiasma dependencies.
+     *
+     * @param skillService         system for evaluating actor skill ranks
+     * @param mobileService        registry of available AI targets
+     * @param characterService     registry of active player characters
+     * @param communicationService emitter for localized chat events
+     * @param effectService        engine handling transient buffs and debuffs
+     */
     public PlagueMiasma(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         super(skillService, mopbileService, characterService, communicationService, effectService);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSpellName() {
         return "Plague Miasma";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long getSpellId() {
         return 1115L;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getSpellLevel() {
         return 90;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getManaCost(Mobile mobile) {
         return super.getManaCost(mobile) * 2;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "An AoE level 90 spell that unleashes Plague Miasma on targets.. Damage and duration scale with skill rank. Usage: cast 'plaguemiasma' <target>";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile primaryTarget) {
         if (primaryTarget != null && !this.characterService.canTarget(primaryTarget)) {
@@ -94,3 +124,4 @@ public class PlagueMiasma extends Spell {
         }
     }
 }
+
