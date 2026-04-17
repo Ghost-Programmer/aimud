@@ -9,6 +9,10 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 
+/**
+ * Represents a definitive effect template (e.g. "Minor Heal", "Poison").
+ * Uses modifier variables dependent on the {@link EffectType} parameters.
+ */
 @Setter
 @Getter
 @Table("effects")
@@ -41,9 +45,21 @@ public class Effect {
     @Column("modified_by")
     private String modifiedBy;
 
+    /**
+     * Default constructor for framework bindings.
+     */
     public Effect() {
     }
 
+    /**
+     * Scaffolding constructor allowing rapid building of basic effect mappings.
+     *
+     * @param effectType mechanical system type
+     * @param modifier1  polymorphic power value 1
+     * @param modifier2  polymorphic power value 2
+     * @param modifier3  polymorphic power value 3
+     * @param modifier4  polymorphic power value 4
+     */
     public Effect(EffectType effectType, int modifier1, int modifier2, int modifier3, int modifier4) {
         this.effectType = effectType;
         this.modifier1 = modifier1;

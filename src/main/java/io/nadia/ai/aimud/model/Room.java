@@ -11,6 +11,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Granular mapping building block defining the MUD's coordinate landscape.
+ * Includes directional linkage graphs (exits), internal items, and present mobiles.
+ */
 @Setter
 @Getter
 @Table("rooms")
@@ -82,9 +86,17 @@ public class Room {
     @Column("modified_by")
     private String modifiedBy;
 
+    /**
+     * Defactor framework constructor.
+     */
     public Room() {
     }
 
+    /**
+     * Expands the comma-separated string mapping representing ground items in the room.
+     *
+     * @return a distinct list of item DB ID references
+     */
     public List<Long> getItemIds() {
         List<Long> itemIds = new ArrayList<>();
         if (items != null && !items.isEmpty()) {
@@ -99,6 +111,11 @@ public class Room {
         return itemIds;
     }
 
+    /**
+     * Expands the comma-separated string mapping representing spawned NPCs/agents in the room.
+     *
+     * @return a distinct list of mobile DB ID references
+     */
     public List<Long> getMobileIds() {
         List<Long> mobileIds = new ArrayList<>();
         if (mobiles != null && !mobiles.isEmpty()) {

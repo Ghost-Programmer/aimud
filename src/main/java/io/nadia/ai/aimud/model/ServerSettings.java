@@ -6,6 +6,10 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 
+/**
+ * High-order application configuration keys defining global uptime behavior.
+ * Evaluated periodically to control things like maintenance modes.
+ */
 @Table("server_settings")
 public record ServerSettings(
         @Id Long id,

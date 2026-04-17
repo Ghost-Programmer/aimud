@@ -5,6 +5,10 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.stream.Stream;
 
+/**
+ * Enumeration mapping out standard bodily equipment slots.
+ * Designates precisely where an Item can be equipped by a Mobile.
+ */
 public enum WearLocation {
     HEAD("Head"),
     CHEST("Chest"),
@@ -24,10 +28,21 @@ public enum WearLocation {
 
     private final String label;
 
+    /**
+     * Constructs a WearLocation.
+     *
+     * @param label the visual text label
+     */
     WearLocation(String label) {
         this.label = label;
     }
 
+    /**
+     * Deserialization fallback function converting arbitrary string content into WearLocations.
+     *
+     * @param value the input string
+     * @return the translated enumeration, or {@link #NONE} if unrecognized
+     */
     @JsonCreator
     public static WearLocation fromString(String value) {
         if (value == null || value.isBlank()) {
@@ -39,6 +54,11 @@ public enum WearLocation {
                 .orElse(NONE);
     }
 
+    /**
+     * Gets the serialized label representation.
+     *
+     * @return the string output
+     */
     @JsonValue
     public String getLabel() {
         return label;

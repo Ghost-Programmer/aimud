@@ -12,6 +12,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Primary root object representing any physical or instantiated item spanning the world.
+ * Ranges from generic trash and currencies up through equipped gear and artifacts.
+ */
 @Setter
 @Getter
 @Table("items")
@@ -73,9 +77,20 @@ public class Item {
     @Column("modified_by")
     private String modifiedBy;
 
+    /**
+     * Required blank empty constructor for data hydration.
+     */
     public Item() {
     }
 
+    /**
+     * Bootstraps a lightweight memory Item template with basic parameters.
+     *
+     * @param itemType     structural type template
+     * @param wearLocation target equipment slot mapping
+     * @param name         display name
+     * @param description  verbose visual representation
+     */
     public Item(ItemType itemType, WearLocation wearLocation, String name, String description) {
         this.itemType = itemType;
         this.wearLocation = wearLocation;

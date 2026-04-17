@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 import java.util.stream.Stream;
 
+/**
+ * Enumeration of general zone/room biomes and settings.
+ * Impacts movement logic, rendering, or specific mechanical systems (e.g. outdoors vs indoors).
+ */
 public enum RoomType {
     INDOORS,
     CITY,
@@ -21,6 +25,12 @@ public enum RoomType {
     UNDERGROUND_DUNGEON,
     UNKNOWN;
 
+    /**
+     * Provides a fallback-safe parser to convert a generic string to its exact RoomType.
+     *
+     * @param value the string text, typically serialized from JSON
+     * @return the evaluated RoomType, or {@link #UNKNOWN} if unparseable
+     */
     @JsonCreator
     public static RoomType fromString(String value) {
         if (value == null || value.isBlank()) {

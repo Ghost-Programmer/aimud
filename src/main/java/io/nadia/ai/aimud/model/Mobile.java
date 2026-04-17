@@ -14,6 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * The core entity representing any physical actor traversing the MUD.
+ * Handles both user-controlled Players and completely automated NPC merchants/monsters.
+ */
 @Getter
 @Setter
 @Table("mobiles")
@@ -234,16 +238,33 @@ public class Mobile {
     @Transient
     private Map<Long, Integer> hateList = new ConcurrentHashMap<>();
 
+    /**
+     * Accumulates hostility score towards a specific attacker.
+     * Used by AI targeting logic.
+     *
+     * @param attackerId target to gain hostility towards
+     * @param amount     flat metric of hostility points
+     */
     public void addHate(Long attackerId, int amount) {
         if (attackerId == null || attackerId.equals(this.getId())) return;
         hateList.merge(attackerId, amount, Integer::sum);
     }
 
+    /**
+     * Fully strikes an attacker from the active hostility threat generation map.
+     *
+     * @param attackerId id to clear from table
+     */
     public void removeHate(Long attackerId) {
         if (attackerId == null) return;
         hateList.remove(attackerId);
     }
 
+    /**
+     * Evaluates the hostility mapping to track down the current primary target.
+     *
+     * @return highest scored hostile threat ID, or null if mapping is empty
+     */
     public Long getHighestHateTargetId() {
         if (hateList.isEmpty()) return null;
         return hateList.entrySet().stream()
@@ -252,100 +273,198 @@ public class Mobile {
                 .orElse(null);
     }
 
+    /**
+     * Standard parameterless generator constructor.
+     */
     public Mobile() {
     }
 
+    /**
+     * Equips an item to the head slot.
+     *
+     * @param head the target item instance, or null to unequip
+     */
     public void setHead(Item head) {
         this.head = head;
         this.headId = head != null ? head.getId() : null;
     }
 
+    /**
+     * Equips an item to the chest slot.
+     *
+     * @param chest the target item instance, or null to unequip
+     */
     public void setChest(Item chest) {
         this.chest = chest;
         this.chestId = chest != null ? chest.getId() : null;
     }
 
+    /**
+     * Equips an item to the generalized legs slot.
+     *
+     * @param legs the target item instance, or null to unequip
+     */
     public void setLegs(Item legs) {
         this.legs = legs;
         this.legsId = legs != null ? legs.getId() : null;
     }
 
+    /**
+     * Equips an item over the feet slot.
+     *
+     * @param feet the target item instance, or null to unequip
+     */
     public void setFeet(Item feet) {
         this.feet = feet;
         this.feetId = feet != null ? feet.getId() : null;
     }
 
+    /**
+     * Equips an item on the arms/shoulder slot.
+     *
+     * @param arms the target item instance, or null to unequip
+     */
     public void setArms(Item arms) {
         this.arms = arms;
         this.armsId = arms != null ? arms.getId() : null;
     }
 
+    /**
+     * Equips an item on the hands (e.g. gloves) slot.
+     *
+     * @param hands the target item instance, or null to unequip
+     */
     public void setHands(Item hands) {
         this.hands = hands;
         this.handsId = hands != null ? hands.getId() : null;
     }
 
+    /**
+     * Equips a ring or trinket to the right finger.
+     *
+     * @param rightFinger the target item instance, or null to unequip
+     */
     public void setRightFinger(Item rightFinger) {
         this.rightFinger = rightFinger;
         this.rightFingerId = rightFinger != null ? rightFinger.getId() : null;
     }
 
+    /**
+     * Equips a ring or trinket to the left finger.
+     *
+     * @param leftFinger the target item instance, or null to unequip
+     */
     public void setLeftFinger(Item leftFinger) {
         this.leftFinger = leftFinger;
         this.leftFingerId = leftFinger != null ? leftFinger.getId() : null;
     }
 
+    /**
+     * Equips a bracer or bracelet to the right wrist slot.
+     *
+     * @param rightWrist the target item instance, or null to unequip
+     */
     public void setRightWrist(Item rightWrist) {
         this.rightWrist = rightWrist;
         this.rightWristId = rightWrist != null ? rightWrist.getId() : null;
     }
 
+    /**
+     * Equips a bracer or bracelet to the left wrist slot.
+     *
+     * @param leftWrist the target item instance, or null to unequip
+     */
     public void setLeftWrist(Item leftWrist) {
         this.leftWrist = leftWrist;
         this.leftWristId = leftWrist != null ? leftWrist.getId() : null;
     }
 
+    /**
+     * Equips an amulet or necklace slot element.
+     *
+     * @param neck the target item instance, or null to unequip
+     */
     public void setNeck(Item neck) {
         this.neck = neck;
         this.neckId = neck != null ? neck.getId() : null;
     }
 
+    /**
+     * Equips jewelry on the left ear.
+     *
+     * @param leftEar the target item instance, or null to unequip
+     */
     public void setLeftEar(Item leftEar) {
         this.leftEar = leftEar;
         this.leftEarId = leftEar != null ? leftEar.getId() : null;
     }
 
+    /**
+     * Equips jewelry on the right ear.
+     *
+     * @param rightEar the target item instance, or null to unequip
+     */
     public void setRightEar(Item rightEar) {
         this.rightEar = rightEar;
         this.rightEarId = rightEar != null ? rightEar.getId() : null;
     }
 
+    /**
+     * Equips masks or visors to the face mapping slot.
+     *
+     * @param face the target item instance, or null to unequip
+     */
     public void setFace(Item face) {
         this.face = face;
         this.faceId = face != null ? face.getId() : null;
     }
 
+    /**
+     * Equips a belt or girdle around the waist.
+     *
+     * @param waist the target item instance, or null to unequip
+     */
     public void setWaist(Item waist) {
         this.waist = waist;
         this.waistId = waist != null ? waist.getId() : null;
     }
 
+    /**
+     * Equips a major main-hand combat implement or standard tool.
+     *
+     * @param primary the target weapon/item instance, or null to unequip
+     */
     public void setPrimary(Item primary) {
         this.primary = primary;
         this.primaryId = primary != null ? primary.getId() : null;
     }
 
+    /**
+     * Equips shields or off-hand secondary swinging weapons.
+     *
+     * @param offhand the target offhand weapon/shield instance, or null to unequip
+     */
     public void setOffhand(Item offhand) {
         this.offhand = offhand;
         this.offhandId = offhand != null ? offhand.getId() : null;
     }
 
+    /**
+     * Checks if the Mobile represents a natively hidden presence within current spell buffs tracking.
+     *
+     * @return true if currently hidden, else false
+     */
     public boolean isHidden() {
         if (this.spellEffects == null) return false;
         return this.spellEffects.stream()
                 .anyMatch(effect -> effect.getEffect() != null && effect.getEffect().getEffectType() == EffectType.HIDDEN);
     }
 
+    /**
+     * Checks the entity's active buffs to identify major invisibility status indicators.
+     *
+     * @return true if fully invisible, else false
+     */
     public boolean isInvisible() {
         if (this.spellEffects == null) return false;
         return this.spellEffects.stream()

@@ -7,6 +7,10 @@ import lombok.Setter;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+/**
+ * Associative tracking linking a specific Mobile to an overarching {@link Faction}.
+ * Governs alignment scaling, vendor prices, and aggro response.
+ */
 @Getter
 @Setter
 @AllArgsConstructor

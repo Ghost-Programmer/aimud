@@ -10,6 +10,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Database entity representing a playable or NPC character archetype (e.g. Warrior, Mage).
+ * Defines stats modifiers and basic starting loadouts.
+ */
 @Setter
 @Getter
 @Table("character_classes")
@@ -56,9 +60,24 @@ public class CharacterClass {
     @Column("modified_by")
     private String modifiedBy;
 
+    /**
+     * Default no-args constructor required for ORM instantiation.
+     */
     public CharacterClass() {
     }
 
+    /**
+     * Parameterized constructor for rapidly scaffolding new classes.
+     *
+     * @param name            character class name
+     * @param description     the class lore description
+     * @param strengthMod     str statistical modification
+     * @param intelligenceMod int statistical modification
+     * @param wisdomMod       wis statistical modification
+     * @param charismaMod     cha statistical modification
+     * @param dexterityMod    dex statistical modification
+     * @param constitutionMod con statistical modification
+     */
     public CharacterClass(String name, String description, int strengthMod, int intelligenceMod, int wisdomMod, int charismaMod, int dexterityMod, int constitutionMod) {
         this.name = name;
         this.description = description;
@@ -70,6 +89,11 @@ public class CharacterClass {
         this.constitutionMod = constitutionMod;
     }
 
+    /**
+     * Parses the comma-separated starting items string into a collection of Item IDs.
+     *
+     * @return a mutable list of Item DB IDs to grant on spawn
+     */
     public List<Long> getStartingItemIds() {
         List<Long> items = new ArrayList<>();
         if (startingItems != null && !startingItems.isEmpty()) {
@@ -84,6 +108,11 @@ public class CharacterClass {
         return items;
     }
 
+    /**
+     * Parses the comma-separated starting skills string into a collection of exact skill names.
+     *
+     * @return a mutable list of active/passive skill definitions to grant on spawn
+     */
     public List<String> getStartingSkillNames() {
         List<String> skills = new ArrayList<>();
         if (startingSkills != null && !startingSkills.isEmpty()) {

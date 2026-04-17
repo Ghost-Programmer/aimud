@@ -15,6 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.annotation.Transient;
 
+/**
+ * High-order definition for a merchant shop accessible within the world.
+ * Contains localized inventories representing wares for sale.
+ */
 @Getter
 @Setter
 @Table("stores")

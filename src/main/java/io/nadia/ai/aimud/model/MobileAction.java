@@ -6,6 +6,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+/**
+ * Represents a predefined scriptable action or behavior entry assigned to a specific Mobile.
+ * Used internally for scheduling conversational AI loops or programmed routines.
+ */
 @Getter
 @Setter
 @Table("mobile_actions")

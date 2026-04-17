@@ -12,6 +12,10 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.time.LocalDateTime;
 import org.springframework.data.annotation.Transient;
 
+/**
+ * Relational join mapping a basic Item template to a specific merchant's {@link Store}.
+ * Used to populate vendor inventories.
+ */
 @Getter
 @Setter
 @Table("store_items")

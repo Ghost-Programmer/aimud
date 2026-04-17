@@ -6,6 +6,10 @@ import lombok.Getter;
 
 import java.util.stream.Stream;
 
+/**
+ * Enumeration detailing the specific classifications for items within the game world.
+ * Contains definitions for property mapping per item category.
+ */
 public enum ItemType {
     WEAPON("Weapon", "Damage Dice Count", "Size of Damage Dice", "Bonus Damage", "Weapon Category"),
     TWO_HANDED_WEAPON("Two Handed Weapon", "Damage Dice Count", "Size of Damage Dice", "Bonus Damage", "Weapon Category"),
@@ -40,6 +44,15 @@ public enum ItemType {
     @Getter
     private final String property4Name;
 
+    /**
+     * Constructs a new ItemType.
+     *
+     * @param label         the human-readable type label
+     * @param property1Name the definition for property slots 1
+     * @param property2Name the definition for property slots 2
+     * @param property3Name the definition for property slots 3
+     * @param property4Name the definition for property slots 4
+     */
     ItemType(String label, String property1Name, String property2Name, String property3Name, String property4Name) {
         this.label = label;
         this.property1Name = property1Name;
@@ -48,6 +61,12 @@ public enum ItemType {
         this.property4Name = property4Name;
     }
 
+    /**
+     * Translates a string input into its corresponding ItemType mapping.
+     *
+     * @param value the string name or label
+     * @return the determined ItemType, or {@link #NONE} if missing or unmatched
+     */
     @JsonCreator
     public static ItemType fromString(String value) {
         if (value == null || value.isBlank()) {
@@ -59,6 +78,11 @@ public enum ItemType {
                 .orElse(NONE);
     }
 
+    /**
+     * Retrieves the human-readable string version of this generic item type.
+     *
+     * @return the textual label
+     */
     @JsonValue
     public String getLabel() {
         return label;

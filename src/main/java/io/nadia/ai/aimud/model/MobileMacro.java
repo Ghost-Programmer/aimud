@@ -6,6 +6,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+/**
+ * Represents a custom-bound key macro stored for a specific Mobile user.
+ * Translates UI quick-bar clicks into executing specific command string logic.
+ */
 @Getter
 @Setter
 @Table("mobile_macros")

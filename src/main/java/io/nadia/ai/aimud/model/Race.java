@@ -8,6 +8,10 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 
+/**
+ * Database entity outlining the permanent ancestral heritage traits of a character.
+ * Maps foundational starting stat modifiers regardless of chosen class specialization.
+ */
 @Setter
 @Getter
 @Table("races")
@@ -48,9 +52,24 @@ public class Race {
     @Column("modified_by")
     private String modifiedBy;
 
+    /**
+     * Basic constructor mapping for data hydration.
+     */
     public Race() {
     }
 
+    /**
+     * Bootstraps a lightweight Race instantiation for testing or scaffolding.
+     *
+     * @param name            character race name
+     * @param description     the race lore description
+     * @param strengthMod     str statistical modification
+     * @param intelligenceMod int statistical modification
+     * @param wisdomMod       wis statistical modification
+     * @param charismaMod     cha statistical modification
+     * @param dexterityMod    dex statistical modification
+     * @param constitutionMod con statistical modification
+     */
     public Race(String name, String description, int strengthMod, int intelligenceMod, int wisdomMod, int charismaMod, int dexterityMod, int constitutionMod) {
         this.name = name;
         this.description = description;

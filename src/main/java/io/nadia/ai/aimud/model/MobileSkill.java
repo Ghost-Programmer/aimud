@@ -5,6 +5,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+/**
+ * Relational join mapping defining the tier or rank of a known capability
+ * for a specific actor.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

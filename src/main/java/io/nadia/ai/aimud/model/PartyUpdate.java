@@ -6,6 +6,10 @@ import lombok.Setter;
 
 import java.util.List;
 
+/**
+ * WebSocket messaging payload used to synchronize group state across multiple clients.
+ * Formatted dynamically whenever player health/mana or roster composition changes.
+ */
 @Getter
 @Setter
 @AllArgsConstructor
@@ -14,6 +18,9 @@ public class PartyUpdate {
     private Long leaderId;
     private List<PartyMemberInfo> members;
 
+    /**
+     * DTO containing lightweight metric readouts representing a single active group member's status.
+     */
     @Getter
     @Setter
     @AllArgsConstructor

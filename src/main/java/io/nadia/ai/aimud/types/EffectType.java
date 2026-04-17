@@ -6,6 +6,10 @@ import lombok.Getter;
 
 import java.util.stream.Stream;
 
+/**
+ * Enumeration representing the varous types of effects that can be applied to mobiles.
+ * Effects might include buffs, damage, teleportation, healing, or other magical outcomes.
+ */
 public enum EffectType {
     BASHING_DAMAGE("Bashing Damage", "Number of Dice", "Size of the Dice", null, null),
     PIERCING_DAMAGE("Piercing Damage", "Number of Dice", "Size of the Dice", null, null),
@@ -46,6 +50,15 @@ public enum EffectType {
     @Getter
     private final String modifier4Name;
 
+    /**
+     * Constructs a new EffectType.
+     *
+     * @param label         the human-readable label
+     * @param modifier1Name the name of the first modifier property
+     * @param modifier2Name the name of the second modifier property
+     * @param modifier3Name the name of the third modifier property
+     * @param modifier4Name the name of the fourth modifier property
+     */
     EffectType(String label, String modifier1Name, String modifier2Name, String modifier3Name, String modifier4Name) {
         this.label = label;
         this.modifier1Name = modifier1Name;
@@ -54,6 +67,13 @@ public enum EffectType {
         this.modifier4Name = modifier4Name;
     }
 
+    /**
+     * Parses a string into the corresponding EffectType.
+     * Matches against either the exact enum name or the human-readable label.
+     *
+     * @param value the string representation of the effect
+     * @return the matching EffectType, or {@link #UNKNOWN} if none matches
+     */
     @JsonCreator
     public static EffectType fromString(String value) {
         if (value == null || value.isBlank()) {
@@ -65,6 +85,11 @@ public enum EffectType {
                 .orElse(UNKNOWN);
     }
 
+    /**
+     * Retrieves the serialized human-readable label.
+     *
+     * @return the string label
+     */
     @JsonValue
     public String getLabel() {
         return label;

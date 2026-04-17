@@ -5,6 +5,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+/**
+ * Link entity tracking an active character's known skill or spell ranks.
+ * Associated specifically with player characters or mobs during instancing.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

@@ -1,5 +1,9 @@
 package io.nadia.ai.aimud.types;
 
+/**
+ * Constant values container representing precisely recognized skill strings strings system-wide.
+ * These are used directly to look up {@link io.nadia.ai.aimud.model.SkillRegistry} entries.
+ */
 public class SkillsType {
     public static final String CAST_MAGIC = "Cast Magic";
     public static final String SAY_PRAYER = "Say Prayer";
@@ -26,6 +30,9 @@ public class SkillsType {
     public static final String TAUNT = "Taunt";
     public static final String VANISH = "Vanish";
 
+    /**
+     * Private constructor to prevent unexpected instantiation of this purely static constants class.
+     */
     private SkillsType() {
         // Private constructor to prevent instantiation
     }
