@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+/**
+ * REST Controller exposing HTTP API endpoints for ServerSettings manipulation.
+ */
 @RestController
 @RequestMapping("/api")
 public class ServerSettingsController {
@@ -17,6 +20,10 @@ public class ServerSettingsController {
         this.repository = repository;
     }
 
+    /**
+     * Handles HTTP GET requests to get settings.
+     * @return dynamic reactive Mono<ServerSettings> response payload
+     */
     @GetMapping("/settings")
     public Mono<ServerSettings> getSettings() {
         return repository.findById(1L)

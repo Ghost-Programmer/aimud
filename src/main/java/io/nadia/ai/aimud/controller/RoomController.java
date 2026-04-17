@@ -13,6 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * REST Controller exposing HTTP API endpoints for Room manipulation.
+ */
 @RestController
 @RequestMapping("/api/rooms")
 @Slf4j
@@ -70,6 +73,11 @@ public class RoomController {
                 });
     }
 
+    /**
+     * Handles HTTP GET requests to get room.
+     * @param id bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Room>> response payload
+     */
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Room>> getRoom(@PathVariable Long id) {
         log.info("REST Request to get room: {}", id);
@@ -78,6 +86,11 @@ public class RoomController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Handles HTTP POST requests to create room.
+     * @param room bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Room>> response payload
+     */
     @PostMapping
     public Mono<ResponseEntity<Room>> createRoom(@RequestBody Room room) {
         log.info("REST Request to create room: {}", room.getName());
@@ -85,6 +98,12 @@ public class RoomController {
                 .map(ResponseEntity::ok);
     }
 
+    /**
+     * Handles HTTP PUT requests to update room.
+     * @param id bound request payload or parameter
+     * @param room bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Room>> response payload
+     */
     @PutMapping("/{id}")
     public Mono<ResponseEntity<Room>> updateRoom(@PathVariable Long id, @RequestBody Room room) {
         log.info("REST Request to update room: {}", id);
@@ -122,6 +141,11 @@ public class RoomController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Handles HTTP DELETE requests to delete room.
+     * @param id bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Void>> response payload
+     */
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Void>> deleteRoom(@PathVariable Long id) {
         log.info("REST Request to delete room: {}", id);

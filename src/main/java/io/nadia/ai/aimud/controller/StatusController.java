@@ -9,6 +9,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
+/**
+ * REST Controller exposing HTTP API endpoints for Status manipulation.
+ */
 @RestController
 @RequestMapping("/api")
 @Slf4j

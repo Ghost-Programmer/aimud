@@ -8,9 +8,16 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
+/**
+ * Application configuration wrapper for McpToolConfig.
+ */
 @Configuration
 public class McpToolConfig {
 
+    /**
+     * Configures the component for mcp tools.
+     * @return constructed List<FunctionCallback> dependency
+     */
     @Bean
     public List<FunctionCallback> mcpTools(McpToolService mcpToolService) {
         return List.of(ToolCallbacks.from(mcpToolService));

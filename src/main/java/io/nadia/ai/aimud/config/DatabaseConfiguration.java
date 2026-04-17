@@ -9,10 +9,17 @@ import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import reactor.core.publisher.Mono;
 
+/**
+ * Application configuration wrapper for DatabaseConfiguration.
+ */
 @Configuration
 @EnableR2dbcAuditing
 public class DatabaseConfiguration {
 
+    /**
+     * Configures the component for auditor provider.
+     * @return constructed ReactiveAuditorAware<String> dependency
+     */
     @Bean
     public ReactiveAuditorAware<String> auditorProvider() {
         return () -> ReactiveSecurityContextHolder.getContext()

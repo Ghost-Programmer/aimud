@@ -10,6 +10,9 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
+/**
+ * Application configuration wrapper for SecurityConfiguration.
+ */
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfiguration {
@@ -20,6 +23,10 @@ public class SecurityConfiguration {
         this.jwtService = jwtService;
     }
 
+    /**
+     * Configures the component for spring security filter chain.
+     * @return constructed SecurityWebFilterChain dependency
+     */
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         return http
@@ -37,6 +44,10 @@ public class SecurityConfiguration {
                 .build();
     }
 
+    /**
+     * Configures the component for password encoder.
+     * @return constructed PasswordEncoder dependency
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();

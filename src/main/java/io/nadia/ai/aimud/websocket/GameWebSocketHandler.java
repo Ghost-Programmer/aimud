@@ -14,6 +14,9 @@ import reactor.core.publisher.Mono;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Configuration and handler bindings for websocket connections via GameWebSocketHandler.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -22,6 +25,10 @@ public class GameWebSocketHandler implements WebSocketHandler {
     private final CommunicationService communicationService;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Socket processing logic for handle.
+     * @return payload of type Mono<Void>
+     */
     @Override
     public Mono<Void> handle(WebSocketSession session) {
         Flux<String> characterUpdates = communicationService.getCharacterUpdates()

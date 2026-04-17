@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * REST Controller exposing HTTP API endpoints for Character manipulation.
+ */
 @RestController
 @RequestMapping("/api/characters")
 @Slf4j
@@ -24,6 +27,11 @@ public class CharacterController {
         this.roomService = roomService;
     }
 
+    /**
+     * Handles HTTP POST requests to select character.
+     * @param id bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Void>> response payload
+     */
     @PostMapping("/{id}/select")
     public Mono<ResponseEntity<Void>> selectCharacter(@PathVariable Long id) {
         log.info("REST Request to select character: {}", id);
@@ -31,12 +39,21 @@ public class CharacterController {
                 .thenReturn(ResponseEntity.ok().build());
     }
 
+    /**
+     * Handles HTTP GET requests to get available characters.
+     * @return dynamic reactive Flux<Mobile> response payload
+     */
     @GetMapping("/available")
     public Flux<Mobile> getAvailableCharacters() {
         log.info("REST Request to get available characters");
         return Flux.fromIterable(characterService.getAvailableCharacters());
     }
 
+    /**
+     * Handles HTTP POST requests to create character.
+     * @param character bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Mobile>> response payload
+     */
     @PostMapping
     public Mono<ResponseEntity<Mobile>> createCharacter(@RequestBody Mobile character) {
         log.info("REST Request to create character: {}", character.getName());
@@ -46,6 +63,10 @@ public class CharacterController {
                 .map(ResponseEntity::ok);
     }
 
+    /**
+     * Handles HTTP GET requests to get characters.
+     * @return dynamic reactive Flux<Mobile> response payload
+     */
     @GetMapping
     public Flux<Mobile> getCharacters() {
         log.info("REST Request to get characters for current user");
@@ -55,6 +76,12 @@ public class CharacterController {
                 .flatMapIterable(list -> list);
     }
 
+    /**
+     * Handles HTTP PUT requests to update character.
+     * @param id bound request payload or parameter
+     * @param character bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Object>> response payload
+     */
     @PutMapping("/{id}")
     public Mono<ResponseEntity<Object>> updateCharacter(@PathVariable Long id, @RequestBody Mobile character) {
         log.info("REST Request to update character: {}", id);
@@ -63,6 +90,11 @@ public class CharacterController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Handles HTTP POST requests to generate character.
+     * @param character bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Mobile>> response payload
+     */
     @PostMapping("/generate")
     public Mono<ResponseEntity<Mobile>> generateCharacter(@RequestBody Mobile character) {
         log.info("REST Request to generate character: {}", character.getName());
@@ -70,6 +102,11 @@ public class CharacterController {
                 .map(ResponseEntity::ok);
     }
 
+    /**
+     * Handles HTTP GET requests to get character.
+     * @param id bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Object>> response payload
+     */
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Object>> getCharacter(@PathVariable Long id) {
         log.info("REST Request to get character: {}", id);
@@ -78,6 +115,12 @@ public class CharacterController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Handles HTTP POST requests to add command.
+     * @param id bound request payload or parameter
+     * @param command bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Void>> response payload
+     */
     @PostMapping("/{id}/command")
     public Mono<ResponseEntity<Void>> addCommand(@PathVariable Long id, @RequestBody String command) {
         log.info("REST Request to add command '{}' to character: {}", command, id);
@@ -85,6 +128,12 @@ public class CharacterController {
         return Mono.just(ResponseEntity.ok().build());
     }
 
+    /**
+     * Handles HTTP POST requests to equip item.
+     * @param id bound request payload or parameter
+     * @param itemId bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Mobile>> response payload
+     */
     @PostMapping("/{id}/equip/{itemId}")
     public Mono<ResponseEntity<Mobile>> equipItem(@PathVariable Long id, @PathVariable Long itemId) {
         log.info("REST Request to equip item {} for character: {}", itemId, id);
@@ -94,6 +143,12 @@ public class CharacterController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Handles HTTP POST requests to unequip item.
+     * @param id bound request payload or parameter
+     * @param slot bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Mobile>> response payload
+     */
     @PostMapping("/{id}/unequip/{slot}")
     public Mono<ResponseEntity<Mobile>> unequipItem(@PathVariable Long id, @PathVariable String slot) {
         log.info("REST Request to unequip slot '{}' for character: {}", slot, id);
@@ -103,6 +158,12 @@ public class CharacterController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Handles HTTP POST requests to drop item.
+     * @param id bound request payload or parameter
+     * @param itemId bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Mobile>> response payload
+     */
     @PostMapping("/{id}/drop/{itemId}")
     public Mono<ResponseEntity<Mobile>> dropItem(@PathVariable Long id, @PathVariable Long itemId) {
         log.info("REST Request to drop item {} for character: {}", itemId, id);
@@ -112,6 +173,11 @@ public class CharacterController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Handles HTTP GET requests to get character room.
+     * @param id bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Object>> response payload
+     */
     @GetMapping("/{id}/room")
     public Mono<ResponseEntity<Object>> getCharacterRoom(@PathVariable Long id) {
         log.info("REST Request to get room for character: {}", id);
@@ -122,12 +188,23 @@ public class CharacterController {
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
 
+    /**
+     * Handles HTTP GET requests to get macros.
+     * @param id bound request payload or parameter
+     * @return dynamic reactive Flux<MobileMacro> response payload
+     */
     @GetMapping("/{id}/macros")
     public Flux<MobileMacro> getMacros(@PathVariable Long id) {
         log.info("REST Request to get macros for character: {}", id);
         return characterService.getCharacterMacros(id);
     }
 
+    /**
+     * Handles HTTP POST requests to save macros.
+     * @param id bound request payload or parameter
+     * @param macros bound request payload or parameter
+     * @return dynamic reactive Flux<MobileMacro> response payload
+     */
     @PostMapping("/{id}/macros")
     public Flux<MobileMacro> saveMacros(@PathVariable Long id, @RequestBody java.util.List<MobileMacro> macros) {
         log.info("REST Request to save macros for character: {}", id);

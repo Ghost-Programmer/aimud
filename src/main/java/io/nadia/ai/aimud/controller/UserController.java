@@ -10,6 +10,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
+/**
+ * REST Controller exposing HTTP API endpoints for User manipulation.
+ */
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -20,6 +23,11 @@ public class UserController {
         this.userService = userService;
     }
 
+    /**
+     * Handles HTTP POST requests to register.
+     * @param user bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Object>> response payload
+     */
     @PostMapping("/register")
     public Mono<ResponseEntity<Object>> register(@RequestBody User user) {
         if (user.getUsername() == null || user.getUsername().isEmpty()) {
@@ -34,6 +42,11 @@ public class UserController {
                 .onErrorResume(IllegalArgumentException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()))));
     }
 
+    /**
+     * Handles HTTP POST requests to login.
+     * @param user bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Object>> response payload
+     */
     @PostMapping("/login")
     public Mono<ResponseEntity<Object>> login(@RequestBody User user) {
         if (user.getUsername() == null || user.getUsername().isEmpty()) {
@@ -58,6 +71,13 @@ public class UserController {
         return userService.getAllUsersWithCharacters();
     }
 
+    /**
+     * Handles HTTP PUT requests to change password.
+     * @param userId bound request payload or parameter
+     * @param Map<String bound request payload or parameter
+     * @param body bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Object>> response payload
+     */
     @PutMapping("/{userId}/password")
     public Mono<ResponseEntity<Object>> changePassword(@PathVariable Long userId, @RequestBody Map<String, String> body) {
         String newPassword = body.get("password");
@@ -70,6 +90,11 @@ public class UserController {
                 .onErrorResume(RuntimeException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", e.getMessage()))));
     }
 
+    /**
+     * Handles HTTP PUT requests to toggle lock.
+     * @param userId bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Object>> response payload
+     */
     @PutMapping("/{userId}/lock")
     public Mono<ResponseEntity<Object>> toggleLock(@PathVariable Long userId) {
         return userService.toggleLock(userId)

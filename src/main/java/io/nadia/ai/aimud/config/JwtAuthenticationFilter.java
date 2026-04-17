@@ -13,6 +13,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 
+/**
+ * Application configuration wrapper for JwtAuthenticationFilter.
+ */
 public class JwtAuthenticationFilter implements WebFilter {
 
     private final JwtService jwtService;
@@ -21,6 +24,10 @@ public class JwtAuthenticationFilter implements WebFilter {
         this.jwtService = jwtService;
     }
 
+    /**
+     * Configures the component for filter.
+     * @return constructed Mono<Void> dependency
+     */
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);

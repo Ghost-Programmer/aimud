@@ -9,6 +9,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
+/**
+ * REST Controller exposing HTTP API endpoints for Faction manipulation.
+ */
 @RestController
 @RequestMapping("/api/factions")
 @RequiredArgsConstructor
@@ -16,6 +19,10 @@ public class FactionController {
 
     private final FactionService factionService;
 
+    /**
+     * Handles HTTP GET requests to get all factions.
+     * @return dynamic reactive Flux<Faction> response payload
+     */
     @GetMapping
     public Flux<Faction> getAllFactions() {
         return factionService.findAllFactions();
@@ -26,6 +33,13 @@ public class FactionController {
         return factionService.getMobileRatings(mobileId);
     }
 
+    /**
+     * Handles HTTP POST requests to update mobile ratings.
+     * @param mobileId bound request payload or parameter
+     * @param Map<Long bound request payload or parameter
+     * @param ratings bound request payload or parameter
+     * @return dynamic reactive Mono<Void> response payload
+     */
     @PostMapping("/mobile/{mobileId}")
     public Mono<Void> updateMobileRatings(@PathVariable Long mobileId, @RequestBody Map<Long, Integer> ratings) {
         return factionService.updateMobileRatings(mobileId, ratings);

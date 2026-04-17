@@ -6,10 +6,17 @@ import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Application configuration wrapper for CacheConfiguration.
+ */
 @Configuration
 @EnableCaching
 public class CacheConfiguration {
 
+    /**
+     * Configures the component for cache manager.
+     * @return constructed CacheManager dependency
+     */
     @Bean
     public CacheManager cacheManager() {
         return new ConcurrentMapCacheManager(

@@ -14,6 +14,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * REST Controller exposing HTTP API endpoints for Item manipulation.
+ */
 @RestController
 @RequestMapping("/api/items")
 @Slf4j
@@ -75,6 +78,11 @@ public class ItemController {
                 });
     }
 
+    /**
+     * Handles HTTP GET requests to get item.
+     * @param id bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Item>> response payload
+     */
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Item>> getItem(@PathVariable Long id) {
         log.info("REST Request to get item: {}", id);
@@ -83,6 +91,11 @@ public class ItemController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Handles HTTP POST requests to create item.
+     * @param item bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Item>> response payload
+     */
     @PostMapping
     public Mono<ResponseEntity<Item>> createItem(@RequestBody Item item) {
         log.info("REST Request to create item: {}", item.getName());
@@ -90,6 +103,12 @@ public class ItemController {
                 .map(ResponseEntity::ok);
     }
 
+    /**
+     * Handles HTTP PUT requests to update item.
+     * @param id bound request payload or parameter
+     * @param item bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Item>> response payload
+     */
     @PutMapping("/{id}")
     public Mono<ResponseEntity<Item>> updateItem(@PathVariable Long id, @RequestBody Item item) {
         log.info("REST Request to update item: {}", id);
@@ -111,6 +130,11 @@ public class ItemController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Handles HTTP DELETE requests to delete item.
+     * @param id bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Void>> response payload
+     */
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Void>> deleteItem(@PathVariable Long id) {
         log.info("REST Request to delete item: {}", id);

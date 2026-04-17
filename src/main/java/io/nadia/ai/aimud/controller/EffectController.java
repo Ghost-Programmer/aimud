@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * REST Controller exposing HTTP API endpoints for Effect manipulation.
+ */
 @RestController
 @RequestMapping("/api/effects")
 @Slf4j
@@ -79,6 +82,11 @@ public class EffectController {
                 });
     }
 
+    /**
+     * Handles HTTP GET requests to get effect.
+     * @param id bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Effect>> response payload
+     */
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Effect>> getEffect(@PathVariable Long id) {
         log.info("REST Request to get effect: {}", id);
@@ -87,6 +95,11 @@ public class EffectController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Handles HTTP POST requests to create effect.
+     * @param effect bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Effect>> response payload
+     */
     @PostMapping
     public Mono<ResponseEntity<Effect>> createEffect(@RequestBody Effect effect) {
         log.info("REST Request to create effect: type={}", effect.getEffectType());
@@ -94,6 +107,12 @@ public class EffectController {
                 .map(ResponseEntity::ok);
     }
 
+    /**
+     * Handles HTTP PUT requests to update effect.
+     * @param id bound request payload or parameter
+     * @param effect bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Effect>> response payload
+     */
     @PutMapping("/{id}")
     public Mono<ResponseEntity<Effect>> updateEffect(@PathVariable Long id, @RequestBody Effect effect) {
         log.info("REST Request to update effect: {}", id);
@@ -111,6 +130,11 @@ public class EffectController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Handles HTTP DELETE requests to delete effect.
+     * @param id bound request payload or parameter
+     * @return dynamic reactive Mono<ResponseEntity<Void>> response payload
+     */
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Void>> deleteEffect(@PathVariable Long id) {
         log.info("REST Request to delete effect: {}", id);

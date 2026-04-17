@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * REST Controller exposing HTTP API endpoints for Store manipulation.
+ */
 @RestController
 @RequestMapping("/api/stores")
 @RequiredArgsConstructor
@@ -20,27 +23,52 @@ public class StoreController {
     private final StoreService storeService;
     private final StoreTradeService storeTradeService;
 
+    /**
+     * Handles HTTP GET requests to get all stores.
+     * @return dynamic reactive Flux<Store> response payload
+     */
     @GetMapping
     public Flux<Store> getAllStores() {
         return storeService.getAllStores();
     }
 
+    /**
+     * Handles HTTP GET requests to get store.
+     * @param id bound request payload or parameter
+     * @return dynamic reactive Mono<Store> response payload
+     */
     @GetMapping("/{id}")
     public Mono<Store> getStore(@PathVariable Long id) {
         return storeService.getStore(id);
     }
 
+    /**
+     * Handles HTTP POST requests to create store.
+     * @param store bound request payload or parameter
+     * @return dynamic reactive Mono<Store> response payload
+     */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<Store> createStore(@RequestBody Store store) {
         return storeService.createStore(store);
     }
 
+    /**
+     * Handles HTTP PUT requests to update store.
+     * @param id bound request payload or parameter
+     * @param store bound request payload or parameter
+     * @return dynamic reactive Mono<Store> response payload
+     */
     @PutMapping("/{id}")
     public Mono<Store> updateStore(@PathVariable Long id, @RequestBody Store store) {
         return storeService.updateStore(id, store);
     }
 
+    /**
+     * Handles HTTP DELETE requests to delete store.
+     * @param id bound request payload or parameter
+     * @return dynamic reactive Mono<Void> response payload
+     */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> deleteStore(@PathVariable Long id) {
@@ -48,17 +76,34 @@ public class StoreController {
     }
 
     // Store Items Endpoints
+    /**
+     * Handles HTTP GET requests to get store items.
+     * @param id bound request payload or parameter
+     * @return dynamic reactive Flux<Item> response payload
+     */
     @GetMapping("/{id}/items")
     public Flux<Item> getStoreItems(@PathVariable Long id) {
         return storeService.getStoreItems(id);
     }
 
+    /**
+     * Handles HTTP POST requests to add store item.
+     * @param id bound request payload or parameter
+     * @param itemId bound request payload or parameter
+     * @return dynamic reactive Mono<StoreItem> response payload
+     */
     @PostMapping("/{id}/items/{itemId}")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<StoreItem> addStoreItem(@PathVariable Long id, @PathVariable Long itemId) {
         return storeService.addStoreItem(id, itemId);
     }
 
+    /**
+     * Handles HTTP DELETE requests to remove store item.
+     * @param id bound request payload or parameter
+     * @param itemId bound request payload or parameter
+     * @return dynamic reactive Mono<Void> response payload
+     */
     @DeleteMapping("/{id}/items/{itemId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> removeStoreItem(@PathVariable Long id, @PathVariable Long itemId) {
