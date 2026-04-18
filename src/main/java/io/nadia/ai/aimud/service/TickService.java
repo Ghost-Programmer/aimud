@@ -12,7 +12,9 @@ import io.nadia.ai.aimud.types.WearLocation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import io.nadia.ai.aimud.types.RoomType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,6 +89,20 @@ public class TickService {
                 if (nextMonth > 13) {
                     nextMonth = 1;
                     nextYear++;
+                }
+
+                if (nextHour == 8 || nextHour == 20) {
+                    final String msg = nextHour == 8 
+                        ? "\nThe sun rises in the east, breaking through the morning mist."
+                        : "\nThe sun slowly sets in the west, and night falls across the realm.";
+                    
+                    Flux.fromIterable(characterService.getAvailableCharacters())
+                        .filter(c -> c.getCurrentRoomId() != null)
+                        .flatMap(c -> roomService.getRoom(c.getCurrentRoomId())
+                            .filter(r -> isOutdoors(r.getRoomType()))
+                            .map(r -> c))
+                        .doOnNext(c -> communicationService.sendTextMessage(c, msg))
+                        .subscribe();
                 }
 
                 io.nadia.ai.aimud.model.ServerSettings updated = new io.nadia.ai.aimud.model.ServerSettings(
@@ -837,5 +853,19 @@ public class TickService {
                     mobile.getCurrentMana(), mobile.getMaxMana(), mobile.getCurrentMana() - oldMana);
         }
         return updated;
+    }
+
+    /**
+     * Determines whether a given room type is considered outdoors.
+     *
+     * @param type the room type to check
+     * @return true if the room is naturally exposed to the sky
+     */
+    private boolean isOutdoors(RoomType type) {
+        if (type == null) return false;
+        return switch (type) {
+            case CITY, FIELD, FOREST, HILLS, MOUNTAIN, DESERT, ARCTIC, SWAMP, WATER_SURFACE, AIR -> true;
+            default -> false;
+        };
     }
 }

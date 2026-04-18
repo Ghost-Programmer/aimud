@@ -22,8 +22,9 @@ public class DateCommand implements Command {
     public Mono<Void> execute(Mobile mobile, String arguments) {
         return configService.getServerSettings()
                 .doOnNext(settings -> {
-                    String timeMessage = String.format("\n\nIt is %02d:00, Day %d of Month %d, Year %d.",
-                            settings.mudHour(), settings.mudDay(), settings.mudMonth(), settings.mudYear());
+                    String phase = settings.isNight() ? "Night" : "Day";
+                    String timeMessage = String.format("\n\nIt is %02d:00 (%s), Day %d of Month %d, Year %d.",
+                            settings.mudHour(), phase, settings.mudDay(), settings.mudMonth(), settings.mudYear());
                     communicationService.sendTextMessage(mobile, timeMessage);
                 })
                 .then();

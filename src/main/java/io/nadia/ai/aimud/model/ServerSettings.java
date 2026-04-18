@@ -25,4 +25,14 @@ public record ServerSettings(
         @LastModifiedDate @Column("modified_at") LocalDateTime modifiedAt,
         @CreatedBy @Column("created_by") String createdBy,
         @LastModifiedBy @Column("modified_by") String modifiedBy) {
+
+    /**
+     * Determines if it is currently night time based on the mudHour.
+     * Night is defined as between 20:00 and 08:00.
+     *
+     * @return true if night, false if day
+     */
+    public boolean isNight() {
+        return mudHour < 8 || mudHour >= 20;
+    }
 }
