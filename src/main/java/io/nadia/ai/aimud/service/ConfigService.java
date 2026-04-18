@@ -46,7 +46,7 @@ public class ConfigService {
     @Cacheable(value = "serverSettings")
     public Mono<ServerSettings> getServerSettings() {
         return serverSettingsRepository.findById(1L)
-                .defaultIfEmpty(new ServerSettings(1L, "AI Mud", true, false, "Undergoing Maintenance", null, null, null, null))
+                .defaultIfEmpty(new ServerSettings(1L, "AI Mud", true, false, "Undergoing Maintenance", 0, 1, 1, 1, null, null, null, null))
                 .cache();
     }
 
@@ -66,6 +66,10 @@ public class ConfigService {
                             settings.allowNewUser(),
                             settings.maintenance(),
                             settings.maintenanceText(),
+                            settings.mudHour(),
+                            settings.mudDay(),
+                            settings.mudMonth(),
+                            settings.mudYear(),
                             existingSettings.createdAt(),
                             existingSettings.modifiedAt(),
                             existingSettings.createdBy(),
@@ -80,6 +84,10 @@ public class ConfigService {
                             settings.allowNewUser(),
                             settings.maintenance(),
                             settings.maintenanceText(),
+                            settings.mudHour(),
+                            settings.mudDay(),
+                            settings.mudMonth(),
+                            settings.mudYear(),
                             null, null, null, null
                     );
                     return serverSettingsRepository.save(newSettings);

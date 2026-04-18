@@ -32,7 +32,10 @@ public class TickService {
     private final SkillService skillService;
     private final RoomService roomService;
     private final FactionService factionService;
+    private final ConfigService configService;
     private final Random random = new Random();
+    
+    private int tickCount = 0;
 
     /**
      * Constructs a new TickService.
@@ -44,8 +47,9 @@ public class TickService {
      * @param skillService         the skill service
      * @param roomService          the room service
      * @param factionService       the faction service
+     * @param configService        the configuration service
      */
-    public TickService(CharacterService characterService, MobileService mobileService, CommandService commandService, CommunicationService communicationService, SkillService skillService, RoomService roomService, FactionService factionService) {
+    public TickService(CharacterService characterService, MobileService mobileService, CommandService commandService, CommunicationService communicationService, SkillService skillService, RoomService roomService, FactionService factionService, ConfigService configService) {
         this.characterService = characterService;
         this.mobileService = mobileService;
         this.commandService = commandService;
@@ -53,6 +57,7 @@ public class TickService {
         this.skillService = skillService;
         this.roomService = roomService;
         this.factionService = factionService;
+        this.configService = configService;
     }
 
     /**
@@ -62,6 +67,42 @@ public class TickService {
      */
     @Scheduled(fixedRate = 2000)
     public void processTick() {
+        tickCount++;
+        if (tickCount >= 30) {
+            tickCount = 0;
+            configService.getServerSettings().flatMap(settings -> {
+                int nextHour = settings.mudHour() + 1;
+                int nextDay = settings.mudDay();
+                int nextMonth = settings.mudMonth();
+                int nextYear = settings.mudYear();
+
+                if (nextHour >= 24) {
+                    nextHour = 0;
+                    nextDay++;
+                }
+                if (nextDay > 28) {
+                    nextDay = 1;
+                    nextMonth++;
+                }
+                if (nextMonth > 13) {
+                    nextMonth = 1;
+                    nextYear++;
+                }
+
+                io.nadia.ai.aimud.model.ServerSettings updated = new io.nadia.ai.aimud.model.ServerSettings(
+                    settings.id(),
+                    settings.serverName(),
+                    settings.allowNewUser(),
+                    settings.maintenance(),
+                    settings.maintenanceText(),
+                    nextHour, nextDay, nextMonth, nextYear,
+                    settings.createdAt(), settings.modifiedAt(),
+                    settings.createdBy(), settings.modifiedBy()
+                );
+                return configService.updateServerSettings(updated);
+            }).subscribe();
+        }
+
         // Process PCs
         List<Mobile> characters = characterService.getAvailableCharacters();
         for (Mobile character : characters) {

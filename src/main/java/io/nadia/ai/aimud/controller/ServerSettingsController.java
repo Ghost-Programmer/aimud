@@ -27,6 +27,6 @@ public class ServerSettingsController {
     @GetMapping("/settings")
     public Mono<ServerSettings> getSettings() {
         return repository.findById(1L)
-                .defaultIfEmpty(new ServerSettings(1L, "AI Mud", true, false, "Undergoing Maintenance", null, null, null, null));
+                .defaultIfEmpty(new ServerSettings(1L, "AI Mud", true, false, "Undergoing Maintenance", 0, 1, 1, 1, null, null, null, null));
     }
 }
