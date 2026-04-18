@@ -19,6 +19,12 @@
         <label for="maintenanceText">Maintenance Text</label>
         <input formControlName="maintenanceText" id="maintenanceText" type="text">
       </div>
+      <div class="stats-grid">
+        <div class="form-group"><label>Hour (0-23)</label><input formControlName="mudHour" type="number" min="0" max="23"></div>
+        <div class="form-group"><label>Day (1-28)</label><input formControlName="mudDay" type="number" min="1" max="28"></div>
+        <div class="form-group"><label>Month (1-13)</label><input formControlName="mudMonth" type="number" min="1" max="13"></div>
+        <div class="form-group"><label>Year</label><input formControlName="mudYear" type="number" min="1"></div>
+      </div>
       <button [disabled]="serverSettingsForm.invalid" class="btn-primary" type="submit">Save Settings</button>
     </form>
   </section>

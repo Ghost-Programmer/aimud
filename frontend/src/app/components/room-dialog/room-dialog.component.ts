@@ -34,6 +34,8 @@ export class RoomDialogComponent implements OnInit {
     westDoorOpen: true,
     upDoorOpen: true,
     downDoorOpen: true,
+    dayLightValue: 0,
+    nightLightValue: 0,
     items: ''
   };
 

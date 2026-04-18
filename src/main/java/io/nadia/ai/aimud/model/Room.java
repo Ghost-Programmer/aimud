@@ -64,6 +64,15 @@ public class Room {
     @Column("down_door_open")
     private boolean downDoorOpen;
 
+    @Column("day_light_value")
+    private Integer dayLightValue;
+
+    @Column("night_light_value")
+    private Integer nightLightValue;
+
+    @Transient
+    private Integer currentLightValue;
+
     @Column("items")
     private String items;
 

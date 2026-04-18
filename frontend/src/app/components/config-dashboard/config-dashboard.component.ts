@@ -55,7 +55,11 @@ export class ConfigDashboardComponent implements OnInit {
       serverName: ['', Validators.required],
       allowNewUser: [true],
       maintenance: [false],
-      maintenanceText: ['']
+      maintenanceText: [''],
+      mudHour: [0, [Validators.required, Validators.min(0), Validators.max(23)]],
+      mudDay: [1, [Validators.required, Validators.min(1), Validators.max(28)]],
+      mudMonth: [1, [Validators.required, Validators.min(1), Validators.max(13)]],
+      mudYear: [1, [Validators.required, Validators.min(1)]]
     });
 
     this.agentForm = this.fb.group({
