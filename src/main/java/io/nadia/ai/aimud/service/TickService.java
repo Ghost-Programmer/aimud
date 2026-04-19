@@ -75,6 +75,22 @@ public class TickService {
         tickCount++;
         if (tickCount >= 30) {
             tickCount = 0;
+            
+            // Apply hourly Hunger and Thirst decay for players synchronously since it's in-memory
+            for (Mobile c : characterService.getAvailableCharacters()) {
+                if (c.getUserId() != null) {
+                    if (c.getHunger() > 0) c.setHunger(c.getHunger() - 1);
+                    if (c.getThirst() > 0) c.setThirst(c.getThirst() - 1);
+                    
+                    if (c.getHunger() == 10) {
+                        communicationService.sendTextMessage(c, "\n\nYou are starting to feel hungry.");
+                    }
+                    if (c.getThirst() == 10) {
+                        communicationService.sendTextMessage(c, "\n\nYou are starting to feel thirsty.");
+                    }
+                }
+            }
+
             configService.getServerSettings().flatMap(settings -> {
                 int nextHour = settings.mudHour() + 1;
                 int nextDay = settings.mudDay();
@@ -94,20 +110,23 @@ public class TickService {
                     nextYear++;
                 }
 
+                Mono<Void> timeMsgMono = Mono.empty();
                 if (nextHour == 8 || nextHour == 20) {
                     final String msg = nextHour == 8 
                         ? "\nThe sun rises in the east, breaking through the morning mist."
                         : "\nThe sun slowly sets in the west, and night falls across the realm.";
                     
-                    Flux.fromIterable(characterService.getAvailableCharacters())
+                    timeMsgMono = Flux.fromIterable(characterService.getAvailableCharacters())
                         .filter(c -> c.getCurrentRoomId() != null)
                         .flatMap(c -> roomService.getRoom(c.getCurrentRoomId())
                             .filter(r -> isOutdoors(r.getRoomType()))
                             .map(r -> c))
                         .doOnNext(c -> communicationService.sendTextMessage(c, msg))
-                        .subscribe();
+                        .then();
+                }
 
-                    // Shift weather occasionally (15% chance per game hour)
+                Mono<Void> weatherMsgMono = Mono.empty();
+                if (nextHour != settings.mudHour()) {
                     if (random.nextFloat() < 0.15f) {
                         WeatherType[] possibleWeathers;
                         switch (currentWeather) {
@@ -121,50 +140,35 @@ public class TickService {
                         }
                         
                         currentWeather = possibleWeathers[random.nextInt(possibleWeathers.length)];
-                        
                         final String weatherMsg = "\n" + currentWeather.getTransitionMessage();
-                        Flux.fromIterable(characterService.getAvailableCharacters())
+                        
+                        weatherMsgMono = Flux.fromIterable(characterService.getAvailableCharacters())
                             .filter(c -> c.getCurrentRoomId() != null)
                             .flatMap(c -> roomService.getRoom(c.getCurrentRoomId())
                                 .filter(r -> isOutdoors(r.getRoomType()))
                                 .map(r -> c))
                             .doOnNext(c -> communicationService.sendTextMessage(c, weatherMsg))
-                            .subscribe();
+                            .then();
                     }
+                }
 
-                    // Proactively recalculate transient Light boundaries for GUI and internal tracking
-                    roomService.getAllRooms()
+                Mono<Void> lightsMono = Mono.empty();
+                if (nextHour != settings.mudHour()) {
+                    lightsMono = roomService.getAllRooms()
                         .flatMap(r -> roomService.calculateCurrentLightValue(r))
-                        .subscribe();
+                        .then();
                 }
 
                 io.nadia.ai.aimud.model.ServerSettings updated = new io.nadia.ai.aimud.model.ServerSettings(
-                    settings.id(),
-                    settings.serverName(),
-                    settings.allowNewUser(),
-                    settings.maintenance(),
-                    settings.maintenanceText(),
+                    settings.id(), settings.serverName(), settings.allowNewUser(), settings.maintenance(), settings.maintenanceText(),
                     nextHour, nextDay, nextMonth, nextYear,
-                    settings.createdAt(), settings.modifiedAt(),
-                    settings.createdBy(), settings.modifiedBy()
+                    settings.createdAt(), settings.modifiedAt(), settings.createdBy(), settings.modifiedBy()
                 );
-                return configService.updateServerSettings(updated);
-            }).subscribe();
-            
-            // Apply hourly Hunger and Thirst decay for players
-            for (Mobile c : characterService.getAvailableCharacters()) {
-                if (c.getUserId() != null) {
-                    if (c.getHunger() > 0) c.setHunger(c.getHunger() - 1);
-                    if (c.getThirst() > 0) c.setThirst(c.getThirst() - 1);
-                    
-                    if (c.getHunger() == 10) {
-                        communicationService.sendTextMessage(c, "\n\nYou are starting to feel hungry.");
-                    }
-                    if (c.getThirst() == 10) {
-                        communicationService.sendTextMessage(c, "\n\nYou are starting to feel thirsty.");
-                    }
-                }
-            }
+                
+                return Mono.when(timeMsgMono, weatherMsgMono, lightsMono, configService.updateServerSettings(updated));
+            })
+            .doOnError(error -> log.error("Critical failure during hourly server bounds tick!", error))
+            .subscribe();
         }
 
         // Process PCs

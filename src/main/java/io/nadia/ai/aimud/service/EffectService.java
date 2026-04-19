@@ -18,16 +18,57 @@ public class EffectService {
 
     private final EffectRepository effectRepository;
     private final CharacterEffectRepository characterEffectRepository;
+    private final org.springframework.r2dbc.core.DatabaseClient databaseClient;
 
     /**
      * Constructs a new EffectService.
      *
      * @param effectRepository          the effect repository
      * @param characterEffectRepository the character effect repository
+     * @param databaseClient            the underlying database client
      */
-    public EffectService(EffectRepository effectRepository, CharacterEffectRepository characterEffectRepository) {
+    public EffectService(EffectRepository effectRepository, CharacterEffectRepository characterEffectRepository, org.springframework.r2dbc.core.DatabaseClient databaseClient) {
         this.effectRepository = effectRepository;
         this.characterEffectRepository = characterEffectRepository;
+        this.databaseClient = databaseClient;
+    }
+
+    /**
+     * Fetches bulk effect listings mapping to an array of items (solving N+1 inefficiencies).
+     *
+     * @param itemIds collection of IDs to pull relations against
+     * @return a flattened Flux of DTO references
+     */
+    public Flux<io.nadia.ai.aimud.model.ItemEffectDTO> getEffectsByItemIds(java.util.List<Long> itemIds) {
+        if (itemIds == null || itemIds.isEmpty()) {
+            return Flux.empty();
+        }
+        
+        String sql = "SELECT ie.item_id as \"item_id\", e.* FROM effects e " +
+                     "JOIN item_effects ie ON e.id = ie.effect_id " +
+                     "WHERE ie.item_id IN (:itemIds)";
+                     
+        return databaseClient.sql(sql)
+                .bind("itemIds", itemIds)
+                .map((row, metadata) -> {
+                    Effect effect = new Effect();
+                    effect.setId(row.get("id", Long.class));
+                    effect.setName(row.get("name", String.class));
+                    String typeStr = row.get("effect_type", String.class);
+                    if (typeStr != null) {
+                        try {
+                            effect.setEffectType(io.nadia.ai.aimud.types.EffectType.valueOf(typeStr));
+                        } catch (Exception ignored) {}
+                    }
+                    if (row.get("modifier_1", Integer.class) != null) effect.setModifier1(row.get("modifier_1", Integer.class));
+                    if (row.get("modifier_2", Integer.class) != null) effect.setModifier2(row.get("modifier_2", Integer.class));
+                    if (row.get("modifier_3", Integer.class) != null) effect.setModifier3(row.get("modifier_3", Integer.class));
+                    if (row.get("modifier_4", Integer.class) != null) effect.setModifier4(row.get("modifier_4", Integer.class));
+                    
+                    Long itemId = row.get("item_id", Long.class);
+                    return new io.nadia.ai.aimud.model.ItemEffectDTO(itemId, effect);
+                })
+                .all();
     }
 
     /**

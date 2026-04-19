@@ -39,7 +39,25 @@ public class ItemService {
     public Flux<Item> getAllItems() {
         log.info("Fetching all items");
         return itemRepository.findAll()
-                .flatMap(this::loadEffectsAndValue)
+                .collectList()
+                .flatMapMany(items -> {
+                    java.util.List<Long> itemIds = items.stream().map(Item::getId).toList();
+                    return effectService.getEffectsByItemIds(itemIds)
+                            .collectList()
+                            .map(itemEffects -> {
+                                java.util.Map<Long, java.util.List<Effect>> effectsByItemId = itemEffects.stream()
+                                        .collect(java.util.stream.Collectors.groupingBy(
+                                                io.nadia.ai.aimud.model.ItemEffectDTO::itemId,
+                                                java.util.stream.Collectors.mapping(io.nadia.ai.aimud.model.ItemEffectDTO::effect, java.util.stream.Collectors.toList())
+                                        ));
+                                for (Item item : items) {
+                                    item.setEffects(effectsByItemId.getOrDefault(item.getId(), java.util.List.of()));
+                                    item.setValue(calculateItemValue(item));
+                                }
+                                return items;
+                            });
+                })
+                .flatMapIterable(items -> items)
                 .cache();
     }
 
