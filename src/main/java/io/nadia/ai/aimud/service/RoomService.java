@@ -22,6 +22,7 @@ public class RoomService {
 
     private final RoomRepository roomRepository;
     private final MobileService mobileService;
+    private final ConfigService configService;
 
     // In-memory storage for transient room items (e.g., corpses) — never persisted to DB
     private final ConcurrentHashMap<Long, CopyOnWriteArrayList<Item>> transientRoomItems = new ConcurrentHashMap<>();
@@ -31,10 +32,12 @@ public class RoomService {
      *
      * @param roomRepository       the room repository
      * @param mobileService        the mobile service
+     * @param configService        the config service
      */
-    public RoomService(RoomRepository roomRepository, @Lazy MobileService mobileService) {
+    public RoomService(RoomRepository roomRepository, @Lazy MobileService mobileService, @Lazy ConfigService configService) {
         this.roomRepository = roomRepository;
         this.mobileService = mobileService;
+        this.configService = configService;
     }
 
     /**
@@ -215,5 +218,20 @@ public class RoomService {
             items.remove(item);
             log.info("Removed transient item '{}' from room {}", item.getName(), roomId);
         }
+    }
+
+    /**
+     * Calculates ambient light in the room by evaluating current server time.
+     * Updates the room's transient currentLightValue and returns it.
+     */
+    public Mono<Integer> calculateCurrentLightValue(Room room) {
+        return this.configService.getServerSettings()
+                .map(settings -> {
+                    Integer dayLight = room.getDayLightValue() != null ? room.getDayLightValue() : 0;
+                    Integer nightLight = room.getNightLightValue() != null ? room.getNightLightValue() : 0;
+                    Integer light = settings.isNight() ? nightLight : dayLight;
+                    room.setCurrentLightValue(light);
+                    return light;
+                });
     }
 }

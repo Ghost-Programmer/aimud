@@ -741,44 +741,88 @@ public class CharacterService {
 
                     character.setCurrentRoomId(room.getId());
                     return this.save(character)
-                            .doOnNext(savedChar -> {
+                            .flatMap(savedChar -> roomService.calculateCurrentLightValue(room).doOnNext(light -> {
                                 if (!savedChar.isHidden() && !savedChar.isInvisible()) {
                                     this.communicationService.roomMessage(savedChar,
                                             "\n" + savedChar.getName() + " has entered the room.");
                                 }
 
-                                this.communicationService.sendTextMessage(character,
-                                        "\n\nYou have entered " + room.getName() + ".");
-                                this.communicationService.sendTextMessage(character,
-                                        "\n\n" + room.getDescription() + "\n\n");
+                                if (light <= 0) {
+                                    this.communicationService.sendTextMessage(character,
+                                            "\n\nYou have entered " + room.getName() + ".");
+                                    this.communicationService.sendTextMessage(character,
+                                            "\n\nIt is pitch black. You cannot see anything.\n\n");
+                                } else {
+                                    this.communicationService.sendTextMessage(character,
+                                            "\n\nYou have entered " + room.getName() + ".");
+                                    
+                                    if (light >= 5) {
+                                        this.communicationService.sendTextMessage(character,
+                                                "\n\n" + room.getDescription() + "\n\n");
+                                    }
 
-                                this.findAllByRoomId(room.getId()).stream()
-                                        .filter(c -> !c.getId().equals(character.getId())).forEach(c -> {
-                                            if (!c.isHidden() && !c.isInvisible()) {
-                                                this.communicationService.sendTextMessage(character,
-                                                        "\nYou see " + c.getName() + " here.");
+                                    if (light == 1) {
+                                        long chars = this.findAllByRoomId(room.getId()).stream()
+                                                .filter(c -> !c.getId().equals(character.getId()) && !c.isHidden() && !c.isInvisible()).count();
+                                        long mobs = this.mobileService.getMobilesInRoom(room.getId()).stream()
+                                                .filter(m -> !m.isHidden() && !m.isInvisible()).count();
+                                        boolean hasItems = !room.getItemIds().isEmpty() || !this.roomService.getTransientItemsInRoom(room.getId()).isEmpty();
+                                        
+                                        if (chars > 0 || mobs > 0 || hasItems) {
+                                            this.communicationService.sendTextMessage(character, "\n\nYou sense something present in the darkness.");
+                                        } else {
+                                            this.communicationService.sendTextMessage(character, "\n\nIt is too dark to make out any details.");
+                                        }
+                                    } else if (light > 1) {
+                                        this.findAllByRoomId(room.getId()).stream()
+                                                .filter(c -> !c.getId().equals(character.getId())).forEach(c -> {
+                                                    if (!c.isHidden() && !c.isInvisible()) {
+                                                        if (light >= 7) {
+                                                            this.communicationService.sendTextMessage(character,
+                                                                    "\nYou see " + c.getName() + " here.");
+                                                        } else {
+                                                            this.communicationService.sendTextMessage(character,
+                                                                    "\nYou see a shadowy creature here.");
+                                                        }
+                                                    }
+                                                });
+
+                                        this.mobileService.getMobilesInRoom(room.getId()).forEach(m -> {
+                                            if (!m.isHidden() && !m.isInvisible()) {
+                                                if (light >= 7) {
+                                                    this.communicationService.sendTextMessage(character,
+                                                            "\nYou see " + m.getName() + " here.");
+                                                    if (m.getStoreId() != null) {
+                                                        this.communicationService.sendTextMessage(character,
+                                                                "\n" + m.getName() + " appears to be running a store.");
+                                                    }
+                                                } else {
+                                                    this.communicationService.sendTextMessage(character,
+                                                            "\nYou see a shadowy creature here.");
+                                                }
                                             }
                                         });
 
-                                this.mobileService.getMobilesInRoom(room.getId()).forEach(m -> {
-                                    if (!m.isHidden() && !m.isInvisible()) {
-                                        this.communicationService.sendTextMessage(character,
-                                                "\nYou see " + m.getName() + " here.");
-                                        if (m.getStoreId() != null) {
-                                            this.communicationService.sendTextMessage(character,
-                                                    "\n" + m.getName() + " appears to be running a store.");
+                                        if (light >= 7) {
+                                            room.getItemIds().stream().forEach(itemId -> {
+                                                this.itemService.getItem(itemId)
+                                                        .doOnNext(item -> this.communicationService.sendTextMessage(character,
+                                                                "\nYou see " + item.getName() + " laying here."))
+                                                        .subscribe();
+                                            });
+                                            this.roomService.getTransientItemsInRoom(room.getId()).forEach(item ->
+                                                    this.communicationService.sendTextMessage(character, "\nYou see " + item.getName() + " laying here."));
+                                        } else {
+                                            room.getItemIds().forEach(itemId -> {
+                                                this.communicationService.sendTextMessage(character, "\nYou see some sort of item laying here.");
+                                            });
+                                            this.roomService.getTransientItemsInRoom(room.getId()).forEach(item ->
+                                                this.communicationService.sendTextMessage(character, "\nYou see some sort of item laying here."));
                                         }
                                     }
-                                });
+                                }
 
                                 this.conversationService.triggerRoomConversations(room.getId());
-
-                                room.getItemIds().stream().forEach(itemId -> {
-                                    this.itemService.getItem(itemId)
-                                            .doOnNext(item -> this.communicationService.sendTextMessage(character,
-                                                    "\nYou see " + item.getName() + " laying here."))
-                                            .subscribe();
-                                });
 
                                 // Process Faction Aggressiveness
                                 java.util.List<Mobile> targets = new ArrayList<>(this.findAllByRoomId(room.getId()));
@@ -811,28 +855,30 @@ public class CharacterService {
                                     }
                                 }
 
-                                List<String> exits = new ArrayList<>();
-                                if (room.getNorthId() != null) {
-                                    exits.add("North");
+                                if (light >= 4) {
+                                    List<String> exits = new ArrayList<>();
+                                    if (room.getNorthId() != null) {
+                                        exits.add("North");
+                                    }
+                                    if (room.getEastId() != null) {
+                                        exits.add("East");
+                                    }
+                                    if (room.getSouthId() != null) {
+                                        exits.add("South");
+                                    }
+                                    if (room.getWestId() != null) {
+                                        exits.add("West");
+                                    }
+                                    if (room.getUpId() != null) {
+                                        exits.add("Up");
+                                    }
+                                    if (room.getDownId() != null) {
+                                        exits.add("Down");
+                                    }
+                                    this.communicationService.sendTextMessage(character,
+                                            "\n\nExits: " + String.join(", ", exits));
                                 }
-                                if (room.getEastId() != null) {
-                                    exits.add("East");
-                                }
-                                if (room.getSouthId() != null) {
-                                    exits.add("South");
-                                }
-                                if (room.getWestId() != null) {
-                                    exits.add("West");
-                                }
-                                if (room.getUpId() != null) {
-                                    exits.add("Up");
-                                }
-                                if (room.getDownId() != null) {
-                                    exits.add("Down");
-                                }
-                                this.communicationService.sendTextMessage(character,
-                                        "\n\nExits: " + String.join(", ", exits));
-                            })
+                            }))
                             .then();
                 });
     }

@@ -103,6 +103,11 @@ public class TickService {
                             .map(r -> c))
                         .doOnNext(c -> communicationService.sendTextMessage(c, msg))
                         .subscribe();
+
+                    // Proactively recalculate transient Light boundaries for GUI and internal tracking
+                    roomService.getAllRooms()
+                        .flatMap(r -> roomService.calculateCurrentLightValue(r))
+                        .subscribe();
                 }
 
                 io.nadia.ai.aimud.model.ServerSettings updated = new io.nadia.ai.aimud.model.ServerSettings(

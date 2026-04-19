@@ -6971,3 +6971,10 @@ ADD COLUMN mud_year INTEGER NOT NULL DEFAULT 1;
 ALTER TABLE rooms
 ADD COLUMN day_light_value INTEGER NOT NULL DEFAULT 0,
 ADD COLUMN night_light_value INTEGER NOT NULL DEFAULT 0;
+
+--changeset jeff:room-light-defaults
+UPDATE rooms SET day_light_value = 7, night_light_value = 5 WHERE room_type IN ('INDOORS', 'CITY');
+UPDATE rooms SET day_light_value = 10, night_light_value = 2 WHERE room_type IN ('FIELD', 'HILLS', 'MOUNTAIN', 'DESERT', 'WATER_SURFACE', 'AIR');
+UPDATE rooms SET day_light_value = 7, night_light_value = 1 WHERE room_type IN ('FOREST', 'SWAMP');
+UPDATE rooms SET day_light_value = 5, night_light_value = 0 WHERE room_type = 'UNDERWATER';
+UPDATE rooms SET day_light_value = 0, night_light_value = 0 WHERE room_type IN ('UNDERGROUND_CAVE', 'UNDERGROUND_DUNGEON');
