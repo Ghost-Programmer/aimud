@@ -55,7 +55,8 @@ public class LookCommand implements Command {
                     }
 
                     // Otherwise, regular room look
-                    return roomService.calculateCurrentLightValue(room).flatMap(light -> {
+                    return roomService.calculateCurrentLightValue(room).flatMap(baseLight -> {
+                        int light = characterService.getEffectiveLight(Mobile, baseLight);
                         if (light <= 0) {
                             communicationService.sendTextMessage(Mobile, "\n\nIt is pitch black. You cannot see anything.");
                             return Mono.empty();

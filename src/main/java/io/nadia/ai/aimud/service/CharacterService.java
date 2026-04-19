@@ -741,7 +741,8 @@ public class CharacterService {
 
                     character.setCurrentRoomId(room.getId());
                     return this.save(character)
-                            .flatMap(savedChar -> roomService.calculateCurrentLightValue(room).doOnNext(light -> {
+                            .flatMap(savedChar -> roomService.calculateCurrentLightValue(room).doOnNext(baseLight -> {
+                                int light = this.getEffectiveLight(savedChar, baseLight);
                                 if (!savedChar.isHidden() && !savedChar.isInvisible()) {
                                     this.communicationService.roomMessage(savedChar,
                                             "\n" + savedChar.getName() + " has entered the room.");
@@ -881,5 +882,21 @@ public class CharacterService {
                             }))
                             .then();
                 });
+    }
+
+    public int getEffectiveLight(Mobile character, int roomLight) {
+        int effectiveLight = roomLight;
+        if (character.getSpellEffects() != null) {
+            for (io.nadia.ai.aimud.model.CharacterEffect ce : character.getSpellEffects()) {
+                if (ce.getEffect() != null) {
+                    if (ce.getEffect().getEffectType() == io.nadia.ai.aimud.types.EffectType.DARKVISION) {
+                        effectiveLight += ce.getEffect().getModifier1();
+                    } else if (ce.getEffect().getEffectType() == io.nadia.ai.aimud.types.EffectType.DARKNESS) {
+                        effectiveLight -= ce.getEffect().getModifier1();
+                    }
+                }
+            }
+        }
+        return Math.max(0, effectiveLight);
     }
 }
