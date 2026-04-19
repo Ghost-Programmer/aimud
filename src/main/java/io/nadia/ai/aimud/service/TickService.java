@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 import io.nadia.ai.aimud.model.PartyUpdate;
+import io.nadia.ai.aimud.types.WeatherType;
 
 @Service
 @Slf4j
@@ -39,6 +40,7 @@ public class TickService {
     private final Random random = new Random();
     
     private int tickCount = 0;
+    private WeatherType currentWeather = WeatherType.SUNNY;
 
     /**
      * Constructs a new TickService.
@@ -104,6 +106,31 @@ public class TickService {
                             .map(r -> c))
                         .doOnNext(c -> communicationService.sendTextMessage(c, msg))
                         .subscribe();
+
+                    // Shift weather occasionally (15% chance per game hour)
+                    if (random.nextFloat() < 0.15f) {
+                        WeatherType[] possibleWeathers;
+                        switch (currentWeather) {
+                            case SUNNY: possibleWeathers = new WeatherType[]{WeatherType.CLOUDY}; break;
+                            case CLOUDY: possibleWeathers = new WeatherType[]{WeatherType.SUNNY, WeatherType.RAIN, WeatherType.SNOW}; break;
+                            case RAIN: possibleWeathers = new WeatherType[]{WeatherType.CLOUDY, WeatherType.STORMS}; break;
+                            case STORMS: possibleWeathers = new WeatherType[]{WeatherType.RAIN, WeatherType.THUNDERSTORMS}; break;
+                            case THUNDERSTORMS: possibleWeathers = new WeatherType[]{WeatherType.STORMS}; break;
+                            case SNOW: possibleWeathers = new WeatherType[]{WeatherType.CLOUDY}; break;
+                            default: possibleWeathers = new WeatherType[]{WeatherType.SUNNY};
+                        }
+                        
+                        currentWeather = possibleWeathers[random.nextInt(possibleWeathers.length)];
+                        
+                        final String weatherMsg = "\n" + currentWeather.getTransitionMessage();
+                        Flux.fromIterable(characterService.getAvailableCharacters())
+                            .filter(c -> c.getCurrentRoomId() != null)
+                            .flatMap(c -> roomService.getRoom(c.getCurrentRoomId())
+                                .filter(r -> isOutdoors(r.getRoomType()))
+                                .map(r -> c))
+                            .doOnNext(c -> communicationService.sendTextMessage(c, weatherMsg))
+                            .subscribe();
+                    }
 
                     // Proactively recalculate transient Light boundaries for GUI and internal tracking
                     roomService.getAllRooms()
@@ -213,6 +240,29 @@ public class TickService {
         communicationService.getRoomChatHistoryMap().values().forEach(history -> {
             history.removeIf(msg -> msg.timestamp().isBefore(fiveMinsAgo));
         });
+
+        // Thunderstorm Lightning Strikes (0.1% chance outdoors per tick)
+        if (currentWeather == WeatherType.THUNDERSTORMS) {
+            Flux.fromIterable(allMobiles)
+                .filter(m -> m.getCurrentRoomId() != null && m.getCurrentHp() > 0 && random.nextFloat() <= 0.001f)
+                .flatMap(m -> roomService.getRoom(m.getCurrentRoomId())
+                    .filter(r -> isOutdoors(r.getRoomType()))
+                    .map(r -> m))
+                .doOnNext(m -> {
+                    int damage = random.nextInt(50) + 25;
+                    m.setCurrentHp(m.getCurrentHp() - damage);
+                    if (m.getUserId() != null) {
+                        communicationService.sendTextMessage(m, "\n\nCRACK! A massive bolt of lightning arcs from the sky and violently strikes you! You take " + damage + " electrical damage!");
+                        communicationService.sendCharacterUpdate(m);
+                    }
+                    communicationService.roomMessage(m, "\n\nA blinding flash of lightning heavily strikes " + m.getName() + " from above!");
+                    
+                    if (m.getCurrentHp() <= 0) {
+                        m.setCurrentHp(0);
+                    }
+                })
+                .subscribe();
+        }
     }
 
     /**
@@ -959,5 +1009,23 @@ public class TickService {
             case CITY, FIELD, FOREST, HILLS, MOUNTAIN, DESERT, ARCTIC, SWAMP, WATER_SURFACE, AIR -> true;
             default -> false;
         };
+    }
+
+    /**
+     * Instantly overrides the weather system and broadcasts to players outside.
+     * @param newWeather The forced weather.
+     */
+    public void changeWeather(io.nadia.ai.aimud.types.WeatherType newWeather) {
+        if (this.currentWeather != newWeather) {
+            this.currentWeather = newWeather;
+            final String weatherMsg = "\n" + currentWeather.getTransitionMessage();
+            Flux.fromIterable(characterService.getAvailableCharacters())
+                .filter(c -> c.getCurrentRoomId() != null)
+                .flatMap(c -> roomService.getRoom(c.getCurrentRoomId())
+                    .filter(r -> isOutdoors(r.getRoomType()))
+                    .map(r -> c))
+                .doOnNext(c -> communicationService.sendTextMessage(c, weatherMsg))
+                .subscribe();
+        }
     }
 }

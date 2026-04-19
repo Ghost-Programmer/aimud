@@ -64,7 +64,7 @@ public class PrayCommand implements Command {
 
         Mobile target = prayer.getTarget(Mobile, parts);
 
-        if (target == null) {
+        if (prayer.requiresTarget() && target == null) {
             communicationService.sendTextMessage(Mobile, "\n\nYou must specify a valid target or be in combat to pray for that.");
             return Mono.empty();
         }

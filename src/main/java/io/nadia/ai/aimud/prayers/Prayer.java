@@ -255,4 +255,14 @@ public abstract class Prayer {
                 });
         return apply.get();
     }
+
+    /**
+     * Determines whether this prayer requires a specific target to be identified
+     * to successfully cast (e.g. healing). Environmental or AoE prayers can override this to false.
+     *
+     * @return true if a target must be locked, false otherwise
+     */
+    public boolean requiresTarget() {
+        return true;
+    }
 }
