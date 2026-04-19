@@ -150,6 +150,21 @@ public class TickService {
                 );
                 return configService.updateServerSettings(updated);
             }).subscribe();
+            
+            // Apply hourly Hunger and Thirst decay for players
+            for (Mobile c : characterService.getAvailableCharacters()) {
+                if (c.getUserId() != null) {
+                    if (c.getHunger() > 0) c.setHunger(c.getHunger() - 1);
+                    if (c.getThirst() > 0) c.setThirst(c.getThirst() - 1);
+                    
+                    if (c.getHunger() == 10) {
+                        communicationService.sendTextMessage(c, "\n\nYou are starting to feel hungry.");
+                    }
+                    if (c.getThirst() == 10) {
+                        communicationService.sendTextMessage(c, "\n\nYou are starting to feel thirsty.");
+                    }
+                }
+            }
         }
 
         // Process PCs
@@ -970,8 +985,30 @@ public class TickService {
             return false;
         }
 
+        boolean skipHpRegen = false;
+
+        // Hunger / Thirst logic for players
+        if (mobile.getUserId() != null) {
+            if (mobile.getHunger() == 0 || mobile.getThirst() == 0) {
+                skipHpRegen = true;
+                int damage = random.nextInt(6) + 1; // 1d6 damage for starvation/dehydration
+                int newHp = Math.max(0, mobile.getCurrentHp() - damage);
+                if (newHp != mobile.getCurrentHp()) {
+                    mobile.setCurrentHp(newHp);
+                    if (mobile.getHunger() == 0) {
+                        communicationService.sendTextMessage(mobile, "\nYou are starving to death! (" + damage + " damage)");
+                    } else {
+                        communicationService.sendTextMessage(mobile, "\nYou are dying of dehydration! (" + damage + " damage)");
+                    }
+                    updated = true;
+                }
+            } else if (mobile.getHunger() < 10 || mobile.getThirst() < 10) {
+                skipHpRegen = true;
+            }
+        }
+
         // Health Regeneration
-        if (mobile.getCurrentHp() < mobile.getMaxHp()) {
+        if (!skipHpRegen && mobile.getCurrentHp() < mobile.getMaxHp()) {
             int newHp = Math.min(mobile.getCurrentHp() + mobile.getHpRegen(), mobile.getMaxHp());
             if (newHp != mobile.getCurrentHp()) {
                 mobile.setCurrentHp(newHp);

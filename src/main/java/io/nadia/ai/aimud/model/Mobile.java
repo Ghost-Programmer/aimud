@@ -70,6 +70,12 @@ public class Mobile {
 
     private int gold;
 
+    @Column("hunger")
+    private int hunger = 100;
+    
+    @Column("thirst")
+    private int thirst = 100;
+
     @Column("hate_healer")
     private boolean hateHealer;
     @Column("hate_debuffer")

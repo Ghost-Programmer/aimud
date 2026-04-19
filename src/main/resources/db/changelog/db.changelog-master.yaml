@@ -25,3 +25,5 @@ databaseChangeLog:
       file: db/changelog/changes/065-add-stackable-items.sql
   - include:
       file: db/changelog/changes/067-vision-effects.sql
+  - include:
+      file: db/changelog/changes/068-mobile-hunger-thirst.sql
