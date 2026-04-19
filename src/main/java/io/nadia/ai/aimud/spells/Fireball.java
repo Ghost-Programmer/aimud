@@ -157,7 +157,7 @@ public class Fireball extends Spell {
             if (tgt.getUserId() != null) {
                 this.characterService.save(tgt).subscribe();
             } else {
-                this.mopbileService.saveMobile(tgt).subscribe();
+                this.mobileService.saveMobile(tgt).subscribe();
             }
         }
 

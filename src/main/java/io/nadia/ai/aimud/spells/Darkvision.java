@@ -12,8 +12,8 @@ import io.nadia.ai.aimud.types.SkillsType;
 @MagicSpell(name = "darkvision")
 public class Darkvision extends Spell {
 
-    protected Darkvision(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mopbileService, characterService, communicationService, effectService);
+    protected Darkvision(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
+        super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
     @Override

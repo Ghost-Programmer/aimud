@@ -22,8 +22,8 @@ public class WisdomSong extends Song {
      * @param communicationService emitter for localized chat events
      * @param effectService        engine handling transient buffs and debuffs
      */
-    protected WisdomSong(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mopbileService, characterService, communicationService, effectService);
+    protected WisdomSong(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
+        super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
     /**

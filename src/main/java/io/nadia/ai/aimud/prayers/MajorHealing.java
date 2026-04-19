@@ -20,9 +20,9 @@ public class MajorHealing extends Prayer {
      * @param communicationService emitter for localized chat events
      * @param effectService        engine handling transient buffs and debuffs
      */
-    protected MajorHealing(SkillService skillService, MobileService mopbileService, CharacterService characterService,
+    protected MajorHealing(SkillService skillService, MobileService mobileService, CharacterService characterService,
                            CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mopbileService, characterService, communicationService, effectService);
+        super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
     /**

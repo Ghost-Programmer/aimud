@@ -21,13 +21,18 @@ public class FactionController {
 
     /**
      * Handles HTTP GET requests to get all factions.
-     * @return dynamic reactive Flux<Faction> response payload
+     * @return dynamic reactive {@code Flux<Faction>} response payload
      */
     @GetMapping
     public Flux<Faction> getAllFactions() {
         return factionService.findAllFactions();
     }
 
+    /**
+     * Handles HTTP GET requests to get mobile faction ratings.
+     * @param mobileId the mobile id
+     * @return dynamic reactive {@code Mono<Map<Long, Integer>>} response payload
+     */
     @GetMapping("/mobile/{mobileId}")
     public Mono<Map<Long, Integer>> getMobileRatings(@PathVariable Long mobileId) {
         return factionService.getMobileRatings(mobileId);
@@ -35,10 +40,9 @@ public class FactionController {
 
     /**
      * Handles HTTP POST requests to update mobile ratings.
-     * @param mobileId bound request payload or parameter
-     * @param Map<Long bound request payload or parameter
-     * @param ratings bound request payload or parameter
-     * @return dynamic reactive Mono<Void> response payload
+     * @param mobileId the mobile id
+     * @param ratings the map of faction ratings
+     * @return dynamic reactive {@code Mono<Void>} response payload
      */
     @PostMapping("/mobile/{mobileId}")
     public Mono<Void> updateMobileRatings(@PathVariable Long mobileId, @RequestBody Map<Long, Integer> ratings) {

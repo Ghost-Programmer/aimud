@@ -27,7 +27,8 @@ public class GameWebSocketHandler implements WebSocketHandler {
 
     /**
      * Socket processing logic for handle.
-     * @return payload of type Mono<Void>
+     * @param session the websocket session to handle
+     * @return payload of type {@code Mono<Void>}
      */
     @Override
     public Mono<Void> handle(WebSocketSession session) {

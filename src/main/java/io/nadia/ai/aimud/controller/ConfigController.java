@@ -24,7 +24,7 @@ public class ConfigController {
     // Server Settings
     /**
      * Handles HTTP GET requests to get server settings.
-     * @return dynamic reactive Mono<ServerSettings> response payload
+     * @return dynamic reactive {@code Mono<ServerSettings>} response payload
      */
     @GetMapping("/settings")
     public Mono<ServerSettings> getServerSettings() {
@@ -33,8 +33,8 @@ public class ConfigController {
 
     /**
      * Handles HTTP PUT requests to update server settings.
-     * @param settings bound request payload or parameter
-     * @return dynamic reactive Mono<ServerSettings> response payload
+     * @param settings the updated server settings
+     * @return dynamic reactive {@code Mono<ServerSettings>} response payload
      */
     @PutMapping("/settings")
     public Mono<ServerSettings> updateServerSettings(@RequestBody ServerSettings settings) {
@@ -44,7 +44,7 @@ public class ConfigController {
     // Agents
     /**
      * Handles HTTP GET requests to get all agents.
-     * @return dynamic reactive Flux<Agent> response payload
+     * @return dynamic reactive {@code Flux<Agent>} response payload
      */
     @GetMapping("/agents")
     public Flux<Agent> getAllAgents() {
@@ -53,8 +53,8 @@ public class ConfigController {
 
     /**
      * Handles HTTP POST requests to create agent.
-     * @param agent bound request payload or parameter
-     * @return dynamic reactive Mono<Agent> response payload
+     * @param agent the agent to create
+     * @return dynamic reactive {@code Mono<Agent>} response payload
      */
     @PostMapping("/agents")
     public Mono<Agent> createAgent(@RequestBody Agent agent) {
@@ -63,9 +63,9 @@ public class ConfigController {
 
     /**
      * Handles HTTP PUT requests to update agent.
-     * @param id bound request payload or parameter
-     * @param agent bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Agent>> response payload
+     * @param id the agent id
+     * @param agent the updated agent
+     * @return dynamic reactive {@code Mono<ResponseEntity<Agent>>} response payload
      */
     @PutMapping("/agents/{id}")
     public Mono<ResponseEntity<Agent>> updateAgent(@PathVariable Long id, @RequestBody Agent agent) {
@@ -76,8 +76,8 @@ public class ConfigController {
 
     /**
      * Handles HTTP DELETE requests to delete agent.
-     * @param id bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Void>> response payload
+     * @param id the agent id
+     * @return dynamic reactive {@code Mono<ResponseEntity<Void>>} response payload
      */
     @DeleteMapping("/agents/{id}")
     public Mono<ResponseEntity<Void>> deleteAgent(@PathVariable Long id) {
@@ -88,8 +88,8 @@ public class ConfigController {
     // Races
     /**
      * Handles HTTP GET requests to get all races.
-     * @param playableOnly bound request payload or parameter
-     * @return dynamic reactive Flux<Race> response payload
+     * @param playableOnly whether to return only playable races
+     * @return dynamic reactive {@code Flux<Race>} response payload
      */
     @GetMapping("/races")
     public Flux<Race> getAllRaces(@RequestParam(defaultValue = "false") boolean playableOnly) {
@@ -98,8 +98,8 @@ public class ConfigController {
 
     /**
      * Handles HTTP POST requests to create race.
-     * @param race bound request payload or parameter
-     * @return dynamic reactive Mono<Race> response payload
+     * @param race the race to create
+     * @return dynamic reactive {@code Mono<Race>} response payload
      */
     @PostMapping("/races")
     public Mono<Race> createRace(@RequestBody Race race) {
@@ -108,9 +108,9 @@ public class ConfigController {
 
     /**
      * Handles HTTP PUT requests to update race.
-     * @param id bound request payload or parameter
-     * @param race bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Race>> response payload
+     * @param id the race id
+     * @param race the updated race
+     * @return dynamic reactive {@code Mono<ResponseEntity<Race>>} response payload
      */
     @PutMapping("/races/{id}")
     public Mono<ResponseEntity<Race>> updateRace(@PathVariable Long id, @RequestBody Race race) {
@@ -121,8 +121,8 @@ public class ConfigController {
 
     /**
      * Handles HTTP DELETE requests to delete race.
-     * @param id bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Void>> response payload
+     * @param id the race id
+     * @return dynamic reactive {@code Mono<ResponseEntity<Void>>} response payload
      */
     @DeleteMapping("/races/{id}")
     public Mono<ResponseEntity<Void>> deleteRace(@PathVariable Long id) {
@@ -133,8 +133,8 @@ public class ConfigController {
     // Character Classes
     /**
      * Handles HTTP GET requests to get all character classes.
-     * @param playableOnly bound request payload or parameter
-     * @return dynamic reactive Flux<CharacterClass> response payload
+     * @param playableOnly whether to return only playable character classes
+     * @return dynamic reactive {@code Flux<CharacterClass>} response payload
      */
     @GetMapping("/classes")
     public Flux<CharacterClass> getAllCharacterClasses(@RequestParam(defaultValue = "false") boolean playableOnly) {
@@ -143,8 +143,8 @@ public class ConfigController {
 
     /**
      * Handles HTTP POST requests to create character class.
-     * @param characterClass bound request payload or parameter
-     * @return dynamic reactive Mono<CharacterClass> response payload
+     * @param characterClass the character class to create
+     * @return dynamic reactive {@code Mono<CharacterClass>} response payload
      */
     @PostMapping("/classes")
     public Mono<CharacterClass> createCharacterClass(@RequestBody CharacterClass characterClass) {
@@ -153,9 +153,9 @@ public class ConfigController {
 
     /**
      * Handles HTTP PUT requests to update character class.
-     * @param id bound request payload or parameter
-     * @param characterClass bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<CharacterClass>> response payload
+     * @param id the character class id
+     * @param characterClass the updated character class
+     * @return dynamic reactive {@code Mono<ResponseEntity<CharacterClass>>} response payload
      */
     @PutMapping("/classes/{id}")
     public Mono<ResponseEntity<CharacterClass>> updateCharacterClass(@PathVariable Long id, @RequestBody CharacterClass characterClass) {
@@ -166,8 +166,8 @@ public class ConfigController {
 
     /**
      * Handles HTTP DELETE requests to delete character class.
-     * @param id bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Void>> response payload
+     * @param id the character class id
+     * @return dynamic reactive {@code Mono<ResponseEntity<Void>>} response payload
      */
     @DeleteMapping("/classes/{id}")
     public Mono<ResponseEntity<Void>> deleteCharacterClass(@PathVariable Long id) {
@@ -178,7 +178,7 @@ public class ConfigController {
     // Skills Registry
     /**
      * Handles HTTP GET requests to get all skills.
-     * @return dynamic reactive Flux<SkillRegistry> response payload
+     * @return dynamic reactive {@code Flux<SkillRegistry>} response payload
      */
     @GetMapping("/skills")
     public Flux<SkillRegistry> getAllSkills() {

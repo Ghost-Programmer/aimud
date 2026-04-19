@@ -22,8 +22,8 @@ public class CriticalSonic extends Spell {
      * @param communicationService emitter for localized chat events
      * @param effectService        engine handling transient buffs and debuffs
      */
-    public CriticalSonic(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mopbileService, characterService, communicationService, effectService);
+    public CriticalSonic(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
+        super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
     /**

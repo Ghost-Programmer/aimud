@@ -29,8 +29,8 @@ public class CharacterController {
 
     /**
      * Handles HTTP POST requests to select character.
-     * @param id bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Void>> response payload
+     * @param id the character id
+     * @return dynamic reactive {@code Mono<ResponseEntity<Void>>} response payload
      */
     @PostMapping("/{id}/select")
     public Mono<ResponseEntity<Void>> selectCharacter(@PathVariable Long id) {
@@ -41,7 +41,7 @@ public class CharacterController {
 
     /**
      * Handles HTTP GET requests to get available characters.
-     * @return dynamic reactive Flux<Mobile> response payload
+     * @return dynamic reactive {@code Flux<Mobile>} response payload
      */
     @GetMapping("/available")
     public Flux<Mobile> getAvailableCharacters() {
@@ -51,8 +51,8 @@ public class CharacterController {
 
     /**
      * Handles HTTP POST requests to create character.
-     * @param character bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Mobile>> response payload
+     * @param character the character to create
+     * @return dynamic reactive {@code Mono<ResponseEntity<Mobile>>} response payload
      */
     @PostMapping
     public Mono<ResponseEntity<Mobile>> createCharacter(@RequestBody Mobile character) {
@@ -65,7 +65,7 @@ public class CharacterController {
 
     /**
      * Handles HTTP GET requests to get characters.
-     * @return dynamic reactive Flux<Mobile> response payload
+     * @return dynamic reactive {@code Flux<Mobile>} response payload
      */
     @GetMapping
     public Flux<Mobile> getCharacters() {
@@ -78,9 +78,9 @@ public class CharacterController {
 
     /**
      * Handles HTTP PUT requests to update character.
-     * @param id bound request payload or parameter
-     * @param character bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Object>> response payload
+     * @param id the character id
+     * @param character the updated character
+     * @return dynamic reactive {@code Mono<ResponseEntity<Object>>} response payload
      */
     @PutMapping("/{id}")
     public Mono<ResponseEntity<Object>> updateCharacter(@PathVariable Long id, @RequestBody Mobile character) {
@@ -92,8 +92,8 @@ public class CharacterController {
 
     /**
      * Handles HTTP POST requests to generate character.
-     * @param character bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Mobile>> response payload
+     * @param character the base character
+     * @return dynamic reactive {@code Mono<ResponseEntity<Mobile>>} response payload
      */
     @PostMapping("/generate")
     public Mono<ResponseEntity<Mobile>> generateCharacter(@RequestBody Mobile character) {
@@ -104,8 +104,8 @@ public class CharacterController {
 
     /**
      * Handles HTTP GET requests to get character.
-     * @param id bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Object>> response payload
+     * @param id the character id
+     * @return dynamic reactive {@code Mono<ResponseEntity<Object>>} response payload
      */
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Object>> getCharacter(@PathVariable Long id) {
@@ -117,9 +117,9 @@ public class CharacterController {
 
     /**
      * Handles HTTP POST requests to add command.
-     * @param id bound request payload or parameter
-     * @param command bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Void>> response payload
+     * @param id the character id
+     * @param command the command string
+     * @return dynamic reactive {@code Mono<ResponseEntity<Void>>} response payload
      */
     @PostMapping("/{id}/command")
     public Mono<ResponseEntity<Void>> addCommand(@PathVariable Long id, @RequestBody String command) {
@@ -130,9 +130,9 @@ public class CharacterController {
 
     /**
      * Handles HTTP POST requests to equip item.
-     * @param id bound request payload or parameter
-     * @param itemId bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Mobile>> response payload
+     * @param id the character id
+     * @param itemId the item id
+     * @return dynamic reactive {@code Mono<ResponseEntity<Mobile>>} response payload
      */
     @PostMapping("/{id}/equip/{itemId}")
     public Mono<ResponseEntity<Mobile>> equipItem(@PathVariable Long id, @PathVariable Long itemId) {
@@ -145,9 +145,9 @@ public class CharacterController {
 
     /**
      * Handles HTTP POST requests to unequip item.
-     * @param id bound request payload or parameter
-     * @param slot bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Mobile>> response payload
+     * @param id the character id
+     * @param slot the slot to unequip
+     * @return dynamic reactive {@code Mono<ResponseEntity<Mobile>>} response payload
      */
     @PostMapping("/{id}/unequip/{slot}")
     public Mono<ResponseEntity<Mobile>> unequipItem(@PathVariable Long id, @PathVariable String slot) {
@@ -160,9 +160,9 @@ public class CharacterController {
 
     /**
      * Handles HTTP POST requests to drop item.
-     * @param id bound request payload or parameter
-     * @param itemId bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Mobile>> response payload
+     * @param id the character id
+     * @param itemId the item id
+     * @return dynamic reactive {@code Mono<ResponseEntity<Mobile>>} response payload
      */
     @PostMapping("/{id}/drop/{itemId}")
     public Mono<ResponseEntity<Mobile>> dropItem(@PathVariable Long id, @PathVariable Long itemId) {
@@ -175,8 +175,8 @@ public class CharacterController {
 
     /**
      * Handles HTTP GET requests to get character room.
-     * @param id bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Object>> response payload
+     * @param id the character id
+     * @return dynamic reactive {@code Mono<ResponseEntity<Object>>} response payload
      */
     @GetMapping("/{id}/room")
     public Mono<ResponseEntity<Object>> getCharacterRoom(@PathVariable Long id) {
@@ -190,8 +190,8 @@ public class CharacterController {
 
     /**
      * Handles HTTP GET requests to get macros.
-     * @param id bound request payload or parameter
-     * @return dynamic reactive Flux<MobileMacro> response payload
+     * @param id the character id
+     * @return dynamic reactive {@code Flux<MobileMacro>} response payload
      */
     @GetMapping("/{id}/macros")
     public Flux<MobileMacro> getMacros(@PathVariable Long id) {
@@ -201,9 +201,9 @@ public class CharacterController {
 
     /**
      * Handles HTTP POST requests to save macros.
-     * @param id bound request payload or parameter
-     * @param macros bound request payload or parameter
-     * @return dynamic reactive Flux<MobileMacro> response payload
+     * @param id the character id
+     * @param macros the macros
+     * @return dynamic reactive {@code Flux<MobileMacro>} response payload
      */
     @PostMapping("/{id}/macros")
     public Flux<MobileMacro> saveMacros(@PathVariable Long id, @RequestBody java.util.List<MobileMacro> macros) {

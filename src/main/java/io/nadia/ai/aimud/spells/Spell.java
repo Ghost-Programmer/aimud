@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class Spell {
 
     protected final SkillService skillService;
-    protected final MobileService mopbileService;
+    protected final MobileService mobileService;
     protected final CharacterService characterService;
     protected final CommunicationService communicationService;
     protected final EffectService effectService;
@@ -26,14 +26,14 @@ public abstract class Spell {
      * Constructs the foundational Spell dependencies.
      *
      * @param skillService         system for evaluating actor skill ranks
-     * @param mopbileService       registry of available AI targets
+     * @param mobileService       registry of available AI targets
      * @param characterService     registry of active player characters
      * @param communicationService emitter for localized chat events
      * @param effectService        engine handling transient buffs and debuffs
      */
-    protected Spell(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
+    protected Spell(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
         this.skillService = skillService;
-        this.mopbileService = mopbileService;
+        this.mobileService = mobileService;
         this.characterService = characterService;
         this.communicationService = communicationService;
         this.effectService = effectService;
@@ -126,7 +126,7 @@ public abstract class Spell {
 
             String name = parts[2].toLowerCase();
 
-            Mobile target = mopbileService.getMobilesInRoom(mobile.getCurrentRoomId()).stream()
+            Mobile target = mobileService.getMobilesInRoom(mobile.getCurrentRoomId()).stream()
                     .filter(m -> m.getName().toLowerCase().contains(name))
                     .findFirst()
                     .orElse(null);
@@ -168,7 +168,7 @@ public abstract class Spell {
 
         if (primaryTarget.getUserId() == null) {
             // Target is an NPC: affect all NPCs in the room
-            targets.addAll(mopbileService.getMobilesInRoom(caster.getCurrentRoomId()));
+            targets.addAll(mobileService.getMobilesInRoom(caster.getCurrentRoomId()));
         } else {
             // Target is a PC: affect all PCs in the room who are not the caster and not in their party
             Long casterPartyLeader = caster.getPartyLeaderId();

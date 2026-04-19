@@ -123,7 +123,7 @@ public class ShatteringCrescendo extends Song {
             }
 
             if (tgt.getUserId() != null) this.characterService.save(tgt).subscribe();
-            else this.mopbileService.saveMobile(tgt).subscribe();
+            else this.mobileService.saveMobile(tgt).subscribe();
         }
         return true;
     }

@@ -22,8 +22,8 @@ public class MajorCold extends Spell {
      * @param communicationService emitter for localized chat events
      * @param effectService        engine handling transient buffs and debuffs
      */
-    public MajorCold(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mopbileService, characterService, communicationService, effectService);
+    public MajorCold(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
+        super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
     /**

@@ -148,7 +148,7 @@ public class Lightning extends Spell {
         if (target.getUserId() != null) {
             this.characterService.save(target).subscribe();
         } else {
-            this.mopbileService.saveMobile(target).subscribe();
+            this.mobileService.saveMobile(target).subscribe();
         }
 
         return !resist;

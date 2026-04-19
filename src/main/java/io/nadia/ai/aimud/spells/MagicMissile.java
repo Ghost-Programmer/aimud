@@ -22,8 +22,8 @@ public class MagicMissile extends Spell {
      * @param communicationService emitter for localized chat events
      * @param effectService        engine handling transient buffs and debuffs
      */
-    protected MagicMissile(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mopbileService, characterService, communicationService, effectService);
+    protected MagicMissile(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
+        super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
     /**

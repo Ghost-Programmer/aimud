@@ -15,8 +15,8 @@ public class Darkness extends Spell {
 
     private final RoomService roomService;
 
-    public Darkness(SkillService skillService, MobileService mopbileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService, RoomService roomService) {
-        super(skillService, mopbileService, characterService, communicationService, effectService);
+    public Darkness(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService, RoomService roomService) {
+        super(skillService, mobileService, characterService, communicationService, effectService);
         this.roomService = roomService;
     }
 

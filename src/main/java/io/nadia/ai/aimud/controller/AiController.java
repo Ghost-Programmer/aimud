@@ -25,9 +25,8 @@ public class AiController {
 
     /**
      * Handles HTTP POST requests to process prompt.
-     * @param Map<String bound request payload or parameter
-     * @param request bound request payload or parameter
-     * @return dynamic reactive Flux<String> response payload
+     * @param request the request map containing the prompt
+     * @return dynamic reactive {@code Flux<String>} response payload
      */
     @PostMapping(value = "/prompt", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> processPrompt(@RequestBody Map<String, String> request) {

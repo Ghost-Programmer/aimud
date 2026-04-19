@@ -20,9 +20,9 @@ public class ManaTransferSong extends Song {
      * @param communicationService emitter for localized chat events
      * @param effectService        engine handling transient buffs and debuffs
      */
-    protected ManaTransferSong(SkillService skillService, MobileService mopbileService,
+    protected ManaTransferSong(SkillService skillService, MobileService mobileService,
                                CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mopbileService, characterService, communicationService, effectService);
+        super(skillService, mobileService, characterService, communicationService, effectService);
     }
 
     /**
@@ -86,7 +86,7 @@ public class ManaTransferSong extends Song {
         if (leaderId != null) {
             long count = characterService.findAllByRoomId(mobile.getCurrentRoomId()).stream()
                     .filter(m -> leaderId.equals(m.getPartyLeaderId())).count();
-            count += mopbileService.getMobilesInRoom(mobile.getCurrentRoomId()).stream()
+            count += mobileService.getMobilesInRoom(mobile.getCurrentRoomId()).stream()
                     .filter(m -> leaderId.equals(m.getPartyLeaderId())).count();
             partySize = (int) count;
         }

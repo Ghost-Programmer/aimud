@@ -114,7 +114,7 @@ public class MinorSmite extends Prayer {
         }
 
         if (target.getUserId() != null) this.characterService.save(target).subscribe();
-        else this.mopbileService.saveMobile(target).subscribe();
+        else this.mobileService.saveMobile(target).subscribe();
 
         return !resist;
     }

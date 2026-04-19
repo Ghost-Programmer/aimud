@@ -18,7 +18,7 @@ public class DatabaseConfiguration {
 
     /**
      * Configures the component for auditor provider.
-     * @return constructed ReactiveAuditorAware<String> dependency
+     * @return constructed {@code ReactiveAuditorAware<String>} dependency
      */
     @Bean
     public ReactiveAuditorAware<String> auditorProvider() {

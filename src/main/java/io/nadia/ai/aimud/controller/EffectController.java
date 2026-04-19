@@ -27,6 +27,15 @@ public class EffectController {
         this.effectService = effectService;
     }
 
+    /**
+     * Retrieves a paginated list of effects, optionally filtered and sorted.
+     * @param page the zero-based page index
+     * @param size the size of the page to be returned
+     * @param name an optional name filter
+     * @param type an optional effect type filter
+     * @param sort the sorting criteria
+     * @return dynamic reactive {@code Mono<Map<String, Object>>} response payload
+     */
     @GetMapping
     public Mono<Map<String, Object>> getEffects(
             @RequestParam(defaultValue = "0") int page,
@@ -84,8 +93,8 @@ public class EffectController {
 
     /**
      * Handles HTTP GET requests to get effect.
-     * @param id bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Effect>> response payload
+     * @param id the effect id
+     * @return dynamic reactive {@code Mono<ResponseEntity<Effect>>} response payload
      */
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Effect>> getEffect(@PathVariable Long id) {
@@ -97,8 +106,8 @@ public class EffectController {
 
     /**
      * Handles HTTP POST requests to create effect.
-     * @param effect bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Effect>> response payload
+     * @param effect the effect to create
+     * @return dynamic reactive {@code Mono<ResponseEntity<Effect>>} response payload
      */
     @PostMapping
     public Mono<ResponseEntity<Effect>> createEffect(@RequestBody Effect effect) {
@@ -109,9 +118,9 @@ public class EffectController {
 
     /**
      * Handles HTTP PUT requests to update effect.
-     * @param id bound request payload or parameter
-     * @param effect bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Effect>> response payload
+     * @param id the effect id
+     * @param effect the updated effect details
+     * @return dynamic reactive {@code Mono<ResponseEntity<Effect>>} response payload
      */
     @PutMapping("/{id}")
     public Mono<ResponseEntity<Effect>> updateEffect(@PathVariable Long id, @RequestBody Effect effect) {
@@ -132,8 +141,8 @@ public class EffectController {
 
     /**
      * Handles HTTP DELETE requests to delete effect.
-     * @param id bound request payload or parameter
-     * @return dynamic reactive Mono<ResponseEntity<Void>> response payload
+     * @param id the effect id to delete
+     * @return dynamic reactive {@code Mono<ResponseEntity<Void>>} response payload
      */
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Void>> deleteEffect(@PathVariable Long id) {
