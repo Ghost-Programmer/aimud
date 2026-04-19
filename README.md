@@ -82,6 +82,8 @@ All Unit Tests and `IntegrationTests` utilize Mockito and `reactor-test` nativel
 Detailed documentation on classes, mechanics, scaling factors, abilities, and in-game magic can be found in our `/docs/` repository. 
 
 * [**AI Integration Document**](./docs/AI.md) — Complete overview of AI model execution, tool-calling capabilities, and NPC conversational integration.
+* [**Player Dashboard Guide**](./docs/player-dashboard.md) — Walkthrough of the Reactivity of the frontend module, tab controls, and standard active play components.
+* [**Admin Dashboard Guide**](./docs/admin-dashboard.md) — Complete capabilities suite for MUD_ADMIN interactions, LLM configuration hooks, and real-time world-building.
 * [**WebSocket & API Protocol**](./docs/websocket-protocol.md) — Breakdown of the JSON payload contract and real-time streaming architecture.
 * [**Player Commands Reference**](./docs/commands.md) — Complete directory of all valid movements, combat maneuvers, magical commands, and roleplay emotes.
 * [**Database Schema Overview**](./docs/database-schema.md) — Relational mappings, PostgreSQL layout, and explicit enumerated validations.
