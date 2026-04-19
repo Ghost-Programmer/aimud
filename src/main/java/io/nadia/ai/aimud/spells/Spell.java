@@ -145,6 +145,16 @@ public abstract class Spell {
     }
 
     /**
+     * Determines whether this spell requires an explicit target to function.
+     * Most spells require targets, but some environmental spells (like Area of Effect or Room affects) do not.
+     *
+     * @return true if a legitimate target is required, false otherwise
+     */
+    public boolean requiresTarget() {
+        return true;
+    }
+
+    /**
      * Resolves a collection of broad Room targets relative to the invoking actor, adhering to party PVP safety rules.
      * Avoids striking party members or peaceful NPCs without explicit directives.
      *

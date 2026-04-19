@@ -73,6 +73,9 @@ public class Room {
     @Transient
     private Integer currentLightValue;
 
+    @Transient
+    private List<CharacterEffect> effects = new ArrayList<>();
+
     @Column("items")
     private String items;
 

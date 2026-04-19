@@ -38,6 +38,8 @@ public enum EffectType {
     WATER_BREATHING("Water Breathing", null, null, null, null),
     INVISIBLE("Invisible", null, null, null, null),
     HIDDEN("Hidden", null, null, null, null),
+    DARKVISION("Darkvision", "Amount to brighten lights", null, null, null),
+    DARKNESS("Darkness", "Amount to dim lights", null, null, null),
     UNKNOWN("Unknown", null, null, null, null);
 
     private final String label;

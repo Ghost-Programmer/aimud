@@ -4,6 +4,7 @@ import io.nadia.ai.aimud.model.Effect;
 import io.nadia.ai.aimud.model.CharacterEffect;
 import io.nadia.ai.aimud.model.Item;
 import io.nadia.ai.aimud.model.Mobile;
+import io.nadia.ai.aimud.model.Room;
 import io.nadia.ai.aimud.model.Skill;
 import io.nadia.ai.aimud.types.EffectType;
 import io.nadia.ai.aimud.types.ItemType;
@@ -184,6 +185,9 @@ public class TickService {
 
             processFactionAssist(mobile);
         }
+
+        // Process Room Effects
+        roomService.getAllRooms().flatMap(this::processRoomEffects).subscribe();
 
         // Process Party Updates
         List<Mobile> allMobiles = new ArrayList<>(characters);
@@ -815,6 +819,89 @@ public class TickService {
         }
 
         return hpChangedOrRemoved;
+    }
+
+    /**
+     * Processes transient character effects (e.g., ambient light spells) active on a room.
+     * Decrements ticks and recalculates room light boundaries if changed.
+     */
+    private Mono<Void> processRoomEffects(Room room) {
+        if (room.getEffects() == null || room.getEffects().isEmpty()) {
+            return Mono.empty();
+        }
+
+        boolean effectsChanged = false;
+        List<CharacterEffect> newEffects = new ArrayList<>();
+
+        for (CharacterEffect ce : room.getEffects()) {
+            Effect effect = ce.getEffect();
+
+            // Room Area Damage Application
+            if (effect != null && isAreaDamageEffect(effect.getEffectType())) {
+                int numDice = effect.getModifier1();
+                int diceSize = effect.getModifier2();
+                int damage = 0;
+                for (int i = 0; i < numDice; i++) {
+                    damage += random.nextInt(diceSize) + 1;
+                }
+
+                if (damage > 0) {
+                    List<Mobile> roomOccupants = new ArrayList<>(characterService.findAllByRoomId(room.getId()));
+                    roomOccupants.addAll(mobileService.getMobilesInRoom(room.getId()));
+
+                    String damageTypeStr = effect.getEffectType().getLabel().toLowerCase();
+                    for (Mobile occupant : roomOccupants) {
+                        if (occupant.getCurrentHp() <= 0) continue;
+
+                        occupant.setCurrentHp(occupant.getCurrentHp() - damage);
+                        if (ce.getCasterId() != null && !occupant.getId().equals(ce.getCasterId())) {
+                            occupant.addHate(ce.getCasterId(), damage);
+                        }
+                        
+                        if (occupant.getUserId() != null) {
+                            communicationService.sendTextMessage(occupant, "\nThe room surrounds you, dealing " + damage + " " + damageTypeStr + "!");
+                        }
+                        communicationService.roomMessage(occupant, "\n" + occupant.getName() + " takes " + damage + " " + damageTypeStr + " from the room environment!");
+                        
+                        // We must send character update after HP modifies
+                        if (occupant.getUserId() != null) {
+                            communicationService.sendCharacterUpdate(occupant);
+                        }
+
+                        if (occupant.getCurrentHp() <= 0) {
+                            occupant.setCurrentHp(0);
+                        }
+                    }
+                }
+            }
+
+            if (ce.getTickCount() != -1) {
+                ce.setTickCount(ce.getTickCount() - 1);
+                effectsChanged = true;
+                if (ce.getTickCount() <= 0) {
+                    log.debug("Removing expired room effect {} from room {}", effect != null ? effect.getName() : "unknown", room.getId());
+                    continue; // Remove expired effect
+                }
+            }
+            newEffects.add(ce);
+        }
+
+        if (newEffects.size() != room.getEffects().size()) {
+            room.setEffects(newEffects);
+            effectsChanged = true;
+        }
+
+        if (effectsChanged) {
+            return roomService.calculateCurrentLightValue(room).then();
+        }
+
+        return Mono.empty();
+    }
+
+    private boolean isAreaDamageEffect(EffectType type) {
+        return type == EffectType.FIRE_DAMAGE || type == EffectType.COLD_DAMAGE ||
+               type == EffectType.SONIC_DAMAGE || type == EffectType.POISON_DAMAGE ||
+               type == EffectType.ELECTRICAL_DAMAGE;
     }
 
     /**

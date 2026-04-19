@@ -1,0 +1,22 @@
+--changeset jeff:67
+INSERT INTO effects (id, name, effect_type, modifier1, modifier2, modifier3, modifier4) VALUES
+    (3200, 'Darkvision +1', 'DARKVISION', 1, 0, 0, 0),
+    (3201, 'Darkvision +2', 'DARKVISION', 2, 0, 0, 0),
+    (3202, 'Darkvision +3', 'DARKVISION', 3, 0, 0, 0),
+    (3203, 'Darkvision +4', 'DARKVISION', 4, 0, 0, 0),
+    (3204, 'Darkvision +5', 'DARKVISION', 5, 0, 0, 0),
+    (3205, 'Darkvision +6', 'DARKVISION', 6, 0, 0, 0),
+    (3206, 'Darkvision +7', 'DARKVISION', 7, 0, 0, 0),
+    (3207, 'Darkvision +8', 'DARKVISION', 8, 0, 0, 0),
+    (3208, 'Darkvision +9', 'DARKVISION', 9, 0, 0, 0),
+    (3209, 'Darkvision +10', 'DARKVISION', 10, 0, 0, 0),
+    (3210, 'Darkness +1', 'DARKNESS', 1, 0, 0, 0),
+    (3211, 'Darkness +2', 'DARKNESS', 2, 0, 0, 0),
+    (3212, 'Darkness +3', 'DARKNESS', 3, 0, 0, 0),
+    (3213, 'Darkness +4', 'DARKNESS', 4, 0, 0, 0),
+    (3214, 'Darkness +5', 'DARKNESS', 5, 0, 0, 0),
+    (3215, 'Darkness +6', 'DARKNESS', 6, 0, 0, 0),
+    (3216, 'Darkness +7', 'DARKNESS', 7, 0, 0, 0),
+    (3217, 'Darkness +8', 'DARKNESS', 8, 0, 0, 0),
+    (3218, 'Darkness +9', 'DARKNESS', 9, 0, 0, 0),
+    (3219, 'Darkness +10', 'DARKNESS', 10, 0, 0, 0);

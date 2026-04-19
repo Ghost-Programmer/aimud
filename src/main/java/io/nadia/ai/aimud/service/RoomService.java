@@ -2,6 +2,7 @@ package io.nadia.ai.aimud.service;
 
 import io.nadia.ai.aimud.model.Item;
 import io.nadia.ai.aimud.model.Room;
+import io.nadia.ai.aimud.model.CharacterEffect;
 import io.nadia.ai.aimud.repository.RoomRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -230,6 +231,19 @@ public class RoomService {
                     Integer dayLight = room.getDayLightValue() != null ? room.getDayLightValue() : 0;
                     Integer nightLight = room.getNightLightValue() != null ? room.getNightLightValue() : 0;
                     Integer light = settings.isNight() ? nightLight : dayLight;
+
+                    if (room.getEffects() != null) {
+                        for (CharacterEffect ce : room.getEffects()) {
+                            if (ce.getEffect() != null) {
+                                if (io.nadia.ai.aimud.types.EffectType.DARKVISION.equals(ce.getEffect().getEffectType())) {
+                                    light += ce.getEffect().getModifier1();
+                                } else if (io.nadia.ai.aimud.types.EffectType.DARKNESS.equals(ce.getEffect().getEffectType())) {
+                                    light -= ce.getEffect().getModifier1();
+                                }
+                            }
+                        }
+                    }
+
                     room.setCurrentLightValue(light);
                     return light;
                 });
