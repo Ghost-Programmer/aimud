@@ -1,6 +1,8 @@
 package io.nadia.ai.aimud.service;
 
 import io.nadia.ai.aimud.model.Item;
+import io.nadia.ai.aimud.model.CharacterClass;
+import io.nadia.ai.aimud.model.CharacterEffect;
 import io.nadia.ai.aimud.model.Mobile;
 import io.nadia.ai.aimud.model.Skill;
 import io.nadia.ai.aimud.repository.*;
@@ -184,25 +186,43 @@ public class CharacterService {
                                     }
 
                                     return itemsMono.flatMap(c -> {
+                                        Mono<Mobile> skillsMono;
                                         List<String> startingSkills = characterClass.getStartingSkillNames();
                                         if (startingSkills.isEmpty()) {
-                                            return Mono.just(c);
+                                            skillsMono = Mono.just(c);
+                                        } else {
+                                            skillsMono = Flux.fromIterable(startingSkills)
+                                                    .flatMap(skillName -> {
+                                                        Skill skill = new Skill();
+                                                        skill.setCharacterId(c.getId());
+                                                        skill.setName(skillName);
+                                                        skill.setRank(1);
+                                                        return skillRepository.save(skill)
+                                                                .onErrorResume(e -> {
+                                                                    log.error("Failed to add starting skill {} to character {}", skillName, c.getId(), e);
+                                                                    return Mono.empty();
+                                                                });
+                                                    })
+                                                    .then(Mono.just(c));
                                         }
-                                        return Flux.fromIterable(startingSkills)
-                                                .flatMap(skillName -> {
-                                                    Skill skill = new Skill();
-                                                    skill.setCharacterId(c.getId());
-                                                    skill.setName(skillName);
-                                                    skill.setRank(1);
-                                                    return skillRepository.save(skill)
-                                                            .onErrorResume(e -> {
-                                                                log.error(
-                                                                        "Failed to add starting skill {} to character {}",
-                                                                        skillName, c.getId(), e);
-                                                                return Mono.empty();
-                                                            });
-                                                })
-                                                .then(Mono.just(c));
+                                        
+                                        return skillsMono.flatMap(c2 -> 
+                                            databaseClient.sql("SELECT starting_effects FROM races WHERE id = :rId")
+                                                    .bind("rId", c2.getRaceId())
+                                                    .map((row, meta) -> row.get(0, String.class))
+                                                    .one()
+                                                    .flatMap(effs -> {
+                                                        if (effs == null || effs.isEmpty()) return Mono.just(c2);
+                                                        java.util.List<Long> ids = new java.util.ArrayList<>();
+                                                        for (String s : effs.split(",")) {
+                                                            try { ids.add(Long.parseLong(s.trim())); } catch (Exception ignored) {}
+                                                        }
+                                                        return Flux.fromIterable(ids)
+                                                                .flatMap(i -> characterEffectRepository.save(new CharacterEffect(c2.getId(), i, -1)))
+                                                                .then(Mono.just(c2));
+                                                    })
+                                                    .defaultIfEmpty(c2)
+                                        );
                                     });
                                 })
                                 .defaultIfEmpty(savedCharacter);
@@ -900,3 +920,7 @@ public class CharacterService {
         return Math.max(0, effectiveLight);
     }
 }
+
+
+
+

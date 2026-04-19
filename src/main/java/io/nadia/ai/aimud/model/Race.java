@@ -35,6 +35,8 @@ public class Race {
     @Column("npc_only")
     private boolean npcOnly;
     private boolean deleted;
+    @Column("starting_effects")
+    private String startingEffects;
 
     @CreatedDate
     @Column("created_at")
@@ -81,4 +83,22 @@ public class Race {
         this.constitutionMod = constitutionMod;
     }
 
+    /**
+     * Parses the comma-separated starting effects string into a collection of Effect IDs.
+     *
+     * @return a mutable list of Effect DB IDs to grant on spawn as infinite bindings
+     */
+    public java.util.List<Long> getStartingEffectIds() {
+        java.util.List<Long> effects = new java.util.ArrayList<>();
+        if (startingEffects != null && !startingEffects.isEmpty()) {
+            String[] split = startingEffects.split(",");
+            for (String s : split) {
+                try {
+                    effects.add(Long.parseLong(s.trim()));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        return effects;
+    }
 }

@@ -2,6 +2,7 @@ package io.nadia.ai.aimud.service;
 
 import io.nadia.ai.aimud.model.Item;
 import io.nadia.ai.aimud.model.Mobile;
+import io.nadia.ai.aimud.model.CharacterEffect;
 import io.nadia.ai.aimud.model.MobileAction;
 import io.nadia.ai.aimud.model.MobileSkill;
 import io.nadia.ai.aimud.model.Room;
@@ -93,11 +94,33 @@ public class MobileService {
     public Mono<Mobile> saveMobile(Mobile mobile) {
         log.info("Saving mobile: {} (id: {})", mobile.getName(), mobile.getId());
         return mobileRepository.save(mobile)
-                .doOnNext(saved -> {
+                .flatMap(saved -> {
                     // Update in-memory if it's currently active
                     if (saved.getId() != null && activeMobiles.containsKey(saved.getId())) {
                         activeMobiles.put(saved.getId(), saved);
                     }
+                    if (saved.getRaceId() == null) return Mono.just(saved);
+                    
+                    return databaseClient.sql("SELECT starting_effects FROM races WHERE id = :rId")
+                            .bind("rId", saved.getRaceId())
+                            .map((row, meta) -> row.get(0, String.class))
+                            .one()
+                            .flatMap(effs -> {
+                                if (effs == null || effs.isEmpty()) return Mono.just(saved);
+                                java.util.List<Long> ids = new java.util.ArrayList<>();
+                                for (String s : effs.split(",")) {
+                                    try { ids.add(Long.parseLong(s.trim())); } catch (Exception ignored) {}
+                                }
+                                return Flux.fromIterable(ids)
+                                        .flatMap(effId -> databaseClient.sql("INSERT INTO character_effects (character_id, effect_id, tick_count, created_at, modified_at, created_by, modified_by) " +
+                                                "SELECT :cid, :eid, -1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'system', 'system' " +
+                                                "WHERE NOT EXISTS (SELECT 1 FROM character_effects WHERE character_id = :cid AND effect_id = :eid AND tick_count = -1)")
+                                                .bind("cid", saved.getId())
+                                                .bind("eid", effId)
+                                                .fetch().rowsUpdated())
+                                        .then(Mono.just(saved));
+                            })
+                            .defaultIfEmpty(saved);
                 });
     }
 
@@ -416,3 +439,4 @@ public class MobileService {
         }
     }
 }
+
