@@ -48,3 +48,7 @@
 - Note package typo is intentional in current code: `com.aimud.aimud.annontation` (do not silently rename).
 - Frontend service URLs are relative (`/api/...`) and rely on proxy/static hosting; avoid hardcoded hosts.
 - All classes and methods should have comprehensive Javadoc comments.
+- Keep README.md up to date with any changes to the project.
+- Keep AGENTS.md up to date with any changes to the project.
+- Keep docker-compose.yml up to date with any changes to the project.
+- Keep documents in the docs folder up to date with any changes to the project.
