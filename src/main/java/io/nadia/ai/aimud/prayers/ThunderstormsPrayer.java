@@ -10,6 +10,10 @@ import io.nadia.ai.aimud.service.TickService;
 import io.nadia.ai.aimud.types.WeatherType;
 import io.nadia.ai.aimud.annontation.DivinePrayer;
 import org.springframework.stereotype.Component;
+/**
+ * ThunderstormsPrayer standard implementation layer.
+ * Pray for the wrath of thunder and lightning to strike the earth.
+ */
 
 @DivinePrayer(name = "thunderstorms")
 public class ThunderstormsPrayer extends Prayer {

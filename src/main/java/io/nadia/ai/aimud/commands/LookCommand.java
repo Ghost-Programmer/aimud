@@ -12,6 +12,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+/**
+ * LookCommand standard implementation layer.
+ * Look around your current room.
+ */
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,6 +28,13 @@ public class LookCommand implements Command {
     private final MobileService mobileService;
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing look command for Mobile: {}", Mobile.getName());
         String[] parts = commandLine.trim().split("\\s+", 2);

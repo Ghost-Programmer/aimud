@@ -14,6 +14,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;
+/**
+ * TakeCommand standard implementation layer.
+ * Take an item from the room.
+ */
 
 @Slf4j
 @RequiredArgsConstructor
@@ -25,6 +29,13 @@ public class TakeCommand implements Command {
     private final ItemService itemService;
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing take command for Mobile: {}", Mobile.getName());
 

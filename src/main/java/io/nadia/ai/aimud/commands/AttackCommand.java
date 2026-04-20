@@ -11,6 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+/**
+ * AttackCommand standard implementation layer.
+ * Initiates combat with a target.
+ */
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,6 +26,13 @@ public class AttackCommand implements Command {
     private final MobileService mobileService;
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing attack command for Mobile: {}", Mobile.getName());
 

@@ -15,6 +15,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Random;
+/**
+ * BashCommand standard implementation layer.
+ * Bash an opponent with your shield.
+ */
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,6 +32,13 @@ public class BashCommand implements Command {
     private final Random random = new Random();
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing bash command for Mobile: {}", Mobile.getName());
 

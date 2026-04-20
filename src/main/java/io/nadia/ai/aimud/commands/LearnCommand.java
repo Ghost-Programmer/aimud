@@ -12,6 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
+/**
+ * LearnCommand standard implementation layer.
+ * Learn a skill from a book in your inventory.
+ */
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,6 +27,13 @@ public class LearnCommand implements Command {
     private final CharacterService characterService;
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing learn command for Mobile: {}", Mobile.getName());
 

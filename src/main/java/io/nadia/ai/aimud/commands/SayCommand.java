@@ -5,6 +5,10 @@ import io.nadia.ai.aimud.model.Mobile;
 import io.nadia.ai.aimud.service.CommunicationService;
 import org.springframework.context.ApplicationContext;
 import reactor.core.publisher.Mono;
+/**
+ * SayCommand standard implementation layer.
+ * Say something to everyone in the current room.
+ */
 
 @MudCommand(name = "say")
 public class SayCommand implements Command {
@@ -16,6 +20,13 @@ public class SayCommand implements Command {
     }
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile mobile, String arguments) {
         String[] parts = arguments.trim().split("\\s+", 2);
         if (parts.length < 2) {

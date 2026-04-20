@@ -12,6 +12,10 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+/**
+ * PartyCommand standard implementation layer.
+ * Manage your party.
+ */
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,6 +27,13 @@ public class PartyCommand implements Command {
     private final MobileService mobileService;
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile mobile, String commandLine) {
         String[] parts = commandLine.trim().split("\\s+");
 

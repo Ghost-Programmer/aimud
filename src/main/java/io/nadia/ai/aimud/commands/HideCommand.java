@@ -11,6 +11,10 @@ import io.nadia.ai.aimud.types.EffectType;
 import io.nadia.ai.aimud.types.SkillsType;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+/**
+ * HideCommand standard implementation layer.
+ * Attempt to hide yourself in the shadows.
+ */
 
 @Component
 @MudCommand(name = "hide")
@@ -27,6 +31,13 @@ public class HideCommand implements Command {
     }
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile mobile, String command) {
         if (mobile.getUserId() == null) return Mono.empty();
 

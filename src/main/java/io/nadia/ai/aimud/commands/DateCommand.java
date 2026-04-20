@@ -6,6 +6,10 @@ import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.ConfigService;
 import org.springframework.context.ApplicationContext;
 import reactor.core.publisher.Mono;
+/**
+ * DateCommand standard implementation layer.
+ * Check the current in-game date and time.
+ */
 
 @MudCommand(name = "date")
 public class DateCommand implements Command {
@@ -19,6 +23,13 @@ public class DateCommand implements Command {
     }
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile mobile, String arguments) {
         return configService.getServerSettings()
                 .doOnNext(settings -> {

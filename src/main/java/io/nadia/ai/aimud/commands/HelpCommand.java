@@ -9,6 +9,10 @@ import org.springframework.context.annotation.Lazy;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
+/**
+ * HelpCommand standard implementation layer.
+ * Provides help for available commands.
+ */
 
 @Slf4j
 @MudCommand(name = "help")
@@ -22,6 +26,13 @@ public class HelpCommand implements Command {
     }
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         String[] parts = commandLine.trim().split("\\s+", 2);
 

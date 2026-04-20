@@ -12,6 +12,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+/**
+ * TauntCommand standard implementation layer.
+ * Draw the attention of all enemies currently fighting you.
+ */
 
 @MudCommand(name = "taunt")
 public class TauntCommand implements Command {
@@ -29,6 +33,13 @@ public class TauntCommand implements Command {
     }
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile mobile, String arguments) {
         if (mobile.getPhysicalAttack() <= 50) {
             communicationService.sendTextMessage(mobile, "You are not physically strong enough to taunt successfully.");

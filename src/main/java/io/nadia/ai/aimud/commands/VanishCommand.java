@@ -17,6 +17,10 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+/**
+ * VanishCommand standard implementation layer.
+ * Disappear instantly, shedding enemy focus.
+ */
 
 @Component
 @MudCommand(name = "vanish")
@@ -37,6 +41,13 @@ public class VanishCommand implements Command {
     }
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile mobile, String arguments) {
         if (mobile.getUserId() == null) return Mono.empty();
 

@@ -5,6 +5,10 @@ import io.nadia.ai.aimud.model.Mobile;
 import io.nadia.ai.aimud.service.CommunicationService;
 import org.springframework.context.ApplicationContext;
 import reactor.core.publisher.Mono;
+/**
+ * EmoteCommand standard implementation layer.
+ * Perform a physical action or expression.
+ */
 
 @MudCommand(name = "emote")
 public class EmoteCommand implements Command {
@@ -16,6 +20,13 @@ public class EmoteCommand implements Command {
     }
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile mobile, String arguments) {
         String[] parts = arguments.trim().split("\\s+", 2);
         if (parts.length < 2) {

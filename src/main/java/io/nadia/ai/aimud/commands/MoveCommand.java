@@ -8,6 +8,10 @@ import io.nadia.ai.aimud.service.RoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+/**
+ * MoveCommand standard implementation layer.
+ * Primary processing handler mapping structural integrations natively.
+ */
 
 @Slf4j
 @RequiredArgsConstructor
@@ -21,6 +25,13 @@ public abstract class MoveCommand implements Command {
     protected abstract String getDirectionName();
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing move {} command for Mobile: {} in room id {}.", getDirectionName(), Mobile.getName(), Mobile.getCurrentRoomId());
 

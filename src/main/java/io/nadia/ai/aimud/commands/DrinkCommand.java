@@ -12,6 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
+/**
+ * DrinkCommand standard implementation layer.
+ * Drink liquid from your inventory.
+ */
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,6 +26,13 @@ public class DrinkCommand implements Command {
     private final ItemService itemService;
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile mobile, String commandLine) {
         log.info("Executing drink command for Mobile: {}", mobile.getName());
 

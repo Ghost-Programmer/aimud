@@ -7,6 +7,10 @@ import io.nadia.ai.aimud.service.CommunicationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+/**
+ * Logout standard implementation layer.
+ * Log out of the game.
+ */
 
 
 @Slf4j
@@ -18,6 +22,13 @@ public class Logout implements Command {
     private final CommunicationService communicationService;
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing logout command for Mobile: {}", Mobile.getName());
         return Mono.fromRunnable(() -> communicationService.sendLogout(Mobile))

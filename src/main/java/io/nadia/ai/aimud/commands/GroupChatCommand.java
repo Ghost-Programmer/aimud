@@ -10,6 +10,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+/**
+ * GroupChatCommand standard implementation layer.
+ * Speak to everyone in your group.
+ */
 
 @MudCommand(name = "group")
 public class GroupChatCommand implements Command {
@@ -25,6 +29,13 @@ public class GroupChatCommand implements Command {
     }
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile mobile, String arguments) {
         String[] parts = arguments.trim().split("\\s+", 2);
         if (parts.length < 2) {

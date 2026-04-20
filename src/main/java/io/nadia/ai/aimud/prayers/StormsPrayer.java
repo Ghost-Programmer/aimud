@@ -10,6 +10,10 @@ import io.nadia.ai.aimud.service.TickService;
 import io.nadia.ai.aimud.types.WeatherType;
 import io.nadia.ai.aimud.annontation.DivinePrayer;
 import org.springframework.stereotype.Component;
+/**
+ * StormsPrayer standard implementation layer.
+ * Pray for torrential storms to ravage the lands.
+ */
 
 @DivinePrayer(name = "storms")
 public class StormsPrayer extends Prayer {

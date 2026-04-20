@@ -11,6 +11,10 @@ import io.nadia.ai.aimud.types.SkillsType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+/**
+ * PrayCommand standard implementation layer.
+ * Say a divine prayer.
+ */
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,6 +26,13 @@ public class PrayCommand implements Command {
     private final CharacterService characterService;
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing pray command for Mobile: {}", Mobile.getName());
 

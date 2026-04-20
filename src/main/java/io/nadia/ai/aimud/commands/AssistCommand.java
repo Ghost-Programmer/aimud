@@ -9,6 +9,10 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+/**
+ * AssistCommand standard implementation layer.
+ * Assist another Mobile in combat.
+ */
 
 @Slf4j
 @RequiredArgsConstructor
@@ -18,6 +22,13 @@ public class AssistCommand implements Command {
     private final CharacterService characterService;
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing assist command for Mobile: {}", Mobile.getName());
 

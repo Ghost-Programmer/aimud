@@ -11,6 +11,10 @@ import org.springframework.context.ApplicationContext;
 import reactor.core.publisher.Mono;
 
 import java.util.Random;
+/**
+ * DisarmCommand standard implementation layer.
+ * Disarm your opponent, knocking their main weapon into their inventory.
+ */
 
 @MudCommand(name = "disarm")
 public class DisarmCommand implements Command {
@@ -27,6 +31,13 @@ public class DisarmCommand implements Command {
     }
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile mobile, String arguments) {
         Mobile target = mobile.getTarget();
         

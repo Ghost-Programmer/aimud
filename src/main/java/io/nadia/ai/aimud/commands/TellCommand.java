@@ -10,6 +10,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+/**
+ * TellCommand standard implementation layer.
+ * Send a private message to a specific person.
+ */
 
 @MudCommand(name = "tell")
 public class TellCommand implements Command {
@@ -25,6 +29,13 @@ public class TellCommand implements Command {
     }
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile mobile, String arguments) {
         String[] parts = arguments.trim().split("\\s+", 3);
         if (parts.length < 3) {

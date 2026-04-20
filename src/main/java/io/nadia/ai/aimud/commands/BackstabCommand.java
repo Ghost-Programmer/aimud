@@ -17,6 +17,10 @@ import io.nadia.ai.aimud.model.Item;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+/**
+ * BackstabCommand standard implementation layer.
+ * Attempt to backstab an enemy.
+ */
 
 @Slf4j
 @RequiredArgsConstructor
@@ -30,6 +34,13 @@ public class BackstabCommand implements Command {
     private final Random random = new Random();
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile mobile, String commandLine) {
         log.info("Executing backstab command for Mobile: {}", mobile.getName());
 

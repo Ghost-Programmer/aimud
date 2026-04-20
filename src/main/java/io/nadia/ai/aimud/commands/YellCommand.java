@@ -11,6 +11,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+/**
+ * YellCommand standard implementation layer.
+ * Yell something that can be heard in connected rooms.
+ */
 
 @MudCommand(name = "yell")
 public class YellCommand implements Command {
@@ -28,6 +32,13 @@ public class YellCommand implements Command {
     }
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile mobile, String arguments) {
         String[] parts = arguments.trim().split("\\s+", 2);
         if (parts.length < 2) {

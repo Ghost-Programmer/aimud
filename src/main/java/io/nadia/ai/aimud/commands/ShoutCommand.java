@@ -10,6 +10,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+/**
+ * ShoutCommand standard implementation layer.
+ * Shout a message to everyone in the entire world.
+ */
 
 @MudCommand(name = "shout")
 public class ShoutCommand implements Command {
@@ -25,6 +29,13 @@ public class ShoutCommand implements Command {
     }
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile mobile, String arguments) {
         String[] parts = arguments.trim().split("\\s+", 2);
         if (parts.length < 2) {

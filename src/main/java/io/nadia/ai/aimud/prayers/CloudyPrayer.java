@@ -10,6 +10,10 @@ import io.nadia.ai.aimud.service.TickService;
 import io.nadia.ai.aimud.types.WeatherType;
 import io.nadia.ai.aimud.annontation.DivinePrayer;
 import org.springframework.stereotype.Component;
+/**
+ * CloudyPrayer standard implementation layer.
+ * Pray for clouds to gather and shield the land from the harsh sun.
+ */
 
 @DivinePrayer(name = "cloudy")
 public class CloudyPrayer extends Prayer {

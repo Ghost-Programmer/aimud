@@ -12,6 +12,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+/**
+ * WarcryCommand standard implementation layer.
+ * Draw the attention of all enemies currently fighting you.
+ */
 
 @MudCommand(name = "warcry")
 public class WarcryCommand implements Command {
@@ -29,6 +33,13 @@ public class WarcryCommand implements Command {
     }
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile mobile, String arguments) {
         if (mobile.getPhysicalAttack() <= 80) {
             communicationService.sendTextMessage(mobile, "You are not physically strong enough to use warcry.");

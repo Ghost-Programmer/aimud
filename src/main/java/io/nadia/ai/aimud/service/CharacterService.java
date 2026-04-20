@@ -21,6 +21,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+/**
+ * CharacterService standard implementation layer.
+ * Primary processing handler mapping structural integrations natively.
+ */
 
 @Service
 @Slf4j

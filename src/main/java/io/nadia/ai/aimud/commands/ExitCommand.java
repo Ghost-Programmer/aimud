@@ -7,6 +7,10 @@ import io.nadia.ai.aimud.service.CommunicationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+/**
+ * ExitCommand standard implementation layer.
+ * Save and log out of the game.
+ */
 
 @Slf4j
 @RequiredArgsConstructor
@@ -17,6 +21,13 @@ public class ExitCommand implements Command {
     private final CommunicationService communicationService;
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing exit command for Mobile: {}", Mobile.getName());
         return characterService.save(Mobile)

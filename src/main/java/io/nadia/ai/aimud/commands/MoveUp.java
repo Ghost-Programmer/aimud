@@ -5,6 +5,10 @@ import io.nadia.ai.aimud.model.Room;
 import io.nadia.ai.aimud.service.CharacterService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.RoomService;
+/**
+ * MoveUp standard implementation layer.
+ * Primary processing handler mapping structural integrations natively.
+ */
 
 @MudCommand(name = "u")
 public class MoveUp extends MoveCommand {

@@ -12,6 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
+/**
+ * LootCommand standard implementation layer.
+ * Loot items from a corpse.
+ */
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,6 +26,13 @@ public class LootCommand implements Command {
     private final CharacterService characterService;
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing loot command for Mobile: {}", Mobile.getName());
         String[] parts = commandLine.trim().split("\\s+", 2);

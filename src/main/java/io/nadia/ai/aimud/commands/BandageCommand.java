@@ -18,6 +18,10 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+/**
+ * BandageCommand standard implementation layer.
+ * Use a bandage to heal yourself or an ally.
+ */
 
 @Slf4j
 @RequiredArgsConstructor
@@ -33,6 +37,13 @@ public class BandageCommand implements Command {
     private final Random random = new Random();
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile mobile, String commandLine) {
         if (skillService.getSkillRank(mobile, SkillsType.BANDAGE) <= 0) {
             communicationService.sendTextMessage(mobile, "\n\nYou do not possess the first aid skills required to use a bandage.");

@@ -10,6 +10,10 @@ import io.nadia.ai.aimud.service.TickService;
 import io.nadia.ai.aimud.types.WeatherType;
 import io.nadia.ai.aimud.annontation.DivinePrayer;
 import org.springframework.stereotype.Component;
+/**
+ * RainPrayer standard implementation layer.
+ * Pray for the heavens to open up and nourish the earth with rain.
+ */
 
 @DivinePrayer(name = "rain")
 public class RainPrayer extends Prayer {

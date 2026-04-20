@@ -14,6 +14,10 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+/**
+ * PickpocketCommand standard implementation layer.
+ * Attempt to steal an item from someone.
+ */
 
 @Slf4j
 @RequiredArgsConstructor
@@ -27,6 +31,13 @@ public class PickpocketCommand implements Command {
     private final Random random = new Random();
 
     @Override
+    /**
+
+     * Execute sequence logic maps.
+     * @param Mobile local contextual object
+     * @param commandLine trailing standard query parameters
+     * @return a reactive pipeline
+     */
     public Mono<Void> execute(Mobile Mobile, String commandLine) {
         log.info("Executing pickpocket command for Mobile: {}", Mobile.getName());
 
