@@ -27,14 +27,16 @@ public class EffectService {
      * @param characterEffectRepository the character effect repository
      * @param databaseClient            the underlying database client
      */
-    public EffectService(EffectRepository effectRepository, CharacterEffectRepository characterEffectRepository, org.springframework.r2dbc.core.DatabaseClient databaseClient) {
+    public EffectService(EffectRepository effectRepository, CharacterEffectRepository characterEffectRepository,
+            org.springframework.r2dbc.core.DatabaseClient databaseClient) {
         this.effectRepository = effectRepository;
         this.characterEffectRepository = characterEffectRepository;
         this.databaseClient = databaseClient;
     }
 
     /**
-     * Fetches bulk effect listings mapping to an array of items (solving N+1 inefficiencies).
+     * Fetches bulk effect listings mapping to an array of items (solving N+1
+     * inefficiencies).
      *
      * @param itemIds collection of IDs to pull relations against
      * @return a flattened Flux of DTO references
@@ -43,11 +45,11 @@ public class EffectService {
         if (itemIds == null || itemIds.isEmpty()) {
             return Flux.empty();
         }
-        
+
         String sql = "SELECT ie.item_id as \"item_id\", e.* FROM effects e " +
-                     "JOIN item_effects ie ON e.id = ie.effect_id " +
-                     "WHERE ie.item_id IN (:itemIds)";
-                     
+                "JOIN item_effects ie ON e.id = ie.effect_id " +
+                "WHERE ie.item_id IN (:itemIds)";
+
         return databaseClient.sql(sql)
                 .bind("itemIds", itemIds)
                 .map((row, metadata) -> {
@@ -58,13 +60,18 @@ public class EffectService {
                     if (typeStr != null) {
                         try {
                             effect.setEffectType(io.nadia.ai.aimud.types.EffectType.valueOf(typeStr));
-                        } catch (Exception ignored) {}
+                        } catch (Exception ignored) {
+                        }
                     }
-                    if (row.get("modifier_1", Integer.class) != null) effect.setModifier1(row.get("modifier_1", Integer.class));
-                    if (row.get("modifier_2", Integer.class) != null) effect.setModifier2(row.get("modifier_2", Integer.class));
-                    if (row.get("modifier_3", Integer.class) != null) effect.setModifier3(row.get("modifier_3", Integer.class));
-                    if (row.get("modifier_4", Integer.class) != null) effect.setModifier4(row.get("modifier_4", Integer.class));
-                    
+                    if (row.get("modifier1", Integer.class) != null)
+                        effect.setModifier1(row.get("modifier1", Integer.class));
+                    if (row.get("modifier2", Integer.class) != null)
+                        effect.setModifier2(row.get("modifier2", Integer.class));
+                    if (row.get("modifier3", Integer.class) != null)
+                        effect.setModifier3(row.get("modifier3", Integer.class));
+                    if (row.get("modifier4", Integer.class) != null)
+                        effect.setModifier4(row.get("modifier4", Integer.class));
+
                     Long itemId = row.get("item_id", Long.class);
                     return new io.nadia.ai.aimud.model.ItemEffectDTO(itemId, effect);
                 })
@@ -95,7 +102,8 @@ public class EffectService {
     }
 
     /**
-     * Retrieves an effect by its exact name (case-sensitive default, trimmed), cached.
+     * Retrieves an effect by its exact name (case-sensitive default, trimmed),
+     * cached.
      *
      * @param name the name of the effect
      * @return a {@link Mono} containing the effect
@@ -118,7 +126,6 @@ public class EffectService {
         log.info("Fetching effects for item: {}", itemId);
         return effectRepository.findByItemId(itemId).cache();
     }
-
 
     /**
      * Attaches an effect to a character without a specific caster.
@@ -143,7 +150,8 @@ public class EffectService {
      * @param name      the label or name applied to this specific instance
      * @return a {@link Mono} containing the saved character effect wrapper
      */
-    public Mono<CharacterEffect> attachEffectToCharacter(Mobile mobile, Mobile caster, Effect effect, int tickCount, String name) {
+    public Mono<CharacterEffect> attachEffectToCharacter(Mobile mobile, Mobile caster, Effect effect, int tickCount,
+            String name) {
         CharacterEffect characterEffect = new CharacterEffect(mobile.getId(), effect.getId(), tickCount);
         if (caster != null) {
             characterEffect.setCasterId(caster.getId());
@@ -162,7 +170,8 @@ public class EffectService {
     }
 
     /**
-     * Removes an active effect from a mobile entity, deleting it from the database if applicable.
+     * Removes an active effect from a mobile entity, deleting it from the database
+     * if applicable.
      *
      * @param mobile          the character possessing the effect
      * @param characterEffect the instance of the effect to remove
@@ -196,7 +205,7 @@ public class EffectService {
      * @param effect the effect to save
      * @return a {@link Mono} containing the saved effect
      */
-    @CacheEvict(value = {"effects", "effect", "effectByName"}, allEntries = true)
+    @CacheEvict(value = { "effects", "effect", "effectByName" }, allEntries = true)
     public Mono<Effect> saveEffect(Effect effect) {
         log.info("Saving effect: {} (id: {})", effect.getEffectType(), effect.getId());
         return effectRepository.save(effect);
@@ -208,7 +217,7 @@ public class EffectService {
      * @param id the ID of the effect to delete
      * @return a {@link Mono} indicating completion
      */
-    @CacheEvict(value = {"effects", "effect", "effectByName", "itemEffects"}, allEntries = true)
+    @CacheEvict(value = { "effects", "effect", "effectByName", "itemEffects" }, allEntries = true)
     public Mono<Void> deleteEffect(Long id) {
         log.info("Deleting effect by id: {}", id);
         return effectRepository.deleteById(id);
