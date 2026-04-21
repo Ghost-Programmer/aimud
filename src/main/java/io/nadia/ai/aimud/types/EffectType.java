@@ -40,6 +40,7 @@ public enum EffectType {
     HIDDEN("Hidden", null, null, null, null),
     DARKVISION("Darkvision", "Amount to brighten lights", null, null, null),
     DARKNESS("Darkness", "Amount to dim lights", null, null, null),
+    SLEEPING("Sleeping", null, null, null, null),
     UNKNOWN("Unknown", null, null, null, null);
 
     private final String label;

@@ -174,6 +174,7 @@ public class TickService {
         // Process PCs
         List<Mobile> characters = characterService.getAvailableCharacters();
         for (Mobile character : characters) {
+            character.setSkipActionsThisTick(false);
             if (character.getCurrentHp() <= 0) {
                 processDeath(character);
                 continue;
@@ -183,18 +184,45 @@ public class TickService {
 
             boolean effectsChanged = processSpellEffects(character);
             boolean statsChanged = processRegen(character);
-            boolean combatOccurred = processAttack(character);
+            boolean combatOccurred = false;
+            
+            if (!character.isSkipActionsThisTick()) {
+                combatOccurred = processAttack(character);
+            }
 
             if (effectsChanged || statsChanged || combatOccurred) {
                 save = true;
                 communicationService.sendCharacterUpdate(character);
             }
 
-            if (!character.getCommandQueue().isEmpty()) {
-                commandService.processCommand(character)
-                        .doOnError(error -> log.error("Error processing command for {}", character.getName(), error))
-                        .onErrorResume(error -> Mono.empty())
-                        .subscribe();
+            if (!character.isSkipActionsThisTick() && !character.getCommandQueue().isEmpty()) {
+                String cmdLine = character.getCommandQueue().get(0);
+                if (cmdLine != null && !cmdLine.trim().isEmpty()) {
+                    String firstWord = cmdLine.trim().split("\\s+")[0].toLowerCase();
+                    boolean canAct = true;
+                    
+                    if (character.isSleeping() ||
+                        character.getStatus() == io.nadia.ai.aimud.types.MobileStatus.SITTING ||
+                        character.getStatus() == io.nadia.ai.aimud.types.MobileStatus.RESTING) {
+                        
+                        if (!firstWord.equals("stand")) {
+                            character.getCommandQueue().remove(0);
+                            if (character.getUserId() != null) {
+                                communicationService.sendTextMessage(character, "\n\nYou can't do that while " + character.getStatus().name().toLowerCase() + ".");
+                            }
+                            canAct = false;
+                        }
+                    }
+                    
+                    if (canAct) {
+                        commandService.processCommand(character)
+                                .doOnError(error -> log.error("Error processing command for {}", character.getName(), error))
+                                .onErrorResume(error -> Mono.empty())
+                                .subscribe();
+                    }
+                } else {
+                    character.getCommandQueue().remove(0);
+                }
                 save = true;
             } else {
                 character.setIdle(character.getIdle() + 1);
@@ -215,6 +243,7 @@ public class TickService {
         // Process NPCs (Mobiles)
         List<Mobile> mobiles = mobileService.getActiveMobiles();
         for (Mobile mobile : mobiles) {
+            mobile.setSkipActionsThisTick(false);
             if (mobile.getCurrentHp() <= 0) {
                 processDeath(mobile);
                 continue;
@@ -222,14 +251,17 @@ public class TickService {
             
             processSpellEffects(mobile);
             processRegen(mobile);
-            processAttack(mobile);
+            
+            if (!mobile.isSkipActionsThisTick()) {
+                processAttack(mobile);
 
-            // Execute pending commands for the mobile if we ever add an AI decision loop queue
-            if (!mobile.getCommandQueue().isEmpty()) {
-                // Not implemented yet
+                // Execute pending commands for the mobile if we ever add an AI decision loop queue
+                if (!mobile.getCommandQueue().isEmpty()) {
+                    // Not implemented yet
+                }
+
+                processFactionAssist(mobile);
             }
-
-            processFactionAssist(mobile);
         }
 
         // Process Room Effects
@@ -370,6 +402,12 @@ public class TickService {
             return false;
         }
 
+        if (attacker.getStatus() == io.nadia.ai.aimud.types.MobileStatus.SITTING || 
+            attacker.getStatus() == io.nadia.ai.aimud.types.MobileStatus.RESTING || 
+            attacker.isSleeping()) {
+            return false;
+        }
+
         if (attacker.getUserId() == null) {
             Long highestHateId = attacker.getHighestHateTargetId();
             while (highestHateId != null) {
@@ -426,9 +464,16 @@ public class TickService {
             }
         }
 
-        // Force target to stand if sitting or resting
-        if (target.getStatus() == io.nadia.ai.aimud.types.MobileStatus.SITTING || target.getStatus() == io.nadia.ai.aimud.types.MobileStatus.RESTING) {
+        // Force target to stand if sitting, resting, or sleeping
+        if (target.getStatus() == io.nadia.ai.aimud.types.MobileStatus.SITTING || 
+            target.getStatus() == io.nadia.ai.aimud.types.MobileStatus.RESTING || 
+            target.isSleeping()) {
+            
             target.setStatus(io.nadia.ai.aimud.types.MobileStatus.STANDING);
+            if (target.isSleeping()) {
+                // Remove sleeping effect if they are woken up by attack
+                target.getSpellEffects().removeIf(e -> e.getEffect() != null && e.getEffect().getEffectType() == io.nadia.ai.aimud.types.EffectType.SLEEPING);
+            }
             if (target.getUserId() != null) {
                 communicationService.sendTextMessage(target, "\n\nYou quickly stand up as you are attacked!");
             }
@@ -900,6 +945,39 @@ public class TickService {
                     continue; // Remove expired effect
                 }
             }
+            
+            // Sleep Resistance Check
+            if (effect != null && effect.getEffectType() == io.nadia.ai.aimud.types.EffectType.SLEEPING) {
+                int resist = (int) mobile.getMagicResist();
+                int roll = random.nextInt(100) + 1;
+                if (roll <= resist) {
+                    hpChangedOrRemoved = true;
+                    if (mobile.getUserId() != null) {
+                        communicationService.sendTextMessage(mobile, "\nYou shake off the magical sleep!");
+                    }
+                    communicationService.roomMessage(mobile, "\n" + mobile.getName() + " wakes up from the magical sleep!");
+                    
+                    mobile.setSkipActionsThisTick(true);
+                    
+                    if (ce.getCasterId() != null) {
+                        Mobile caster = characterService.getAvailableCharacters().stream()
+                            .filter(c -> c.getId().equals(ce.getCasterId()))
+                            .findFirst().orElse(null);
+                        if (caster == null) {
+                            caster = mobileService.getActiveMobiles().stream()
+                                .filter(m -> m.getId().equals(ce.getCasterId()))
+                                .findFirst().orElse(null);
+                        }
+                        
+                        if (caster != null && mobile.getCurrentRoomId() != null && mobile.getCurrentRoomId().equals(caster.getCurrentRoomId())) {
+                            characterService.setTarget(mobile, caster);
+                        }
+                    }
+                    
+                    continue; // Effect successfully resisted and removed
+                }
+            }
+            
             newEffects.add(ce);
         }
 

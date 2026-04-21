@@ -241,6 +241,9 @@ public class Mobile {
     private Integer mana;
 
     @Transient
+    private boolean skipActionsThisTick;
+
+    @Transient
     private List<CharacterEffect> spellEffects = new ArrayList<>();
 
     @Transient
@@ -481,5 +484,16 @@ public class Mobile {
         if (this.spellEffects == null) return false;
         return this.spellEffects.stream()
                 .anyMatch(effect -> effect.getEffect() != null && effect.getEffect().getEffectType() == EffectType.INVISIBLE);
+    }
+
+    /**
+     * Checks if the Mobile is currently sleeping due to an effect.
+     *
+     * @return true if sleeping, else false
+     */
+    public boolean isSleeping() {
+        if (this.spellEffects == null) return false;
+        return this.spellEffects.stream()
+                .anyMatch(effect -> effect.getEffect() != null && effect.getEffect().getEffectType() == EffectType.SLEEPING);
     }
 }
