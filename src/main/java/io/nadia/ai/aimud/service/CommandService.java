@@ -21,6 +21,7 @@ public class CommandService {
 
     private final ApplicationContext context;
     private final CommunicationService communicationService;
+    private final io.nadia.ai.aimud.repository.UserRepository userRepository;
 
     private final Map<String, Command> taskMap = new HashMap<>();
     private final java.util.List<String> emoteCommands = new java.util.ArrayList<>();
@@ -30,10 +31,12 @@ public class CommandService {
      *
      * @param context              the Spring application context used to discover command beans
      * @param communicationService the communication service to send messages to characters
+     * @param userRepository       the user repository to check permissions
      */
-    public CommandService(ApplicationContext context, CommunicationService communicationService) {
+    public CommandService(ApplicationContext context, CommunicationService communicationService, io.nadia.ai.aimud.repository.UserRepository userRepository) {
         this.context = context;
         this.communicationService = communicationService;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -90,19 +93,59 @@ public class CommandService {
     }
 
     /**
+     * Checks if a character has permission to execute a specific command.
+     *
+     * @param character the mobile entity
+     * @param task      the command to execute
+     * @return a {@link Mono} emitting true if allowed, false otherwise
+     */
+    public Mono<Boolean> hasPermission(Mobile character, Command task) {
+        MudCommand annotation = AnnotationUtils.findAnnotation(task.getClass(), MudCommand.class);
+        String requiredRole = (annotation != null) ? annotation.role() : "MUD_USER";
+
+        if (character.getUserId() == null) {
+            return Mono.just("MUD_USER".equals(requiredRole));
+        }
+
+        return userRepository.findById(character.getUserId())
+                .map(user -> {
+                    String userRole = user.getRole();
+                    if (userRole == null || userRole.trim().isEmpty()) {
+                        userRole = "MUD_USER";
+                    }
+                    if ("MUD_ADMIN".equals(userRole)) {
+                        return true;
+                    }
+                    return requiredRole.equals(userRole);
+                })
+                .defaultIfEmpty("MUD_USER".equals(requiredRole));
+    }
+
+    /**
      * Processes the next command in the character's command queue.
      *
      * @param character the mobile entity executing the command
      * @return a {@link Mono} representing the completion of command execution
      */
     public Mono<Void> processCommand(Mobile character) {
+        if (character.getCommandQueue().isEmpty()) {
+            return Mono.empty();
+        }
         String command = character.getCommandQueue().remove(0);
         String[] commands = command.trim().split("\\s+");
         log.info("Processing command '{}' for character '{}'", command, character.getName());
 
         Command task = this.getTask(commands[0]);
         if (task != null) {
-            return task.execute(character, command);
+            return hasPermission(character, task)
+                    .flatMap(hasPerm -> {
+                        if (hasPerm) {
+                            return task.execute(character, command);
+                        } else {
+                            communicationService.sendTextMessage(character, "You do not have permission to use that command.");
+                            return Mono.empty();
+                        }
+                    });
         } else {
             communicationService.sendTextMessage(character, "Invalid command: " + commands[0]);
             return Mono.empty();

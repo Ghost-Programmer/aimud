@@ -29,4 +29,12 @@ public @interface MudCommand {
      * @return true if the command is an emote, false otherwise
      */
     boolean isEmote() default false;
+
+    /**
+     * The required user role to execute this command. Defaults to MUD_USER.
+     * MUD_ADMIN users can execute commands of any role.
+     *
+     * @return the required role
+     */
+    String role() default "MUD_USER";
 }

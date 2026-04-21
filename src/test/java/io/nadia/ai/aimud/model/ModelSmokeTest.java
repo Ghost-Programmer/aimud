@@ -21,7 +21,7 @@ class ModelSmokeTest {
     @Test
     void serverSettings_RecordExposesComponents() {
         LocalDateTime now = LocalDateTime.now();
-        ServerSettings settings = new ServerSettings(1L, "AI Mud", true, false, "", now, now, "system", "system");
+        ServerSettings settings = new ServerSettings(1L, "AI Mud", true, false, "", 0, 0, 0, 0, now, now, "system", "system");
 
         assertThat(settings.id()).isEqualTo(1L);
         assertThat(settings.serverName()).isEqualTo("AI Mud");

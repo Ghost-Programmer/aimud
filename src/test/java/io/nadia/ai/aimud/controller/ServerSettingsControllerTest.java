@@ -21,7 +21,7 @@ class ServerSettingsControllerTest {
     @Test
     void getSettings_ReturnsRepositoryValueWhenPresent() {
         ServerSettingsController controller = new ServerSettingsController(repository);
-        ServerSettings settings = new ServerSettings(1L, "Test", true, false, "", null, null, null, null);
+        ServerSettings settings = new ServerSettings(1L, "Test", true, false, "", 0, 0, 0, 0, null, null, null, null);
         when(repository.findById(1L)).thenReturn(Mono.just(settings));
 
         StepVerifier.create(controller.getSettings())

@@ -38,33 +38,40 @@ public class HelpCommand implements Command {
 
         if (parts.length < 2) {
             // Provide a list of all commands
-            StringBuilder sb = new StringBuilder();
-            sb.append("\n\nAvailable Commands:\n");
-
-            // Note: In an actual implementation, we might want to filter this by user permissions
-            commandService.getAllTasks().entrySet().stream()
-                    .sorted(Map.Entry.comparingByKey())
-                    .forEach(entry -> {
-                        String cmdName = entry.getKey();
-                        Command cmd = entry.getValue();
-                        sb.append(String.format("%-15s - %s\n", cmdName, cmd.getDescription()));
+            return reactor.core.publisher.Flux.fromIterable(commandService.getAllTasks().entrySet())
+                    .filterWhen(entry -> commandService.hasPermission(Mobile, entry.getValue()))
+                    .sort(Map.Entry.comparingByKey())
+                    .collectList()
+                    .flatMap(list -> {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("\n\nAvailable Commands:\n");
+                        for (Map.Entry<String, Command> entry : list) {
+                            sb.append(String.format("%-15s - %s\n", entry.getKey(), entry.getValue().getDescription()));
+                        }
+                        sb.append("\nType 'help <command>' for more detailed information.");
+                        communicationService.sendTextMessage(Mobile, sb.toString());
+                        return Mono.empty();
                     });
-
-            sb.append("\nType 'help <command>' for more detailed information.");
-            communicationService.sendTextMessage(Mobile, sb.toString());
         } else {
             // Detailed help for a specific command
             String cmdName = parts[1].toLowerCase();
             Command cmd = commandService.getTask(cmdName);
 
             if (cmd != null) {
-                communicationService.sendTextMessage(Mobile, "\n\nHelp for '" + cmdName + "':\n" + cmd.getDetailedDescription());
+                return commandService.hasPermission(Mobile, cmd)
+                        .flatMap(hasPerm -> {
+                            if (hasPerm) {
+                                communicationService.sendTextMessage(Mobile, "\n\nHelp for '" + cmdName + "':\n" + cmd.getDetailedDescription());
+                            } else {
+                                communicationService.sendTextMessage(Mobile, "\n\nNo such command: " + cmdName);
+                            }
+                            return Mono.empty();
+                        });
             } else {
                 communicationService.sendTextMessage(Mobile, "\n\nNo such command: " + cmdName);
+                return Mono.empty();
             }
         }
-
-        return Mono.empty();
     }
 
     @Override
