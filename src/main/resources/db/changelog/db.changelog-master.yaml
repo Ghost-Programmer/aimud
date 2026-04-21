@@ -31,3 +31,5 @@ databaseChangeLog:
       file: db/changelog/changes/069-race-starting-effects.sql
   - include:
       file: db/changelog/changes/070-mobile-frozen.sql
+  - include:
+      file: db/changelog/changes/071-add-sneak-skill.sql
