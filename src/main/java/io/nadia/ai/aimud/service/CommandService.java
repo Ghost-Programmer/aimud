@@ -131,6 +131,13 @@ public class CommandService {
         if (character.getCommandQueue().isEmpty()) {
             return Mono.empty();
         }
+
+        if (character.isFrozen()) {
+            character.getCommandQueue().clear();
+            communicationService.sendTextMessage(character, "\n\nYou are frozen and cannot perform any actions.");
+            return Mono.empty();
+        }
+
         String command = character.getCommandQueue().remove(0);
         String[] commands = command.trim().split("\\s+");
         log.info("Processing command '{}' for character '{}'", command, character.getName());

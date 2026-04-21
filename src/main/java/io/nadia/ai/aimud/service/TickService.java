@@ -366,6 +366,10 @@ public class TickService {
      * @return true if an attack cycle occurred, false otherwise
      */
     private boolean processAttack(Mobile attacker) {
+        if (attacker.isFrozen()) {
+            return false;
+        }
+
         if (attacker.getUserId() == null) {
             Long highestHateId = attacker.getHighestHateTargetId();
             while (highestHateId != null) {
@@ -393,6 +397,14 @@ public class TickService {
             return false;
         }
 
+        if (target.isFrozen()) {
+            characterService.setTarget(attacker, null);
+            if (attacker.getUserId() != null) {
+                communicationService.sendTextMessage(attacker, "\n\n" + target.getName() + " is frozen and cannot be attacked.");
+            }
+            return false;
+        }
+
         // Ensure target is in the same room
         if (!attacker.getCurrentRoomId().equals(target.getCurrentRoomId())) {
             if (attacker.getUserId() != null) {
@@ -412,6 +424,15 @@ public class TickService {
             if (target.getUserId() != null) {
                 communicationService.sendTextMessage(target, "\n\n" + attacker.getName() + " is attacking you!");
             }
+        }
+
+        // Force target to stand if sitting or resting
+        if (target.getStatus() == io.nadia.ai.aimud.types.MobileStatus.SITTING || target.getStatus() == io.nadia.ai.aimud.types.MobileStatus.RESTING) {
+            target.setStatus(io.nadia.ai.aimud.types.MobileStatus.STANDING);
+            if (target.getUserId() != null) {
+                communicationService.sendTextMessage(target, "\n\nYou quickly stand up as you are attacked!");
+            }
+            communicationService.roomMessage(target, "\n" + target.getName() + " quickly stands up.");
         }
 
         // Process Primary Attack
@@ -1013,7 +1034,13 @@ public class TickService {
 
         // Health Regeneration
         if (!skipHpRegen && mobile.getCurrentHp() < mobile.getMaxHp()) {
-            int newHp = Math.min(mobile.getCurrentHp() + mobile.getHpRegen(), mobile.getMaxHp());
+            int hpRegen = mobile.getHpRegen();
+            if (mobile.getStatus() == io.nadia.ai.aimud.types.MobileStatus.SITTING) {
+                hpRegen = (int)(hpRegen * 1.25);
+            } else if (mobile.getStatus() == io.nadia.ai.aimud.types.MobileStatus.RESTING) {
+                hpRegen = (int)(hpRegen * 2.0);
+            }
+            int newHp = Math.min(mobile.getCurrentHp() + hpRegen, mobile.getMaxHp());
             if (newHp != mobile.getCurrentHp()) {
                 mobile.setCurrentHp(newHp);
                 updated = true;
@@ -1022,7 +1049,13 @@ public class TickService {
 
         // Mana Regeneration
         if (mobile.getCurrentMana() < mobile.getMaxMana()) {
-            int newMana = Math.min(mobile.getCurrentMana() + mobile.getManaRegen(), mobile.getMaxMana());
+            int manaRegen = mobile.getManaRegen();
+            if (mobile.getStatus() == io.nadia.ai.aimud.types.MobileStatus.SITTING) {
+                manaRegen = (int)(manaRegen * 1.25);
+            } else if (mobile.getStatus() == io.nadia.ai.aimud.types.MobileStatus.RESTING) {
+                manaRegen = (int)(manaRegen * 2.0);
+            }
+            int newMana = Math.min(mobile.getCurrentMana() + manaRegen, mobile.getMaxMana());
             if (newMana != mobile.getCurrentMana()) {
                 mobile.setCurrentMana(newMana);
                 updated = true;

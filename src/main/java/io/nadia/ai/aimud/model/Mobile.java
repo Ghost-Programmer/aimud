@@ -97,6 +97,12 @@ public class Mobile {
     @Column("non_combat")
     private boolean nonCombat;
 
+    @Column("frozen")
+    private boolean frozen;
+
+    @Transient
+    private io.nadia.ai.aimud.types.MobileStatus status = io.nadia.ai.aimud.types.MobileStatus.STANDING;
+
     @Transient
     private List<MobileAction> actions = new ArrayList<>();
 
