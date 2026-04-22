@@ -50,6 +50,12 @@ public class DropCommand implements Command {
             return Mono.empty();
         }
 
+        Item item = itemToDrop.get();
+        if (item.getItemType() == io.nadia.ai.aimud.types.ItemType.CONTAINER && item.getInventory() != null && !item.getInventory().isEmpty()) {
+            communicationService.sendTextMessage(Mobile, "\n\nYou must empty the container before dropping it.");
+            return Mono.empty();
+        }
+
         return characterService.dropItem(Mobile, itemToDrop.get().getId())
                 .then();
     }

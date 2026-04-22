@@ -354,7 +354,33 @@ public class StatService {
                         }))
                 .collectList()
                 .map(inventory -> {
-                    character.setInventory(inventory);
+                    java.util.List<Item> rootItems = new java.util.ArrayList<>();
+                    java.util.Map<Long, Item> containers = new java.util.HashMap<>();
+
+                    for (Item item : inventory) {
+                        if (item.getContainerItemId() == null || item.getContainerItemId() == 0) {
+                            rootItems.add(item);
+                            if (item.getItemType() == io.nadia.ai.aimud.types.ItemType.CONTAINER) {
+                                containers.put(item.getId(), item);
+                            }
+                        }
+                    }
+
+                    for (Item item : inventory) {
+                        if (item.getContainerItemId() != null && item.getContainerItemId() != 0) {
+                            Item container = containers.get(item.getContainerItemId());
+                            if (container != null) {
+                                if (container.getInventory() == null) {
+                                    container.setInventory(new java.util.ArrayList<>());
+                                }
+                                container.getInventory().add(item);
+                            } else {
+                                rootItems.add(item);
+                            }
+                        }
+                    }
+
+                    character.setInventory(rootItems);
                     return character;
                 });
     }

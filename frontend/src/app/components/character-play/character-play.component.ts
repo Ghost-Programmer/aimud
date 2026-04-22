@@ -58,16 +58,32 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
     if (!this.character || !this.character.inventory) return [];
 
     const inventory = [...this.character.inventory];
-    if (!this.sortColumn) return inventory;
 
-    return inventory.sort((a, b) => {
-      let valA = this.getSortValue(a, this.sortColumn);
-      let valB = this.getSortValue(b, this.sortColumn);
+    if (this.sortColumn) {
+      inventory.sort((a, b) => {
+        let valA = this.getSortValue(a, this.sortColumn);
+        let valB = this.getSortValue(b, this.sortColumn);
 
-      if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
-      if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
+        if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    const flatten = (items: any[], level: number): any[] => {
+      let flat: any[] = [];
+      for (const item of items) {
+        flat.push({ ...item, indentLevel: level });
+        if (item.inventory && item.inventory.length > 0) {
+          // Sort nested items by name by default to keep them organized
+          let nested = [...item.inventory].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+          flat = flat.concat(flatten(nested, level + 1));
+        }
+      }
+      return flat;
+    };
+
+    return flatten(inventory, 0);
   }
 
   get sortedSkills() {

@@ -295,19 +295,40 @@ public class CharacterService {
             return Mono.just(character);
         log.debug("Updating inventory for character: {}", character.getId());
 
-        // Deduplicate items and sum counts to prevent duplicate key exceptions
-        java.util.Map<Long, Item> uniqueItemsMap = new java.util.HashMap<>();
+        java.util.Map<String, Item> uniqueItemsMap = new java.util.HashMap<>();
+        java.util.List<Item> toProcess = new java.util.ArrayList<>();
+
         for (Item item : inventory) {
-            if (item != null && item.getId() != null) {
-                if (uniqueItemsMap.containsKey(item.getId())) {
-                    Item existing = uniqueItemsMap.get(item.getId());
-                    existing.setCount(existing.getCount() + item.getCount());
+            item.setContainerItemId(0L);
+            toProcess.add(item);
+        }
+
+        while (!toProcess.isEmpty()) {
+            Item current = toProcess.remove(0);
+            if (current != null && current.getId() != null) {
+                Long cid = current.getContainerItemId() == null ? 0L : current.getContainerItemId();
+                String key = current.getId() + "_" + cid;
+
+                if (uniqueItemsMap.containsKey(key)) {
+                    Item existing = uniqueItemsMap.get(key);
+                    existing.setCount(existing.getCount() + current.getCount());
                 } else {
-                    uniqueItemsMap.put(item.getId(), item);
+                    Item clone = new Item();
+                    clone.setId(current.getId());
+                    clone.setCount(current.getCount());
+                    clone.setContainerItemId(cid);
+                    uniqueItemsMap.put(key, clone);
+                }
+
+                if (current.getInventory() != null) {
+                    for (Item nested : current.getInventory()) {
+                        nested.setContainerItemId(current.getId());
+                        toProcess.add(nested);
+                    }
                 }
             }
         }
-        
+
         List<Item> uniqueItems = new java.util.ArrayList<>(uniqueItemsMap.values());
 
         return databaseClient.sql("DELETE FROM character_inventory WHERE character_id = :characterId")
@@ -315,10 +336,11 @@ public class CharacterService {
                 .then()
                 .thenMany(Flux.fromIterable(uniqueItems))
                 .flatMap(item -> databaseClient
-                        .sql("INSERT INTO character_inventory (character_id, item_id, item_count) VALUES (:characterId, :itemId, :count)")
+                        .sql("INSERT INTO character_inventory (character_id, item_id, item_count, container_item_id) VALUES (:characterId, :itemId, :count, :containerId)")
                         .bind("characterId", character.getId())
                         .bind("itemId", item.getId())
                         .bind("count", item.getCount())
+                        .bind("containerId", item.getContainerItemId())
                         .fetch()
                         .rowsUpdated())
                 .then(Mono.defer(() -> {

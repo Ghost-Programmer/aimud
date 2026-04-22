@@ -13,7 +13,7 @@ import reactor.core.publisher.Flux;
 public interface ItemRepository extends ReactiveCrudRepository<Item, Long> {
     @Query("SELECT i.id, i.item_type, i.wear_location, i.no_pickup, i.stackable, i.count as base_count, i.name, i.description, " +
            "i.property_1, i.property_2, i.property_3, i.property_4, i.created_at, i.modified_at, i.created_by, " +
-           "i.modified_by, ci.item_count as count " + 
+           "i.modified_by, ci.item_count as count, ci.container_item_id as container_item_id " + 
            "FROM items i JOIN character_inventory ci ON i.id = ci.item_id WHERE ci.character_id = :characterId")
     /**
      * Find all by character id.

@@ -38,6 +38,9 @@ public class Item {
     @Transient
     private List<Item> inventory = new ArrayList<>();
 
+    @Transient
+    private Long containerItemId;
+
     @Column("no_pickup")
     private boolean noPickup = false;
 
