@@ -30,6 +30,7 @@ public class SkillsType {
     public static final String TAUNT = "Taunt";
     public static final String VANISH = "Vanish";
     public static final String SNEAK = "Sneak";
+    public static final String LAY_ON_HANDS = "Lay On Hands";
 
     /**
      * Private constructor to prevent unexpected instantiation of this purely static constants class.
