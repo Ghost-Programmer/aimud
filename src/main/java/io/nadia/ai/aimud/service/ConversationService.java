@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 public class ConversationService {
 
     private final MobileService mobileService;
-    private final CharacterService characterService;
     private final RoomService roomService;
     private final CommunicationService communicationService;
     private final CommandService commandService;
@@ -35,7 +34,7 @@ public class ConversationService {
      * Constructs a new ConversationService.
      *
      * @param mobileService        the mobile service
-     * @param characterService     the character service
+     * @param MobileService     the character service
      * @param roomService          the room service
      * @param communicationService the communication service
      * @param aiService            the AI conversation service
@@ -48,14 +47,14 @@ public class ConversationService {
      * @param vectorStore          the VectorStore
      * @param chatModel            the Ollama chat model
      */
-    public ConversationService(MobileService mobileService, CharacterService characterService, RoomService roomService,
+    public ConversationService(MobileService mobileService, RoomService roomService,
             CommunicationService communicationService, CommandService commandService,
             FactionService factionService, ConfigService configService, SpellService spellService,
             SongService songService, PrayerService prayerService,
             org.springframework.ai.vectorstore.VectorStore vectorStore,
             org.springframework.ai.ollama.OllamaChatModel chatModel) {
         this.mobileService = mobileService;
-        this.characterService = characterService;
+        
         this.roomService = roomService;
         this.communicationService = communicationService;
         this.commandService = commandService;
@@ -78,7 +77,7 @@ public class ConversationService {
     @org.springframework.scheduling.annotation.Scheduled(fixedRate = 10000)
     public void processIdleConversations() {
         log.info("Processing idle conversations...");
-        List<Mobile> npcs = mobileService.getActiveMobiles().stream().filter(m -> m.isUsesAi())
+        List<Mobile> npcs = mobileService.getAvailableCharacters().stream().filter(m -> m.isUsesAi())
                 .collect(Collectors.toList());
         if (npcs == null || npcs.isEmpty()) {
             log.info("No Mobiles with AI Chat enabled found.");
@@ -119,7 +118,7 @@ public class ConversationService {
         }
         lastEvaluationTime.put(roomId, java.time.Instant.now());
 
-        List<Mobile> npcs = mobileService.getMobilesInRoom(roomId).stream().filter(m -> m.isUsesAi())
+        List<Mobile> npcs = mobileService.findAllByRoomId(roomId).stream().filter(m -> m.isUsesAi())
                 .collect(Collectors.toList());
         if (npcs == null || npcs.isEmpty()) {
             log.info("No Mobiles with AI Chat enabled found in room " + roomId);
@@ -169,7 +168,7 @@ public class ConversationService {
         // Collect history and parse if anyone is actually around physically
         List<String> history = communicationService.getRoomHistory(room.getId());
 
-        List<Mobile> players = characterService.findAllByRoomId(room.getId()).stream()
+        List<Mobile> players = mobileService.findAllByRoomId(room.getId()).stream()
                 .filter(c -> c.getUserId() != null)
                 .collect(Collectors.toList());
 
@@ -196,7 +195,7 @@ public class ConversationService {
             }
         }
 
-        List<Mobile> npcsInRoom = mobileService.getMobilesInRoom(room.getId()).stream()
+        List<Mobile> npcsInRoom = mobileService.findAllByRoomId(room.getId()).stream()
                 .filter(m -> !m.getId().equals(npc.getId()))
                 .collect(Collectors.toList());
 
@@ -420,9 +419,8 @@ public class ConversationService {
                         int index = Integer.parseInt(indexStr) - 1;
                         if (index >= 0 && index < availableActions.size()) {
                             String command = availableActions.get(index).getActionCommand();
-                            log.info("NPC AI Action Execution: {}", command);
+                            log.info("NPC AI Action Execution queued: {}", command);
                             npc.getCommandQueue().add(command);
-                            commandService.processCommand(npc).subscribe();
                         }
                     } catch (NumberFormatException e) {
                         log.warn("NPC AI returned invalid index: {}", indexStr);
@@ -434,3 +432,4 @@ public class ConversationService {
         }
     }
 }
+

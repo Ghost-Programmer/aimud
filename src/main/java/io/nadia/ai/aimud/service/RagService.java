@@ -12,7 +12,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Service responsible for handling Retrieval-Augmented Generation (RAG) operations.
+ * Service responsible for handling Retrieval-Augmented Generation (RAG)
+ * operations.
  * It listens for interaction events and stores them in the vector database.
  */
 @Service
@@ -30,13 +31,13 @@ public class RagService {
      */
     @EventListener
     public void handleNpcInteraction(NpcInteractionEvent event) {
-        log.info("Received NPC interaction event for NPC ID {} and PC ID {}", event.npcId(), event.pcId());
+        log.info("Received NPC interaction event for NPC ID {} and PC ID {} with interaction: {}", event.npcId(),
+                event.pcId(), event.interaction());
 
         try {
             Map<String, Object> metadata = Map.of(
                     "npcId", event.npcId(),
-                    "pcId", event.pcId()
-            );
+                    "pcId", event.pcId());
 
             Document document = new Document(event.interaction(), metadata);
             vectorStore.add(List.of(document));

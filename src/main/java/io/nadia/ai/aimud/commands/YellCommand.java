@@ -2,7 +2,7 @@ package io.nadia.ai.aimud.commands;
 
 import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.RoomService;
@@ -21,13 +21,11 @@ public class YellCommand implements Command {
 
     private final CommunicationService communicationService;
     private final RoomService roomService;
-    private final CharacterService characterService;
     private final MobileService mobileService;
 
     public YellCommand(ApplicationContext context) {
         this.communicationService = context.getBean(CommunicationService.class);
         this.roomService = context.getBean(RoomService.class);
-        this.characterService = context.getBean(CharacterService.class);
         this.mobileService = context.getBean(MobileService.class);
     }
 
@@ -61,10 +59,10 @@ public class YellCommand implements Command {
                     if (room.getDownId() != null) connected.add(room.getDownId());
 
                     for (Long roomId : connected) {
-                        characterService.findAllByRoomId(roomId).forEach(c -> {
+                        mobileService.findAllByRoomId(roomId).forEach(c -> {
                             communicationService.sendTextMessage(c, "\nSomeone yells from nearby, '" + text + "'");
                         });
-                        mobileService.getMobilesInRoom(roomId).forEach(m -> {
+                        mobileService.findAllByRoomId(roomId).forEach(m -> {
                             communicationService.sendTextMessage(m, "\nSomeone yells from nearby, '" + text + "'");
                         });
                     }
@@ -82,3 +80,4 @@ public class YellCommand implements Command {
         return "Syntax: yell <message>\n\nYells a message that can be heard by everyone in your current room and all immediately adjacent rooms.";
     }
 }
+

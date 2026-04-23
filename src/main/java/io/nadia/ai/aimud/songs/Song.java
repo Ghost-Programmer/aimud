@@ -18,7 +18,7 @@ public abstract class Song {
 
     protected final SkillService skillService;
     protected final MobileService mobileService;
-    protected final CharacterService characterService;
+    
     protected final CommunicationService communicationService;
     protected final EffectService effectService;
 
@@ -27,14 +27,14 @@ public abstract class Song {
      *
      * @param skillService         system for evaluating actor skill ranks
      * @param mobileService       registry of available AI targets
-     * @param characterService     registry of active player characters
+     * @param MobileService     registry of active player characters
      * @param communicationService emitter for localized chat events
      * @param effectService        engine handling transient buffs and debuffs
      */
-    protected Song(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
+    protected Song(SkillService skillService, MobileService mobileService, CommunicationService communicationService, EffectService effectService) {
         this.skillService = skillService;
         this.mobileService = mobileService;
-        this.characterService = characterService;
+        
         this.communicationService = communicationService;
         this.effectService = effectService;
     }
@@ -125,7 +125,7 @@ public abstract class Song {
 
             String name = parts[2].toLowerCase();
 
-            Mobile target = mobileService.getMobilesInRoom(mobile.getCurrentRoomId()).stream()
+            Mobile target = mobileService.findAllByRoomId(mobile.getCurrentRoomId()).stream()
                     .filter(m -> m.getName().toLowerCase().contains(name))
                     .findFirst()
                     .orElse(null);
@@ -134,7 +134,7 @@ public abstract class Song {
                 return target;
             }
 
-            return characterService.findAllByRoomId(mobile.getCurrentRoomId()).stream()
+            return mobileService.findAllByRoomId(mobile.getCurrentRoomId()).stream()
                     .filter(c -> c.getName().toLowerCase().contains(name))
                     .findFirst()
                     .orElse(null);
@@ -157,11 +157,11 @@ public abstract class Song {
 
         if (primaryTarget.getUserId() == null) {
             // Target is an NPC: affect all NPCs in the room
-            targets.addAll(mobileService.getMobilesInRoom(caster.getCurrentRoomId()));
+            targets.addAll(mobileService.findAllByRoomId(caster.getCurrentRoomId()));
         } else {
             // Target is a PC: affect all PCs in the room who are not the caster and not in their party
             Long casterPartyLeader = caster.getPartyLeaderId();
-            characterService.findAllByRoomId(caster.getCurrentRoomId()).forEach(c -> {
+            mobileService.findAllByRoomId(caster.getCurrentRoomId()).forEach(c -> {
                 if (!c.getId().equals(caster.getId())) {
                     if (casterPartyLeader == null || !casterPartyLeader.equals(c.getPartyLeaderId())) {
                         targets.add(c);
@@ -169,7 +169,7 @@ public abstract class Song {
                 }
             });
         }
-        return targets.stream().filter(this.characterService::canTarget).collect(java.util.stream.Collectors.toList());
+        return targets.stream().filter(this.mobileService::canTarget).collect(java.util.stream.Collectors.toList());
     }
 
     /**
@@ -218,13 +218,13 @@ public abstract class Song {
             boolean isDebuff = effect.getModifier1() < 0;
             if (isDebuff) {
                 if (caster.getTarget() == null) {
-                    characterService.setTarget(caster, mobile);
+                    mobileService.setTarget(caster, mobile);
                 }
                 int hateAmount = Math.abs(effect.getModifier1());
                 if (mobile.isHateDebuffer()) hateAmount *= 5;
                 mobile.addHate(caster.getId(), hateAmount);
             } else if (!caster.getId().equals(mobile.getId())) {
-                characterService.findAllByRoomId(mobile.getCurrentRoomId()).forEach(m -> {
+                mobileService.findAllByRoomId(mobile.getCurrentRoomId()).forEach(m -> {
                     if (m.getUserId() == null && mobile.getId().equals(m.getHighestHateTargetId())) {
                         int hateAmount = 5;
                         if (m.isHateHealer()) hateAmount *= 5;
@@ -256,3 +256,4 @@ public abstract class Song {
         return apply.get();
     }
 }
+

@@ -29,7 +29,6 @@ import io.nadia.ai.aimud.types.WeatherType;
 @Slf4j
 public class TickService {
 
-    private final CharacterService characterService;
     private final MobileService mobileService;
     private final CommandService commandService;
     private final CommunicationService communicationService;
@@ -45,7 +44,7 @@ public class TickService {
     /**
      * Constructs a new TickService.
      *
-     * @param characterService     the character service
+     * @param MobileService     the character service
      * @param mobileService        the mobile service
      * @param commandService       the command service
      * @param communicationService the communication service
@@ -54,8 +53,8 @@ public class TickService {
      * @param factionService       the faction service
      * @param configService        the configuration service
      */
-    public TickService(CharacterService characterService, MobileService mobileService, CommandService commandService, CommunicationService communicationService, SkillService skillService, RoomService roomService, FactionService factionService, ConfigService configService) {
-        this.characterService = characterService;
+    public TickService(MobileService mobileService, CommandService commandService, CommunicationService communicationService, SkillService skillService, RoomService roomService, FactionService factionService, ConfigService configService) {
+        
         this.mobileService = mobileService;
         this.commandService = commandService;
         this.communicationService = communicationService;
@@ -77,7 +76,7 @@ public class TickService {
             tickCount = 0;
             
             // Apply hourly Hunger and Thirst decay for players synchronously since it's in-memory
-            for (Mobile c : characterService.getAvailableCharacters()) {
+            for (Mobile c : mobileService.getAvailableCharacters()) {
                 if (c.getUserId() != null) {
                     if (c.getHunger() > 0) c.setHunger(c.getHunger() - 1);
                     if (c.getThirst() > 0) c.setThirst(c.getThirst() - 1);
@@ -116,7 +115,7 @@ public class TickService {
                         ? "\nThe sun rises in the east, breaking through the morning mist."
                         : "\nThe sun slowly sets in the west, and night falls across the realm.";
                     
-                    timeMsgMono = Flux.fromIterable(characterService.getAvailableCharacters())
+                    timeMsgMono = Flux.fromIterable(mobileService.getAvailableCharacters())
                         .filter(c -> c.getCurrentRoomId() != null)
                         .flatMap(c -> roomService.getRoom(c.getCurrentRoomId())
                             .filter(r -> isOutdoors(r.getRoomType()))
@@ -142,7 +141,7 @@ public class TickService {
                         currentWeather = possibleWeathers[random.nextInt(possibleWeathers.length)];
                         final String weatherMsg = "\n" + currentWeather.getTransitionMessage();
                         
-                        weatherMsgMono = Flux.fromIterable(characterService.getAvailableCharacters())
+                        weatherMsgMono = Flux.fromIterable(mobileService.getAvailableCharacters())
                             .filter(c -> c.getCurrentRoomId() != null)
                             .flatMap(c -> roomService.getRoom(c.getCurrentRoomId())
                                 .filter(r -> isOutdoors(r.getRoomType()))
@@ -172,7 +171,7 @@ public class TickService {
         }
 
         // Process PCs
-        List<Mobile> characters = characterService.getAvailableCharacters();
+        List<Mobile> characters = mobileService.getAvailableCharacters();
         for (Mobile character : characters) {
             character.setSkipActionsThisTick(false);
             if (character.getCurrentHp() <= 0) {
@@ -236,12 +235,12 @@ public class TickService {
                 }
             }
             if (save && character.getUserId() != null) {
-                characterService.save(character).subscribe();
+                mobileService.save(character).subscribe();
             }
         }
 
         // Process NPCs (Mobiles)
-        List<Mobile> mobiles = mobileService.getActiveMobiles();
+        List<Mobile> mobiles = mobileService.getAvailableCharacters();
         for (Mobile mobile : mobiles) {
             mobile.setSkipActionsThisTick(false);
             if (mobile.getCurrentHp() <= 0) {
@@ -257,7 +256,10 @@ public class TickService {
 
                 // Execute pending commands for the mobile if we ever add an AI decision loop queue
                 if (!mobile.getCommandQueue().isEmpty()) {
-                    // Not implemented yet
+                    commandService.processCommand(mobile)
+                            .doOnError(error -> log.error("Error processing command for NPC {}", mobile.getName(), error))
+                            .onErrorResume(error -> Mono.empty())
+                            .subscribe();
                 }
 
                 processFactionAssist(mobile);
@@ -326,8 +328,8 @@ public class TickService {
         if (observer.getCurrentRoomId() == null) return;
         if (observer.getCurrentHp() <= 0) return;
 
-        List<Mobile> roomOccupants = new ArrayList<>(characterService.findAllByRoomId(observer.getCurrentRoomId()));
-        roomOccupants.addAll(mobileService.getMobilesInRoom(observer.getCurrentRoomId()));
+        List<Mobile> roomOccupants = new ArrayList<>(mobileService.findAllByRoomId(observer.getCurrentRoomId()));
+        roomOccupants.addAll(mobileService.findAllByRoomId(observer.getCurrentRoomId()));
 
         for (Mobile actor : roomOccupants) {
             if (actor.getId().equals(observer.getId())) continue;
@@ -385,7 +387,7 @@ public class TickService {
      * @param personHelping  the character the NPC is defending
      */
     private void initiateAssist(Mobile observer, Mobile targetToAttack, Mobile personHelping) {
-        if (!characterService.setTarget(observer, targetToAttack)) return;
+        if (!mobileService.setTarget(observer, targetToAttack)) return;
         communicationService.roomMessage(observer, "\n" + observer.getName() + " jumps into the fray to assist " + personHelping.getName() + "!");
         if (targetToAttack.getUserId() != null) communicationService.sendTextMessage(targetToAttack, "\n\n" + observer.getName() + " attacks you!");
     }
@@ -412,11 +414,11 @@ public class TickService {
             Long highestHateId = attacker.getHighestHateTargetId();
             while (highestHateId != null) {
                 Long topHateId = highestHateId;
-                Mobile newTarget = characterService.findAllByRoomId(attacker.getCurrentRoomId()).stream()
+                Mobile newTarget = mobileService.findAllByRoomId(attacker.getCurrentRoomId()).stream()
                     .filter(c -> c.getId().equals(topHateId)).findFirst().orElse(null);
                     
                 if (newTarget != null && newTarget.getCurrentHp() > 0) {
-                    if (!characterService.setTarget(attacker, newTarget)) {
+                    if (!mobileService.setTarget(attacker, newTarget)) {
                         attacker.removeHate(highestHateId);
                         highestHateId = attacker.getHighestHateTargetId();
                         continue;
@@ -436,7 +438,7 @@ public class TickService {
         }
 
         if (target.isFrozen()) {
-            characterService.setTarget(attacker, null);
+            mobileService.setTarget(attacker, null);
             if (attacker.getUserId() != null) {
                 communicationService.sendTextMessage(attacker, "\n\n" + target.getName() + " is frozen and cannot be attacked.");
             }
@@ -450,14 +452,14 @@ public class TickService {
             }
             // Do not clear target if willFollow is true, wait until next action
             if (!attacker.isWillFollow()) {
-                characterService.setTarget(attacker, null);
+                mobileService.setTarget(attacker, null);
             }
             return true;
         }
 
         // Auto-retaliate if target doesn't have a target
         if (target.getTarget() == null) {
-            if (!characterService.setTarget(target, attacker)) return false;
+            if (!mobileService.setTarget(target, attacker)) return false;
             if (target.isWillFollow()) target.setFollowingId(attacker.getId());
             if (target.getUserId() != null) {
                 communicationService.sendTextMessage(target, "\n\n" + attacker.getName() + " is attacking you!");
@@ -536,7 +538,7 @@ public class TickService {
         if (target.getCurrentRoomId() == null) {
             return;
         }
-        List<Mobile> charsInRoom = characterService.findAllByRoomId(target.getCurrentRoomId());
+        List<Mobile> charsInRoom = mobileService.findAllByRoomId(target.getCurrentRoomId());
         for (Mobile character : charsInRoom) {
             if (character.getTarget() != null && character.getTarget().getId().equals(target.getId())) {
                 communicationService.sendTargetUpdate(character, target);
@@ -791,7 +793,7 @@ public class TickService {
 
         Mobile looter = null;
         if (deceased.getCurrentRoomId() != null && killerId != null) {
-            looter = characterService.findAllByRoomId(deceased.getCurrentRoomId()).stream()
+            looter = mobileService.findAllByRoomId(deceased.getCurrentRoomId()).stream()
                     .filter(m -> m.getId().equals(killerId) && m.isWillLoot() && m.getCurrentHp() > 0)
                     .findFirst()
                     .orElse(null);
@@ -817,18 +819,18 @@ public class TickService {
         // Place corpse in the room
         if (deceased.getCurrentRoomId() != null) {
             roomService.addTransientItemToRoom(deceased.getCurrentRoomId(), corpse);
-            characterService.findAllByRoomId(deceased.getCurrentRoomId())
+            mobileService.findAllByRoomId(deceased.getCurrentRoomId())
                     .forEach(c -> communicationService.sendTextMessage(c,
                             "\nThe corpse of " + deceased.getName() + " lies here."));
         }
 
         if (deceased.getUserId() != null) {
             // Strip PC's inventory/equipment from DB so they log back in empty
-            characterService.clearInventoryAndEquipment(deceased).subscribe();
+            mobileService.clearInventoryAndEquipment(deceased).subscribe();
             deceased.getCommandQueue().add("logout");
         } else {
             // Remove the dead NPC from the active mobile pool
-            mobileService.removeActiveMobile(deceased.getId());
+            mobileService.deselectCharacter(deceased.getId());
         }
     }
 
@@ -862,7 +864,7 @@ public class TickService {
 
         Mobile attacker = null;
         if (finalKillerId != null) {
-            attacker = characterService.findAllByRoomId(target.getCurrentRoomId()).stream()
+            attacker = mobileService.findAllByRoomId(target.getCurrentRoomId()).stream()
                     .filter(m -> m.getId().equals(finalKillerId))
                     .findFirst().orElse(null);
         }
@@ -872,7 +874,7 @@ public class TickService {
             factionService.handleKillPenalty(attacker, target)
                     .doOnError(e -> log.error("Failed to handle faction kill penalty", e))
                     .subscribe();
-            characterService.setTarget(attacker, null);
+            mobileService.setTarget(attacker, null);
         } else {
             if (target.getUserId() != null) {
                 communicationService.sendTextMessage(target, "\n\nYou have died...");
@@ -884,10 +886,10 @@ public class TickService {
         createCorpse(target, finalKillerId);
         
         // Clear hate towards the dead target from everyone in the room
-        characterService.findAllByRoomId(target.getCurrentRoomId())
+        mobileService.findAllByRoomId(target.getCurrentRoomId())
                 .forEach(m -> m.removeHate(target.getId()));
 
-        characterService.setTarget(target, null);
+        mobileService.setTarget(target, null);
         
         if (target.getUserId() != null) communicationService.sendCharacterUpdate(target);
         if (attacker != null && attacker.getUserId() != null) communicationService.sendCharacterUpdate(attacker);
@@ -960,17 +962,17 @@ public class TickService {
                     mobile.setSkipActionsThisTick(true);
                     
                     if (ce.getCasterId() != null) {
-                        Mobile caster = characterService.getAvailableCharacters().stream()
+                        Mobile caster = mobileService.getAvailableCharacters().stream()
                             .filter(c -> c.getId().equals(ce.getCasterId()))
                             .findFirst().orElse(null);
                         if (caster == null) {
-                            caster = mobileService.getActiveMobiles().stream()
+                            caster = mobileService.getAvailableCharacters().stream()
                                 .filter(m -> m.getId().equals(ce.getCasterId()))
                                 .findFirst().orElse(null);
                         }
                         
                         if (caster != null && mobile.getCurrentRoomId() != null && mobile.getCurrentRoomId().equals(caster.getCurrentRoomId())) {
-                            characterService.setTarget(mobile, caster);
+                            mobileService.setTarget(mobile, caster);
                         }
                     }
                     
@@ -1014,8 +1016,8 @@ public class TickService {
                 }
 
                 if (damage > 0) {
-                    List<Mobile> roomOccupants = new ArrayList<>(characterService.findAllByRoomId(room.getId()));
-                    roomOccupants.addAll(mobileService.getMobilesInRoom(room.getId()));
+                    List<Mobile> roomOccupants = new ArrayList<>(mobileService.findAllByRoomId(room.getId()));
+                    roomOccupants.addAll(mobileService.findAllByRoomId(room.getId()));
 
                     String damageTypeStr = effect.getEffectType().getLabel().toLowerCase();
                     for (Mobile occupant : roomOccupants) {
@@ -1171,7 +1173,7 @@ public class TickService {
         if (this.currentWeather != newWeather) {
             this.currentWeather = newWeather;
             final String weatherMsg = "\n" + currentWeather.getTransitionMessage();
-            Flux.fromIterable(characterService.getAvailableCharacters())
+            Flux.fromIterable(mobileService.getAvailableCharacters())
                 .filter(c -> c.getCurrentRoomId() != null)
                 .flatMap(c -> roomService.getRoom(c.getCurrentRoomId())
                     .filter(r -> isOutdoors(r.getRoomType()))
@@ -1181,3 +1183,4 @@ public class TickService {
         }
     }
 }
+

@@ -2,7 +2,7 @@ package io.nadia.ai.aimud.spells;
 
 import io.nadia.ai.aimud.annontation.MagicSpell;
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.EffectService;
 import io.nadia.ai.aimud.service.MobileService;
@@ -15,8 +15,8 @@ import io.nadia.ai.aimud.service.SkillService;
 @MagicSpell(name = "recall")
 public class Recall extends Spell {
 
-    public Recall(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mobileService, characterService, communicationService, effectService);
+    public Recall(SkillService skillService, MobileService mobileService, CommunicationService communicationService, EffectService effectService) {
+        super(skillService, mobileService, communicationService, effectService);
     }
 
     @Override
@@ -44,7 +44,7 @@ public class Recall extends Spell {
         if (parts.length >= 3) {
             String name = parts[2].toLowerCase();
             // Search all available characters in the game for the target, not just the current room
-            return characterService.getAvailableCharacters().stream()
+            return mobileService.getAvailableCharacters().stream()
                     .filter(c -> c.getName().toLowerCase().contains(name))
                     .filter(c -> isSameGroup(mobile, c))
                     .findFirst()
@@ -96,13 +96,14 @@ public class Recall extends Spell {
         }
         
         // Notify the target's old room
-        characterService.findAllByRoomId(target.getCurrentRoomId()).stream()
+        mobileService.findAllByRoomId(target.getCurrentRoomId()).stream()
                 .filter(m -> !m.getId().equals(target.getId()))
                 .forEach(m -> communicationService.sendTextMessage(m, "\n\nA glowing portal opens and pulls " + target.getName() + " inside!"));
 
         // Teleport the target
-        characterService.enterRoom(target, mobile.getCurrentRoomId()).subscribe();
+        mobileService.enterRoom(target, mobile.getCurrentRoomId()).subscribe();
 
         return true;
     }
 }
+

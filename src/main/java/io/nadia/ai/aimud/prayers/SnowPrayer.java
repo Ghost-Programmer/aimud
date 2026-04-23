@@ -1,7 +1,7 @@
 package io.nadia.ai.aimud.prayers;
 
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.EffectService;
 import io.nadia.ai.aimud.service.MobileService;
@@ -20,8 +20,8 @@ public class SnowPrayer extends Prayer {
 
     private final TickService tickService;
 
-    public SnowPrayer(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService, TickService tickService) {
-        super(skillService, mobileService, characterService, communicationService, effectService);
+    public SnowPrayer(SkillService skillService, MobileService mobileService, CommunicationService communicationService, EffectService effectService, TickService tickService) {
+        super(skillService, mobileService, communicationService, effectService);
         this.tickService = tickService;
     }
 
@@ -58,3 +58,4 @@ public class SnowPrayer extends Prayer {
         return true;
     }
 }
+

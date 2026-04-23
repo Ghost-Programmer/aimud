@@ -33,7 +33,7 @@ public class StoreCommand implements Command {
             return reactor.core.publisher.Mono.empty();
         }
 
-        List<Mobile> mobilesInRoom = mobileService.getMobilesInRoom(roomId);
+        List<Mobile> mobilesInRoom = mobileService.findAllByRoomId(roomId);
         Mobile merchant = mobilesInRoom.stream()
                 .peek(m -> log.info("Mobile: {}", m.getName()))
                 .filter(m -> !m.getId().equals(character.getId()) && m.getStoreId() != null)

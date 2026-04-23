@@ -2,7 +2,7 @@ package io.nadia.ai.aimud.commands;
 
 import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.RoomService;
@@ -22,7 +22,6 @@ import java.util.List;
 public class AttackCommand implements Command {
     private final CommunicationService communicationService;
     private final RoomService roomService;
-    private final CharacterService characterService;
     private final MobileService mobileService;
 
     @Override
@@ -33,41 +32,41 @@ public class AttackCommand implements Command {
      * @param commandLine trailing standard query parameters
      * @return a reactive pipeline
      */
-    public Mono<Void> execute(Mobile Mobile, String commandLine) {
-        log.info("Executing attack command for Mobile: {}", Mobile.getName());
+    public Mono<Void> execute(Mobile mobile, String commandLine) {
+        log.info("Executing attack command for Mobile: {}", mobile.getName());
 
         String[] parts = commandLine.trim().split("\\s+", 2);
         if (parts.length < 2) {
-            communicationService.sendTextMessage(Mobile, "\n\nAttack who?");
+            communicationService.sendTextMessage(mobile, "\n\nAttack who?");
             return Mono.empty();
         }
 
         String targetName = parts[1].toLowerCase();
 
-        return roomService.getRoom(Mobile.getCurrentRoomId())
+        return roomService.getRoom(mobile.getCurrentRoomId())
                 .flatMap(room -> {
                     // Check for a PC target first
-                    List<Mobile> charactersInRoom = characterService.findAllByRoomId(room.getId());
+                    List<Mobile> charactersInRoom = mobileService.findAllByRoomId(room.getId());
                     Mobile pcTarget = charactersInRoom.stream()
-                            .filter(c -> !c.getId().equals(Mobile.getId()) && c.getName().toLowerCase().contains(targetName))
+                            .filter(c -> !c.getId().equals(mobile.getId()) && c.getName().toLowerCase().contains(targetName))
                             .findFirst()
                             .orElse(null);
 
                     if (pcTarget != null) {
-                        if (characterService.setTarget(Mobile, pcTarget)) {
-                            communicationService.sendTextMessage(Mobile, "\n\nYou charge towards " + pcTarget.getName() + " and attack!");
-                            communicationService.roomMessage(Mobile, "\n" + Mobile.getName() + " charges towards " + pcTarget.getName() + " and attacks!");
+                        if (mobileService.setTarget(mobile, pcTarget)) {
+                            communicationService.sendTextMessage(mobile, "\n\nYou charge towards " + pcTarget.getName() + " and attack!");
+                            communicationService.roomMessage(mobile, "\n" + mobile.getName() + " charges towards " + pcTarget.getName() + " and attacks!");
                         } else {
-                            communicationService.sendTextMessage(Mobile, "\n\nYou cannot attack " + pcTarget.getName() + ".");
+                            communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + pcTarget.getName() + ".");
                         }
                         return Mono.empty();
                     }
 
                     // Check for an NPC target
-                    List<Mobile> mobilesInRoom = mobileService.getMobilesInRoom(room.getId());
+                    List<Mobile> mobilesInRoom = mobileService.findAllByRoomId(room.getId());
                     if (mobilesInRoom.isEmpty()) {
                         log.info("No mobiles found in room: {}", room.getName());
-                        communicationService.sendTextMessage(Mobile, "\n\nThey aren't here.");
+                        communicationService.sendTextMessage(mobile, "\n\nThey aren't here.");
                         return Mono.empty();
                     }
 
@@ -75,16 +74,16 @@ public class AttackCommand implements Command {
                             .filter(m -> m.getName().toLowerCase().contains(targetName))
                             .findFirst()
                             .map(npcTarget -> {
-                                if (characterService.setTarget(Mobile, npcTarget)) {
-                                    communicationService.sendTextMessage(Mobile, "\n\nYou charge towards " + npcTarget.getName() + " and attack!");
-                                    communicationService.roomMessage(Mobile, "\n" + Mobile.getName() + " charges towards " + npcTarget.getName() + " and attacks!");
+                                if (mobileService.setTarget(mobile, npcTarget)) {
+                                    communicationService.sendTextMessage(mobile, "\n\nYou charge towards " + npcTarget.getName() + " and attack!");
+                                    communicationService.roomMessage(mobile, "\n" + mobile.getName() + " charges towards " + npcTarget.getName() + " and attacks!");
                                 } else {
-                                    communicationService.sendTextMessage(Mobile, "\n\nYou cannot attack " + npcTarget.getName() + ".");
+                                    communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + npcTarget.getName() + ".");
                                 }
                                 return Mono.empty();
                             }).orElse(Mono.defer(() -> {
                                 log.info("No mobiles found in room: {} by name: {}", room.getName(), targetName);
-                                communicationService.sendTextMessage(Mobile, "\n\nThey aren't here.");
+                                communicationService.sendTextMessage(mobile, "\n\nThey aren't here.");
                                 return Mono.empty();
                             }));
                 }).then();
@@ -100,4 +99,5 @@ public class AttackCommand implements Command {
         return "Syntax: attack <target>\n\nStarts fighting the specified target in the room.";
     }
 }
+
 

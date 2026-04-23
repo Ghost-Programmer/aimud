@@ -19,13 +19,13 @@ public class Fireball extends Spell {
      *
      * @param skillService         system for evaluating actor skill ranks
      * @param mobileService        registry of available AI targets
-     * @param characterService     registry of active player characters
+     * @param MobileService     registry of active player characters
      * @param communicationService emitter for localized chat events
      * @param effectService        engine handling transient buffs and debuffs
      */
-    public Fireball(SkillService skillService, MobileService mobileService, CharacterService characterService,
+    public Fireball(SkillService skillService, MobileService mobileService,
                     CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mobileService, characterService, communicationService, effectService);
+        super(skillService, mobileService, communicationService, effectService);
     }
 
     /**
@@ -65,7 +65,7 @@ public class Fireball extends Spell {
      */
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile target) {
-        if (target != null && !this.characterService.canTarget(target)) {
+        if (target != null && !this.mobileService.canTarget(target)) {
             this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + target.getName() + ".");
             return false;
         }
@@ -126,7 +126,7 @@ public class Fireball extends Spell {
                 hateAmount *= 5;
             tgt.addHate(mobile.getId(), hateAmount);
             if (mobile.getTarget() == null) {
-                if (!this.characterService.setTarget(mobile, tgt)) continue;
+                if (!this.mobileService.setTarget(mobile, tgt)) continue;
             }
 
             if (tgt.getCurrentHp() <= 0) {
@@ -141,21 +141,21 @@ public class Fireball extends Spell {
                 }
                 this.communicationService.roomMessage(tgt, deathMsg);
 
-                this.characterService.setTarget(tgt, null);
+                this.mobileService.setTarget(tgt, null);
                 if (mobile.getTarget() == tgt) {
-                    this.characterService.setTarget(mobile, null);
+                    this.mobileService.setTarget(mobile, null);
                 }
 
-                this.characterService.findAllByRoomId(tgt.getCurrentRoomId())
+                this.mobileService.findAllByRoomId(tgt.getCurrentRoomId())
                         .forEach(m -> m.removeHate(tgt.getId()));
             } else {
                 if (tgt.getTarget() == null) {
-                    if (!this.characterService.setTarget(tgt, mobile)) continue;
+                    if (!this.mobileService.setTarget(tgt, mobile)) continue;
                 }
             }
 
             if (tgt.getUserId() != null) {
-                this.characterService.save(tgt).subscribe();
+                this.mobileService.save(tgt).subscribe();
             } else {
                 this.mobileService.saveMobile(tgt).subscribe();
             }
@@ -164,4 +164,5 @@ public class Fireball extends Spell {
         return true;
     }
 }
+
 

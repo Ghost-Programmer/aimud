@@ -3,7 +3,7 @@ package io.nadia.ai.aimud.commands;
 import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Mobile;
 import io.nadia.ai.aimud.model.Item;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.SkillService;
 import io.nadia.ai.aimud.types.SkillsType;
@@ -19,13 +19,13 @@ import java.util.Random;
 @MudCommand(name = "disarm")
 public class DisarmCommand implements Command {
 
-    private final CharacterService characterService;
+    private final MobileService mobileService;
     private final CommunicationService communicationService;
     private final SkillService skillService;
     private final Random random = new Random();
 
     public DisarmCommand(ApplicationContext context) {
-        this.characterService = context.getBean(CharacterService.class);
+        this.mobileService = context.getBean(MobileService.class);
         this.communicationService = context.getBean(CommunicationService.class);
         this.skillService = context.getBean(SkillService.class);
     }
@@ -83,7 +83,7 @@ public class DisarmCommand implements Command {
             }
 
             // Remove it
-            return characterService.unequipItem(target, "primary")
+            return mobileService.unequipItem(target, "primary")
                    .then(Mono.defer(() -> {
                        // Improve skill occasionally on success
                        return skillService.checkSkill(mobile, SkillsType.DISARM, target.getCurrentHp() > 0 ? (int) target.getChallengeRating() : 1, true)
@@ -114,3 +114,4 @@ public class DisarmCommand implements Command {
         return "Syntax: disarm\n\nAttempt to skillfully disarm your target in combat, removing their primary weapon.";
     }
 }
+

@@ -2,7 +2,7 @@ package io.nadia.ai.aimud.commands;
 
 import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.MobileService;
 import org.springframework.context.ApplicationContext;
@@ -19,13 +19,11 @@ import java.util.List;
 public class TellCommand implements Command {
 
     private final CommunicationService communicationService;
-    private final CharacterService characterService;
     private final MobileService mobileService;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     public TellCommand(ApplicationContext context) {
         this.communicationService = context.getBean(CommunicationService.class);
-        this.characterService = context.getBean(CharacterService.class);
         this.mobileService = context.getBean(MobileService.class);
         this.eventPublisher = context;
     }
@@ -49,8 +47,8 @@ public class TellCommand implements Command {
         String text = parts[2];
         
         List<Mobile> allOnline = new ArrayList<>();
-        allOnline.addAll(characterService.getAvailableCharacters());
-        allOnline.addAll(mobileService.getActiveMobiles());
+        allOnline.addAll(mobileService.getAvailableCharacters());
+        allOnline.addAll(mobileService.getAvailableCharacters());
 
         Mobile target = allOnline.stream()
                 .filter(m -> m.getName().toLowerCase().startsWith(targetName))
@@ -86,3 +84,4 @@ public class TellCommand implements Command {
         return "Syntax: tell <target> <message>\n\nSends a private, direct piece of text to a particular character or mobile by name.";
     }
 }
+

@@ -18,13 +18,13 @@ public class HpRegen extends Spell {
      *
      * @param skillService         system for evaluating actor skill ranks
      * @param mobileService        registry of available AI targets
-     * @param characterService     registry of active player characters
+     * @param MobileService     registry of active player characters
      * @param communicationService emitter for localized chat events
      * @param effectService        engine handling transient buffs and debuffs
      */
-    protected HpRegen(SkillService skillService, MobileService mobileService, CharacterService characterService,
+    protected HpRegen(SkillService skillService, MobileService mobileService,
                       CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mobileService, characterService, communicationService, effectService);
+        super(skillService, mobileService, communicationService, effectService);
     }
 
     /**
@@ -85,7 +85,7 @@ public class HpRegen extends Spell {
      */
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile target) {
-        if (target != null && !this.characterService.canTarget(target)) {
+        if (target != null && !this.mobileService.canTarget(target)) {
             this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + target.getName() + ".");
             return false;
         }
@@ -131,6 +131,7 @@ public class HpRegen extends Spell {
         return false;
     }
 }
+
 
 
 

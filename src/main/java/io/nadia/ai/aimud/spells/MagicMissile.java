@@ -18,12 +18,12 @@ public class MagicMissile extends Spell {
      *
      * @param skillService         system for evaluating actor skill ranks
      * @param mobileService        registry of available AI targets
-     * @param characterService     registry of active player characters
+     * @param MobileService     registry of active player characters
      * @param communicationService emitter for localized chat events
      * @param effectService        engine handling transient buffs and debuffs
      */
-    protected MagicMissile(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mobileService, characterService, communicationService, effectService);
+    protected MagicMissile(SkillService skillService, MobileService mobileService, CommunicationService communicationService, EffectService effectService) {
+        super(skillService, mobileService, communicationService, effectService);
     }
 
     /**
@@ -63,7 +63,7 @@ public class MagicMissile extends Spell {
      */
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile target) {
-        if (target != null && !this.characterService.canTarget(target)) {
+        if (target != null && !this.mobileService.canTarget(target)) {
             this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + target.getName() + ".");
             return false;
         }
@@ -86,12 +86,12 @@ public class MagicMissile extends Spell {
             this.communicationService.sendTextMessage(mobile, String.format("\n\nYou fire a magic missile at %s for %d damage!", target.getName(), damage));
         }
 
-        if (mobile.getUserId() != null) {
-            Mobile Mobile = target;
+        if (target.getUserId() != null) {
             if (resist) {
-                this.communicationService.sendTextMessage(Mobile, String.format("\n\nYou resist %s's magic missile  for half damage!", mobile.getName()));
+                this.communicationService.sendTextMessage(target, String.format("\n\nYou resist %s's magic missile  for half damage!", mobile.getName()));
+            } else {
+                this.communicationService.sendTextMessage(target, String.format("\n\n%s fires a magic missile at you for %d damage!", mobile.getName(), damage));
             }
-            this.communicationService.sendTextMessage(Mobile, String.format("\n\n%s fires a magic missile at you for %d damage!", mobile.getName(), damage));
         }
         if (resist) {
             this.communicationService.roomMessage(mobile, String.format("\n\n%s's magic missile is resisted for half damage as it hits %s!", mobile.getName(), target.getName()));
@@ -103,7 +103,7 @@ public class MagicMissile extends Spell {
         if (target.isHateWizard()) hateAmount *= 5;
         target.addHate(mobile.getId(), hateAmount);
         if (mobile.getTarget() == null) {
-            if (!this.characterService.setTarget(mobile, target)) return false;
+            if (!this.mobileService.setTarget(mobile, target)) return false;
         }
 
         if (target.getCurrentHp() <= 0) {
@@ -118,15 +118,16 @@ public class MagicMissile extends Spell {
             }
             this.communicationService.roomMessage(target, deathMsg);
 
-            this.characterService.setTarget(target, null);
-            this.characterService.setTarget(mobile, null);
+            this.mobileService.setTarget(target, null);
+            this.mobileService.setTarget(mobile, null);
 
             // Clear hate
-            this.characterService.findAllByRoomId(target.getCurrentRoomId())
+            this.mobileService.findAllByRoomId(target.getCurrentRoomId())
                     .forEach(m -> m.removeHate(target.getId()));
         }
         return !resist;
     }
 }
+
 
 

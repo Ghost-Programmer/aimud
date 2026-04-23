@@ -4,7 +4,7 @@ import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Mobile;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.MobileService;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -24,7 +24,6 @@ public class FollowCommand implements Command {
 
     private final CommunicationService communicationService;
     private final MobileService mobileService;
-    private final CharacterService characterService;
 
     @Override
     /**
@@ -47,19 +46,19 @@ public class FollowCommand implements Command {
         if (targetName.equalsIgnoreCase("self")) {
             mobile.setFollowingId(null);
             communicationService.sendTextMessage(mobile, "\n\nYou stop following anyone.");
-            return characterService.save(mobile).then();
+            return mobileService.save(mobile).then();
         }
         
         Long roomId = mobile.getCurrentRoomId();
 
         // Check active characters in the room first
-        Optional<Mobile> targetMobile = characterService.findAllByRoomId(roomId).stream()
+        Optional<Mobile> targetMobile = mobileService.findAllByRoomId(roomId).stream()
                 .filter(m -> m.getName().equalsIgnoreCase(targetName) && !m.getId().equals(mobile.getId()) && !m.isHidden() && !m.isInvisible())
                 .findFirst();
 
         if (targetMobile.isEmpty()) {
             // Check NPCs in the room
-            targetMobile = mobileService.getMobilesInRoom(roomId).stream()
+            targetMobile = mobileService.findAllByRoomId(roomId).stream()
                     .filter(m -> m.getName().toLowerCase().contains(targetName.toLowerCase()) && !m.isHidden() && !m.isInvisible())
                     .findFirst();
         }
@@ -69,7 +68,7 @@ public class FollowCommand implements Command {
             mobile.setFollowingId(target.getId());
             communicationService.sendTextMessage(mobile, "\n\nYou start following " + target.getName() + ".");
             communicationService.sendTextMessage(target, "\n\n" + mobile.getName() + " starts following you.");
-            return characterService.save(mobile).then();
+            return mobileService.save(mobile).then();
         } else {
             communicationService.sendTextMessage(mobile, "\n\nThey aren't here.");
             return Mono.empty();
@@ -86,3 +85,4 @@ public class FollowCommand implements Command {
         return "Syntax: follow <name> | follow self\n\nAllows you to follow another character or mobile. If they move, you will follow them if possible. Use 'follow self' to stop following.";
     }
 }
+

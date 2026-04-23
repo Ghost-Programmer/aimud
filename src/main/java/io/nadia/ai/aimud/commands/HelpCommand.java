@@ -33,13 +33,13 @@ public class HelpCommand implements Command {
      * @param commandLine trailing standard query parameters
      * @return a reactive pipeline
      */
-    public Mono<Void> execute(Mobile Mobile, String commandLine) {
+    public Mono<Void> execute(Mobile mobile, String commandLine) {
         String[] parts = commandLine.trim().split("\\s+", 2);
 
         if (parts.length < 2) {
             // Provide a list of all commands
             return reactor.core.publisher.Flux.fromIterable(commandService.getAllTasks().entrySet())
-                    .filterWhen(entry -> commandService.hasPermission(Mobile, entry.getValue()))
+                    .filterWhen(entry -> commandService.hasPermission(mobile, entry.getValue()))
                     .sort(Map.Entry.comparingByKey())
                     .collectList()
                     .flatMap(list -> {
@@ -49,7 +49,7 @@ public class HelpCommand implements Command {
                             sb.append(String.format("%-15s - %s\n", entry.getKey(), entry.getValue().getDescription()));
                         }
                         sb.append("\nType 'help <command>' for more detailed information.");
-                        communicationService.sendTextMessage(Mobile, sb.toString());
+                        communicationService.sendTextMessage(mobile, sb.toString());
                         return Mono.empty();
                     });
         } else {
@@ -58,17 +58,17 @@ public class HelpCommand implements Command {
             Command cmd = commandService.getTask(cmdName);
 
             if (cmd != null) {
-                return commandService.hasPermission(Mobile, cmd)
+                return commandService.hasPermission(mobile, cmd)
                         .flatMap(hasPerm -> {
                             if (hasPerm) {
-                                communicationService.sendTextMessage(Mobile, "\n\nHelp for '" + cmdName + "':\n" + cmd.getDetailedDescription());
+                                communicationService.sendTextMessage(mobile, "\n\nHelp for '" + cmdName + "':\n" + cmd.getDetailedDescription());
                             } else {
-                                communicationService.sendTextMessage(Mobile, "\n\nNo such command: " + cmdName);
+                                communicationService.sendTextMessage(mobile, "\n\nNo such command: " + cmdName);
                             }
                             return Mono.empty();
                         });
             } else {
-                communicationService.sendTextMessage(Mobile, "\n\nNo such command: " + cmdName);
+                communicationService.sendTextMessage(mobile, "\n\nNo such command: " + cmdName);
                 return Mono.empty();
             }
         }

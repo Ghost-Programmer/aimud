@@ -2,7 +2,7 @@ package io.nadia.ai.aimud.commands;
 
 import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.RoomService;
 import lombok.extern.slf4j.Slf4j;
@@ -19,12 +19,12 @@ import java.util.Optional;
 @MudCommand(name = "transfer", role = "MUD_ADMIN")
 public class TransferCommand implements Command {
 
-    private final CharacterService characterService;
+    private final MobileService mobileService;
     private final CommunicationService communicationService;
     private final RoomService roomService;
 
     public TransferCommand(ApplicationContext context) {
-        this.characterService = context.getBean(CharacterService.class);
+        this.mobileService = context.getBean(MobileService.class);
         this.communicationService = context.getBean(CommunicationService.class);
         this.roomService = context.getBean(RoomService.class);
     }
@@ -40,7 +40,7 @@ public class TransferCommand implements Command {
         String playerName = parts[1];
         String targetStr = parts.length > 2 ? parts[2] : null;
 
-        Optional<Mobile> targetPlayerOpt = characterService.getAvailableCharacters().stream()
+        Optional<Mobile> targetPlayerOpt = mobileService.getAvailableCharacters().stream()
                 .filter(c -> c.getName().equalsIgnoreCase(playerName))
                 .findFirst();
 
@@ -67,7 +67,7 @@ public class TransferCommand implements Command {
                 .flatMap(room -> {
                     communicationService.sendTextMessage(mobile, "\n\nYou transfer " + targetPlayer.getName() + " to room " + room.getId() + ".");
                     communicationService.sendTextMessage(targetPlayer, "\n\nYou have been forcefully transferred by an administrator.");
-                    return characterService.enterRoom(targetPlayer, room.getId());
+                    return mobileService.enterRoom(targetPlayer, room.getId());
                 })
                 .switchIfEmpty(Mono.defer(() -> {
                     communicationService.sendTextMessage(mobile, "\n\nRoom ID " + roomId + " does not exist.");
@@ -85,3 +85,4 @@ public class TransferCommand implements Command {
         return "Syntax: transfer <playerName> [roomID]\n\nTeleports the specified player instantly to the specified room ID. If no room ID is provided, teleports them to your current room. This is an administrative command.";
     }
 }
+

@@ -2,7 +2,7 @@ package io.nadia.ai.aimud.commands;
 
 import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.SkillService;
@@ -20,13 +20,11 @@ import java.util.List;
 @MudCommand(name = "intimidate")
 public class IntimidateCommand implements Command {
 
-    private final CharacterService characterService;
     private final MobileService mobileService;
     private final CommunicationService communicationService;
     private final SkillService skillService;
 
     public IntimidateCommand(ApplicationContext context) {
-        this.characterService = context.getBean(CharacterService.class);
         this.mobileService = context.getBean(MobileService.class);
         this.communicationService = context.getBean(CommunicationService.class);
         this.skillService = context.getBean(SkillService.class);
@@ -52,8 +50,8 @@ public class IntimidateCommand implements Command {
             return Mono.empty();
         }
 
-        List<Mobile> targets = new ArrayList<>(characterService.findAllByRoomId(mobile.getCurrentRoomId()));
-        targets.addAll(mobileService.getMobilesInRoom(mobile.getCurrentRoomId()));
+        List<Mobile> targets = new ArrayList<>(mobileService.findAllByRoomId(mobile.getCurrentRoomId()));
+        targets.addAll(mobileService.findAllByRoomId(mobile.getCurrentRoomId()));
 
         boolean affected = false;
         for (Mobile m : targets) {
@@ -86,3 +84,4 @@ public class IntimidateCommand implements Command {
         return "Syntax: intimidate\n\nAttracts slight threat from all enemies in the room that currently have you on their hate list. Requires a Physical Attack rating greater than 10.";
     }
 }
+

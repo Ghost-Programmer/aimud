@@ -16,7 +16,7 @@ public interface Command {
      * @param commandLine the full, raw text string entered to trigger this command
      * @return a Mono signaling completion of the reactive command sequence
      */
-    Mono<Void> execute(Mobile Mobile, String commandLine);
+    Mono<Void> execute(Mobile mobile, String commandLine);
 
     /**
      * Retrieves a brief, one-line summary of what the command does.

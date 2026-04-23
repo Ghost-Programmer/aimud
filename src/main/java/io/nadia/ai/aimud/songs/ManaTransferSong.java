@@ -16,13 +16,11 @@ public class ManaTransferSong extends Song {
      *
      * @param skillService         system for evaluating actor skill ranks
      * @param mobileService        registry of available AI targets
-     * @param characterService     registry of active player characters
      * @param communicationService emitter for localized chat events
      * @param effectService        engine handling transient buffs and debuffs
      */
-    protected ManaTransferSong(SkillService skillService, MobileService mobileService,
-                               CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mobileService, characterService, communicationService, effectService);
+    protected ManaTransferSong(SkillService skillService, MobileService mobileService, CommunicationService communicationService, EffectService effectService) {
+        super(skillService, mobileService, communicationService, effectService);
     }
 
     /**
@@ -70,7 +68,7 @@ public class ManaTransferSong extends Song {
      */
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile target) {
-        if (target != null && !this.characterService.canTarget(target)) {
+        if (target != null && !this.mobileService.canTarget(target)) {
             this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + target.getName() + ".");
             return false;
         }
@@ -84,9 +82,9 @@ public class ManaTransferSong extends Song {
         int partySize = 1;
 
         if (leaderId != null) {
-            long count = characterService.findAllByRoomId(mobile.getCurrentRoomId()).stream()
+            long count = mobileService.findAllByRoomId(mobile.getCurrentRoomId()).stream()
                     .filter(m -> leaderId.equals(m.getPartyLeaderId())).count();
-            count += mobileService.getMobilesInRoom(mobile.getCurrentRoomId()).stream()
+            count += mobileService.findAllByRoomId(mobile.getCurrentRoomId()).stream()
                     .filter(m -> leaderId.equals(m.getPartyLeaderId())).count();
             partySize = (int) count;
         }
@@ -131,4 +129,5 @@ public class ManaTransferSong extends Song {
         return true;
     }
 }
+
 

@@ -1,72 +1,956 @@
 package io.nadia.ai.aimud.service;
 
 import io.nadia.ai.aimud.model.Item;
-import io.nadia.ai.aimud.model.Mobile;
+import io.nadia.ai.aimud.model.CharacterClass;
 import io.nadia.ai.aimud.model.CharacterEffect;
-import io.nadia.ai.aimud.model.MobileAction;
-import io.nadia.ai.aimud.model.MobileSkill;
-import io.nadia.ai.aimud.model.Room;
-import io.nadia.ai.aimud.repository.MobileActionRepository;
-import io.nadia.ai.aimud.repository.MobileRepository;
-import io.nadia.ai.aimud.repository.MobileSkillRepository;
-import io.nadia.ai.aimud.types.WearLocation;
+import io.nadia.ai.aimud.model.Mobile;
+import io.nadia.ai.aimud.model.Skill;
+import io.nadia.ai.aimud.repository.*;
+import io.nadia.ai.aimud.commands.Command;
+import io.nadia.ai.aimud.model.MobileMacro;
+import io.nadia.ai.aimud.repository.*;
+import io.nadia.ai.aimud.types.ItemType;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import io.nadia.ai.aimud.model.MobileAction;
+import io.nadia.ai.aimud.model.MobileSkill;
+import io.nadia.ai.aimud.repository.MobileActionRepository;
+import io.nadia.ai.aimud.repository.MobileSkillRepository;
+import io.nadia.ai.aimud.model.Room;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+/**
+ * CharacterService standard implementation layer.
+ * Primary processing handler mapping structural integrations natively.
+ */
 
 @Service
 @Slf4j
 public class MobileService {
 
     private final MobileRepository mobileRepository;
+    private final UserRepository userRepository;
     private final StatService statService;
-    private final MobileSkillRepository mobileSkillRepository;
-    private final ItemService itemService;
     private final DatabaseClient databaseClient;
+    private final FactionService factionService;
+    private final CharacterEffectRepository characterEffectRepository;
+    private final Random random = new Random();
+    private final CommunicationService communicationService;
+    private final RoomService roomService;
+    private final CharacterClassRepository characterClassRepository;
+    private final SkillRepository skillRepository;
+    private final ItemService itemService;
     private final MobileActionRepository mobileActionRepository;
+    private final MobileSkillRepository mobileSkillRepository;
+    private final MobileMacroRepository mobileMacroRepository;
 
-    // In-memory storage for active spawned mobiles
-    // Keys are UUIDs to allow multiple instances of the same mobile template, 
-    // but we map them to their template ID or assign them a unique runtime ID.
-    // For now, we'll key them by their DB ID, assuming 1 DB entry = 1 instance.
+    // In-memory storage for active/available characters
     private final ConcurrentHashMap<Long, Mobile> activeMobiles = new ConcurrentHashMap<>();
 
-    /**
-     * Constructs a new MobileService.
-     *
-     * @param mobileRepository       the mobile repository
-     * @param statService            the stat service
-     * @param mobileSkillRepository  the mobile skill repository
-     * @param itemService            the item service
-     * @param databaseClient         the R2DBC database client
-     * @param mobileActionRepository the mobile action repository
-     */
-    public MobileService(MobileRepository mobileRepository, StatService statService,
-                         MobileSkillRepository mobileSkillRepository, ItemService itemService,
-                         DatabaseClient databaseClient, MobileActionRepository mobileActionRepository) {
+    public MobileService(MobileRepository mobileRepository, UserRepository userRepository, StatService statService,
+            DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository,
+            CommunicationService communicationService, RoomService roomService,
+            CharacterClassRepository characterClassRepository, SkillRepository skillRepository, ItemService itemService,
+            MobileActionRepository mobileActionRepository, MobileSkillRepository mobileSkillRepository, FactionService factionService, MobileMacroRepository mobileMacroRepository) {
         this.mobileRepository = mobileRepository;
+        this.userRepository = userRepository;
         this.statService = statService;
-        this.mobileSkillRepository = mobileSkillRepository;
-        this.itemService = itemService;
         this.databaseClient = databaseClient;
+        this.factionService = factionService;
+        this.characterEffectRepository = characterEffectRepository;
+        this.communicationService = communicationService;
+        this.itemService = itemService;
         this.mobileActionRepository = mobileActionRepository;
+        this.mobileSkillRepository = mobileSkillRepository;
+        this.mobileMacroRepository = mobileMacroRepository;
+        this.communicationService.setMobileService(this);
+        this.roomService = roomService;
+        this.characterClassRepository = characterClassRepository;
+        this.skillRepository = skillRepository;
     }
 
-    /**
-     * Retrieves all non-player character mobiles from the database.
-     *
-     * @return a {@link Flux} emitting all NPC mobiles
-     */
-    @Cacheable(value = "mobiles")
+    public Flux<MobileMacro> getCharacterMacros(Long characterId) {
+        return mobileMacroRepository.findByMobileId(characterId);
+    }
+
+    public Flux<MobileMacro> saveCharacterMacros(Long characterId,
+                                                 List<MobileMacro> macros) {
+        return mobileMacroRepository.deleteByMobileId(characterId)
+                .thenMany(Flux.fromIterable(macros))
+                .flatMap(macro -> {
+                    macro.setMobileId(characterId);
+                    macro.setId(null);
+                    return mobileMacroRepository.save(macro);
+                });
+    }
+
+    public List<Mobile> findAllByRoomId(Long roomId) {
+        return activeMobiles.values().stream()
+                .filter(character -> character.getCurrentRoomId().equals(roomId))
+                .collect(Collectors.toList());
+    }
+
+    public Mono<Void> selectCharacter(Long characterId) {
+        log.info("Selecting character with id: {}", characterId);
+        return getCharacterById(characterId)
+                .flatMap(character -> {
+                    activeMobiles.put(character.getId(), character);
+                    log.info("Character {} added to available list", character.getName());
+                    return this.enterRoom(character, character.getCurrentRoomId());
+                })
+                .then();
+    }
+
+    public Mono<Void> deselectCharacter(Long characterId) {
+        log.info("Deselecting character with id: {}", characterId);
+        Mobile character = activeMobiles.get(characterId);
+        if (character != null) {
+            this.communicationService.roomMessage(character, "\n" + character.getName() + " has left the game.");
+            activeMobiles.remove(characterId);
+        }
+        return Mono.empty();
+    }
+
+    public boolean canTarget(Mobile target) {
+        if (target == null)
+            return false;
+        return !target.isNonCombat();
+    }
+
+    public boolean setTarget(Mobile attacker, Mobile target) {
+        if (target == null) {
+            attacker.setTarget(null);
+            return true;
+        }
+
+        if (canTarget(target)) {
+            attacker.setTarget(target);
+            return true;
+        }
+        return false;
+    }
+
+    public List<Mobile> getAvailableCharacters() {
+        return new ArrayList<>(activeMobiles.values());
+    }
+
+    public Mono<Mobile> createCharacter(String username, Mobile character) {
+        log.info("Creating character for user: {}", username);
+        return userRepository.findByUsername(username)
+                .flatMap(user -> {
+                    character.setUserId(user.getId());
+                    character.setCurrentRoomId(1L);
+                    log.debug("Found user id: {} for username: {}", user.getId(), username);
+
+                    return statService.updateCurrentStats(character)
+                            .map(preparedCharacter -> {
+                                preparedCharacter.setCurrentHp(preparedCharacter.getMaxHp());
+                                preparedCharacter.setCurrentMana(preparedCharacter.getMaxMana());
+                                preparedCharacter.setGold(100);
+                                return preparedCharacter;
+                            })
+                            .flatMap(mobileRepository::save);
+                })
+                .flatMap(savedCharacter -> {
+                    if (savedCharacter.getClassId() != null) {
+                        return characterClassRepository.findById(savedCharacter.getClassId())
+                                .flatMap(characterClass -> {
+                                    Mono<Mobile> itemsMono = Mono.just(savedCharacter);
+
+                                    List<Long> startingItemIds = characterClass.getStartingItemIds();
+                                    if (!startingItemIds.isEmpty()) {
+                                        itemsMono = Flux.fromIterable(startingItemIds)
+                                                .flatMap(itemId -> databaseClient
+                                                        .sql("INSERT INTO character_inventory (character_id, item_id) "
+                                                                +
+                                                                "SELECT :characterId, :itemId " +
+                                                                "WHERE EXISTS (SELECT 1 FROM items WHERE id = :itemIdCheck)")
+                                                        .bind("characterId", savedCharacter.getId())
+                                                        .bind("itemId", itemId)
+                                                        .bind("itemIdCheck", itemId)
+                                                        .fetch()
+                                                        .rowsUpdated()
+                                                        .doOnNext(rowsUpdated -> {
+                                                            if (rowsUpdated == 0) {
+                                                                log.warn(
+                                                                        "Skipping missing starting item {} for character {}",
+                                                                        itemId, savedCharacter.getId());
+                                                            }
+                                                        })
+                                                        .onErrorResume(e -> {
+                                                            log.error("Failed to add starting item {} to character {}",
+                                                                    itemId, savedCharacter.getId(), e);
+                                                            return Mono.just(0L);
+                                                        }))
+                                                .then(Mono.just(savedCharacter));
+                                    }
+
+                                    return itemsMono.flatMap(c -> {
+                                        Mono<Mobile> skillsMono;
+                                        List<String> startingSkills = characterClass.getStartingSkillNames();
+                                        if (startingSkills.isEmpty()) {
+                                            skillsMono = Mono.just(c);
+                                        } else {
+                                            skillsMono = Flux.fromIterable(startingSkills)
+                                                    .flatMap(skillName -> {
+                                                        Skill skill = new Skill();
+                                                        skill.setCharacterId(c.getId());
+                                                        skill.setName(skillName);
+                                                        skill.setRank(1);
+                                                        return skillRepository.save(skill)
+                                                                .onErrorResume(e -> {
+                                                                    log.error("Failed to add starting skill {} to character {}", skillName, c.getId(), e);
+                                                                    return Mono.empty();
+                                                                });
+                                                    })
+                                                    .then(Mono.just(c));
+                                        }
+                                        
+                                        return skillsMono.flatMap(c2 -> 
+                                            databaseClient.sql("SELECT starting_effects FROM races WHERE id = :rId")
+                                                    .bind("rId", c2.getRaceId())
+                                                    .map((row, meta) -> row.get(0, String.class))
+                                                    .one()
+                                                    .flatMap(effs -> {
+                                                        if (effs == null || effs.isEmpty()) return Mono.just(c2);
+                                                        java.util.List<Long> ids = new java.util.ArrayList<>();
+                                                        for (String s : effs.split(",")) {
+                                                            try { ids.add(Long.parseLong(s.trim())); } catch (Exception ignored) {}
+                                                        }
+                                                        return Flux.fromIterable(ids)
+                                                                .flatMap(i -> characterEffectRepository.save(new CharacterEffect(c2.getId(), i, -1)))
+                                                                .then(Mono.just(c2));
+                                                    })
+                                                    .defaultIfEmpty(c2)
+                                        );
+                                    });
+                                })
+                                .defaultIfEmpty(savedCharacter);
+                    }
+                    return Mono.just(savedCharacter);
+                })
+                .flatMap(statService::updateCurrentStats);
+    }
+
+    public Mono<List<Mobile>> getCharactersByUser(String username) {
+        log.info("Fetching characters for user: {}", username);
+        return userRepository.findByUsername(username)
+                .flatMapMany(user -> mobileRepository.findByUserId(user.getId()))
+                .flatMap(statService::updateCurrentStats)
+                .collectList();
+    }
+
+    public Mono<Mobile> updateCharacter(Long id, Mobile character) {
+        log.info("Updating character with id: {}", id);
+        return mobileRepository.findById(id)
+                .flatMap(existingCharacter -> {
+                    log.debug("Merging character data for id: {}", id);
+                    existingCharacter.setName(character.getName());
+                    existingCharacter.setStrength(character.getStrength());
+                    existingCharacter.setDexterity(character.getDexterity());
+                    existingCharacter.setConstitution(character.getConstitution());
+                    existingCharacter.setIntelligence(character.getIntelligence());
+                    existingCharacter.setWisdom(character.getWisdom());
+                    existingCharacter.setCharisma(character.getCharisma());
+                    existingCharacter.setRaceId(character.getRaceId());
+                    existingCharacter.setClassId(character.getClassId());
+                    existingCharacter.setHeadId(character.getHeadId());
+                    existingCharacter.setChestId(character.getChestId());
+                    existingCharacter.setLegsId(character.getLegsId());
+                    existingCharacter.setFeetId(character.getFeetId());
+                    existingCharacter.setArmsId(character.getArmsId());
+                    existingCharacter.setHandsId(character.getHandsId());
+                    existingCharacter.setRightFingerId(character.getRightFingerId());
+                    existingCharacter.setLeftFingerId(character.getLeftFingerId());
+                    existingCharacter.setRightWristId(character.getRightWristId());
+                    existingCharacter.setLeftWristId(character.getLeftWristId());
+                    existingCharacter.setNeckId(character.getNeckId());
+                    existingCharacter.setLeftEarId(character.getLeftEarId());
+                    existingCharacter.setRightEarId(character.getRightEarId());
+                    existingCharacter.setFaceId(character.getFaceId());
+                    existingCharacter.setWaistId(character.getWaistId());
+                    existingCharacter.setPrimaryId(character.getPrimaryId());
+                    existingCharacter.setOffhandId(character.getOffhandId());
+                    if (character.getCurrentRoomId() != null) {
+                        existingCharacter.setCurrentRoomId(character.getCurrentRoomId());
+                    }
+                    return mobileRepository.save(existingCharacter)
+                            .flatMap(savedCharacter -> updateInventory(savedCharacter, character.getInventory()));
+                })
+                .flatMap(updatedCharacter -> statService.updateCurrentStats(updatedCharacter)
+                        .doOnNext(c -> {
+                            // Update the character in the available map if it exists there
+                            if (activeMobiles.containsKey(c.getId())) {
+                                activeMobiles.put(c.getId(), c);
+                            }
+                        }));
+    }
+
+    public Mono<Mobile> updateInventory(Mobile character, List<Item> inventory) {
+        if (inventory == null)
+            return Mono.just(character);
+        log.debug("Updating inventory for character: {}", character.getId());
+
+        java.util.Map<String, Item> uniqueItemsMap = new java.util.HashMap<>();
+        java.util.List<Item> toProcess = new java.util.ArrayList<>();
+
+        for (Item item : inventory) {
+            item.setContainerItemId(0L);
+            toProcess.add(item);
+        }
+
+        while (!toProcess.isEmpty()) {
+            Item current = toProcess.remove(0);
+            if (current != null && current.getId() != null) {
+                Long cid = current.getContainerItemId() == null ? 0L : current.getContainerItemId();
+                String key = current.getId() + "_" + cid;
+
+                if (uniqueItemsMap.containsKey(key)) {
+                    Item existing = uniqueItemsMap.get(key);
+                    existing.setCount(existing.getCount() + current.getCount());
+                } else {
+                    Item clone = new Item();
+                    clone.setId(current.getId());
+                    clone.setCount(current.getCount());
+                    clone.setContainerItemId(cid);
+                    uniqueItemsMap.put(key, clone);
+                }
+
+                if (current.getInventory() != null) {
+                    for (Item nested : current.getInventory()) {
+                        nested.setContainerItemId(current.getId());
+                        toProcess.add(nested);
+                    }
+                }
+            }
+        }
+
+        List<Item> uniqueItems = new java.util.ArrayList<>(uniqueItemsMap.values());
+
+        return databaseClient.sql("DELETE FROM character_inventory WHERE character_id = :characterId")
+                .bind("characterId", character.getId())
+                .then()
+                .thenMany(Flux.fromIterable(uniqueItems))
+                .flatMap(item -> databaseClient
+                        .sql("INSERT INTO character_inventory (character_id, item_id, item_count, container_item_id) VALUES (:characterId, :itemId, :count, :containerId)")
+                        .bind("characterId", character.getId())
+                        .bind("itemId", item.getId())
+                        .bind("count", item.getCount())
+                        .bind("containerId", item.getContainerItemId())
+                        .fetch()
+                        .rowsUpdated())
+                .then(Mono.defer(() -> {
+                     character.setInventory(inventory);
+                     return Mono.just(character);
+                }));
+    }
+
+    public Mono<Mobile> equipItem(Mobile character, Long itemId) {
+        log.info("Equipping item {} for character {}", itemId, character.getName());
+        Item itemToEquip = character.getInventory().stream()
+                .filter(i -> i.getId().equals(itemId))
+                .findFirst()
+                .orElse(null);
+
+        if (itemToEquip == null) {
+            communicationService.sendTextMessage(character, "\n\nYou don't have that item in your inventory.");
+            return Mono.just(character);
+        }
+
+        // Check if item is equippable
+        boolean isEquippable = switch (itemToEquip.getItemType()) {
+            case WEAPON, TWO_HANDED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR -> true;
+            default -> false;
+        };
+
+        if (!isEquippable) {
+            communicationService.sendTextMessage(character, "\n\nYou cannot equip " + itemToEquip.getName() + ".");
+            return Mono.just(character);
+        }
+
+        List<Item> currentInventory = new ArrayList<>(character.getInventory());
+        Item oldItem1 = null;
+        Item oldItem2 = null;
+
+        switch (itemToEquip.getWearLocation()) {
+            case HEAD -> {
+                oldItem1 = character.getHead();
+                character.setHead(itemToEquip);
+            }
+            case CHEST -> {
+                oldItem1 = character.getChest();
+                character.setChest(itemToEquip);
+            }
+            case LEGS -> {
+                oldItem1 = character.getLegs();
+                character.setLegs(itemToEquip);
+            }
+            case FEET -> {
+                oldItem1 = character.getFeet();
+                character.setFeet(itemToEquip);
+            }
+            case ARMS -> {
+                oldItem1 = character.getArms();
+                character.setArms(itemToEquip);
+            }
+            case HANDS -> {
+                oldItem1 = character.getHands();
+                character.setHands(itemToEquip);
+            }
+            case FINGER -> {
+                if (character.getRightFinger() == null) {
+                    character.setRightFinger(itemToEquip);
+                } else if (character.getLeftFinger() == null) {
+                    character.setLeftFinger(itemToEquip);
+                } else {
+                    oldItem1 = character.getLeftFinger();
+                    character.setLeftFinger(itemToEquip);
+                }
+            }
+            case WRIST -> {
+                if (character.getRightWrist() == null) {
+                    character.setRightWrist(itemToEquip);
+                } else if (character.getLeftWrist() == null) {
+                    character.setLeftWrist(itemToEquip);
+                } else {
+                    oldItem1 = character.getLeftWrist();
+                    character.setLeftWrist(itemToEquip);
+                }
+            }
+            case EAR -> {
+                if (character.getRightEar() == null) {
+                    character.setRightEar(itemToEquip);
+                } else if (character.getLeftEar() == null) {
+                    character.setLeftEar(itemToEquip);
+                } else {
+                    oldItem1 = character.getLeftEar();
+                    character.setLeftEar(itemToEquip);
+                }
+            }
+            case NECK -> {
+                oldItem1 = character.getNeck();
+                character.setNeck(itemToEquip);
+            }
+            case FACE -> {
+                oldItem1 = character.getFace();
+                character.setFace(itemToEquip);
+            }
+            case WAIST -> {
+                oldItem1 = character.getWaist();
+                character.setWaist(itemToEquip);
+            }
+            case PRIMARY -> {
+                oldItem1 = character.getPrimary();
+                character.setPrimary(itemToEquip);
+            }
+            case OFFHAND -> {
+                oldItem1 = character.getOffhand();
+                character.setOffhand(itemToEquip);
+            }
+            default -> {
+                communicationService.sendTextMessage(character, "\n\nThis item cannot be worn.");
+                return Mono.just(character);
+            }
+        }
+
+        // Special handling for 2H weapons: if it's a 2H weapon, it goes to primary and
+        // we might need to clear offhand
+        if (itemToEquip.getItemType() == ItemType.TWO_HANDED_WEAPON) {
+            // If it wasn't already assigned to primary (which it should be if wear location
+            // is PRIMARY)
+            if (character.getPrimary() != itemToEquip) {
+                oldItem1 = character.getPrimary();
+                character.setPrimary(itemToEquip);
+            }
+            if (character.getOffhand() != null) {
+                oldItem2 = character.getOffhand();
+                character.setOffhand(null);
+            }
+        }
+
+        currentInventory.remove(itemToEquip);
+        if (oldItem1 != null) {
+            currentInventory.add(oldItem1);
+        }
+        if (oldItem2 != null) {
+            currentInventory.add(oldItem2);
+        }
+        character.setInventory(currentInventory);
+
+        communicationService.sendTextMessage(character, "\n\nYou equip " + itemToEquip.getName() + ".");
+
+        return save(character)
+                .flatMap(savedChar -> updateInventory(savedChar, currentInventory))
+                .flatMap(savedChar -> getCharacterById(savedChar.getId()))
+                .doOnNext(savedChar -> communicationService.sendCharacterUpdate(savedChar));
+    }
+
+    public Mono<Mobile> dropItem(Mobile character, Long itemId) {
+        log.info("Dropping item {} for character {}", itemId, character.getName());
+        Item itemToDrop = character.getInventory().stream()
+                .filter(i -> i.getId().equals(itemId))
+                .findFirst()
+                .orElse(null);
+
+        if (itemToDrop == null) {
+            communicationService.sendTextMessage(character, "\n\nYou don't have that item in your inventory.");
+            return Mono.just(character);
+        }
+
+        List<Item> currentInventory = new ArrayList<>(character.getInventory());
+        currentInventory.remove(itemToDrop);
+        character.setInventory(currentInventory);
+
+        return this.roomService.addItemToRoom(character.getCurrentRoomId(), itemId)
+                .then(this.save(character))
+                .flatMap(savedChar -> updateInventory(savedChar, currentInventory))
+                .flatMap(savedChar -> getCharacterById(savedChar.getId()))
+                .doOnNext(savedChar -> {
+                    communicationService.sendTextMessage(savedChar, "\n\nYou drop " + itemToDrop.getName() + ".");
+                    communicationService.roomMessage(savedChar,
+                            "\n" + savedChar.getName() + " drops " + itemToDrop.getName() + ".");
+                    communicationService.sendCharacterUpdate(savedChar);
+                });
+    }
+
+    public Mono<Mobile> destroyInventoryItem(Mobile character, Long itemId) {
+        log.info("Destroying item {} for character {}", itemId, character.getName());
+        Item itemToDestroy = character.getInventory().stream()
+                .filter(i -> i.getId().equals(itemId))
+                .findFirst()
+                .orElse(null);
+
+        if (itemToDestroy == null) {
+            communicationService.sendTextMessage(character, "\n\nYou don't have that item in your inventory.");
+            return Mono.just(character);
+        }
+
+        List<Item> currentInventory = new ArrayList<>(character.getInventory());
+        currentInventory.remove(itemToDestroy);
+        character.setInventory(currentInventory);
+
+        return this.save(character)
+                .flatMap(savedChar -> updateInventory(savedChar, currentInventory))
+                .flatMap(savedChar -> getCharacterById(savedChar.getId()));
+    }
+
+    public Mono<Mobile> unequipItem(Mobile character, String slot) {
+        log.info("Unequipping slot '{}' for character {}", slot, character.getName());
+
+        Item itemToUnequip;
+        switch (slot.toLowerCase()) {
+            case "head" -> {
+                itemToUnequip = character.getHead();
+                character.setHead(null);
+            }
+            case "chest" -> {
+                itemToUnequip = character.getChest();
+                character.setChest(null);
+            }
+            case "legs" -> {
+                itemToUnequip = character.getLegs();
+                character.setLegs(null);
+            }
+            case "feet" -> {
+                itemToUnequip = character.getFeet();
+                character.setFeet(null);
+            }
+            case "arms" -> {
+                itemToUnequip = character.getArms();
+                character.setArms(null);
+            }
+            case "hands" -> {
+                itemToUnequip = character.getHands();
+                character.setHands(null);
+            }
+            case "rightfinger" -> {
+                itemToUnequip = character.getRightFinger();
+                character.setRightFinger(null);
+            }
+            case "leftfinger" -> {
+                itemToUnequip = character.getLeftFinger();
+                character.setLeftFinger(null);
+            }
+            case "rightwrist" -> {
+                itemToUnequip = character.getRightWrist();
+                character.setRightWrist(null);
+            }
+            case "leftwrist" -> {
+                itemToUnequip = character.getLeftWrist();
+                character.setLeftWrist(null);
+            }
+            case "neck" -> {
+                itemToUnequip = character.getNeck();
+                character.setNeck(null);
+            }
+            case "leftear" -> {
+                itemToUnequip = character.getLeftEar();
+                character.setLeftEar(null);
+            }
+            case "rightear" -> {
+                itemToUnequip = character.getRightEar();
+                character.setRightEar(null);
+            }
+            case "face" -> {
+                itemToUnequip = character.getFace();
+                character.setFace(null);
+            }
+            case "waist" -> {
+                itemToUnequip = character.getWaist();
+                character.setWaist(null);
+            }
+            case "primary" -> {
+                itemToUnequip = character.getPrimary();
+                character.setPrimary(null);
+            }
+            case "offhand" -> {
+                itemToUnequip = character.getOffhand();
+                character.setOffhand(null);
+            }
+            default -> {
+                communicationService.sendTextMessage(character, "\n\nUnknown equipment slot: " + slot);
+                return Mono.just(character);
+            }
+        }
+
+        if (itemToUnequip == null || itemToUnequip.getId() == null) {
+            communicationService.sendTextMessage(character, "\n\nThat slot is empty.");
+            return Mono.just(character);
+        }
+
+        final Item unequipped = itemToUnequip;
+        List<Item> currentInventory = new ArrayList<>(character.getInventory());
+        currentInventory.add(unequipped);
+        character.setInventory(currentInventory);
+
+        communicationService.sendTextMessage(character, "\n\nYou unequip " + unequipped.getName() + ".");
+
+        return save(character)
+                .flatMap(savedChar -> updateInventory(savedChar, currentInventory))
+                .flatMap(savedChar -> getCharacterById(savedChar.getId()))
+                .doOnNext(communicationService::sendCharacterUpdate);
+    }
+
+    public Mono<Mobile> takeItem(Mobile character, Long itemId) {
+        log.info("Taking item {} for character {}", itemId, character.getName());
+
+        return this.itemService.getItem(itemId)
+                .flatMap(itemToTake -> {
+                    List<Item> currentInventory = new ArrayList<>(character.getInventory());
+                    currentInventory.add(itemToTake);
+                    character.setInventory(currentInventory);
+
+                    return this.roomService.removeItemFromRoom(character.getCurrentRoomId(), itemId)
+                            .then(this.save(character))
+                            .flatMap(savedChar -> updateInventory(savedChar, currentInventory))
+                            .flatMap(savedChar -> getCharacterById(savedChar.getId()))
+                            .doOnNext(savedChar -> {
+                                communicationService.sendTextMessage(savedChar,
+                                        "\n\nYou take " + itemToTake.getName() + ".");
+                                communicationService.roomMessage(savedChar,
+                                        "\n" + savedChar.getName() + " takes " + itemToTake.getName() + ".");
+                                communicationService.sendCharacterUpdate(savedChar);
+                            });
+                });
+    }
+
+    public Mono<Mobile> clearInventoryAndEquipment(Mobile character) {
+        log.info("Clearing inventory and equipment for character: {}", character.getName());
+        character.setHead(null);
+        character.setChest(null);
+        character.setLegs(null);
+        character.setFeet(null);
+        character.setArms(null);
+        character.setHands(null);
+        character.setRightFinger(null);
+        character.setLeftFinger(null);
+        character.setRightWrist(null);
+        character.setLeftWrist(null);
+        character.setNeck(null);
+        character.setLeftEar(null);
+        character.setRightEar(null);
+        character.setFace(null);
+        character.setWaist(null);
+        character.setPrimary(null);
+        character.setOffhand(null);
+        character.setInventory(new ArrayList<>());
+        return save(character)
+                .flatMap(savedChar -> updateInventory(savedChar, new ArrayList<>()));
+    }
+
+    public Mono<Mobile> generateCharacter(Mobile character) {
+        if (character.getStrength() == 0) {
+            character.setStrength(rollStat());
+            character.setDexterity(rollStat());
+            character.setConstitution(rollStat());
+            character.setIntelligence(rollStat());
+            character.setWisdom(rollStat());
+            character.setCharisma(character.getCharisma());
+        }
+        return statService.updateCurrentStats(character);
+    }
+
+    public Mono<Mobile> getCharacterById(Long id) {
+        log.info("Fetching character by id: {}", id);
+        return mobileRepository.findById(id)
+                .filter(mobile -> mobile.getUserId() != null)
+                .flatMap(statService::updateCurrentStats);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    @org.springframework.context.annotation.Lazy
+    private CommandService commandService;
+
+    public void addCommand(Long characterId, String command) {
+        log.info("Adding command '{}' to character id {}", command, characterId);
+        getAvailableCharacters().stream()
+                .filter(c -> c.getId().equals(characterId))
+                .findFirst()
+                .ifPresent(c -> {
+                    String cleanCmd = command.trim();
+                    if (cleanCmd.isEmpty())
+                        return;
+
+                    String firstWord = cleanCmd.split("\\s+")[0].toLowerCase();
+                    boolean isMovement = firstWord.equals("n") || firstWord.equals("s")
+                            || firstWord.equals("e") || firstWord.equals("w")
+                            || firstWord.equals("u") || firstWord.equals("d")
+                            || firstWord.equals("north") || firstWord.equals("south")
+                            || firstWord.equals("east") || firstWord.equals("west")
+                            || firstWord.equals("up") || firstWord.equals("down");
+
+                    if (isMovement && c.getCommandQueue().isEmpty()) {
+                        c.setIdle(0);
+                        Command task = commandService.getTask(firstWord);
+                        if (task != null) {
+                            task.execute(c, command).subscribe(
+                                    null,
+                                    e -> log.error("Error executing immediate movement command", e));
+                        } else {
+                            c.getCommandQueue().add(command);
+                        }
+                    } else {
+                        c.getCommandQueue().add(command);
+                        c.setIdle(0);
+                    }
+                });
+    }
+
+    public Mono<Mobile> save(Mobile character) {
+        log.info("Saving character: {}", character.getName());
+        return mobileRepository.save(character)
+                .flatMap(savedCharacter -> {
+                    log.debug("Updating spell effects for character: {}", savedCharacter.getId());
+                    return characterEffectRepository.deleteByCharacterId(savedCharacter.getId())
+                            .thenMany(Flux.fromIterable(character.getSpellEffects()))
+                            .doOnNext(effect -> {
+                                effect.setId(null);
+                                effect.setCharacterId(savedCharacter.getId());
+                            })
+                            .flatMap(characterEffectRepository::save)
+                            .collectList()
+                            .doOnNext(savedCharacter::setSpellEffects)
+                            .thenReturn(savedCharacter);
+                })
+                .flatMap(statService::updateCurrentStats)
+                .doOnNext(c -> {
+                    if (activeMobiles.containsKey(c.getId())) {
+                        activeMobiles.put(c.getId(), c);
+                    }
+                });
+    }
+
+    private int rollStat() {
+        return random.nextInt(4) + 1;
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    @org.springframework.context.annotation.Lazy
+    private ConversationService conversationService;
+
+    public Mono<Void> enterRoom(Mobile character, Long roomId) {
+        log.info("Entering room {} for character {}", roomId, character.getName());
+        return this.roomService.getRoom(roomId)
+                .flatMap(room -> {
+                    if (character.getCurrentRoomId() != null) {
+                        if (!character.isHidden() && !character.isInvisible()) {
+                            this.communicationService.roomMessage(character,
+                                    "\n" + character.getName() + " has left the room.");
+                        }
+                        // Trigger conversation engine in the old room they just left
+                        this.conversationService.triggerRoomConversations(character.getCurrentRoomId());
+                    }
+
+                    character.setCurrentRoomId(room.getId());
+                    return this.save(character)
+                            .flatMap(savedChar -> roomService.calculateCurrentLightValue(room).doOnNext(baseLight -> {
+                                int light = this.getEffectiveLight(savedChar, baseLight);
+                                if (!savedChar.isHidden() && !savedChar.isInvisible()) {
+                                    this.communicationService.roomMessage(savedChar,
+                                            "\n" + savedChar.getName() + " has entered the room.");
+                                }
+
+                                if (light <= 0) {
+                                    this.communicationService.sendTextMessage(character,
+                                            "\n\nYou have entered " + room.getName() + ".");
+                                    this.communicationService.sendTextMessage(character,
+                                            "\n\nIt is pitch black. You cannot see anything.\n\n");
+                                } else {
+                                    this.communicationService.sendTextMessage(character,
+                                            "\n\nYou have entered " + room.getName() + ".");
+                                    
+                                    if (light >= 5) {
+                                        this.communicationService.sendTextMessage(character,
+                                                "\n\n" + room.getDescription() + "\n\n");
+                                    }
+
+                                    if (light == 1) {
+                                        long chars = this.findAllByRoomId(room.getId()).stream()
+                                                .filter(c -> !c.getId().equals(character.getId()) && !c.isHidden() && !c.isInvisible()).count();
+                                        long mobs = this.findAllByRoomId(room.getId()).stream()
+                                                .filter(m -> !m.isHidden() && !m.isInvisible()).count();
+                                        boolean hasItems = !room.getItemIds().isEmpty() || !this.roomService.getTransientItemsInRoom(room.getId()).isEmpty();
+                                        
+                                        if (chars > 0 || mobs > 0 || hasItems) {
+                                            this.communicationService.sendTextMessage(character, "\n\nYou sense something present in the darkness.");
+                                        } else {
+                                            this.communicationService.sendTextMessage(character, "\n\nIt is too dark to make out any details.");
+                                        }
+                                    } else if (light > 1) {
+                                        this.findAllByRoomId(room.getId()).stream()
+                                                .filter(c -> !c.getId().equals(character.getId())).forEach(c -> {
+                                                    if (!c.isHidden() && !c.isInvisible()) {
+                                                        if (light >= 7) {
+                                                            this.communicationService.sendTextMessage(character,
+                                                                    "\nYou see " + c.getName() + " here.");
+                                                        } else {
+                                                            this.communicationService.sendTextMessage(character,
+                                                                    "\nYou see a shadowy creature here.");
+                                                        }
+                                                    }
+                                                });
+
+                                        this.findAllByRoomId(room.getId()).forEach(m -> {
+                                            if (!m.isHidden() && !m.isInvisible()) {
+                                                if (light >= 7) {
+                                                    this.communicationService.sendTextMessage(character,
+                                                            "\nYou see " + m.getName() + " here.");
+                                                    if (m.getStoreId() != null) {
+                                                        this.communicationService.sendTextMessage(character,
+                                                                "\n" + m.getName() + " appears to be running a store.");
+                                                    }
+                                                } else {
+                                                    this.communicationService.sendTextMessage(character,
+                                                            "\nYou see a shadowy creature here.");
+                                                }
+                                            }
+                                        });
+
+                                        if (light >= 7) {
+                                            room.getItemIds().stream().forEach(itemId -> {
+                                                this.itemService.getItem(itemId)
+                                                        .doOnNext(item -> this.communicationService.sendTextMessage(character,
+                                                                "\nYou see " + item.getName() + " laying here."))
+                                                        .subscribe();
+                                            });
+                                            this.roomService.getTransientItemsInRoom(room.getId()).forEach(item ->
+                                                    this.communicationService.sendTextMessage(character, "\nYou see " + item.getName() + " laying here."));
+                                        } else {
+                                            room.getItemIds().forEach(itemId -> {
+                                                this.communicationService.sendTextMessage(character, "\nYou see some sort of item laying here.");
+                                            });
+                                            this.roomService.getTransientItemsInRoom(room.getId()).forEach(item ->
+                                                this.communicationService.sendTextMessage(character, "\nYou see some sort of item laying here."));
+                                        }
+                                    }
+                                }
+
+                                this.conversationService.triggerRoomConversations(room.getId());
+
+                                // Process Faction Aggressiveness
+                                java.util.List<Mobile> targets = new ArrayList<>(this.findAllByRoomId(room.getId()));
+                                targets.addAll(this.findAllByRoomId(room.getId()));
+                                for (Mobile res : targets) {
+                                    if (res.getId().equals(character.getId()) || res.isHidden() || res.isInvisible()
+                                            || character.isHidden() || character.isInvisible())
+                                        continue;
+
+                                    // If character hates resident
+                                    if (this.factionService.getFactionRatingSync(character, res.getFactionId()) < 20
+                                            && character.getTarget() == null) {
+                                        if (this.setTarget(character, res)) {
+                                            this.communicationService.roomMessage(character, "\n" + character.getName()
+                                                    + " attacks " + res.getName() + " on sight!");
+                                            this.communicationService.sendTextMessage(character,
+                                                    "\n\nYou attack " + res.getName() + " on sight!");
+                                        }
+                                    }
+                                    // If resident hates character
+                                    if (this.factionService.getFactionRatingSync(res, character.getFactionId()) < 20
+                                            && res.getTarget() == null) {
+                                        if (this.setTarget(res, character)) {
+                                            this.communicationService.roomMessage(res,
+                                                    "\n" + res.getName() + " attacks "
+                                                            + character.getName() + " on sight!");
+                                            this.communicationService.sendTextMessage(character,
+                                                    "\n\n" + res.getName() + " attacks you on sight!");
+                                        }
+                                    }
+                                }
+
+                                if (light >= 4) {
+                                    List<String> exits = new ArrayList<>();
+                                    if (room.getNorthId() != null) {
+                                        exits.add("North");
+                                    }
+                                    if (room.getEastId() != null) {
+                                        exits.add("East");
+                                    }
+                                    if (room.getSouthId() != null) {
+                                        exits.add("South");
+                                    }
+                                    if (room.getWestId() != null) {
+                                        exits.add("West");
+                                    }
+                                    if (room.getUpId() != null) {
+                                        exits.add("Up");
+                                    }
+                                    if (room.getDownId() != null) {
+                                        exits.add("Down");
+                                    }
+                                    this.communicationService.sendTextMessage(character,
+                                            "\n\nExits: " + String.join(", ", exits));
+                                }
+                            }))
+                            .then();
+                });
+    }
+
+    public int getEffectiveLight(Mobile character, int roomLight) {
+        int effectiveLight = roomLight;
+        if (character.getSpellEffects() != null) {
+            for (io.nadia.ai.aimud.model.CharacterEffect ce : character.getSpellEffects()) {
+                if (ce.getEffect() != null) {
+                    if (ce.getEffect().getEffectType() == io.nadia.ai.aimud.types.EffectType.DARKVISION) {
+                        effectiveLight += ce.getEffect().getModifier1();
+                    } else if (ce.getEffect().getEffectType() == io.nadia.ai.aimud.types.EffectType.DARKNESS) {
+                        effectiveLight -= ce.getEffect().getModifier1();
+                    }
+                }
+            }
+        }
+        return Math.max(0, effectiveLight);
+    }
+
     public Flux<Mobile> getAllMobiles() {
         log.info("Fetching all mobiles");
         return mobileRepository.findByUserIdIsNull().cache();
@@ -185,39 +1069,7 @@ public class MobileService {
      * @param roomId the ID of the room
      * @return a list of active mobiles in the room
      */
-    public List<Mobile> getMobilesInRoom(Long roomId) {
-        return activeMobiles.values().stream()
-                .filter(m -> roomId.equals(m.getCurrentRoomId()))
-                .collect(Collectors.toList());
-    }
 
-    /**
-     * Retrieves all currently active and tracked mobiles in memory.
-     *
-     * @return a list of all active mobiles
-     */
-    public List<Mobile> getActiveMobiles() {
-        return new ArrayList<>(activeMobiles.values());
-    }
-
-    /**
-     * Removes an active mobile from in-memory tracking.
-     *
-     * @param mobileId the ID of the mobile to remove
-     */
-    public void removeActiveMobile(Long mobileId) {
-        activeMobiles.remove(mobileId);
-        log.info("Removed mobile {} from active list", mobileId);
-    }
-
-    // --- SKILL MANAGEMENT ---
-
-    /**
-     * Retrieves all skills associated with a specific mobile.
-     *
-     * @param mobileId the ID of the mobile
-     * @return a {@link Flux} emitting the mobile's skills
-     */
     public Flux<MobileSkill> getMobileSkills(Long mobileId) {
         log.info("Fetching skills for mobile: {}", mobileId);
         return mobileSkillRepository.findByMobileId(mobileId);
@@ -284,162 +1136,14 @@ public class MobileService {
      * @param mobileId the ID of the mobile
      * @return a {@link Flux} emitting inventory items
      */
-    public Flux<Item> getMobileInventory(Long mobileId) {
-        log.info("Fetching inventory for mobile: {}", mobileId);
-        return databaseClient.sql("SELECT item_id, item_count FROM mobile_inventory WHERE mobile_id = :mobileId")
-                .bind("mobileId", mobileId)
-                .map((row, metadata) -> new Object[]{row.get("item_id", Long.class), row.get("item_count", Integer.class)})
-                .all()
-                .flatMap(arr -> {
-                    Long itemId = (Long) arr[0];
-                    Integer count = (Integer) arr[1];
-                    return itemService.getItem(itemId)
-                            .map(item -> {
-                                item.setCount(count != null ? count : 1);
-                                return item;
-                            });
-                });
-    }
 
-    /**
-     * Adds an item to a mobile's inventory. If stackable, augments the count.
-     *
-     * @param mobileId the ID of the mobile
-     * @param itemId   the ID of the item
-     * @return a {@link Mono} returning the mobile context
-     */
     public Mono<Mobile> addItemToInventory(Long mobileId, Long itemId) {
-        log.info("Adding item {} to inventory of mobile {}", itemId, mobileId);
-        return getMobile(mobileId)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Mobile not found: " + mobileId)))
-                .flatMap(mobile -> itemService.getItem(itemId)
-                        .switchIfEmpty(Mono.error(new IllegalArgumentException("Item not found: " + itemId)))
-                        .flatMap(item -> {
-                            String sql;
-                            if (item.isStackable()) {
-                                sql = "INSERT INTO mobile_inventory (mobile_id, item_id, item_count) VALUES (:mobileId, :itemId, 1) " +
-                                      "ON CONFLICT (mobile_id, item_id) DO UPDATE SET item_count = mobile_inventory.item_count + 1";
-                            } else {
-                                sql = "INSERT INTO mobile_inventory (mobile_id, item_id) VALUES (:mobileId, :itemId) ON CONFLICT DO NOTHING";
-                            }
-                            return databaseClient.sql(sql)
-                                .bind("mobileId", mobileId)
-                                .bind("itemId", itemId)
-                                .fetch().rowsUpdated()
-                                .thenReturn(mobile);
-                        }));
+        return mobileRepository.findById(mobileId)
+                .flatMap(mobile -> databaseClient.sql("INSERT INTO character_inventory (character_id, item_id, item_count) VALUES (:mobileId, :itemId, 1)")
+                        .bind("mobileId", mobileId)
+                        .bind("itemId", itemId)
+                        .fetch().rowsUpdated()
+                        .thenReturn(mobile));
     }
 
-    // --- WEAR LOCATION MANAGEMENT ---
-
-    /**
-     * Equips an item to a specific wear location on a mobile.
-     *
-     * @param mobileId the ID of the mobile
-     * @param itemId   the ID of the item to equip
-     * @param location the location to equip the item to
-     * @return a {@link Mono} returning the saved mobile context
-     */
-    @CacheEvict(value = {"mobiles", "mobile"}, allEntries = true)
-    public Mono<Mobile> assignItemToWearLocation(Long mobileId, Long itemId, WearLocation location) {
-        log.info("Assigning item {} to wear location {} on mobile {}", itemId, location, mobileId);
-        return getMobile(mobileId)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Mobile not found: " + mobileId)))
-                .flatMap(mobile -> itemService.getItem(itemId)
-                        .switchIfEmpty(Mono.error(new IllegalArgumentException("Item not found: " + itemId)))
-                        .flatMap(item -> {
-                            applyWearLocation(mobile, item, location);
-                            return saveMobile(mobile);
-                        }));
-    }
-
-    /**
-     * Retrieves all items currently worn or equipped by a mobile.
-     *
-     * @param mobileId the ID of the mobile
-     * @return a {@link Flux} emitting the equipped items
-     */
-    public Flux<Item> getMobileWornItems(Long mobileId) {
-        log.info("Fetching worn items for mobile: {}", mobileId);
-        return getMobile(mobileId)
-                .flatMapMany(mobile -> {
-                    List<Long> ids = new ArrayList<>();
-                    if (mobile.getHeadId() != null) ids.add(mobile.getHeadId());
-                    if (mobile.getChestId() != null) ids.add(mobile.getChestId());
-                    if (mobile.getLegsId() != null) ids.add(mobile.getLegsId());
-                    if (mobile.getFeetId() != null) ids.add(mobile.getFeetId());
-                    if (mobile.getArmsId() != null) ids.add(mobile.getArmsId());
-                    if (mobile.getHandsId() != null) ids.add(mobile.getHandsId());
-                    if (mobile.getRightFingerId() != null) ids.add(mobile.getRightFingerId());
-                    if (mobile.getLeftFingerId() != null) ids.add(mobile.getLeftFingerId());
-                    if (mobile.getRightWristId() != null) ids.add(mobile.getRightWristId());
-                    if (mobile.getLeftWristId() != null) ids.add(mobile.getLeftWristId());
-                    if (mobile.getNeckId() != null) ids.add(mobile.getNeckId());
-                    if (mobile.getLeftEarId() != null) ids.add(mobile.getLeftEarId());
-                    if (mobile.getRightEarId() != null) ids.add(mobile.getRightEarId());
-                    if (mobile.getFaceId() != null) ids.add(mobile.getFaceId());
-                    if (mobile.getWaistId() != null) ids.add(mobile.getWaistId());
-                    if (mobile.getPrimaryId() != null) ids.add(mobile.getPrimaryId());
-                    if (mobile.getOffhandId() != null) ids.add(mobile.getOffhandId());
-                    return Flux.fromIterable(ids);
-                })
-                .flatMap(itemService::getItem);
-    }
-
-    // --- ROOM ASSIGNMENT ---
-
-    /**
-     * Sets the room a mobile is currently located in.
-     *
-     * @param mobileId the ID of the mobile
-     * @param roomId   the ID of the room
-     * @return a {@link Mono} returning the saved mobile context
-     */
-    @CacheEvict(value = {"mobiles", "mobile"}, allEntries = true)
-    public Mono<Mobile> setMobileRoom(Long mobileId, Long roomId) {
-        log.info("Setting room {} for mobile {}", roomId, mobileId);
-        return getMobile(mobileId)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Mobile not found: " + mobileId)))
-                .flatMap(mobile -> {
-                    mobile.setCurrentRoomId(roomId);
-                    return saveMobile(mobile);
-                });
-    }
-
-    /**
-     * Applies an item to the designated wear location property of a mobile.
-     *
-     * @param mobile   the mobile context
-     * @param item     the item being equipped
-     * @param location the location the item will occupy
-     */
-    private void applyWearLocation(Mobile mobile, Item item, WearLocation location) {
-        switch (location) {
-            case HEAD -> mobile.setHead(item);
-            case CHEST -> mobile.setChest(item);
-            case LEGS -> mobile.setLegs(item);
-            case FEET -> mobile.setFeet(item);
-            case ARMS -> mobile.setArms(item);
-            case HANDS -> mobile.setHands(item);
-            case NECK -> mobile.setNeck(item);
-            case FACE -> mobile.setFace(item);
-            case WAIST -> mobile.setWaist(item);
-            case PRIMARY -> mobile.setPrimary(item);
-            case OFFHAND -> mobile.setOffhand(item);
-            case FINGER -> {
-                if (mobile.getRightFingerId() == null) mobile.setRightFinger(item);
-                else mobile.setLeftFinger(item);
-            }
-            case WRIST -> {
-                if (mobile.getRightWristId() == null) mobile.setRightWrist(item);
-                else mobile.setLeftWrist(item);
-            }
-            case EAR -> {
-                if (mobile.getLeftEarId() == null) mobile.setLeftEar(item);
-                else mobile.setRightEar(item);
-            }
-            default -> log.warn("Unhandled wear location {} for mobile {}", location, mobile.getId());
-        }
-    }
 }
-

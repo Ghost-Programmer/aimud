@@ -23,10 +23,13 @@ public class CommunicationService {
     private final Sinks.Many<StoreDialogEvent> storeDialogs = Sinks.many().multicast().directBestEffort();
 
     @Setter
-    private CharacterService characterService;
+    private MobileService mobileService;
 
-    // Local room memory buffer utilizing infinite timebound ChatMessage payload strings
-    public static record ChatMessage(String message, java.time.Instant timestamp) {}
+    // Local room memory buffer utilizing infinite timebound ChatMessage payload
+    // strings
+    public static record ChatMessage(String message, java.time.Instant timestamp) {
+    }
+
     private final java.util.concurrent.ConcurrentHashMap<Long, java.util.LinkedList<ChatMessage>> roomChatHistory = new java.util.concurrent.ConcurrentHashMap<>();
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -119,7 +122,8 @@ public class CommunicationService {
      * @param event the store dialog event to emit
      */
     public void sendStoreDialog(StoreDialogEvent event) {
-        if (event.getCharacterId() == null) return;
+        if (event.getCharacterId() == null)
+            return;
         log.info("Sending store dialog for character {} and store {}", event.getCharacterId(), event.getStoreId());
         Sinks.EmitResult result = storeDialogs.tryEmitNext(event);
         log.info("StoreDialog Emit result: {}", result);
@@ -177,7 +181,8 @@ public class CommunicationService {
     }
 
     /**
-     * Broadcasts a message to all characters in a specific room, saving it to room history.
+     * Broadcasts a message to all characters in a specific room, saving it to room
+     * history.
      *
      * @param mobile  the mobile entity initiating the message
      * @param message the message to broadcast
@@ -192,22 +197,28 @@ public class CommunicationService {
                 v.add(new ChatMessage(loggedMessage, java.time.Instant.now()));
                 return v;
             });
-            // Immediately trigger NPC conversational AI pipeline!
-            conversationService.triggerRoomConversations(roomId);
         }
 
-        this.characterService.findAllByRoomId(roomId).stream()
+        this.mobileService.findAllByRoomId(roomId).stream()
                 .filter(c -> !c.getId().equals(mobile.getId()))
                 .forEach(c -> {
                     this.sendTextMessage(c, message);
+                    log.info("Checking event publisher: {}", eventPublisher);
                     if (eventPublisher != null) {
                         if (mobile.getUserId() != null && c.getUserId() == null) {
-                            eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(c.getId(), mobile.getId(), message.trim()));
+                            eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(c.getId(),
+                                    mobile.getId(), message.trim()));
                         } else if (mobile.getUserId() == null && c.getUserId() != null) {
-                            eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(mobile.getId(), c.getId(), message.trim()));
+                            eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(mobile.getId(),
+                                    c.getId(), message.trim()));
                         }
+                    } else {
+                        log.error("Event publisher not found!");
                     }
                 });
+
+        // Immediately trigger NPC conversational AI pipeline!
+        conversationService.triggerRoomConversations(roomId);
     }
 
     /**
@@ -221,8 +232,10 @@ public class CommunicationService {
         if (history == null) {
             return java.util.Collections.emptyList();
         }
-        // Thread-safe copy while mapping payload strings out of standard temporal wrapper
-        return new java.util.ArrayList<>(history).stream().map(ChatMessage::message).collect(java.util.stream.Collectors.toList());
+        // Thread-safe copy while mapping payload strings out of standard temporal
+        // wrapper
+        return new java.util.ArrayList<>(history).stream().map(ChatMessage::message)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     /**
@@ -234,3 +247,4 @@ public class CommunicationService {
         return roomChatHistory;
     }
 }
+

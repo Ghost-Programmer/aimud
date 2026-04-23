@@ -23,9 +23,8 @@ import java.util.List;
 public class LookCommand implements Command {
     private final CommunicationService communicationService;
     private final RoomService roomService;
-    private final CharacterService characterService;
-    private final ItemService itemService;
     private final MobileService mobileService;
+    private final ItemService itemService;
 
     @Override
     /**
@@ -35,12 +34,12 @@ public class LookCommand implements Command {
      * @param commandLine trailing standard query parameters
      * @return a reactive pipeline
      */
-    public Mono<Void> execute(Mobile Mobile, String commandLine) {
-        log.info("Executing look command for Mobile: {}", Mobile.getName());
+    public Mono<Void> execute(Mobile mobile, String commandLine) {
+        log.info("Executing look command for Mobile: {}", mobile.getName());
         String[] parts = commandLine.trim().split("\\s+", 2);
         boolean isTargetedLook = parts.length > 1;
 
-        return roomService.getRoom(Mobile.getCurrentRoomId())
+        return roomService.getRoom(mobile.getCurrentRoomId())
                 .flatMap(room -> {
                     if (isTargetedLook) {
                         String targetName = parts[1].toLowerCase();
@@ -48,12 +47,12 @@ public class LookCommand implements Command {
                         // Look inside corpses
                         for (Item item : roomService.getTransientItemsInRoom(room.getId())) {
                             if (item.getItemType() == ItemType.CORPSE && item.getName().toLowerCase().contains(targetName)) {
-                                communicationService.sendTextMessage(Mobile, "\n\nUpon " + item.getName() + " you see:");
+                                communicationService.sendTextMessage(mobile, "\n\nUpon " + item.getName() + " you see:");
                                 if (item.getInventory() == null || item.getInventory().isEmpty()) {
-                                    communicationService.sendTextMessage(Mobile, "Nothing of value.");
+                                    communicationService.sendTextMessage(mobile, "Nothing of value.");
                                 } else {
                                     for (Item lootItem : item.getInventory()) {
-                                        communicationService.sendTextMessage(Mobile, " - " + lootItem.getName());
+                                        communicationService.sendTextMessage(mobile, " - " + lootItem.getName());
                                     }
                                 }
                                 return Mono.empty();
@@ -61,72 +60,72 @@ public class LookCommand implements Command {
                         }
                         
                         // We could look at characters or items here later, but default to nothing found for now
-                        communicationService.sendTextMessage(Mobile, "\n\nYou don't see that here.");
+                        communicationService.sendTextMessage(mobile, "\n\nYou don't see that here.");
                         return Mono.empty();
                     }
 
                     // Otherwise, regular room look
                     return roomService.calculateCurrentLightValue(room).flatMap(baseLight -> {
-                        int light = characterService.getEffectiveLight(Mobile, baseLight);
+                        int light = mobileService.getEffectiveLight(mobile, baseLight);
                         if (light <= 0) {
-                            communicationService.sendTextMessage(Mobile, "\n\nIt is pitch black. You cannot see anything.");
+                            communicationService.sendTextMessage(mobile, "\n\nIt is pitch black. You cannot see anything.");
                             return Mono.empty();
                         }
 
                         if (light >= 5) {
-                            communicationService.sendTextMessage(Mobile, "\n\n" + room.getName() + "\n" + room.getDescription());
+                            communicationService.sendTextMessage(mobile, "\n\n" + room.getName() + "\n" + room.getDescription());
                         }
 
                         if (light == 1) {
-                            long chars = characterService.findAllByRoomId(room.getId()).stream()
-                                    .filter(c -> !c.getId().equals(Mobile.getId()) && !c.isHidden() && !c.isInvisible()).count();
-                            long mobs = mobileService.getMobilesInRoom(room.getId()).stream()
+                            long chars = mobileService.findAllByRoomId(room.getId()).stream()
+                                    .filter(c -> !c.getId().equals(mobile.getId()) && !c.isHidden() && !c.isInvisible()).count();
+                            long mobs = mobileService.findAllByRoomId(room.getId()).stream()
                                     .filter(m -> !m.isHidden() && !m.isInvisible()).count();
                             boolean hasItems = !room.getItemIds().isEmpty() || !roomService.getTransientItemsInRoom(room.getId()).isEmpty();
                             
                             if (chars > 0 || mobs > 0 || hasItems) {
-                                communicationService.sendTextMessage(Mobile, "\n\nYou sense something present in the darkness.");
+                                communicationService.sendTextMessage(mobile, "\n\nYou sense something present in the darkness.");
                             } else {
-                                communicationService.sendTextMessage(Mobile, "\n\nIt is too dark to make out any details.");
+                                communicationService.sendTextMessage(mobile, "\n\nIt is too dark to make out any details.");
                             }
                         } else if (light > 1) {
-                            characterService.findAllByRoomId(room.getId()).stream()
-                                    .filter(c -> !c.getId().equals(Mobile.getId()) && !c.isHidden() && !c.isInvisible())
+                            mobileService.findAllByRoomId(room.getId()).stream()
+                                    .filter(c -> !c.getId().equals(mobile.getId()) && !c.isHidden() && !c.isInvisible())
                                     .forEach(c -> {
                                         if (light >= 7) {
-                                            communicationService.sendTextMessage(Mobile, "\nYou see " + c.getName() + " here.");
+                                            communicationService.sendTextMessage(mobile, "\nYou see " + c.getName() + " here.");
                                         } else {
-                                            communicationService.sendTextMessage(Mobile, "\nYou see a shadowy creature here.");
+                                            communicationService.sendTextMessage(mobile, "\nYou see a shadowy creature here.");
                                         }
                                     });
 
-                            mobileService.getMobilesInRoom(room.getId()).stream()
+                            mobileService.findAllByRoomId(room.getId()).stream()
                                     .filter(m -> !m.isHidden() && !m.isInvisible())
                                     .forEach(m -> {
                                         if (light >= 7) {
-                                            communicationService.sendTextMessage(Mobile, "\nYou see " + m.getName() + " here.");
+                                            communicationService.sendTextMessage(mobile, "\nYou see " + m.getName() + " here.");
                                             if (m.getStoreId() != null) {
-                                                communicationService.sendTextMessage(Mobile, m.getName() + " appears to be running a store.");
+                                                communicationService.sendTextMessage(mobile, m.getName() + " appears to be running a store.");
                                             }
                                         } else {
-                                            communicationService.sendTextMessage(Mobile, "\nYou see a shadowy creature here.");
+                                            communicationService.sendTextMessage(mobile, "\nYou see a shadowy creature here.");
                                         }
                                     });
 
                             if (light >= 7) {
                                 room.getItemIds().forEach(itemId -> {
                                     itemService.getItem(itemId)
-                                            .doOnNext(item -> communicationService.sendTextMessage(Mobile, "\nYou see " + item.getName() + " laying here."))
+                                            .doOnNext(item -> communicationService.sendTextMessage(mobile, "\nYou see " + item.getName() + " laying here."))
                                             .subscribe();
                                 });
                                 roomService.getTransientItemsInRoom(room.getId()).forEach(item ->
-                                        communicationService.sendTextMessage(Mobile, "\nYou see " + item.getName() + " laying here."));
+                                        communicationService.sendTextMessage(mobile, "\nYou see " + item.getName() + " laying here."));
                             } else {
                                 room.getItemIds().forEach(itemId -> {
-                                    communicationService.sendTextMessage(Mobile, "\nYou see some sort of item laying here.");
+                                    communicationService.sendTextMessage(mobile, "\nYou see some sort of item laying here.");
                                 });
                                 roomService.getTransientItemsInRoom(room.getId()).forEach(item ->
-                                    communicationService.sendTextMessage(Mobile, "\nYou see some sort of item laying here."));
+                                    communicationService.sendTextMessage(mobile, "\nYou see some sort of item laying here."));
                             }
                         }
 
@@ -138,7 +137,7 @@ public class LookCommand implements Command {
                             if (room.getWestId() != null) exits.add("West");
                             if (room.getUpId() != null) exits.add("Up");
                             if (room.getDownId() != null) exits.add("Down");
-                            communicationService.sendTextMessage(Mobile, "\n\nExits: " + String.join(", ", exits));
+                            communicationService.sendTextMessage(mobile, "\n\nExits: " + String.join(", ", exits));
                         }
 
                         return Mono.empty();
@@ -156,4 +155,5 @@ public class LookCommand implements Command {
         return "Syntax: look\n\nShows you the description of your current location, including other characters, monsters, items, and available exits.";
     }
 }
+
 

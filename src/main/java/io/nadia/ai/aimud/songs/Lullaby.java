@@ -3,7 +3,7 @@ package io.nadia.ai.aimud.songs;
 import io.nadia.ai.aimud.annontation.BardSong;
 import io.nadia.ai.aimud.model.Effect;
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.EffectService;
 import io.nadia.ai.aimud.service.MobileService;
@@ -18,9 +18,9 @@ import java.util.List;
 @BardSong(name = "lullaby")
 public class Lullaby extends Song {
 
-    public Lullaby(SkillService skillService, MobileService mobileService, CharacterService characterService,
+    public Lullaby(SkillService skillService, MobileService mobileService,
             CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mobileService, characterService, communicationService, effectService);
+        super(skillService, mobileService, communicationService, effectService);
     }
 
     @Override
@@ -51,8 +51,8 @@ public class Lullaby extends Song {
 
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile target) {
-        List<Mobile> allInRoom = new ArrayList<>(mobileService.getMobilesInRoom(mobile.getCurrentRoomId()));
-        allInRoom.addAll(characterService.findAllByRoomId(mobile.getCurrentRoomId()));
+        List<Mobile> allInRoom = new ArrayList<>(mobileService.findAllByRoomId(mobile.getCurrentRoomId()));
+        allInRoom.addAll(mobileService.findAllByRoomId(mobile.getCurrentRoomId()));
 
         boolean affectedAnyone = false;
 
@@ -82,7 +82,7 @@ public class Lullaby extends Song {
             if (m.getCharisma() < mobile.getCharisma()) {
                 if (this.applyEffect(m, this.getSongSkillName(), sleepEffect, tickCount)) {
                     // Clear their target if they fall asleep
-                    characterService.setTarget(m, null);
+                    mobileService.setTarget(m, null);
 
                     affectedAnyone = true;
 
@@ -102,3 +102,4 @@ public class Lullaby extends Song {
         return true;
     }
 }
+

@@ -21,12 +21,12 @@ public class Cacophony extends Song {
      *
      * @param skillService         system for evaluating actor skill ranks
      * @param mobileService        registry of available AI targets
-     * @param characterService     registry of active player characters
+     * @param MobileService     registry of active player characters
      * @param communicationService emitter for localized chat events
      * @param effectService        engine handling transient buffs and debuffs
      */
-    public Cacophony(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mobileService, characterService, communicationService, effectService);
+    public Cacophony(SkillService skillService, MobileService mobileService, CommunicationService communicationService, EffectService effectService) {
+        super(skillService, mobileService, communicationService, effectService);
     }
 
     /**
@@ -66,7 +66,7 @@ public class Cacophony extends Song {
      */
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile primaryTarget) {
-        if (primaryTarget != null && !this.characterService.canTarget(primaryTarget)) {
+        if (primaryTarget != null && !this.mobileService.canTarget(primaryTarget)) {
             this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + primaryTarget.getName() + ".");
             return false;
         }
@@ -99,7 +99,7 @@ public class Cacophony extends Song {
             tgt.setCurrentHp(tgt.getCurrentHp() - damage);
             tgt.addHate(mobile.getId(), damage);
             if (mobile.getTarget() == null) {
-                if (!this.characterService.setTarget(mobile, tgt)) continue;
+                if (!this.mobileService.setTarget(mobile, tgt)) continue;
             }
 
             if (tgt.getUserId() != null) {
@@ -115,17 +115,18 @@ public class Cacophony extends Song {
                     this.communicationService.sendTextMessage(tgt, deathMsg);
                 }
                 this.communicationService.roomMessage(tgt, deathMsg);
-                this.characterService.setTarget(tgt, null);
-                if (mobile.getTarget() == tgt) this.characterService.setTarget(mobile, null);
-                this.characterService.findAllByRoomId(tgt.getCurrentRoomId()).forEach(m -> m.removeHate(tgt.getId()));
+                this.mobileService.setTarget(tgt, null);
+                if (mobile.getTarget() == tgt) this.mobileService.setTarget(mobile, null);
+                this.mobileService.findAllByRoomId(tgt.getCurrentRoomId()).forEach(m -> m.removeHate(tgt.getId()));
             } else {
-                if (tgt.getTarget() == null) if (!this.characterService.setTarget(tgt, mobile)) continue;
+                if (tgt.getTarget() == null) if (!this.mobileService.setTarget(tgt, mobile)) continue;
             }
 
-            if (tgt.getUserId() != null) this.characterService.save(tgt).subscribe();
+            if (tgt.getUserId() != null) this.mobileService.save(tgt).subscribe();
             else this.mobileService.saveMobile(tgt).subscribe();
         }
         return true;
     }
 }
+
 

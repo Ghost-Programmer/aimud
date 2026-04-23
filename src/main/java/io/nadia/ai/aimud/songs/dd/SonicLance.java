@@ -20,12 +20,12 @@ public class SonicLance extends Song {
      *
      * @param skillService         system for evaluating actor skill ranks
      * @param mobileService        registry of available AI targets
-     * @param characterService     registry of active player characters
+     * @param MobileService     registry of active player characters
      * @param communicationService emitter for localized chat events
      * @param effectService        engine handling transient buffs and debuffs
      */
-    public SonicLance(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mobileService, characterService, communicationService, effectService);
+    public SonicLance(SkillService skillService, MobileService mobileService, CommunicationService communicationService, EffectService effectService) {
+        super(skillService, mobileService, communicationService, effectService);
     }
 
     /**
@@ -59,7 +59,7 @@ public class SonicLance extends Song {
      */
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile target) {
-        if (target != null && !this.characterService.canTarget(target)) {
+        if (target != null && !this.mobileService.canTarget(target)) {
             this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + target.getName() + ".");
             return false;
         }
@@ -94,7 +94,7 @@ public class SonicLance extends Song {
         int hateAmount = damage;
         target.addHate(mobile.getId(), hateAmount);
         if (mobile.getTarget() == null) {
-            if (!this.characterService.setTarget(mobile, target)) return false;
+            if (!this.mobileService.setTarget(mobile, target)) return false;
         }
 
         if (target.getCurrentHp() <= 0) {
@@ -106,17 +106,18 @@ public class SonicLance extends Song {
                 this.communicationService.sendTextMessage(target, deathMsg);
             }
             this.communicationService.roomMessage(target, deathMsg);
-            this.characterService.setTarget(target, null);
-            if (mobile.getTarget() == target) this.characterService.setTarget(mobile, null);
-            this.characterService.findAllByRoomId(target.getCurrentRoomId()).forEach(m -> m.removeHate(target.getId()));
+            this.mobileService.setTarget(target, null);
+            if (mobile.getTarget() == target) this.mobileService.setTarget(mobile, null);
+            this.mobileService.findAllByRoomId(target.getCurrentRoomId()).forEach(m -> m.removeHate(target.getId()));
         } else {
-            if (target.getTarget() == null) if (!this.characterService.setTarget(target, mobile)) return false;
+            if (target.getTarget() == null) if (!this.mobileService.setTarget(target, mobile)) return false;
         }
 
-        if (target.getUserId() != null) this.characterService.save(target).subscribe();
+        if (target.getUserId() != null) this.mobileService.save(target).subscribe();
         else this.mobileService.saveMobile(target).subscribe();
 
         return !resist;
     }
 }
+
 

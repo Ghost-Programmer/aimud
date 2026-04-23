@@ -3,7 +3,7 @@ package io.nadia.ai.aimud.commands;
 import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Mobile;
 import io.nadia.ai.aimud.repository.UserRepository;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -15,12 +15,12 @@ import java.util.Optional;
 @MudCommand(name = "ban", role = "MUD_ADMIN")
 public class BanCommand implements Command {
 
-    private final CharacterService characterService;
+    private final MobileService mobileService;
     private final CommunicationService communicationService;
     private final UserRepository userRepository;
 
     public BanCommand(ApplicationContext context) {
-        this.characterService = context.getBean(CharacterService.class);
+        this.mobileService = context.getBean(MobileService.class);
         this.communicationService = context.getBean(CommunicationService.class);
         this.userRepository = context.getBean(UserRepository.class);
     }
@@ -35,7 +35,7 @@ public class BanCommand implements Command {
 
         String playerName = parts[1];
 
-        Optional<Mobile> targetOpt = characterService.getAvailableCharacters().stream()
+        Optional<Mobile> targetOpt = mobileService.getAvailableCharacters().stream()
                 .filter(c -> c.getName().equalsIgnoreCase(playerName))
                 .findFirst();
 
@@ -60,7 +60,7 @@ public class BanCommand implements Command {
                     // Forcefully drop their connection
                     communicationService.sendLogout(target);
                     // Remove them from active game instance
-                    characterService.removeAvailableCharacter(target.getId());
+                    mobileService.deselectCharacter(target.getId());
                     communicationService.sendTextMessage(mobile, "\n\nYou have permanently banned " + target.getName() + ".");
                     communicationService.roomMessage(mobile, "\n" + target.getName() + " has been banished from the realm.");
                 })
@@ -81,3 +81,4 @@ public class BanCommand implements Command {
         return "Syntax: ban <playerName>\n\nForcefully drops the specified player's connection and locks their user account, preventing future logins. This is an administrative command.";
     }
 }
+

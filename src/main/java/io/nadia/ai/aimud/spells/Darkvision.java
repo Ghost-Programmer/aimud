@@ -12,8 +12,8 @@ import io.nadia.ai.aimud.types.SkillsType;
 @MagicSpell(name = "darkvision")
 public class Darkvision extends Spell {
 
-    protected Darkvision(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mobileService, characterService, communicationService, effectService);
+    protected Darkvision(SkillService skillService, MobileService mobileService, CommunicationService communicationService, EffectService effectService) {
+        super(skillService, mobileService, communicationService, effectService);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class Darkvision extends Spell {
 
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile target) {
-        if (target != null && !this.characterService.canTarget(target)) {
+        if (target != null && !this.mobileService.canTarget(target)) {
             this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + target.getName() + ".");
             return false;
         }
@@ -90,3 +90,4 @@ public class Darkvision extends Spell {
         return true;
     }
 }
+

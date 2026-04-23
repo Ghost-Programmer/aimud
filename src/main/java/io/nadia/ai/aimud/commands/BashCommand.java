@@ -26,7 +26,6 @@ import java.util.Random;
 public class BashCommand implements Command {
     private final CommunicationService communicationService;
     private final RoomService roomService;
-    private final CharacterService characterService;
     private final MobileService mobileService;
     private final SkillService skillService;
     private final Random random = new Random();
@@ -39,17 +38,17 @@ public class BashCommand implements Command {
      * @param commandLine trailing standard query parameters
      * @return a reactive pipeline
      */
-    public Mono<Void> execute(Mobile Mobile, String commandLine) {
-        log.info("Executing bash command for Mobile: {}", Mobile.getName());
+    public Mono<Void> execute(Mobile mobile, String commandLine) {
+        log.info("Executing bash command for Mobile: {}", mobile.getName());
 
-        int bashRank = skillService.getSkillRank(Mobile, SkillsType.BASH);
+        int bashRank = skillService.getSkillRank(mobile, SkillsType.BASH);
         if (bashRank <= 0) {
-            communicationService.sendTextMessage(Mobile, "\n\nYou don't know how to bash.");
+            communicationService.sendTextMessage(mobile, "\n\nYou don't know how to bash.");
             return Mono.empty();
         }
 
-        if (!hasShieldEquipped(Mobile)) {
-            communicationService.sendTextMessage(Mobile, "\n\nYou must have a shield equipped to bash.");
+        if (!hasShieldEquipped(mobile)) {
+            communicationService.sendTextMessage(mobile, "\n\nYou must have a shield equipped to bash.");
             return Mono.empty();
         }
 
@@ -58,33 +57,33 @@ public class BashCommand implements Command {
 
         if (parts.length < 2) {
             // No target specified, use current target if any
-            if (Mobile.getTarget() != null) {
-                target = Mobile.getTarget();
+            if (mobile.getTarget() != null) {
+                target = mobile.getTarget();
             } else {
-                communicationService.sendTextMessage(Mobile, "\n\nBash who?");
+                communicationService.sendTextMessage(mobile, "\n\nBash who?");
                 return Mono.empty();
             }
-            return executeBash(Mobile, target);
+            return executeBash(mobile, target);
         } else {
             // Find target by name
             String targetName = parts[1].toLowerCase();
-            return roomService.getRoom(Mobile.getCurrentRoomId())
+            return roomService.getRoom(mobile.getCurrentRoomId())
                     .flatMap(room -> {
                         // Check for PC target
-                        List<Mobile> charactersInRoom = characterService.findAllByRoomId(room.getId());
+                        List<Mobile> charactersInRoom = mobileService.findAllByRoomId(room.getId());
                         Mobile pcTarget = charactersInRoom.stream()
-                                .filter(c -> !c.getId().equals(Mobile.getId()) && c.getName().toLowerCase().contains(targetName))
+                                .filter(c -> !c.getId().equals(mobile.getId()) && c.getName().toLowerCase().contains(targetName))
                                 .findFirst()
                                 .orElse(null);
 
                         if (pcTarget != null) {
-                            return executeBash(Mobile, pcTarget);
+                            return executeBash(mobile, pcTarget);
                         }
 
                         // Check for NPC target
                         List<Long> mobileIds = room.getMobileIds();
                         if (mobileIds.isEmpty()) {
-                            communicationService.sendTextMessage(Mobile, "\n\nThey aren't here.");
+                            communicationService.sendTextMessage(mobile, "\n\nThey aren't here.");
                             return Mono.empty();
                         }
 
@@ -92,9 +91,9 @@ public class BashCommand implements Command {
                                 .flatMap(mobileService::getMobile)
                                 .filter(m -> m.getName().toLowerCase().contains(targetName))
                                 .next()
-                                .flatMap(npcTarget -> executeBash(Mobile, npcTarget))
+                                .flatMap(npcTarget -> executeBash(mobile, npcTarget))
                                 .switchIfEmpty(Mono.defer(() -> {
-                                    communicationService.sendTextMessage(Mobile, "\n\nThey aren't here.");
+                                    communicationService.sendTextMessage(mobile, "\n\nThey aren't here.");
                                     return Mono.empty();
                                 }));
                     });
@@ -109,10 +108,10 @@ public class BashCommand implements Command {
 
         // Auto-attack if not already attacking
         if (attacker.getTarget() != target) {
-            if (!this.characterService.setTarget(attacker, target)) return Mono.empty();
+            if (!this.mobileService.setTarget(attacker, target)) return Mono.empty();
         }
         if (target.getTarget() == null) {
-            if (!this.characterService.setTarget(target, attacker)) return Mono.empty();
+            if (!this.mobileService.setTarget(target, attacker)) return Mono.empty();
             if (target.getUserId() != null) {
                 communicationService.sendTextMessage(target, "\n\n" + attacker.getName() + " is attacking you!");
             }
@@ -167,8 +166,8 @@ public class BashCommand implements Command {
         return Mono.empty();
     }
 
-    private boolean hasShieldEquipped(Mobile Mobile) {
-        Item offhand = Mobile.getOffhand();
+    private boolean hasShieldEquipped(Mobile mobile) {
+        Item offhand = mobile.getOffhand();
         if (offhand == null) return false;
 
         return offhand.getWearLocation() == WearLocation.OFFHAND &&
@@ -187,4 +186,5 @@ public class BashCommand implements Command {
         return "Syntax: bash [target]\n\nSlam your shield into an enemy, dealing damage. Requires a shield to be equipped and the Bash skill.";
     }
 }
+
 

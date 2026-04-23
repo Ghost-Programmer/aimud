@@ -22,12 +22,12 @@ public class WailingAnthem extends Song {
      *
      * @param skillService         system for evaluating actor skill ranks
      * @param mobileService        registry of available AI targets
-     * @param characterService     registry of active player characters
+     * @param MobileService     registry of active player characters
      * @param communicationService emitter for localized chat events
      * @param effectService        engine handling transient buffs and debuffs
      */
-    public WailingAnthem(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mobileService, characterService, communicationService, effectService);
+    public WailingAnthem(SkillService skillService, MobileService mobileService, CommunicationService communicationService, EffectService effectService) {
+        super(skillService, mobileService, communicationService, effectService);
     }
 
     /**
@@ -67,7 +67,7 @@ public class WailingAnthem extends Song {
      */
     @Override
     public boolean sing(Mobile mobile, Song song, Mobile primaryTarget) {
-        if (primaryTarget != null && !this.characterService.canTarget(primaryTarget)) {
+        if (primaryTarget != null && !this.mobileService.canTarget(primaryTarget)) {
             this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + primaryTarget.getName() + ".");
             return false;
         }
@@ -108,4 +108,5 @@ public class WailingAnthem extends Song {
         }
     }
 }
+
 

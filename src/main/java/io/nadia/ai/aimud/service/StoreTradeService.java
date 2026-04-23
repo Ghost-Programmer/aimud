@@ -19,11 +19,10 @@ import java.util.stream.Collectors;
 public class StoreTradeService {
 
     private final StoreService storeService;
-    private final CharacterService characterService;
+    private final MobileService mobileService;
     private final FactionService factionService;
     private final CommunicationService communicationService;
     private final ItemService itemService;
-    private final MobileService mobileService;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     /**
@@ -72,7 +71,7 @@ public class StoreTradeService {
     private Mobile findMerchant(Long storeId, Mobile character) {
         if (character.getCurrentRoomId() == null)
             return null;
-        return mobileService.getMobilesInRoom(character.getCurrentRoomId()).stream()
+        return mobileService.findAllByRoomId(character.getCurrentRoomId()).stream()
                 .filter(m -> storeId.equals(m.getStoreId()))
                 .findFirst()
                 .orElse(null);
@@ -86,7 +85,7 @@ public class StoreTradeService {
      * @return a {@link Mono} containing the configured dialog payload
      */
     public Mono<StoreDialogPayload> getStoreDialogPayload(Long storeId, Long characterId) {
-        return characterService.getCharacterById(characterId).flatMap(character -> {
+        return mobileService.getCharacterById(characterId).flatMap(character -> {
             Mobile merchant = findMerchant(storeId, character);
             if (merchant == null)
                 return Mono.empty();
@@ -126,7 +125,7 @@ public class StoreTradeService {
      * @return a {@link Mono} returning the updated store dialog payload
      */
     public Mono<StoreDialogPayload> buyItem(Long storeId, Long itemId, Long characterId) {
-        return characterService.getCharacterById(characterId).flatMap(character -> {
+        return mobileService.getCharacterById(characterId).flatMap(character -> {
             Mobile merchant = findMerchant(storeId, character);
             if (merchant == null)
                 return Mono.empty();
@@ -196,9 +195,9 @@ public class StoreTradeService {
                 
                 character.setInventory(currentInventory);
 
-                return characterService.save(character)
-                        .flatMap(savedChar -> characterService.updateInventory(savedChar, currentInventory))
-                        .flatMap(savedChar -> characterService.getCharacterById(savedChar.getId()))
+                return mobileService.save(character)
+                        .flatMap(savedChar -> mobileService.updateInventory(savedChar, currentInventory))
+                        .flatMap(savedChar -> mobileService.getCharacterById(savedChar.getId()))
                         .flatMap(savedChar -> {
                             communicationService.sendCharacterUpdate(savedChar);
                             communicationService.sendTextMessage(savedChar,
@@ -222,7 +221,7 @@ public class StoreTradeService {
      * @return a {@link Mono} returning the updated store dialog payload
      */
     public Mono<StoreDialogPayload> sellItem(Long storeId, Long itemId, Long characterId) {
-        return characterService.getCharacterById(characterId).flatMap(character -> {
+        return mobileService.getCharacterById(characterId).flatMap(character -> {
             Mobile merchant = findMerchant(storeId, character);
             if (merchant == null)
                 return Mono.empty();
@@ -269,9 +268,9 @@ public class StoreTradeService {
                     store.getItems().add(newTransientSi);
                 }
 
-                return characterService.save(character)
-                        .flatMap(savedChar -> characterService.updateInventory(savedChar, currentInventory))
-                        .flatMap(savedChar -> characterService.getCharacterById(savedChar.getId()))
+                return mobileService.save(character)
+                        .flatMap(savedChar -> mobileService.updateInventory(savedChar, currentInventory))
+                        .flatMap(savedChar -> mobileService.getCharacterById(savedChar.getId()))
                         .flatMap(savedChar -> {
                             communicationService.sendCharacterUpdate(savedChar);
                             communicationService.sendTextMessage(savedChar,
@@ -285,3 +284,4 @@ public class StoreTradeService {
         });
     }
 }
+

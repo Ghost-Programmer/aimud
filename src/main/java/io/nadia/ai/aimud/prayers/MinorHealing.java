@@ -16,13 +16,13 @@ public class MinorHealing extends Prayer {
      *
      * @param skillService         system for evaluating actor skill ranks
      * @param mobileService        registry of available AI targets
-     * @param characterService     registry of active player characters
+     * @param MobileService     registry of active player characters
      * @param communicationService emitter for localized chat events
      * @param effectService        engine handling transient buffs and debuffs
      */
-    protected MinorHealing(SkillService skillService, MobileService mobileService, CharacterService characterService,
+    protected MinorHealing(SkillService skillService, MobileService mobileService,
                            CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mobileService, characterService, communicationService, effectService);
+        super(skillService, mobileService, communicationService, effectService);
     }
 
     /**
@@ -67,7 +67,7 @@ public class MinorHealing extends Prayer {
      */
     @Override
     public boolean pray(Mobile mobile, Prayer prayer, Mobile target) {
-        if (target != null && !this.characterService.canTarget(target)) {
+        if (target != null && !this.mobileService.canTarget(target)) {
             this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + target.getName() + ".");
             return false;
         }
@@ -83,7 +83,7 @@ public class MinorHealing extends Prayer {
         int actualHeal = newHp - target.getCurrentHp();
         
         target.setCurrentHp(newHp);
-        characterService.save(target).subscribe();
+        mobileService.save(target).subscribe();
 
         if (mobile.getUserId() != null) {
             communicationService.sendTextMessage(mobile, 
@@ -100,4 +100,5 @@ public class MinorHealing extends Prayer {
         return true;
     }
 }
+
 

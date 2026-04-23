@@ -32,7 +32,6 @@ public class BandageCommand implements Command {
     private final CommunicationService communicationService;
     private final RoomService roomService;
     private final MobileService mobileService;
-    private final CharacterService characterService;
     private final SkillService skillService;
     private final Random random = new Random();
 
@@ -76,7 +75,7 @@ public class BandageCommand implements Command {
         // Find target in room
         return roomService.getRoom(mobile.getCurrentRoomId())
                 .flatMap(room -> {
-                    List<Mobile> pcs = characterService.findAllByRoomId(room.getId());
+                    List<Mobile> pcs = mobileService.findAllByRoomId(room.getId());
                     Mobile pcTarget = pcs.stream()
                             .filter(c -> c.getName().toLowerCase().contains(targetName))
                             .findFirst()
@@ -194,15 +193,15 @@ public class BandageCommand implements Command {
 
         // Save
         if (medic.getId().equals(target.getId())) {
-            return characterService.save(medic).then();
+            return mobileService.save(medic).then();
         } else {
             Mono<Void> saveTargetMono;
             if (target.getUserId() != null) {
-                saveTargetMono = characterService.save(target).then();
+                saveTargetMono = mobileService.save(target).then();
             } else {
                 saveTargetMono = mobileService.saveMobile(target).then();
             }
-            return characterService.save(medic).then(saveTargetMono);
+            return mobileService.save(medic).then(saveTargetMono);
         }
     }
 
@@ -223,3 +222,4 @@ public class BandageCommand implements Command {
         return "Syntax: bandage [target]\n\nUtilizes a bandage from your inventory to heal wounds. Higher quality bandages and higher Bandage skill allow you to treat poisons or lingering DoT effects.";
     }
 }
+

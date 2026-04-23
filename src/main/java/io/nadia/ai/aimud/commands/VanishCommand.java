@@ -3,7 +3,7 @@ package io.nadia.ai.aimud.commands;
 import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Effect;
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.EffectService;
 import io.nadia.ai.aimud.service.MobileService;
@@ -26,14 +26,12 @@ import java.util.Map;
 @MudCommand(name = "vanish")
 public class VanishCommand implements Command {
 
-    private final CharacterService characterService;
     private final MobileService mobileService;
     private final CommunicationService communicationService;
     private final SkillService skillService;
     private final EffectService effectService;
 
     public VanishCommand(ApplicationContext context) {
-        this.characterService = context.getBean(CharacterService.class);
         this.mobileService = context.getBean(MobileService.class);
         this.communicationService = context.getBean(CommunicationService.class);
         this.skillService = context.getBean(SkillService.class);
@@ -79,8 +77,8 @@ public class VanishCommand implements Command {
 
         // Apply drop-aggro logic
         List<Mobile> allMobiles = new ArrayList<>();
-        allMobiles.addAll(characterService.getAvailableCharacters());
-        allMobiles.addAll(mobileService.getActiveMobiles());
+        allMobiles.addAll(mobileService.getAvailableCharacters());
+        allMobiles.addAll(mobileService.getAvailableCharacters());
 
         boolean droppedAggro = false;
         for (Mobile m : allMobiles) {
@@ -102,7 +100,7 @@ public class VanishCommand implements Command {
                 }
                 
                 // Usually vanishing cancels the active target locking
-                this.characterService.setTarget(m, null);
+                this.mobileService.setTarget(m, null);
             }
         }
 
@@ -137,3 +135,4 @@ public class VanishCommand implements Command {
         return "Syntax: vanish\n\nRequires a Hide skill rank of 50 or higher. You will immediately enter a hidden state and reduce your threat level on all enemies who are targeting you, effectively dropping aggro.";
     }
 }
+

@@ -29,7 +29,6 @@ public class BackstabCommand implements Command {
     private final CommunicationService communicationService;
     private final RoomService roomService;
     private final MobileService mobileService;
-    private final CharacterService characterService;
     private final SkillService skillService;
     private final Random random = new Random();
 
@@ -71,7 +70,7 @@ public class BackstabCommand implements Command {
                             .next()
                             .flatMap(npcTarget -> executeBackstab(mobile, npcTarget))
                             .switchIfEmpty(Mono.defer(() -> {
-                                List<Mobile> pcs = characterService.findAllByRoomId(room.getId());
+                                List<Mobile> pcs = mobileService.findAllByRoomId(room.getId());
                                 Mobile pcTarget = pcs.stream()
                                         .filter(c -> !c.getId().equals(mobile.getId()) && c.getName().toLowerCase().contains(targetName))
                                         .findFirst()
@@ -88,7 +87,7 @@ public class BackstabCommand implements Command {
     }
 
     private Mono<Void> executeBackstab(Mobile attacker, Mobile target) {
-        if (!characterService.canTarget(target)) {
+        if (!mobileService.canTarget(target)) {
             communicationService.sendTextMessage(attacker, "\n\nYou cannot attack " + target.getName() + ".");
             return Mono.empty();
         }
@@ -151,10 +150,10 @@ public class BackstabCommand implements Command {
 
         // Auto-retaliate
         if (target.getTarget() == null && target.getCurrentHp() > 0) {
-            if (!this.characterService.setTarget(target, attacker)) return Mono.empty();
+            if (!this.mobileService.setTarget(target, attacker)) return Mono.empty();
         }
         if (attacker.getTarget() == null && target.getCurrentHp() > 0) {
-            if (!this.characterService.setTarget(attacker, target)) return Mono.empty();
+            if (!this.mobileService.setTarget(attacker, target)) return Mono.empty();
         }
 
         // The death handling will naturally be picked up by the TickService loop on the next pass,
@@ -167,7 +166,7 @@ public class BackstabCommand implements Command {
         if (attacker.getUserId() != null) communicationService.sendCharacterUpdate(attacker);
 
         Mono<Void> saveTargetMono = mobileService.saveMobile(target).then();
-        return characterService.save(attacker).then(saveTargetMono);
+        return mobileService.save(attacker).then(saveTargetMono);
     }
 
     private boolean isWeapon(Item item) {
@@ -191,4 +190,5 @@ public class BackstabCommand implements Command {
         return "Syntax: backstab <target>\n\nAttempt to sneak up on a target and deliver a deadly blow to their back. You must be hidden to use this skill.";
     }
 }
+
 

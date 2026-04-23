@@ -2,7 +2,7 @@ package io.nadia.ai.aimud.commands;
 
 import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono;
 @MudCommand(name = "logout")
 public class Logout implements Command {
 
-    private final CharacterService characterService;
+    private final MobileService mobileService;
     private final CommunicationService communicationService;
 
     @Override
@@ -29,10 +29,10 @@ public class Logout implements Command {
      * @param commandLine trailing standard query parameters
      * @return a reactive pipeline
      */
-    public Mono<Void> execute(Mobile Mobile, String commandLine) {
-        log.info("Executing logout command for Mobile: {}", Mobile.getName());
-        return Mono.fromRunnable(() -> communicationService.sendLogout(Mobile))
-                .then(characterService.deselectCharacter(Mobile.getId()));
+    public Mono<Void> execute(Mobile mobile, String commandLine) {
+        log.info("Executing logout command for Mobile: {}", mobile.getName());
+        return Mono.fromRunnable(() -> communicationService.sendLogout(mobile))
+                .then(mobileService.deselectCharacter(mobile.getId()));
     }
 
     @Override
@@ -45,4 +45,5 @@ public class Logout implements Command {
         return "Syntax: logout\n\nSafely log out of the game, saving your Mobile data and disconnecting.";
     }
 }
+
 

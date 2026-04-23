@@ -2,7 +2,7 @@ package io.nadia.ai.aimud.commands;
 
 import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.RoomService;
 import lombok.extern.slf4j.Slf4j;
@@ -19,12 +19,12 @@ import java.util.Optional;
 @MudCommand(name = "goto", role = "MUD_ADMIN")
 public class GotoCommand implements Command {
 
-    private final CharacterService characterService;
+    private final MobileService mobileService;
     private final CommunicationService communicationService;
     private final RoomService roomService;
 
     public GotoCommand(ApplicationContext context) {
-        this.characterService = context.getBean(CharacterService.class);
+        this.mobileService = context.getBean(MobileService.class);
         this.communicationService = context.getBean(CommunicationService.class);
         this.roomService = context.getBean(RoomService.class);
     }
@@ -57,12 +57,12 @@ public class GotoCommand implements Command {
         return roomService.getRoom(roomId)
                 .flatMap(room -> {
                     communicationService.sendTextMessage(mobile, "\n\nYou vanish in a puff of smoke.");
-                    return characterService.enterRoom(mobile, room.getId());
+                    return mobileService.enterRoom(mobile, room.getId());
                 });
     }
 
     private Mono<Void> teleportToPlayer(Mobile mobile, String playerName) {
-        Optional<Mobile> targetPlayer = characterService.getAvailableCharacters().stream()
+        Optional<Mobile> targetPlayer = mobileService.getAvailableCharacters().stream()
                 .filter(c -> c.getName().equalsIgnoreCase(playerName))
                 .findFirst();
 
@@ -70,7 +70,7 @@ public class GotoCommand implements Command {
             Long targetRoomId = targetPlayer.get().getCurrentRoomId();
             if (targetRoomId != null) {
                 communicationService.sendTextMessage(mobile, "\n\nYou vanish in a puff of smoke.");
-                return characterService.enterRoom(mobile, targetRoomId);
+                return mobileService.enterRoom(mobile, targetRoomId);
             }
         }
 
@@ -88,3 +88,4 @@ public class GotoCommand implements Command {
         return "Syntax: goto <roomID|playerName>\n\nTeleports you instantly to the specified room ID or to the room where the specified player is currently located.";
     }
 }
+

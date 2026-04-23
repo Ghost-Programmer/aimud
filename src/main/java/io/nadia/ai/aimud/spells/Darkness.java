@@ -15,8 +15,8 @@ public class Darkness extends Spell {
 
     private final RoomService roomService;
 
-    public Darkness(SkillService skillService, MobileService mobileService, CharacterService characterService, CommunicationService communicationService, EffectService effectService, RoomService roomService) {
-        super(skillService, mobileService, characterService, communicationService, effectService);
+    public Darkness(SkillService skillService, MobileService mobileService, CommunicationService communicationService, EffectService effectService, RoomService roomService) {
+        super(skillService, mobileService, communicationService, effectService);
         this.roomService = roomService;
     }
 
@@ -68,7 +68,7 @@ public class Darkness extends Spell {
 
     @Override
     public boolean cast(Mobile mobile, Spell spell, Mobile target) {
-        if (target != null && !this.characterService.canTarget(target)) {
+        if (target != null && !this.mobileService.canTarget(target)) {
             this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + target.getName() + ".");
             return false;
         }
@@ -120,3 +120,4 @@ public class Darkness extends Spell {
         return true;
     }
 }
+

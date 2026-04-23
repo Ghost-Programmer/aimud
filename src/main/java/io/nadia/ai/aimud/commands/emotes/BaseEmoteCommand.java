@@ -2,7 +2,7 @@ package io.nadia.ai.aimud.commands.emotes;
 
 import io.nadia.ai.aimud.commands.Command;
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.MobileService;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public abstract class BaseEmoteCommand implements Command {
     protected final CommunicationService communicationService;
-    protected final CharacterService characterService;
+    
     protected final MobileService mobileService;
 
     /**
@@ -51,14 +51,14 @@ public abstract class BaseEmoteCommand implements Command {
             String targetQuery = parts[1].toLowerCase();
             Mobile targetMob = null;
             if (mobile.getCurrentRoomId() != null) {
-                for (Mobile c : characterService.findAllByRoomId(mobile.getCurrentRoomId())) {
+                for (Mobile c : mobileService.findAllByRoomId(mobile.getCurrentRoomId())) {
                     if (!c.isHidden() && !c.isInvisible() && c.getName().toLowerCase().contains(targetQuery)) {
                         targetMob = c;
                         break;
                     }
                 }
                 if (targetMob == null) {
-                    for (Mobile m : mobileService.getMobilesInRoom(mobile.getCurrentRoomId())) {
+                    for (Mobile m : mobileService.findAllByRoomId(mobile.getCurrentRoomId())) {
                         if (!m.isHidden() && !m.isInvisible() && m.getName().toLowerCase().contains(targetQuery)) {
                             targetMob = m;
                             break;
@@ -101,3 +101,4 @@ public abstract class BaseEmoteCommand implements Command {
         return "Syntax: " + getEmoteName() + " [target]\n\nDisplay an emote to the room or a specific target.";
     }
 }
+

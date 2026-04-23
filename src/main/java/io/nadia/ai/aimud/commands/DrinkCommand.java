@@ -3,7 +3,7 @@ package io.nadia.ai.aimud.commands;
 import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Item;
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.ItemService;
 import io.nadia.ai.aimud.types.ItemType;
@@ -22,7 +22,7 @@ import java.util.Optional;
 @MudCommand(name = "drink")
 public class DrinkCommand implements Command {
     private final CommunicationService communicationService;
-    private final CharacterService characterService;
+    private final MobileService mobileService;
     private final ItemService itemService;
 
     @Override
@@ -76,7 +76,7 @@ public class DrinkCommand implements Command {
             return itemService.saveItem(item).then();
         } else {
             communicationService.sendTextMessage(mobile, "\n\nYou drain the last drops from " + item.getName() + " and discard it.");
-            return characterService.destroyInventoryItem(mobile, item.getId()).then();
+            return mobileService.destroyInventoryItem(mobile, item.getId()).then();
         }
     }
 
@@ -90,3 +90,4 @@ public class DrinkCommand implements Command {
         return "Syntax: drink <item>\n\nConsumes liquid from an item in your inventory to replenish your thirst levels. Drinking prevents dehydration and allows health to naturally regenerate.";
     }
 }
+

@@ -2,7 +2,7 @@ package io.nadia.ai.aimud.commands;
 
 import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.MobileService;
 import org.springframework.context.ApplicationContext;
@@ -19,12 +19,10 @@ import java.util.List;
 public class ShoutCommand implements Command {
 
     private final CommunicationService communicationService;
-    private final CharacterService characterService;
     private final MobileService mobileService;
 
     public ShoutCommand(ApplicationContext context) {
         this.communicationService = context.getBean(CommunicationService.class);
-        this.characterService = context.getBean(CharacterService.class);
         this.mobileService = context.getBean(MobileService.class);
     }
 
@@ -47,8 +45,8 @@ public class ShoutCommand implements Command {
         communicationService.sendTextMessage(mobile, "\nYou shout, '" + text + "'");
         
         List<Mobile> allOnline = new ArrayList<>();
-        allOnline.addAll(characterService.getAvailableCharacters());
-        allOnline.addAll(mobileService.getActiveMobiles());
+        allOnline.addAll(mobileService.getAvailableCharacters());
+        allOnline.addAll(mobileService.getAvailableCharacters());
 
         for (Mobile c : allOnline) {
              if (!c.getId().equals(mobile.getId())) {
@@ -69,3 +67,4 @@ public class ShoutCommand implements Command {
         return "Syntax: shout <message>\n\nShouts a message that magically reaches every single person currently exploring the realm.";
     }
 }
+

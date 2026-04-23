@@ -2,7 +2,7 @@ package io.nadia.ai.aimud.commands;
 
 import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.RoomService;
@@ -29,7 +29,6 @@ public class HandsCommand implements Command {
     private final CommunicationService communicationService;
     private final RoomService roomService;
     private final MobileService mobileService;
-    private final CharacterService characterService;
     private final SkillService skillService;
 
     @Override
@@ -56,7 +55,7 @@ public class HandsCommand implements Command {
         // Find target in room
         return roomService.getRoom(mobile.getCurrentRoomId())
                 .flatMap(room -> {
-                    List<Mobile> pcs = characterService.findAllByRoomId(room.getId());
+                    List<Mobile> pcs = mobileService.findAllByRoomId(room.getId());
                     Mobile pcTarget = pcs.stream()
                             .filter(c -> c.getName().toLowerCase().contains(targetName))
                             .findFirst()
@@ -139,15 +138,15 @@ public class HandsCommand implements Command {
 
         // Save
         if (healer.getId().equals(target.getId())) {
-            return characterService.save(healer).then();
+            return mobileService.save(healer).then();
         } else {
             Mono<Void> saveTargetMono;
             if (target.getUserId() != null) {
-                saveTargetMono = characterService.save(target).then();
+                saveTargetMono = mobileService.save(target).then();
             } else {
                 saveTargetMono = mobileService.saveMobile(target).then();
             }
-            return characterService.save(healer).then(saveTargetMono);
+            return mobileService.save(healer).then(saveTargetMono);
         }
     }
 
@@ -169,3 +168,4 @@ public class HandsCommand implements Command {
         return "Syntax: hands [target]\n\nUtilizes the Lay On Hands skill to heal a target up to full health. Costs 1 mana per skill rank.";
     }
 }
+

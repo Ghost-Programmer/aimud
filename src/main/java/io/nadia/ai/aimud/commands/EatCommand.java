@@ -3,7 +3,7 @@ package io.nadia.ai.aimud.commands;
 import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Item;
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.ItemService;
 import io.nadia.ai.aimud.types.ItemType;
@@ -22,7 +22,7 @@ import java.util.Optional;
 @MudCommand(name = "eat")
 public class EatCommand implements Command {
     private final CommunicationService communicationService;
-    private final CharacterService characterService;
+    private final MobileService mobileService;
     private final ItemService itemService;
 
     @Override
@@ -75,7 +75,7 @@ public class EatCommand implements Command {
             item.setProperty1(portions - 1);
             return itemService.saveItem(item).then();
         } else {
-            return characterService.destroyInventoryItem(mobile, item.getId()).then();
+            return mobileService.destroyInventoryItem(mobile, item.getId()).then();
         }
     }
 
@@ -89,3 +89,4 @@ public class EatCommand implements Command {
         return "Syntax: eat <item>\n\nConsumes a food item from your inventory to replenish your hunger levels. Eating prevents starvation and allows health to naturally regenerate.";
     }
 }
+

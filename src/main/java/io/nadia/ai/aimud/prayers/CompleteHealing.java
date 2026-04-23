@@ -17,13 +17,13 @@ public class CompleteHealing extends Prayer {
      *
      * @param skillService         system for evaluating actor skill ranks
      * @param mobileService        registry of available AI targets
-     * @param characterService     registry of active player characters
+     * @param MobileService     registry of active player characters
      * @param communicationService emitter for localized chat events
      * @param effectService        engine handling transient buffs and debuffs
      */
-    protected CompleteHealing(SkillService skillService, MobileService mobileService, CharacterService characterService,
+    protected CompleteHealing(SkillService skillService, MobileService mobileService,
                               CommunicationService communicationService, EffectService effectService) {
-        super(skillService, mobileService, characterService, communicationService, effectService);
+        super(skillService, mobileService, communicationService, effectService);
     }
 
     /**
@@ -77,7 +77,7 @@ public class CompleteHealing extends Prayer {
      */
     @Override
     public boolean pray(Mobile mobile, Prayer prayer, Mobile target) {
-        if (target != null && !this.characterService.canTarget(target)) {
+        if (target != null && !this.mobileService.canTarget(target)) {
             this.communicationService.sendTextMessage(mobile, "\n\nYou cannot attack " + target.getName() + ".");
             return false;
         }
@@ -88,7 +88,7 @@ public class CompleteHealing extends Prayer {
 
         int actualHeal = target.getMaxHp() - target.getCurrentHp();
         target.setCurrentHp(target.getMaxHp());
-        characterService.save(target).subscribe();
+        mobileService.save(target).subscribe();
 
         if (mobile.getUserId() != null) {
             communicationService.sendTextMessage(mobile, 
@@ -105,4 +105,5 @@ public class CompleteHealing extends Prayer {
         return true;
     }
 }
+
 

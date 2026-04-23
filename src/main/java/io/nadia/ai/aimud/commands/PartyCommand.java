@@ -2,7 +2,7 @@ package io.nadia.ai.aimud.commands;
 
 import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.MobileService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 public class PartyCommand implements Command {
 
     private final CommunicationService communicationService;
-    private final CharacterService characterService;
     private final MobileService mobileService;
 
     @Override
@@ -72,8 +71,8 @@ public class PartyCommand implements Command {
     }
 
     private List<Mobile> getAllActiveMobiles() {
-        List<Mobile> allMobiles = new ArrayList<>(characterService.getAvailableCharacters());
-        allMobiles.addAll(mobileService.getActiveMobiles());
+        List<Mobile> allMobiles = new ArrayList<>(mobileService.getAvailableCharacters());
+        allMobiles.addAll(mobileService.getAvailableCharacters());
         return allMobiles;
     }
 
@@ -85,13 +84,13 @@ public class PartyCommand implements Command {
 
         String targetName = parts[2].toLowerCase();
 
-        Mobile target = characterService.findAllByRoomId(mobile.getCurrentRoomId()).stream()
+        Mobile target = mobileService.findAllByRoomId(mobile.getCurrentRoomId()).stream()
                 .filter(c -> c.getName().toLowerCase().startsWith(targetName))
                 .findFirst()
                 .orElse(null);
 
         if (target == null) {
-            target = mobileService.getMobilesInRoom(mobile.getCurrentRoomId()).stream()
+            target = mobileService.findAllByRoomId(mobile.getCurrentRoomId()).stream()
                     .filter(m -> m.getName().toLowerCase().startsWith(targetName))
                     .findFirst()
                     .orElse(null);
@@ -282,3 +281,4 @@ public class PartyCommand implements Command {
         return "Syntax: party invite <name> | party accept | party decline | party remove <name> | party leave | party list\n\nAllows you to form a party, invite characters, or check who is grouped with you.";
     }
 }
+

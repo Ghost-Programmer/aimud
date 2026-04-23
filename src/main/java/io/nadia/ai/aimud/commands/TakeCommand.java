@@ -3,7 +3,7 @@ package io.nadia.ai.aimud.commands;
 import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Item;
 import io.nadia.ai.aimud.model.Mobile;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.ItemService;
 import io.nadia.ai.aimud.service.RoomService;
@@ -24,7 +24,7 @@ import java.util.Optional;
 @MudCommand(name = "take")
 public class TakeCommand implements Command {
     private final CommunicationService communicationService;
-    private final CharacterService characterService;
+    private final MobileService mobileService;
     private final RoomService roomService;
     private final ItemService itemService;
 
@@ -36,18 +36,18 @@ public class TakeCommand implements Command {
      * @param commandLine trailing standard query parameters
      * @return a reactive pipeline
      */
-    public Mono<Void> execute(Mobile Mobile, String commandLine) {
-        log.info("Executing take command for Mobile: {}", Mobile.getName());
+    public Mono<Void> execute(Mobile mobile, String commandLine) {
+        log.info("Executing take command for Mobile: {}", mobile.getName());
 
         String[] parts = commandLine.trim().split("\\s+", 2);
         if (parts.length < 2) {
-            communicationService.sendTextMessage(Mobile, "\n\nTake what?");
+            communicationService.sendTextMessage(mobile, "\n\nTake what?");
             return Mono.empty();
         }
 
         String itemName = parts[1].toLowerCase();
 
-        return roomService.getRoom(Mobile.getCurrentRoomId())
+        return roomService.getRoom(mobile.getCurrentRoomId())
                 .flatMap(room -> {
                     // Check transient items first (corpses, etc.)
                     Optional<Item> transientMatch = roomService.getTransientItemsInRoom(room.getId()).stream()
@@ -56,7 +56,7 @@ public class TakeCommand implements Command {
 
                     if (transientMatch.isPresent()) {
                         if (transientMatch.get().isNoPickup()) {
-                            communicationService.sendTextMessage(Mobile, "\n\nYou cannot pick that up.");
+                            communicationService.sendTextMessage(mobile, "\n\nYou cannot pick that up.");
                         }
                         // Even if noPickup is false for a transient item, picking up
                         // transient items is not yet implemented ??? treat as not allowed.
@@ -65,7 +65,7 @@ public class TakeCommand implements Command {
 
                     List<Long> itemIds = room.getItemIds();
                     if (itemIds.isEmpty()) {
-                        communicationService.sendTextMessage(Mobile, "\n\nYou don't see that here.");
+                        communicationService.sendTextMessage(mobile, "\n\nYou don't see that here.");
                         return Mono.empty();
                     }
 
@@ -75,13 +75,13 @@ public class TakeCommand implements Command {
                             .next()
                             .flatMap(itemToTake -> {
                                 if (itemToTake.isNoPickup()) {
-                                    communicationService.sendTextMessage(Mobile, "\n\nYou cannot pick that up.");
+                                    communicationService.sendTextMessage(mobile, "\n\nYou cannot pick that up.");
                                     return Mono.empty();
                                 }
-                                return characterService.takeItem(Mobile, itemToTake.getId()).then();
+                                return mobileService.takeItem(mobile, itemToTake.getId()).then();
                             })
                             .switchIfEmpty(Mono.defer(() -> {
-                                communicationService.sendTextMessage(Mobile, "\n\nYou don't see that here.");
+                                communicationService.sendTextMessage(mobile, "\n\nYou don't see that here.");
                                 return Mono.empty();
                             }));
                 }).then();
@@ -97,4 +97,5 @@ public class TakeCommand implements Command {
         return "Syntax: take <item>\n\nPicks up an item from the ground in your current room and adds it to your inventory.";
     }
 }
+
 
