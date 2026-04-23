@@ -22,6 +22,7 @@ import java.util.Map;
 public class RagService {
 
     private final VectorStore vectorStore;
+    private final ConfigService configService;
 
     /**
      * Listens for {@link NpcInteractionEvent} and stores the interaction data
@@ -34,19 +35,23 @@ public class RagService {
         log.info("Received NPC interaction event for NPC ID {} and PC ID {} with interaction: {}", event.npcId(),
                 event.pcId(), event.interaction());
 
-        reactor.core.publisher.Mono.fromRunnable(() -> {
-            try {
-                Map<String, Object> metadata = Map.of(
-                        "npcId", event.npcId(),
-                        "pcId", event.pcId());
+        configService.getServerSettings()
+                .publishOn(reactor.core.scheduler.Schedulers.boundedElastic())
+                .subscribe(settings -> {
+                    try {
+                        Map<String, Object> metadata = Map.of(
+                                "npcId", event.npcId(),
+                                "pcId", event.pcId(),
+                                "mudDay", settings.mudDay(),
+                                "mudHour", settings.mudHour());
 
-                Document document = new Document(event.interaction(), metadata);
-                vectorStore.add(List.of(document));
+                        Document document = new Document(event.interaction(), metadata);
+                        vectorStore.add(List.of(document));
 
-                log.debug("Successfully stored interaction in vector store.");
-            } catch (Exception e) {
-                log.error("Failed to store NPC interaction in vector database", e);
-            }
-        }).subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic()).subscribe();
+                        log.debug("Successfully stored interaction in vector store.");
+                    } catch (Exception e) {
+                        log.error("Failed to store NPC interaction in vector database", e);
+                    }
+                });
     }
 }
