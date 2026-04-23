@@ -17,6 +17,11 @@ spring:
     user: aimud
     password: aimud_password
     clear-checksums: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/aimud
+    username: aimud
+    password: aimud_password
+    driver-class-name: org.postgresql.Driver
   docker:
     compose:
       enabled: true
@@ -27,4 +32,13 @@ spring:
       chat:
         options:
           model: llama3.2
+      embedding:
+        options:
+          model: nomic-embed-text
+    vectorstore:
+      pgvector:
+        initialize-schema: false
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 768
 

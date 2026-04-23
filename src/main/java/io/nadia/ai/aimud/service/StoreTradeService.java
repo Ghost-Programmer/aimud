@@ -24,6 +24,7 @@ public class StoreTradeService {
     private final CommunicationService communicationService;
     private final ItemService itemService;
     private final MobileService mobileService;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     /**
      * Calculates the price a player must pay to buy an item from a store,
@@ -202,6 +203,9 @@ public class StoreTradeService {
                             communicationService.sendCharacterUpdate(savedChar);
                             communicationService.sendTextMessage(savedChar,
                                     "You bought " + storeItem.getItem().getName() + " for " + price + " gold.");
+                            if (eventPublisher != null && savedChar.getUserId() != null) {
+                                eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(merchant.getId(), savedChar.getId(), savedChar.getName() + " bought " + storeItem.getItem().getName() + " for " + price + " gold."));
+                            }
                             return getStoreDialogPayload(storeId, characterId);
                         });
             });
@@ -272,6 +276,9 @@ public class StoreTradeService {
                             communicationService.sendCharacterUpdate(savedChar);
                             communicationService.sendTextMessage(savedChar,
                                     "You sold " + itemToSell.getName() + " for " + price + " gold.");
+                            if (eventPublisher != null && savedChar.getUserId() != null) {
+                                eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(merchant.getId(), savedChar.getId(), savedChar.getName() + " sold " + itemToSell.getName() + " for " + price + " gold."));
+                            }
                             return getStoreDialogPayload(storeId, characterId);
                         });
             });

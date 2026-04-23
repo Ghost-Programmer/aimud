@@ -33,6 +33,9 @@ public class CommunicationService {
     @org.springframework.context.annotation.Lazy
     private ConversationService conversationService;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
+
     /**
      * Retrieves the stream of character updates.
      *
@@ -197,6 +200,13 @@ public class CommunicationService {
                 .filter(c -> !c.getId().equals(mobile.getId()))
                 .forEach(c -> {
                     this.sendTextMessage(c, message);
+                    if (eventPublisher != null) {
+                        if (mobile.getUserId() != null && c.getUserId() == null) {
+                            eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(c.getId(), mobile.getId(), message.trim()));
+                        } else if (mobile.getUserId() == null && c.getUserId() != null) {
+                            eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(mobile.getId(), c.getId(), message.trim()));
+                        }
+                    }
                 });
     }
 

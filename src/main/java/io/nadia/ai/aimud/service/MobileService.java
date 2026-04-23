@@ -103,10 +103,13 @@ public class MobileService {
                     
                     return databaseClient.sql("SELECT starting_effects FROM races WHERE id = :rId")
                             .bind("rId", saved.getRaceId())
-                            .map((row, meta) -> row.get(0, String.class))
+                            .map((row, meta) -> {
+                                String val = row.get(0, String.class);
+                                return val == null ? "" : val;
+                            })
                             .one()
                             .flatMap(effs -> {
-                                if (effs == null || effs.isEmpty()) return Mono.just(saved);
+                                if (effs.isEmpty()) return Mono.just(saved);
                                 java.util.List<Long> ids = new java.util.ArrayList<>();
                                 for (String s : effs.split(",")) {
                                     try { ids.add(Long.parseLong(s.trim())); } catch (Exception ignored) {}

@@ -21,11 +21,13 @@ public class TellCommand implements Command {
     private final CommunicationService communicationService;
     private final CharacterService characterService;
     private final MobileService mobileService;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     public TellCommand(ApplicationContext context) {
         this.communicationService = context.getBean(CommunicationService.class);
         this.characterService = context.getBean(CharacterService.class);
         this.mobileService = context.getBean(MobileService.class);
+        this.eventPublisher = context;
     }
 
     @Override
@@ -62,6 +64,14 @@ public class TellCommand implements Command {
 
         communicationService.sendTextMessage(mobile, "\nYou tell " + target.getName() + ", '" + text + "'");
         communicationService.sendTextMessage(target, "\n" + mobile.getName() + " tells you, '" + text + "'");
+
+        if (eventPublisher != null) {
+            if (mobile.getUserId() != null && target.getUserId() == null) {
+                eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(target.getId(), mobile.getId(), mobile.getName() + " tells you, '" + text + "'"));
+            } else if (mobile.getUserId() == null && target.getUserId() != null) {
+                eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(mobile.getId(), target.getId(), mobile.getName() + " tells you, '" + text + "'"));
+            }
+        }
 
         return Mono.empty();
     }

@@ -19,13 +19,14 @@ class StoreTradeServiceTest {
     @Mock private CommunicationService communicationService;
     @Mock private ItemService itemService;
     @Mock private MobileService mobileService;
+    @Mock private org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     private StoreTradeService storeTradeService;
 
     @BeforeEach
     void setUp() {
         storeTradeService = new StoreTradeService(storeService, characterService, factionService,
-                communicationService, itemService, mobileService);
+                communicationService, itemService, mobileService, eventPublisher);
     }
 
     private Item itemWithValue(int value) {

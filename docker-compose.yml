@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16
+    image: pgvector/pgvector:pg16
     container_name: aimud-db
     environment:
       POSTGRES_USER: aimud
@@ -19,6 +19,7 @@ services:
     environment:
       - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/aimud
       - SPRING_LIQUIBASE_URL=jdbc:postgresql://postgres:5432/aimud
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/aimud
       - SPRING_AI_OLLAMA_BASE_URL=http://ollama:11434
       - SPRING_DOCKER_COMPOSE_ENABLED=false
     depends_on:
@@ -45,6 +46,7 @@ services:
         sleep 5
         ollama pull llama3.2
         ollama pull hermes3
+        ollama pull nomic-embed-text
         wait
   open-webui:
     image: ghcr.io/open-webui/open-webui:main

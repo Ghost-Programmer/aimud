@@ -22,13 +22,14 @@ public class ConversationService {
     private final CharacterService characterService;
     private final RoomService roomService;
     private final CommunicationService communicationService;
-    private final AiService aiService;
     private final CommandService commandService;
     private final FactionService factionService;
     private final ConfigService configService;
     private final SpellService spellService;
     private final SongService songService;
     private final PrayerService prayerService;
+    private final org.springframework.ai.vectorstore.VectorStore vectorStore;
+    private final org.springframework.ai.chat.client.ChatClient chatClient;
 
     /**
      * Constructs a new ConversationService.
@@ -44,21 +45,27 @@ public class ConversationService {
      * @param spellService         the spell service
      * @param songService          the song service
      * @param prayerService        the prayer service
+     * @param vectorStore          the VectorStore
+     * @param chatModel            the Ollama chat model
      */
     public ConversationService(MobileService mobileService, CharacterService characterService, RoomService roomService,
-            CommunicationService communicationService, AiService aiService, CommandService commandService,
-            FactionService factionService, ConfigService configService, SpellService spellService, SongService songService, PrayerService prayerService) {
+            CommunicationService communicationService, CommandService commandService,
+            FactionService factionService, ConfigService configService, SpellService spellService,
+            SongService songService, PrayerService prayerService,
+            org.springframework.ai.vectorstore.VectorStore vectorStore,
+            org.springframework.ai.ollama.OllamaChatModel chatModel) {
         this.mobileService = mobileService;
         this.characterService = characterService;
         this.roomService = roomService;
         this.communicationService = communicationService;
-        this.aiService = aiService;
         this.commandService = commandService;
         this.factionService = factionService;
         this.configService = configService;
         this.spellService = spellService;
         this.songService = songService;
         this.prayerService = prayerService;
+        this.vectorStore = vectorStore;
+        this.chatClient = org.springframework.ai.chat.client.ChatClient.builder(chatModel).build();
     }
 
     private final java.util.concurrent.ConcurrentHashMap<Long, java.time.Instant> lastEvaluationTime = new java.util.concurrent.ConcurrentHashMap<>();
@@ -98,7 +105,8 @@ public class ConversationService {
     }
 
     /**
-     * Immediately triggers conversation processing for all AI-enabled NPCs in a specific room.
+     * Immediately triggers conversation processing for all AI-enabled NPCs in a
+     * specific room.
      *
      * @param roomId the ID of the room to process conversations in
      */
@@ -122,7 +130,9 @@ public class ConversationService {
             // Skip dead, actively fighting, or currently processing NPCs
             if (npc == null || npc.getCurrentHp() <= 0 || npc.getTarget() != null
                     || processingNpcs.contains(npc.getId())) {
-                log.info("Skipping NPC " + npc.getName() + " - dead, fighting, or processing");
+                log.info(String.format("Skipping NPC %s - dead: %b, fighting: %b, processing: %b",
+                        npc.getName(), npc.getCurrentHp() <= 0, npc.getTarget() != null,
+                        processingNpcs.contains(npc.getId())));
                 continue;
             }
 
@@ -147,7 +157,8 @@ public class ConversationService {
     }
 
     /**
-     * Internal method to evaluate local actions, build a contextual prompt, and send it to the AI for an NPC.
+     * Internal method to evaluate local actions, build a contextual prompt, and
+     * send it to the AI for an NPC.
      *
      * @param npc       the NPC entity determining its next action
      * @param room      the room the NPC is located in
@@ -198,7 +209,8 @@ public class ConversationService {
             for (java.util.Map.Entry<String, Spell> entry : spellService.getSpellMap().entrySet()) {
                 String spellName = entry.getKey();
                 String skillName = entry.getValue().getSpellSkillName();
-                boolean knowsSpell = npc.getSkills().stream().anyMatch(s -> s.getRank() > 0 && s.getName().equalsIgnoreCase(skillName));
+                boolean knowsSpell = npc.getSkills().stream()
+                        .anyMatch(s -> s.getRank() > 0 && s.getName().equalsIgnoreCase(skillName));
                 if (knowsSpell) {
                     MobileAction act = new MobileAction();
                     act.setDescription("Cast the spell '" + spellName + "'");
@@ -209,7 +221,8 @@ public class ConversationService {
             for (java.util.Map.Entry<String, Prayer> entry : prayerService.getPrayerMap().entrySet()) {
                 String prayerName = entry.getKey();
                 String skillName = entry.getValue().getPrayerSkillName();
-                boolean knowsPrayer = npc.getSkills().stream().anyMatch(s -> s.getRank() > 0 && s.getName().equalsIgnoreCase(skillName));
+                boolean knowsPrayer = npc.getSkills().stream()
+                        .anyMatch(s -> s.getRank() > 0 && s.getName().equalsIgnoreCase(skillName));
                 if (knowsPrayer) {
                     MobileAction act = new MobileAction();
                     act.setDescription("Pray for '" + prayerName + "'");
@@ -220,7 +233,8 @@ public class ConversationService {
             for (java.util.Map.Entry<String, Song> entry : songService.getSongMap().entrySet()) {
                 String songName = entry.getKey();
                 String skillName = entry.getValue().getSongSkillName();
-                boolean knowsSong = npc.getSkills().stream().anyMatch(s -> s.getRank() > 0 && s.getName().equalsIgnoreCase(skillName));
+                boolean knowsSong = npc.getSkills().stream()
+                        .anyMatch(s -> s.getRank() > 0 && s.getName().equalsIgnoreCase(skillName));
                 if (knowsSong) {
                     MobileAction act = new MobileAction();
                     act.setDescription("Sing the song '" + songName + "'");
@@ -230,8 +244,10 @@ public class ConversationService {
             }
         }
 
-        boolean hasBash = npc.getSkills() != null && npc.getSkills().stream().anyMatch(s -> s.getRank() > 0 && s.getName().equalsIgnoreCase("Bash"));
-        boolean hasDisarm = npc.getSkills() != null && npc.getSkills().stream().anyMatch(s -> s.getRank() > 0 && s.getName().equalsIgnoreCase("Disarm"));
+        boolean hasBash = npc.getSkills() != null
+                && npc.getSkills().stream().anyMatch(s -> s.getRank() > 0 && s.getName().equalsIgnoreCase("Bash"));
+        boolean hasDisarm = npc.getSkills() != null
+                && npc.getSkills().stream().anyMatch(s -> s.getRank() > 0 && s.getName().equalsIgnoreCase("Disarm"));
 
         for (Mobile p : players) {
             MobileAction atkAct = new MobileAction();
@@ -260,7 +276,7 @@ public class ConversationService {
             emoteAct.setDescription("Emote: " + emote);
             emoteAct.setActionCommand(emote);
             availableActions.add(emoteAct);
-            
+
             // Allow targeted emotes to players
             for (Mobile p : players) {
                 MobileAction targetEmoteAct = new MobileAction();
@@ -270,7 +286,8 @@ public class ConversationService {
             }
         }
 
-        log.info("Evaluating NPC conversation for {}. Found {} available actions.", npc.getName(), availableActions.size());
+        log.info("Evaluating NPC conversation for {}. Found {} available actions.", npc.getName(),
+                availableActions.size());
         if (availableActions.isEmpty()) {
             processingNpcs.remove(npc.getId());
             return;
@@ -337,23 +354,48 @@ public class ConversationService {
         prompt.append("7. DO NOT output internal thoughts, JSON, quotes, or markdown.\n");
 
         org.springframework.ai.ollama.api.OllamaOptions options = new org.springframework.ai.ollama.api.OllamaOptions();
-        options.setTemperature(0.95); // Increase temperature drastically
-        options.setModel("hermes3"); // Isolate the NPC dialogue purely to the hermes3 NLP model
+        options.setTemperature(0.95);
+        options.setModel("hermes3");
 
-        // Spring AI Ollama uses stream under the hood returning Flux<String>. We MUST
-        // concat the chunks.
-        aiService.processPromptNoTools(prompt.toString(), options)
+        org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor ragAdvisor = new org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor(
+                vectorStore,
+                org.springframework.ai.vectorstore.SearchRequest.builder()
+                        .topK(3)
+                        .filterExpression("npcId == " + npc.getId())
+                        .build());
+
+        log.info("Processing conversation for NPC: {}", npc.getName());
+        log.info("Prompt: \n {}", prompt.toString());
+
+        configService.getAllAgents().collectList().flatMapMany(agents -> {
+            StringBuilder systemText = new StringBuilder();
+            for (io.nadia.ai.aimud.model.Agent agent : agents) {
+                systemText.append("Agent: ").append(agent.title()).append("\n").append(agent.content()).append("\n\n");
+            }
+            return chatClient.prompt()
+                    .system(systemText.toString())
+                    .user(prompt.toString())
+                    .options(options)
+                    .advisors(ragAdvisor)
+                    .stream().content()
+                    .filter(text -> text != null && !text.isEmpty());
+        })
                 .reduce("", String::concat)
                 .subscribe(
                         response -> processAiResponse(npc, availableActions, response),
-                        error -> log.error("Error generating conversation for NPC {}", npc.getName(), error));
+                        error -> {
+                            log.error("Error generating conversation for NPC {}", npc.getName(), error);
+                            processingNpcs.remove(npc.getId());
+                        });
     }
 
     /**
-     * Parses the string response generated by the AI model and executes the chosen actions.
+     * Parses the string response generated by the AI model and executes the chosen
+     * actions.
      *
      * @param npc              the NPC taking action
-     * @param availableActions the list of all possible actions the NPC could have taken
+     * @param availableActions the list of all possible actions the NPC could have
+     *                         taken
      * @param response         the raw textual response from the AI
      */
     private void processAiResponse(Mobile npc, List<MobileAction> availableActions, String response) {

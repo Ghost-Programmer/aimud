@@ -103,6 +103,13 @@ public class Mobile {
     @Transient
     private io.nadia.ai.aimud.types.MobileStatus status = io.nadia.ai.aimud.types.MobileStatus.STANDING;
 
+    public io.nadia.ai.aimud.types.MobileStatus getStatus() {
+        if (this.status == null) {
+            this.status = io.nadia.ai.aimud.types.MobileStatus.STANDING;
+        }
+        return this.status;
+    }
+
     @Transient
     private List<MobileAction> actions = new ArrayList<>();
 

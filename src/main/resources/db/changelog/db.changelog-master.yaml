@@ -35,3 +35,5 @@ databaseChangeLog:
       file: db/changelog/changes/071-add-sneak-skill.sql
   - include:
       file: db/changelog/changes/072-add-container-inventory.sql
+  - include:
+      file: db/changelog/changes/073-vector-store.sql
