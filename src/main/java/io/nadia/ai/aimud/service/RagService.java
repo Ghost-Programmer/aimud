@@ -34,17 +34,19 @@ public class RagService {
         log.info("Received NPC interaction event for NPC ID {} and PC ID {} with interaction: {}", event.npcId(),
                 event.pcId(), event.interaction());
 
-        try {
-            Map<String, Object> metadata = Map.of(
-                    "npcId", event.npcId(),
-                    "pcId", event.pcId());
+        reactor.core.publisher.Mono.fromRunnable(() -> {
+            try {
+                Map<String, Object> metadata = Map.of(
+                        "npcId", event.npcId(),
+                        "pcId", event.pcId());
 
-            Document document = new Document(event.interaction(), metadata);
-            vectorStore.add(List.of(document));
+                Document document = new Document(event.interaction(), metadata);
+                vectorStore.add(List.of(document));
 
-            log.debug("Successfully stored interaction in vector store.");
-        } catch (Exception e) {
-            log.error("Failed to store NPC interaction in vector database", e);
-        }
+                log.debug("Successfully stored interaction in vector store.");
+            } catch (Exception e) {
+                log.error("Failed to store NPC interaction in vector database", e);
+            }
+        }).subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic()).subscribe();
     }
 }
