@@ -45,18 +45,20 @@ public class WhoCommand implements Command {
         return Flux.fromIterable(players)
                 .flatMap(player -> {
                     Mono<String> raceNameMono = player.getRaceId() != null
-                            ? configService.getAllRaces().filter(r -> r.getId().equals(player.getRaceId())).next().map(Race::getName).defaultIfEmpty("Unknown Race")
+                            ? configService.getAllRaces().filter(r -> r.getId().equals(player.getRaceId())).next()
+                                    .map(Race::getName).defaultIfEmpty("Unknown Race")
                             : Mono.just("Unknown Race");
 
                     Mono<String> classNameMono = player.getClassId() != null
-                            ? configService.getAllCharacterClasses().filter(c -> c.getId().equals(player.getClassId())).next().map(CharacterClass::getName).defaultIfEmpty("Unknown Class")
+                            ? configService.getAllCharacterClasses().filter(c -> c.getId().equals(player.getClassId()))
+                                    .next().map(CharacterClass::getName).defaultIfEmpty("Unknown Class")
                             : Mono.just("Unknown Class");
 
                     return Mono.zip(raceNameMono, classNameMono).map(tuple -> {
                         String raceName = tuple.getT1();
                         String className = tuple.getT2();
                         int level = (int) player.getChallengeRating();
-                        return String.format("[%2d %s %s] %s", level, raceName, className, player.getName());
+                        return String.format("\n[%2d %s %s] %s", level, raceName, className, player.getName());
                     });
                 })
                 .collectList()
@@ -64,7 +66,8 @@ public class WhoCommand implements Command {
                     for (String line : lines) {
                         communicationService.sendTextMessage(mobile, line);
                     }
-                    communicationService.sendTextMessage(mobile, "----------------------\nTotal Players: " + lines.size() + "\n");
+                    communicationService.sendTextMessage(mobile,
+                            "\n----------------------\nTotal Players: " + lines.size() + "\n");
                     return Mono.empty();
                 });
     }
