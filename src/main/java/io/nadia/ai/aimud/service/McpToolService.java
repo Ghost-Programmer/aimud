@@ -34,6 +34,7 @@ public class McpToolService {
     private final MobileService mobileService;
     private final ConfigService configService;
     private final StoreService storeService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     /**
      * Constructs a new McpToolService.
@@ -44,15 +45,17 @@ public class McpToolService {
      * @param mobileService the mobile service
      * @param configService the config service
      * @param storeService  the store service
+     * @param tokenBlacklistService the token blacklist service
      */
     public McpToolService(RoomService roomService, ItemService itemService, EffectService effectService,
-            MobileService mobileService, ConfigService configService, StoreService storeService) {
+            MobileService mobileService, ConfigService configService, StoreService storeService, TokenBlacklistService tokenBlacklistService) {
         this.roomService = roomService;
         this.itemService = itemService;
         this.effectService = effectService;
         this.mobileService = mobileService;
         this.configService = configService;
         this.storeService = storeService;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     // --- ENUM REFERENCE LISTS ---
@@ -743,6 +746,24 @@ public class McpToolService {
     public List<Store> listStores() {
         log.info("MCP API Call: listStores");
         return awaitList(storeService.getAllStores(), "list stores");
+    }
+
+    // --- SECURITY CRUD ---
+
+    /**
+     * Allows an MCP agent to immediately invalidate a user's session globally.
+     *
+     * @param username the username to invalidate
+     * @return a success message
+     */
+    @Tool(description = "Invalidate a user session across all instances")
+    public String invalidateUserSession(@ToolParam(description = "The username to invalidate. REQUIRED.") String username) {
+        log.info("MCP API Call: invalidateUserSession(username={})", username);
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("Username is required.");
+        }
+        await(tokenBlacklistService.invalidateUser(username), "invalidate user");
+        return "User session for '" + username + "' has been invalidated.";
     }
 
     // --- HELPER METHODS ---

@@ -70,6 +70,16 @@ public class JwtService {
     }
 
     /**
+     * Extracts the issued at date from a given JWT token.
+     *
+     * @param token the JWT token string
+     * @return the extracted issued at date
+     */
+    public Date extractIssuedAt(String token) {
+        return extractAllClaims(token).getIssuedAt();
+    }
+
+    /**
      * Parses the JWT token to extract all embedded claims.
      *
      * @param token the JWT token string

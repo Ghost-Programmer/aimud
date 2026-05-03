@@ -1,6 +1,7 @@
 package io.nadia.ai.aimud.config;
 
 import io.nadia.ai.aimud.service.JwtService;
+import io.nadia.ai.aimud.service.TokenBlacklistService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
@@ -18,9 +19,11 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 public class SecurityConfiguration {
 
     private final JwtService jwtService;
+    private final TokenBlacklistService tokenBlacklistService;
 
-    public SecurityConfiguration(JwtService jwtService) {
+    public SecurityConfiguration(JwtService jwtService, TokenBlacklistService tokenBlacklistService) {
         this.jwtService = jwtService;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     /**
@@ -40,7 +43,7 @@ public class SecurityConfiguration {
                         .pathMatchers("/api/config/**").authenticated()
                         .pathMatchers("/**").permitAll()
                 )
-                .addFilterAt(new JwtAuthenticationFilter(jwtService), SecurityWebFiltersOrder.AUTHENTICATION)
+                .addFilterAt(new JwtAuthenticationFilter(jwtService, tokenBlacklistService), SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
     }
 
