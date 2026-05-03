@@ -25,6 +25,7 @@ public class LookCommand implements Command {
     private final RoomService roomService;
     private final MobileService mobileService;
     private final ItemService itemService;
+    private final ConfigService configService;
 
     @Override
     /**
@@ -59,7 +60,51 @@ public class LookCommand implements Command {
                             }
                         }
                         
-                        // We could look at characters or items here later, but default to nothing found for now
+                        // Look at characters
+                        List<Mobile> mobilesInRoom = mobileService.findAllByRoomId(room.getId());
+                        for (Mobile m : mobilesInRoom) {
+                            if (m.getName().toLowerCase().contains(targetName) && !m.isHidden() && !m.isInvisible()) {
+                                Mono<String> raceNameMono = m.getRaceId() != null 
+                                        ? configService.getAllRaces().filter(r -> r.getId().equals(m.getRaceId())).next().map(io.nadia.ai.aimud.model.Race::getName).defaultIfEmpty("Unknown Race")
+                                        : Mono.just("Unknown Race");
+
+                                Mono<String> classNameMono = m.getClassId() != null
+                                        ? configService.getAllCharacterClasses().filter(c -> c.getId().equals(m.getClassId())).next().map(io.nadia.ai.aimud.model.CharacterClass::getName).defaultIfEmpty("Unknown Class")
+                                        : Mono.just("Unknown Class");
+
+                                return Mono.zip(raceNameMono, classNameMono).flatMap(tuple -> {
+                                    String raceName = tuple.getT1();
+                                    String className = tuple.getT2();
+
+                                    StringBuilder desc = new StringBuilder("\n\nYou look at " + m.getName() + ".\n");
+                                    desc.append(m.getName()).append(" is a ").append(raceName).append(" ").append(className).append(".\n");
+
+                                    double hpPercent = m.getMaxHp() > 0 ? (double) m.getCurrentHp() / (double) m.getMaxHp() : 1.0;
+                                    if (hpPercent >= 1.0) desc.append(m.getName() + " is in excellent condition.\n");
+                                    else if (hpPercent >= 0.75) desc.append(m.getName() + " has a few scratches.\n");
+                                    else if (hpPercent >= 0.5) desc.append(m.getName() + " has some small wounds and bruises.\n");
+                                    else if (hpPercent >= 0.25) desc.append(m.getName() + " is covered in blood.\n");
+                                    else desc.append(m.getName() + " is barely clinging to life.\n");
+
+                                    desc.append("\nEquipment:\n");
+                                    boolean hasEq = false;
+                                    if (m.getHead() != null) { desc.append("Head: ").append(m.getHead().getName()).append("\n"); hasEq = true; }
+                                    if (m.getChest() != null) { desc.append("Chest: ").append(m.getChest().getName()).append("\n"); hasEq = true; }
+                                    if (m.getLegs() != null) { desc.append("Legs: ").append(m.getLegs().getName()).append("\n"); hasEq = true; }
+                                    if (m.getFeet() != null) { desc.append("Feet: ").append(m.getFeet().getName()).append("\n"); hasEq = true; }
+                                    if (m.getArms() != null) { desc.append("Arms: ").append(m.getArms().getName()).append("\n"); hasEq = true; }
+                                    if (m.getHands() != null) { desc.append("Hands: ").append(m.getHands().getName()).append("\n"); hasEq = true; }
+                                    if (m.getPrimary() != null) { desc.append("Primary: ").append(m.getPrimary().getName()).append("\n"); hasEq = true; }
+                                    if (m.getOffhand() != null) { desc.append("Offhand: ").append(m.getOffhand().getName()).append("\n"); hasEq = true; }
+                                    if (!hasEq) desc.append("Nothing of interest.\n");
+
+                                    communicationService.sendTextMessage(mobile, desc.toString());
+                                    return Mono.empty();
+                                });
+                            }
+                        }
+
+                        // We could look at items here later, but default to nothing found for now
                         communicationService.sendTextMessage(mobile, "\n\nYou don't see that here.");
                         return Mono.empty();
                     }
