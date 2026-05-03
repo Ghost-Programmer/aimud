@@ -36,6 +36,7 @@ public class TickService {
     private final RoomService roomService;
     private final FactionService factionService;
     private final ConfigService configService;
+    private final java.util.concurrent.Executor taskExecutor;
     private final Random random = new Random();
     
     private int tickCount = 0;
@@ -44,7 +45,6 @@ public class TickService {
     /**
      * Constructs a new TickService.
      *
-     * @param MobileService     the character service
      * @param mobileService        the mobile service
      * @param commandService       the command service
      * @param communicationService the communication service
@@ -52,8 +52,9 @@ public class TickService {
      * @param roomService          the room service
      * @param factionService       the faction service
      * @param configService        the configuration service
+     * @param taskExecutor         the Spring-managed virtual thread task executor
      */
-    public TickService(MobileService mobileService, CommandService commandService, CommunicationService communicationService, SkillService skillService, RoomService roomService, FactionService factionService, ConfigService configService) {
+    public TickService(MobileService mobileService, CommandService commandService, CommunicationService communicationService, SkillService skillService, RoomService roomService, FactionService factionService, ConfigService configService, @org.springframework.beans.factory.annotation.Qualifier("applicationTaskExecutor") java.util.concurrent.Executor taskExecutor) {
         
         this.mobileService = mobileService;
         this.commandService = commandService;
@@ -62,256 +63,281 @@ public class TickService {
         this.roomService = roomService;
         this.factionService = factionService;
         this.configService = configService;
+        this.taskExecutor = taskExecutor;
     }
 
     /**
-     * The core game loop method, executed repeatedly on a fixed schedule.
-     * Processes player and NPC active actions, statuses, regeneration, combat,
-     * party updates, and chat history cleanup.
+     * The slow game loop method, executed repeatedly on a fixed schedule.
+     * Processes regeneration, weather, time, and hourly updates.
      */
-    @Scheduled(fixedRate = 2000)
-    public void processTick() {
-        tickCount++;
-        if (tickCount >= 30) {
-            tickCount = 0;
-            
-            // Apply hourly Hunger and Thirst decay for players synchronously since it's in-memory
-            for (Mobile c : mobileService.getAvailableCharacters()) {
-                if (c.getUserId() != null) {
-                    if (c.getHunger() > 0) c.setHunger(c.getHunger() - 1);
-                    if (c.getThirst() > 0) c.setThirst(c.getThirst() - 1);
-                    
-                    if (c.getHunger() == 10) {
-                        communicationService.sendTextMessage(c, "\n\nYou are starting to feel hungry.");
-                    }
-                    if (c.getThirst() == 10) {
-                        communicationService.sendTextMessage(c, "\n\nYou are starting to feel thirsty.");
-                    }
-                }
-            }
-
-            configService.getServerSettings().flatMap(settings -> {
-                int nextHour = settings.mudHour() + 1;
-                int nextDay = settings.mudDay();
-                int nextMonth = settings.mudMonth();
-                int nextYear = settings.mudYear();
-
-                if (nextHour >= 24) {
-                    nextHour = 0;
-                    nextDay++;
-                }
-                if (nextDay > 28) {
-                    nextDay = 1;
-                    nextMonth++;
-                }
-                if (nextMonth > 13) {
-                    nextMonth = 1;
-                    nextYear++;
-                }
-
-                Mono<Void> timeMsgMono = Mono.empty();
-                if (nextHour == 8 || nextHour == 20) {
-                    final String msg = nextHour == 8 
-                        ? "\nThe sun rises in the east, breaking through the morning mist."
-                        : "\nThe sun slowly sets in the west, and night falls across the realm.";
-                    
-                    timeMsgMono = Flux.fromIterable(mobileService.getAvailableCharacters())
-                        .filter(c -> c.getCurrentRoomId() != null)
-                        .flatMap(c -> roomService.getRoom(c.getCurrentRoomId())
-                            .filter(r -> isOutdoors(r.getRoomType()))
-                            .map(r -> c))
-                        .doOnNext(c -> communicationService.sendTextMessage(c, msg))
-                        .then();
-                }
-
-                Mono<Void> weatherMsgMono = Mono.empty();
-                if (nextHour != settings.mudHour()) {
-                    if (random.nextFloat() < 0.15f) {
-                        WeatherType[] possibleWeathers;
-                        switch (currentWeather) {
-                            case SUNNY: possibleWeathers = new WeatherType[]{WeatherType.CLOUDY}; break;
-                            case CLOUDY: possibleWeathers = new WeatherType[]{WeatherType.SUNNY, WeatherType.RAIN, WeatherType.SNOW}; break;
-                            case RAIN: possibleWeathers = new WeatherType[]{WeatherType.CLOUDY, WeatherType.STORMS}; break;
-                            case STORMS: possibleWeathers = new WeatherType[]{WeatherType.RAIN, WeatherType.THUNDERSTORMS}; break;
-                            case THUNDERSTORMS: possibleWeathers = new WeatherType[]{WeatherType.STORMS}; break;
-                            case SNOW: possibleWeathers = new WeatherType[]{WeatherType.CLOUDY}; break;
-                            default: possibleWeathers = new WeatherType[]{WeatherType.SUNNY};
+    @Scheduled(fixedRate = 5000)
+    public void processSlowTick() {
+        taskExecutor.execute(() -> {
+            tickCount++;
+            if (tickCount >= 12) {
+                tickCount = 0;
+                
+                // Apply hourly Hunger and Thirst decay for players synchronously since it's in-memory
+                for (Mobile c : mobileService.getAvailableCharacters()) {
+                    if (c.getUserId() != null) {
+                        if (c.getHunger() > 0) c.setHunger(c.getHunger() - 1);
+                        if (c.getThirst() > 0) c.setThirst(c.getThirst() - 1);
+                        
+                        if (c.getHunger() == 10) {
+                            communicationService.sendTextMessage(c, "\n\nYou are starting to feel hungry.");
                         }
+                        if (c.getThirst() == 10) {
+                            communicationService.sendTextMessage(c, "\n\nYou are starting to feel thirsty.");
+                        }
+                    }
+                }
+
+                configService.getServerSettings().flatMap(settings -> {
+                    int nextHour = settings.mudHour() + 1;
+                    int nextDay = settings.mudDay();
+                    int nextMonth = settings.mudMonth();
+                    int nextYear = settings.mudYear();
+
+                    if (nextHour >= 24) {
+                        nextHour = 0;
+                        nextDay++;
+                    }
+                    if (nextDay > 28) {
+                        nextDay = 1;
+                        nextMonth++;
+                    }
+                    if (nextMonth > 13) {
+                        nextMonth = 1;
+                        nextYear++;
+                    }
+
+                    Mono<Void> timeMsgMono = Mono.empty();
+                    if (nextHour == 8 || nextHour == 20) {
+                        final String msg = nextHour == 8 
+                            ? "\nThe sun rises in the east, breaking through the morning mist."
+                            : "\nThe sun slowly sets in the west, and night falls across the realm.";
                         
-                        currentWeather = possibleWeathers[random.nextInt(possibleWeathers.length)];
-                        final String weatherMsg = "\n" + currentWeather.getTransitionMessage();
-                        
-                        weatherMsgMono = Flux.fromIterable(mobileService.getAvailableCharacters())
+                        timeMsgMono = Flux.fromIterable(mobileService.getAvailableCharacters())
                             .filter(c -> c.getCurrentRoomId() != null)
                             .flatMap(c -> roomService.getRoom(c.getCurrentRoomId())
                                 .filter(r -> isOutdoors(r.getRoomType()))
                                 .map(r -> c))
-                            .doOnNext(c -> communicationService.sendTextMessage(c, weatherMsg))
+                            .doOnNext(c -> communicationService.sendTextMessage(c, msg))
                             .then();
                     }
-                }
 
-                Mono<Void> lightsMono = Mono.empty();
-                if (nextHour != settings.mudHour()) {
-                    lightsMono = roomService.getAllRooms()
-                        .flatMap(r -> roomService.calculateCurrentLightValue(r))
-                        .then();
-                }
-
-                io.nadia.ai.aimud.model.ServerSettings updated = new io.nadia.ai.aimud.model.ServerSettings(
-                    settings.id(), settings.serverName(), settings.allowNewUser(), settings.maintenance(), settings.maintenanceText(),
-                    nextHour, nextDay, nextMonth, nextYear,
-                    settings.createdAt(), settings.modifiedAt(), settings.createdBy(), settings.modifiedBy()
-                );
-                
-                return Mono.when(timeMsgMono, weatherMsgMono, lightsMono, configService.updateServerSettings(updated));
-            })
-            .doOnError(error -> log.error("Critical failure during hourly server bounds tick!", error))
-            .subscribe();
-        }
-
-        // Process PCs
-        List<Mobile> characters = mobileService.getAvailableCharacters();
-        for (Mobile character : characters) {
-            character.setSkipActionsThisTick(false);
-            if (character.getCurrentHp() <= 0) {
-                processDeath(character);
-                continue;
-            }
-            
-            boolean save = false;
-
-            boolean effectsChanged = processSpellEffects(character);
-            boolean statsChanged = processRegen(character);
-            boolean combatOccurred = false;
-            
-            if (!character.isSkipActionsThisTick()) {
-                combatOccurred = processAttack(character);
-            }
-
-            if (effectsChanged || statsChanged || combatOccurred) {
-                save = true;
-                communicationService.sendCharacterUpdate(character);
-            }
-
-            if (!character.isSkipActionsThisTick() && !character.getCommandQueue().isEmpty()) {
-                String cmdLine = character.getCommandQueue().get(0);
-                if (cmdLine != null && !cmdLine.trim().isEmpty()) {
-                    String firstWord = cmdLine.trim().split("\\s+")[0].toLowerCase();
-                    boolean canAct = true;
-                    
-                    if (character.isSleeping() ||
-                        character.getStatus() == io.nadia.ai.aimud.types.MobileStatus.SITTING ||
-                        character.getStatus() == io.nadia.ai.aimud.types.MobileStatus.RESTING) {
-                        
-                        if (!firstWord.equals("stand")) {
-                            character.getCommandQueue().remove(0);
-                            if (character.getUserId() != null) {
-                                communicationService.sendTextMessage(character, "\n\nYou can't do that while " + character.getStatus().name().toLowerCase() + ".");
+                    Mono<Void> weatherMsgMono = Mono.empty();
+                    if (nextHour != settings.mudHour()) {
+                        if (random.nextFloat() < 0.15f) {
+                            WeatherType[] possibleWeathers;
+                            switch (currentWeather) {
+                                case SUNNY: possibleWeathers = new WeatherType[]{WeatherType.CLOUDY}; break;
+                                case CLOUDY: possibleWeathers = new WeatherType[]{WeatherType.SUNNY, WeatherType.RAIN, WeatherType.SNOW}; break;
+                                case RAIN: possibleWeathers = new WeatherType[]{WeatherType.CLOUDY, WeatherType.STORMS}; break;
+                                case STORMS: possibleWeathers = new WeatherType[]{WeatherType.RAIN, WeatherType.THUNDERSTORMS}; break;
+                                case THUNDERSTORMS: possibleWeathers = new WeatherType[]{WeatherType.STORMS}; break;
+                                case SNOW: possibleWeathers = new WeatherType[]{WeatherType.CLOUDY}; break;
+                                default: possibleWeathers = new WeatherType[]{WeatherType.SUNNY};
                             }
-                            canAct = false;
+                            
+                            currentWeather = possibleWeathers[random.nextInt(possibleWeathers.length)];
+                            final String weatherMsg = "\n" + currentWeather.getTransitionMessage();
+                            
+                            weatherMsgMono = Flux.fromIterable(mobileService.getAvailableCharacters())
+                                .filter(c -> c.getCurrentRoomId() != null)
+                                .flatMap(c -> roomService.getRoom(c.getCurrentRoomId())
+                                    .filter(r -> isOutdoors(r.getRoomType()))
+                                    .map(r -> c))
+                                .doOnNext(c -> communicationService.sendTextMessage(c, weatherMsg))
+                                .then();
                         }
                     }
+
+                    Mono<Void> lightsMono = Mono.empty();
+                    if (nextHour != settings.mudHour()) {
+                        lightsMono = roomService.getAllRooms()
+                            .flatMap(r -> roomService.calculateCurrentLightValue(r))
+                            .then();
+                    }
+
+                    io.nadia.ai.aimud.model.ServerSettings updated = new io.nadia.ai.aimud.model.ServerSettings(
+                        settings.id(), settings.serverName(), settings.allowNewUser(), settings.maintenance(), settings.maintenanceText(),
+                        nextHour, nextDay, nextMonth, nextYear,
+                        settings.createdAt(), settings.modifiedAt(), settings.createdBy(), settings.modifiedBy()
+                    );
                     
-                    if (canAct) {
+                    return Mono.when(timeMsgMono, weatherMsgMono, lightsMono, configService.updateServerSettings(updated));
+                })
+                .doOnError(error -> log.error("Critical failure during hourly server bounds tick!", error))
+                .subscribe();
+            }
+
+            // Process Regen for all mobiles
+            List<Mobile> mobiles = mobileService.getAvailableCharacters();
+            for (Mobile mobile : mobiles) {
+                if (mobile.getCurrentHp() <= 0) {
+                    continue;
+                }
+                boolean statsChanged = processRegen(mobile);
+                
+                if (statsChanged) {
+                    communicationService.sendCharacterUpdate(mobile);
+                    if (mobile.getUserId() != null) {
+                        mobileService.save(mobile).subscribe();
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * The fast game loop method, executed repeatedly on a fixed schedule.
+     * Processes player and NPC active actions, statuses, combat, and party updates.
+     */
+    @Scheduled(fixedRate = 1000)
+    public void processFastTick() {
+        taskExecutor.execute(() -> {
+            List<Mobile> allMobiles = mobileService.getAvailableCharacters();
+            
+            // Separate PCs and NPCs for distinct processing logic if needed
+            List<Mobile> characters = allMobiles.stream().filter(m -> m.getUserId() != null).collect(Collectors.toList());
+            List<Mobile> npcs = allMobiles.stream().filter(m -> m.getUserId() == null).collect(Collectors.toList());
+
+            // Process PCs
+            for (Mobile character : characters) {
+                character.setSkipActionsThisTick(false);
+                if (character.getCurrentHp() <= 0) {
+                    processDeath(character);
+                    continue;
+                }
+                
+                boolean save = false;
+
+                boolean effectsChanged = processSpellEffects(character);
+                boolean combatOccurred = false;
+                
+                if (!character.isSkipActionsThisTick()) {
+                    combatOccurred = processAttack(character);
+                }
+
+                if (effectsChanged || combatOccurred) {
+                    save = true;
+                    communicationService.sendCharacterUpdate(character);
+                }
+
+                if (!character.isSkipActionsThisTick() && !character.getCommandQueue().isEmpty()) {
+                    String cmdLine = character.getCommandQueue().get(0);
+                    if (cmdLine != null && !cmdLine.trim().isEmpty()) {
+                        String firstWord = cmdLine.trim().split("\\s+")[0].toLowerCase();
+                        boolean canAct = true;
+                        
+                        if (character.isSleeping() ||
+                            character.getStatus() == io.nadia.ai.aimud.types.MobileStatus.SITTING ||
+                            character.getStatus() == io.nadia.ai.aimud.types.MobileStatus.RESTING) {
+                            
+                            if (!firstWord.equals("stand")) {
+                                character.getCommandQueue().remove(0);
+                                if (character.getUserId() != null) {
+                                    communicationService.sendTextMessage(character, "\n\nYou can't do that while " + character.getStatus().name().toLowerCase() + ".");
+                                }
+                                canAct = false;
+                            }
+                        }
+                        
+                        if (canAct) {
+                            commandService.processCommand(character)
+                                    .doOnError(error -> log.error("Error processing command for {}", character.getName(), error))
+                                    .onErrorResume(error -> Mono.empty())
+                                    .subscribe();
+                        }
+                    } else {
+                        character.getCommandQueue().remove(0);
+                    }
+                    save = true;
+                } else {
+                    character.setIdle(character.getIdle() + 1);
+
+                    if (character.getIdle() > 300) {
+                        character.getCommandQueue().add("logout");
                         commandService.processCommand(character)
-                                .doOnError(error -> log.error("Error processing command for {}", character.getName(), error))
+                                .doOnError(error -> log.error("Error processing idle logout for {}", character.getName(), error))
                                 .onErrorResume(error -> Mono.empty())
                                 .subscribe();
                     }
-                } else {
-                    character.getCommandQueue().remove(0);
                 }
-                save = true;
-            } else {
-                character.setIdle(character.getIdle() + 1);
-
-                if (character.getIdle() > 300) {
-                    character.getCommandQueue().add("logout");
-                    commandService.processCommand(character)
-                            .doOnError(error -> log.error("Error processing idle logout for {}", character.getName(), error))
-                            .onErrorResume(error -> Mono.empty())
-                            .subscribe();
+                if (save && character.getUserId() != null) {
+                    mobileService.save(character).subscribe();
                 }
             }
-            if (save && character.getUserId() != null) {
-                mobileService.save(character).subscribe();
-            }
-        }
 
-        // Process NPCs (Mobiles)
-        List<Mobile> mobiles = mobileService.getAvailableCharacters();
-        for (Mobile mobile : mobiles) {
-            mobile.setSkipActionsThisTick(false);
-            if (mobile.getCurrentHp() <= 0) {
-                processDeath(mobile);
-                continue;
-            }
-            
-            processSpellEffects(mobile);
-            processRegen(mobile);
-            
-            if (!mobile.isSkipActionsThisTick()) {
-                processAttack(mobile);
-
-                // Execute pending commands for the mobile if we ever add an AI decision loop queue
-                if (!mobile.getCommandQueue().isEmpty()) {
-                    commandService.processCommand(mobile)
-                            .doOnError(error -> log.error("Error processing command for NPC {}", mobile.getName(), error))
-                            .onErrorResume(error -> Mono.empty())
-                            .subscribe();
+            // Process NPCs
+            for (Mobile mobile : npcs) {
+                mobile.setSkipActionsThisTick(false);
+                if (mobile.getCurrentHp() <= 0) {
+                    processDeath(mobile);
+                    continue;
                 }
+                
+                processSpellEffects(mobile);
+                
+                if (!mobile.isSkipActionsThisTick()) {
+                    processAttack(mobile);
 
-                processFactionAssist(mobile);
-            }
-        }
-
-        // Process Room Effects
-        roomService.getAllRooms().flatMap(this::processRoomEffects).subscribe();
-
-        // Process Party Updates
-        List<Mobile> allMobiles = new ArrayList<>(characters);
-        allMobiles.addAll(mobiles);
-        Map<Long, List<Mobile>> parties = allMobiles.stream()
-                .filter(m -> m.getPartyLeaderId() != null)
-                .collect(Collectors.groupingBy(Mobile::getPartyLeaderId));
-
-        for (Mobile pc : characters) {
-            if (pc.getPartyLeaderId() != null) {
-                List<Mobile> party = parties.get(pc.getPartyLeaderId());
-                if (party != null) {
-                    List<PartyUpdate.PartyMemberInfo> memberInfos = party.stream()
-                            .map(m -> new PartyUpdate.PartyMemberInfo(m.getId(), m.getName(), m.getCurrentHp(), m.getMaxHp(), m.getCurrentMana(), m.getMaxMana()))
-                            .collect(Collectors.toList());
-                    communicationService.sendPartyUpdate(new PartyUpdate(pc.getId(), pc.getPartyLeaderId(), memberInfos));
-                }
-            }
-        }
-
-
-
-        // Thunderstorm Lightning Strikes (0.1% chance outdoors per tick)
-        if (currentWeather == WeatherType.THUNDERSTORMS) {
-            Flux.fromIterable(allMobiles)
-                .filter(m -> m.getCurrentRoomId() != null && m.getCurrentHp() > 0 && random.nextFloat() <= 0.001f)
-                .flatMap(m -> roomService.getRoom(m.getCurrentRoomId())
-                    .filter(r -> isOutdoors(r.getRoomType()))
-                    .map(r -> m))
-                .doOnNext(m -> {
-                    int damage = random.nextInt(50) + 25;
-                    m.setCurrentHp(m.getCurrentHp() - damage);
-                    if (m.getUserId() != null) {
-                        communicationService.sendTextMessage(m, "\n\nCRACK! A massive bolt of lightning arcs from the sky and violently strikes you! You take " + damage + " electrical damage!");
-                        communicationService.sendCharacterUpdate(m);
+                    // Execute pending commands for the mobile if we ever add an AI decision loop queue
+                    if (!mobile.getCommandQueue().isEmpty()) {
+                        commandService.processCommand(mobile)
+                                .doOnError(error -> log.error("Error processing command for NPC {}", mobile.getName(), error))
+                                .onErrorResume(error -> Mono.empty())
+                                .subscribe();
                     }
-                    communicationService.roomMessage(m, "\n\nA blinding flash of lightning heavily strikes " + m.getName() + " from above!");
-                    
-                    if (m.getCurrentHp() <= 0) {
-                        m.setCurrentHp(0);
+
+                    processFactionAssist(mobile);
+                }
+            }
+
+            // Process Room Effects
+            roomService.getAllRooms().flatMap(this::processRoomEffects).subscribe();
+
+            // Process Party Updates
+            Map<Long, List<Mobile>> parties = allMobiles.stream()
+                    .filter(m -> m.getPartyLeaderId() != null)
+                    .collect(Collectors.groupingBy(Mobile::getPartyLeaderId));
+
+            for (Mobile pc : characters) {
+                if (pc.getPartyLeaderId() != null) {
+                    List<Mobile> party = parties.get(pc.getPartyLeaderId());
+                    if (party != null) {
+                        List<PartyUpdate.PartyMemberInfo> memberInfos = party.stream()
+                                .map(m -> new PartyUpdate.PartyMemberInfo(m.getId(), m.getName(), m.getCurrentHp(), m.getMaxHp(), m.getCurrentMana(), m.getMaxMana()))
+                                .collect(Collectors.toList());
+                        communicationService.sendPartyUpdate(new PartyUpdate(pc.getId(), pc.getPartyLeaderId(), memberInfos));
                     }
-                })
-                .subscribe();
-        }
+                }
+            }
+
+            // Thunderstorm Lightning Strikes (0.1% chance outdoors per tick)
+            if (currentWeather == WeatherType.THUNDERSTORMS) {
+                Flux.fromIterable(allMobiles)
+                    .filter(m -> m.getCurrentRoomId() != null && m.getCurrentHp() > 0 && random.nextFloat() <= 0.001f)
+                    .flatMap(m -> roomService.getRoom(m.getCurrentRoomId())
+                        .filter(r -> isOutdoors(r.getRoomType()))
+                        .map(r -> m))
+                    .doOnNext(m -> {
+                        int damage = random.nextInt(50) + 25;
+                        m.setCurrentHp(m.getCurrentHp() - damage);
+                        if (m.getUserId() != null) {
+                            communicationService.sendTextMessage(m, "\n\nCRACK! A massive bolt of lightning arcs from the sky and violently strikes you! You take " + damage + " electrical damage!");
+                            communicationService.sendCharacterUpdate(m);
+                        }
+                        communicationService.roomMessage(m, "\n\nA blinding flash of lightning heavily strikes " + m.getName() + " from above!");
+                        
+                        if (m.getCurrentHp() <= 0) {
+                            m.setCurrentHp(0);
+                        }
+                    })
+                    .subscribe();
+            }
+        });
     }
 
     /**
