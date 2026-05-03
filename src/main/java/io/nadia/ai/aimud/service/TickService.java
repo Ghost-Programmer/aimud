@@ -288,11 +288,7 @@ public class TickService {
             }
         }
 
-        // Clean up room-based chat history older than 5 minutes
-        java.time.Instant fiveMinsAgo = java.time.Instant.now().minus(java.time.Duration.ofMinutes(5));
-        communicationService.getRoomChatHistoryMap().values().forEach(history -> {
-            history.removeIf(msg -> msg.timestamp().isBefore(fiveMinsAgo));
-        });
+
 
         // Thunderstorm Lightning Strikes (0.1% chance outdoors per tick)
         if (currentWeather == WeatherType.THUNDERSTORMS) {

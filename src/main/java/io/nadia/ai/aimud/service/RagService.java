@@ -42,7 +42,9 @@ public class RagService {
                         Map<String, Object> metadata = Map.of(
                                 "npcId", event.npcId(),
                                 "pcId", event.pcId(),
+                                "mudMonth", settings.mudMonth(),
                                 "mudDay", settings.mudDay(),
+                                "mudYear", settings.mudYear(),
                                 "mudHour", settings.mudHour());
 
                         Document document = new Document(event.interaction(), metadata);
