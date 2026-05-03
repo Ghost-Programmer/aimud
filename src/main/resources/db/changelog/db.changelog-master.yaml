@@ -37,3 +37,5 @@ databaseChangeLog:
       file: db/changelog/changes/072-add-container-inventory.sql
   - include:
       file: db/changelog/changes/073-vector-store.sql
+  - include:
+      file: db/changelog/changes/074-vector-world-lore-index.sql

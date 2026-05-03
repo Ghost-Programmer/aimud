@@ -10,7 +10,7 @@ spring:
     password: aimud_password
     pool:
       initial-size: 5
-      max-size: 20
+      max-size: 50
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
     url: jdbc:postgresql://localhost:5432/aimud
