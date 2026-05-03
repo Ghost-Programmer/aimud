@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 @Service
 public class CommandService {
 
-
     private final ApplicationContext context;
     private final CommunicationService communicationService;
     private final io.nadia.ai.aimud.repository.UserRepository userRepository;
@@ -29,18 +28,22 @@ public class CommandService {
     /**
      * Constructs a new CommandService.
      *
-     * @param context              the Spring application context used to discover command beans
-     * @param communicationService the communication service to send messages to characters
+     * @param context              the Spring application context used to discover
+     *                             command beans
+     * @param communicationService the communication service to send messages to
+     *                             characters
      * @param userRepository       the user repository to check permissions
      */
-    public CommandService(ApplicationContext context, CommunicationService communicationService, io.nadia.ai.aimud.repository.UserRepository userRepository) {
+    public CommandService(ApplicationContext context, CommunicationService communicationService,
+            io.nadia.ai.aimud.repository.UserRepository userRepository) {
         this.context = context;
         this.communicationService = communicationService;
         this.userRepository = userRepository;
     }
 
     /**
-     * Initializes the command map by discovering all beans implementing the {@link Command} interface
+     * Initializes the command map by discovering all beans implementing the
+     * {@link Command} interface
      * and annotated with {@link MudCommand}. Also tracks which commands are emotes.
      */
     @PostConstruct
@@ -61,7 +64,8 @@ public class CommandService {
             }
         }
 
-        log.info("Registered {} commands: {}", taskMap.size(), taskMap.keySet().stream().collect(Collectors.joining(", ")));
+        log.info("Registered {} commands: {}", taskMap.size(),
+                taskMap.keySet().stream().collect(Collectors.joining(", ")));
     }
 
     /**
@@ -77,7 +81,8 @@ public class CommandService {
     /**
      * Retrieves all registered commands.
      *
-     * @return a map of command names to their corresponding {@link Command} instances
+     * @return a map of command names to their corresponding {@link Command}
+     *         instances
      */
     public Map<String, Command> getAllTasks() {
         return new HashMap<>(taskMap); // Return a copy for immutability
@@ -149,12 +154,13 @@ public class CommandService {
                         if (hasPerm) {
                             return task.execute(character, command);
                         } else {
-                            communicationService.sendTextMessage(character, "You do not have permission to use that command.");
+                            communicationService.sendTextMessage(character,
+                                    "\n\nYou do not have permission to use that command.");
                             return Mono.empty();
                         }
                     });
         } else {
-            communicationService.sendTextMessage(character, "Invalid command: " + commands[0]);
+            communicationService.sendTextMessage(character, "\n\nInvalid command: " + commands[0] + "\n");
             return Mono.empty();
         }
 

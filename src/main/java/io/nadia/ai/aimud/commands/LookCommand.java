@@ -77,30 +77,18 @@ public class LookCommand implements Command {
                         }
 
                         if (light == 1) {
-                            long chars = mobileService.findAllByRoomId(room.getId()).stream()
-                                    .filter(c -> !c.getId().equals(mobile.getId()) && !c.isHidden() && !c.isInvisible()).count();
-                            long mobs = mobileService.findAllByRoomId(room.getId()).stream()
-                                    .filter(m -> !m.isHidden() && !m.isInvisible()).count();
+                            long othersCount = mobileService.findAllByRoomId(room.getId()).stream()
+                                    .filter(m -> !m.getId().equals(mobile.getId()) && !m.isHidden() && !m.isInvisible()).count();
                             boolean hasItems = !room.getItemIds().isEmpty() || !roomService.getTransientItemsInRoom(room.getId()).isEmpty();
                             
-                            if (chars > 0 || mobs > 0 || hasItems) {
+                            if (othersCount > 0 || hasItems) {
                                 communicationService.sendTextMessage(mobile, "\n\nYou sense something present in the darkness.");
                             } else {
                                 communicationService.sendTextMessage(mobile, "\n\nIt is too dark to make out any details.");
                             }
                         } else if (light > 1) {
                             mobileService.findAllByRoomId(room.getId()).stream()
-                                    .filter(c -> !c.getId().equals(mobile.getId()) && !c.isHidden() && !c.isInvisible())
-                                    .forEach(c -> {
-                                        if (light >= 7) {
-                                            communicationService.sendTextMessage(mobile, "\nYou see " + c.getName() + " here.");
-                                        } else {
-                                            communicationService.sendTextMessage(mobile, "\nYou see a shadowy creature here.");
-                                        }
-                                    });
-
-                            mobileService.findAllByRoomId(room.getId()).stream()
-                                    .filter(m -> !m.isHidden() && !m.isInvisible())
+                                    .filter(m -> !m.getId().equals(mobile.getId()) && !m.isHidden() && !m.isInvisible())
                                     .forEach(m -> {
                                         if (light >= 7) {
                                             communicationService.sendTextMessage(mobile, "\nYou see " + m.getName() + " here.");

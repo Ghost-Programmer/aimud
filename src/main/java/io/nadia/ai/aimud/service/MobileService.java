@@ -814,46 +814,31 @@ public class MobileService {
                                     }
 
                                     if (light == 1) {
-                                        long chars = this.findAllByRoomId(room.getId()).stream()
-                                                .filter(c -> !c.getId().equals(character.getId()) && !c.isHidden() && !c.isInvisible()).count();
-                                        long mobs = this.findAllByRoomId(room.getId()).stream()
-                                                .filter(m -> !m.isHidden() && !m.isInvisible()).count();
+                                        long othersCount = this.findAllByRoomId(room.getId()).stream()
+                                                .filter(m -> !m.getId().equals(character.getId()) && !m.isHidden() && !m.isInvisible()).count();
                                         boolean hasItems = !room.getItemIds().isEmpty() || !this.roomService.getTransientItemsInRoom(room.getId()).isEmpty();
                                         
-                                        if (chars > 0 || mobs > 0 || hasItems) {
+                                        if (othersCount > 0 || hasItems) {
                                             this.communicationService.sendTextMessage(character, "\n\nYou sense something present in the darkness.");
                                         } else {
                                             this.communicationService.sendTextMessage(character, "\n\nIt is too dark to make out any details.");
                                         }
                                     } else if (light > 1) {
                                         this.findAllByRoomId(room.getId()).stream()
-                                                .filter(c -> !c.getId().equals(character.getId())).forEach(c -> {
-                                                    if (!c.isHidden() && !c.isInvisible()) {
-                                                        if (light >= 7) {
+                                                .filter(m -> !m.getId().equals(character.getId()) && !m.isHidden() && !m.isInvisible())
+                                                .forEach(m -> {
+                                                    if (light >= 7) {
+                                                        this.communicationService.sendTextMessage(character,
+                                                                "\nYou see " + m.getName() + " here.");
+                                                        if (m.getStoreId() != null) {
                                                             this.communicationService.sendTextMessage(character,
-                                                                    "\nYou see " + c.getName() + " here.");
-                                                        } else {
-                                                            this.communicationService.sendTextMessage(character,
-                                                                    "\nYou see a shadowy creature here.");
+                                                                    "\n" + m.getName() + " appears to be running a store.");
                                                         }
+                                                    } else {
+                                                        this.communicationService.sendTextMessage(character,
+                                                                "\nYou see a shadowy creature here.");
                                                     }
                                                 });
-
-                                        this.findAllByRoomId(room.getId()).forEach(m -> {
-                                            if (!m.isHidden() && !m.isInvisible()) {
-                                                if (light >= 7) {
-                                                    this.communicationService.sendTextMessage(character,
-                                                            "\nYou see " + m.getName() + " here.");
-                                                    if (m.getStoreId() != null) {
-                                                        this.communicationService.sendTextMessage(character,
-                                                                "\n" + m.getName() + " appears to be running a store.");
-                                                    }
-                                                } else {
-                                                    this.communicationService.sendTextMessage(character,
-                                                            "\nYou see a shadowy creature here.");
-                                                }
-                                            }
-                                        });
 
                                         if (light >= 7) {
                                             room.getItemIds().stream().forEach(itemId -> {
