@@ -3,7 +3,7 @@ package io.nadia.ai.aimud.controller;
 import io.nadia.ai.aimud.model.Mobile;
 import io.nadia.ai.aimud.model.MobileMacro;
 import io.nadia.ai.aimud.model.Room;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.RoomService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,29 +27,29 @@ import static org.mockito.Mockito.when;
 class CharacterControllerTest {
 
     @Mock
-    private CharacterService characterService;
+    private MobileService MobileService;
 
     @Mock
     private RoomService roomService;
 
     @Test
     void selectCharacter_ReturnsOk() {
-        CharacterController controller = new CharacterController(characterService, roomService);
-        when(characterService.selectCharacter(1L)).thenReturn(Mono.empty());
+        CharacterController controller = new CharacterController(MobileService, roomService);
+        when(MobileService.selectCharacter(1L)).thenReturn(Mono.empty());
 
         StepVerifier.create(controller.selectCharacter(1L))
                 .assertNext(resp -> assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK))
                 .verifyComplete();
 
-        verify(characterService).selectCharacter(1L);
+        verify(MobileService).selectCharacter(1L);
     }
 
     @Test
     void getAvailableCharacters_ReturnsFluxFromServiceList() {
-        CharacterController controller = new CharacterController(characterService, roomService);
+        CharacterController controller = new CharacterController(MobileService, roomService);
         Mobile m = new Mobile();
         m.setId(1L);
-        when(characterService.getAvailableCharacters()).thenReturn(List.of(m));
+        when(MobileService.getAvailableCharacters()).thenReturn(List.of(m));
 
         StepVerifier.create(controller.getAvailableCharacters())
                 .expectNext(m)
@@ -58,13 +58,13 @@ class CharacterControllerTest {
 
     @Test
     void createCharacter_UsesUsernameFromReactiveSecurityContext() {
-        CharacterController controller = new CharacterController(characterService, roomService);
+        CharacterController controller = new CharacterController(MobileService, roomService);
         Mobile request = new Mobile();
         request.setName("Hero");
         Mobile created = new Mobile();
         created.setName("Hero");
 
-        when(characterService.createCharacter("jeff", request)).thenReturn(Mono.just(created));
+        when(MobileService.createCharacter("jeff", request)).thenReturn(Mono.just(created));
 
         Authentication auth = new TestingAuthenticationToken("jeff", "pw");
         StepVerifier.create(controller.createCharacter(request)
@@ -75,13 +75,13 @@ class CharacterControllerTest {
                 })
                 .verifyComplete();
 
-        verify(characterService).createCharacter("jeff", request);
+        verify(MobileService).createCharacter("jeff", request);
     }
 
     @Test
     void getCharacter_NotFoundMapsTo404() {
-        CharacterController controller = new CharacterController(characterService, roomService);
-        when(characterService.getCharacterById(10L)).thenReturn(Mono.empty());
+        CharacterController controller = new CharacterController(MobileService, roomService);
+        when(MobileService.getCharacterById(10L)).thenReturn(Mono.empty());
 
         StepVerifier.create(controller.getCharacter(10L))
                 .assertNext(resp -> assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND))
@@ -90,7 +90,7 @@ class CharacterControllerTest {
 
     @Test
     void getCharacterRoom_ReturnsRoomWhenCharacterAndRoomExist() {
-        CharacterController controller = new CharacterController(characterService, roomService);
+        CharacterController controller = new CharacterController(MobileService, roomService);
         Mobile character = new Mobile();
         character.setId(3L);
         character.setCurrentRoomId(8L);
@@ -98,7 +98,7 @@ class CharacterControllerTest {
         room.setId(8L);
         room.setName("Square");
 
-        when(characterService.getCharacterById(3L)).thenReturn(Mono.just(character));
+        when(MobileService.getCharacterById(3L)).thenReturn(Mono.just(character));
         when(roomService.getRoom(8L)).thenReturn(Mono.just(room));
 
         StepVerifier.create(controller.getCharacterRoom(3L))
@@ -111,17 +111,17 @@ class CharacterControllerTest {
 
     @Test
     void saveMacros_DelegatesToService() {
-        CharacterController controller = new CharacterController(characterService, roomService);
+        CharacterController controller = new CharacterController(MobileService, roomService);
         MobileMacro macro = new MobileMacro();
         macro.setLabel("A");
         List<MobileMacro> macros = List.of(macro);
-        when(characterService.saveCharacterMacros(5L, macros)).thenReturn(Flux.fromIterable(macros));
+        when(MobileService.saveCharacterMacros(5L, macros)).thenReturn(Flux.fromIterable(macros));
 
         StepVerifier.create(controller.saveMacros(5L, macros))
                 .expectNext(macro)
                 .verifyComplete();
 
-        verify(characterService).saveCharacterMacros(5L, macros);
+        verify(MobileService).saveCharacterMacros(5L, macros);
     }
 }
 

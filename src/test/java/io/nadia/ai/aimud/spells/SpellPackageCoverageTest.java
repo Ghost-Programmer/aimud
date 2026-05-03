@@ -29,7 +29,6 @@ class SpellPackageCoverageTest {
         SkillService skillService = mock(SkillService.class);
         TestSpell spell = new TestSpell(skillService,
                 mock(MobileService.class),
-                mock(CharacterService.class),
                 mock(CommunicationService.class),
                 mock(EffectService.class));
 
@@ -120,9 +119,9 @@ class SpellPackageCoverageTest {
     }
 
     private static final class TestSpell extends Spell {
-        TestSpell(SkillService skillService, MobileService mopbileService, CharacterService characterService,
+        TestSpell(SkillService skillService, MobileService mobileService,
                   CommunicationService communicationService, EffectService effectService) {
-            super(skillService, mopbileService, characterService, communicationService, effectService);
+            super(skillService, mobileService, communicationService, effectService);
         }
 
         @Override

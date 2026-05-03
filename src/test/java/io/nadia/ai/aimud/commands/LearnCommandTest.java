@@ -3,7 +3,7 @@ package io.nadia.ai.aimud.commands;
 import io.nadia.ai.aimud.model.Item;
 import io.nadia.ai.aimud.model.Mobile;
 import io.nadia.ai.aimud.model.Skill;
-import io.nadia.ai.aimud.service.CharacterService;
+import io.nadia.ai.aimud.service.MobileService;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.SkillService;
 import io.nadia.ai.aimud.types.ItemType;
@@ -31,13 +31,13 @@ class LearnCommandTest {
     private SkillService skillService;
 
     @Mock
-    private CharacterService characterService;
+    private MobileService MobileService;
 
     private LearnCommand learnCommand;
 
     @BeforeEach
     void setUp() {
-        learnCommand = new LearnCommand(communicationService, skillService, characterService);
+        learnCommand = new LearnCommand(communicationService, skillService, MobileService);
     }
 
     @Test
@@ -62,13 +62,13 @@ class LearnCommandTest {
         when(skillService.getSkillNameById(1000L)).thenReturn(Mono.just("Spell: Magic Missile"));
         when(skillService.getSkillRank(Mobile, "Spell: Magic Missile")).thenReturn(0);
         when(skillService.addSkill(Mobile, "Spell: Magic Missile")).thenReturn(Mono.just(learnedSkill));
-        when(characterService.destroyInventoryItem(Mobile, 10L)).thenReturn(Mono.just(Mobile));
+        when(MobileService.destroyInventoryItem(Mobile, 10L)).thenReturn(Mono.just(Mobile));
 
         StepVerifier.create(learnCommand.execute(Mobile, "learn arcane"))
                 .verifyComplete();
 
         verify(skillService).addSkill(Mobile, "Spell: Magic Missile");
-        verify(characterService).destroyInventoryItem(Mobile, 10L);
+        verify(MobileService).destroyInventoryItem(Mobile, 10L);
         verify(communicationService).sendTextMessage(eq(Mobile), contains("learn Spell: Magic Missile"));
         verify(communicationService).sendCharacterUpdate(Mobile);
     }
@@ -106,7 +106,7 @@ class LearnCommandTest {
         StepVerifier.create(learnCommand.execute(Mobile, "learn arcane"))
                 .verifyComplete();
 
-        verify(characterService, never()).destroyInventoryItem(Mobile, 10L);
+        verify(MobileService, never()).destroyInventoryItem(Mobile, 10L);
         verify(communicationService).sendTextMessage(eq(Mobile), contains("already know"));
     }
 }

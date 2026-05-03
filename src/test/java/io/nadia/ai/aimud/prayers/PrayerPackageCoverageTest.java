@@ -29,7 +29,6 @@ class PrayerPackageCoverageTest {
         SkillService skillService = mock(SkillService.class);
         TestPrayer prayer = new TestPrayer(skillService,
                 mock(MobileService.class),
-                mock(CharacterService.class),
                 mock(CommunicationService.class),
                 mock(EffectService.class));
 
@@ -121,9 +120,9 @@ class PrayerPackageCoverageTest {
     }
 
     private static final class TestPrayer extends Prayer {
-        TestPrayer(SkillService skillService, MobileService mopbileService, CharacterService characterService,
+        TestPrayer(SkillService skillService, MobileService mobileService,
                    CommunicationService communicationService, EffectService effectService) {
-            super(skillService, mopbileService, characterService, communicationService, effectService);
+            super(skillService, mobileService, communicationService, effectService);
         }
 
         @Override

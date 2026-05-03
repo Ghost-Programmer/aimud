@@ -338,34 +338,37 @@ public class ConversationService {
                 prompt.append("6. If there is absolutely nothing to do, output EXACTLY ONE WORD: IGNORE\n");
                 prompt.append("7. DO NOT output internal thoughts, JSON, quotes, or markdown.\n");
 
-                org.springframework.ai.ollama.api.OllamaOptions options = new org.springframework.ai.ollama.api.OllamaOptions();
-                options.setTemperature(0.95);
-                options.setModel("hermes3");
+                org.springframework.ai.ollama.api.OllamaChatOptions options = org.springframework.ai.ollama.api.OllamaChatOptions.builder()
+                        .temperature(0.95)
+                        .model("hermes3")
+                        .build();
 
-                org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor ragAdvisor = new org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor(
-                        vectorStore,
-                        org.springframework.ai.vectorstore.SearchRequest.builder()
+                org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor ragAdvisor = org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor.builder(vectorStore)
+                        .searchRequest(org.springframework.ai.vectorstore.SearchRequest.builder()
                                 .topK(50)
                                 .filterExpression("npcId == " + npc.getId())
-                                .build());
+                                .build())
+                        .build();
 
                 log.info("Processing conversation for NPC: {}", npc.getName());
                 log.info("Prompt: \n {}", prompt.toString());
 
-                configService.getAllAgents().collectList().flatMapMany(agents -> {
+                configService.getAllAgents().collectList().<String>flatMapMany(agents -> {
                     StringBuilder systemText = new StringBuilder();
                     for (io.nadia.ai.aimud.model.Agent agent : agents) {
                         systemText.append("Agent: ").append(agent.title()).append("\n").append(agent.content()).append("\n\n");
                     }
-                    return chatClient.prompt()
+                    return chatClient.mutate()
+                            .defaultOptions(options)
+                            .defaultAdvisors(ragAdvisor)
+                            .build()
+                            .prompt()
                             .system(systemText.toString())
                             .user(prompt.toString())
-                            .options(options)
-                            .advisors(ragAdvisor)
                             .stream().content()
                             .filter(text -> text != null && !text.isEmpty());
                 })
-                        .reduce("", String::concat)
+                        .reduce("", (a, b) -> a + String.valueOf(b))
                         .subscribe(
                                 response -> processAiResponse(npc, availableActions, response),
                                 error -> {

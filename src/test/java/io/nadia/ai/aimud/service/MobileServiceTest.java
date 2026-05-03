@@ -26,7 +26,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class CharacterServiceTest {
+class MobileServiceTest {
 
     @Mock
     private MobileRepository mobileRepository;
@@ -49,17 +49,19 @@ class CharacterServiceTest {
     @Mock
     private ItemService itemService;
     @Mock
-    private MobileService mobileService;
+    private MobileActionRepository mobileActionRepository;
+    @Mock
+    private MobileSkillRepository mobileSkillRepository;
     @Mock
     private FactionService factionService;
     @Mock
     private MobileMacroRepository mobileMacroRepository;
 
-    private CharacterService characterService;
+    private MobileService MobileService;
 
     @BeforeEach
     void setUp() {
-        characterService = new CharacterService(
+        MobileService = new MobileService(
                 mobileRepository,
                 userRepository,
                 statService,
@@ -70,7 +72,8 @@ class CharacterServiceTest {
                 characterClassRepository,
                 skillRepository,
                 itemService,
-                mobileService,
+                mobileActionRepository,
+                mobileSkillRepository,
                 factionService,
                 mobileMacroRepository
         );
@@ -151,7 +154,7 @@ class CharacterServiceTest {
             return Mono.just(persistedCharacter);
         });
 
-        StepVerifier.create(characterService.createCharacter("jeff", newCharacter))
+        StepVerifier.create(MobileService.createCharacter("jeff", newCharacter))
                 .assertNext(createdCharacter -> {
                     assertThat(createdCharacter.getCurrentHp()).isEqualTo(createdCharacter.getMaxHp());
                     assertThat(createdCharacter.getCurrentMana()).isEqualTo(createdCharacter.getMaxMana());
@@ -195,7 +198,7 @@ class CharacterServiceTest {
         when(statService.updateCurrentStats(any(Mobile.class))).thenReturn(Mono.just(character));
 
         // Act
-        StepVerifier.create(characterService.equipItem(character, 11L))
+        StepVerifier.create(MobileService.equipItem(character, 11L))
                 .assertNext(updatedChar -> {
                     // Assert
                     assertThat(updatedChar.getHead()).isEqualTo(newHead);
@@ -235,7 +238,7 @@ class CharacterServiceTest {
         when(statService.updateCurrentStats(any(Mobile.class))).thenReturn(Mono.just(character));
 
         // Test 1: Right finger empty -> goes to Right
-        characterService.equipItem(character, 22L).block();
+        MobileService.equipItem(character, 22L).block();
         assertThat(character.getRightFinger()).isEqualTo(newRing);
         assertThat(character.getLeftFinger()).isNull();
 
@@ -247,7 +250,7 @@ class CharacterServiceTest {
         newRing2.setWearLocation(WearLocation.FINGER);
         character.getInventory().add(newRing2);
 
-        characterService.equipItem(character, 23L).block();
+        MobileService.equipItem(character, 23L).block();
         assertThat(character.getRightFinger()).isEqualTo(newRing);
         assertThat(character.getLeftFinger()).isEqualTo(newRing2);
 
@@ -259,7 +262,7 @@ class CharacterServiceTest {
         newRing3.setWearLocation(WearLocation.FINGER);
         character.getInventory().add(newRing3);
 
-        characterService.equipItem(character, 24L).block();
+        MobileService.equipItem(character, 24L).block();
         assertThat(character.getRightFinger()).isEqualTo(newRing);
         assertThat(character.getLeftFinger()).isEqualTo(newRing3);
         assertThat(character.getInventory()).contains(newRing2);
@@ -286,7 +289,7 @@ class CharacterServiceTest {
         when(statService.updateCurrentStats(any(Mobile.class))).thenReturn(Mono.just(character));
 
         // Act
-        StepVerifier.create(characterService.dropItem(character, 55L))
+        StepVerifier.create(MobileService.dropItem(character, 55L))
                 .assertNext(updatedChar -> {
                     // Assert
                     assertThat(updatedChar.getInventory()).isEmpty();

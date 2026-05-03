@@ -4,17 +4,12 @@ import io.nadia.ai.aimud.model.Agent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.SystemMessage;
-import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.model.function.FunctionCallback;
 import org.springframework.ai.ollama.OllamaChatModel;
-import org.springframework.ai.ollama.api.OllamaOptions;
+import org.springframework.ai.ollama.api.OllamaChatOptions;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,9 +18,9 @@ public class AiService {
 
     private final ChatClient chatClient;
     private final ConfigService configService;
-    private final List<FunctionCallback> mcpTools;
+    private final List<ToolCallback> mcpTools;
 
-    public AiService(OllamaChatModel chatModel, ConfigService configService, List<FunctionCallback> mcpTools) {
+    public AiService(OllamaChatModel chatModel, ConfigService configService, List<ToolCallback> mcpTools) {
         this.chatClient = ChatClient.builder(chatModel).build();
         this.configService = configService;
         this.mcpTools = mcpTools;
@@ -46,28 +41,27 @@ public class AiService {
      * Incorporates system agents into the prompt context.
      *
      * @param userPrompt    the prompt string provided by the user
-     * @param customOptions custom {@link OllamaOptions} to configure the model request, or null for default options
+     * @param customOptions custom {@link OllamaChatOptions} to configure the model request, or null for default options
      * @return a reactive {@link Flux} emitting the streamed string chunks of the AI's response
      */
-    public Flux<String> processPrompt(String userPrompt, OllamaOptions customOptions) {
+    public Flux<String> processPrompt(String userPrompt, OllamaChatOptions customOptions) {
         log.info("Processing AI prompt with tools: {}", userPrompt);
 
         return configService.getAllAgents()
                 .collectList()
                 .flatMapMany(agents -> {
-                    OllamaOptions options = customOptions != null ? customOptions : new OllamaOptions();
-                    options.setFunctionCallbacks(mcpTools);
-                    options.setTruncate(false);
-
                     StringBuilder systemText = new StringBuilder();
                     for (Agent agent : agents) {
                         systemText.append("Agent: ").append(agent.title()).append("\n").append(agent.content()).append("\n\n");
                     }
 
-                    return chatClient.prompt()
+                    return chatClient.mutate()
+                            .defaultOptions(customOptions != null ? customOptions : OllamaChatOptions.builder().build())
+                            .defaultTools(mcpTools.toArray(new ToolCallback[0]))
+                            .build()
+                            .prompt()
                             .system(systemText.toString())
                             .user(userPrompt)
-                            .options(options)
                             .stream()
                             .content()
                             .filter(text -> text != null && !text.isEmpty());
@@ -79,27 +73,26 @@ public class AiService {
      * This is typically used for isolated dialogue interactions where tool execution is undesired.
      *
      * @param userPrompt    the prompt string provided by the user
-     * @param customOptions custom {@link OllamaOptions} to configure the model request, or null for default options
+     * @param customOptions custom {@link OllamaChatOptions} to configure the model request, or null for default options
      * @return a reactive {@link Flux} emitting the streamed string chunks of the AI's response
      */
-    public Flux<String> processPromptNoTools(String userPrompt, OllamaOptions customOptions) {
+    public Flux<String> processPromptNoTools(String userPrompt, OllamaChatOptions customOptions) {
         log.info("Processing AI prompt WITHOUT tools: {}", userPrompt);
 
         return configService.getAllAgents()
                 .collectList()
                 .flatMapMany(agents -> {
-                    OllamaOptions options = customOptions != null ? customOptions : new OllamaOptions();
-                    options.setTruncate(false);
-
                     StringBuilder systemText = new StringBuilder();
                     for (Agent agent : agents) {
                         systemText.append("Agent: ").append(agent.title()).append("\n").append(agent.content()).append("\n\n");
                     }
 
-                    return chatClient.prompt()
+                    return chatClient.mutate()
+                            .defaultOptions(customOptions != null ? customOptions : OllamaChatOptions.builder().build())
+                            .build()
+                            .prompt()
                             .system(systemText.toString())
                             .user(userPrompt)
-                            .options(options)
                             .stream().content()
                             .filter(text -> text != null && !text.isEmpty());
                 });

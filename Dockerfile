@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM eclipse-temurin:21-jdk AS builder
+FROM eclipse-temurin:25-jdk AS builder
 WORKDIR /app
 
 # Copy gradle files

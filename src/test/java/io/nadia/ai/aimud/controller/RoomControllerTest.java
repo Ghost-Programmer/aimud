@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
@@ -20,6 +21,8 @@ import static org.mockito.Mockito.when;
 public class RoomControllerTest {
 
     @Autowired
+    private ApplicationContext applicationContext;
+
     private WebTestClient webTestClient;
 
     @MockitoBean
@@ -29,6 +32,7 @@ public class RoomControllerTest {
 
     @BeforeEach
     void setUp() {
+        webTestClient = WebTestClient.bindToApplicationContext(applicationContext).build();
         testRoom = new Room();
         testRoom.setId(1L);
         testRoom.setName("Test Room");

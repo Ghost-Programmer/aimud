@@ -29,7 +29,6 @@ class SongPackageCoverageTest {
         SkillService skillService = mock(SkillService.class);
         TestSong song = new TestSong(skillService,
                 mock(MobileService.class),
-                mock(CharacterService.class),
                 mock(CommunicationService.class),
                 mock(EffectService.class));
 
@@ -119,9 +118,9 @@ class SongPackageCoverageTest {
     }
 
     private static final class TestSong extends Song {
-        TestSong(SkillService skillService, MobileService mopbileService, CharacterService characterService,
+        TestSong(SkillService skillService, MobileService mobileService,
                  CommunicationService communicationService, EffectService effectService) {
-            super(skillService, mopbileService, characterService, communicationService, effectService);
+            super(skillService, mobileService, communicationService, effectService);
         }
 
         @Override

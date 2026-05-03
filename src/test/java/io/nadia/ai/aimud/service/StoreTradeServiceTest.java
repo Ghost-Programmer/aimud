@@ -14,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class StoreTradeServiceTest {
 
     @Mock private StoreService storeService;
-    @Mock private CharacterService characterService;
     @Mock private FactionService factionService;
     @Mock private CommunicationService communicationService;
     @Mock private ItemService itemService;
@@ -25,8 +24,8 @@ class StoreTradeServiceTest {
 
     @BeforeEach
     void setUp() {
-        storeTradeService = new StoreTradeService(storeService, characterService, factionService,
-                communicationService, itemService, mobileService, eventPublisher);
+        storeTradeService = new StoreTradeService(storeService, mobileService, factionService,
+                communicationService, itemService, eventPublisher);
     }
 
     private Item itemWithValue(int value) {
