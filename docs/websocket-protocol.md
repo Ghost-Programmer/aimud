@@ -3,12 +3,15 @@
 The AIMud frontend and backend communicate real-time game changes nearly entirely over WebSockets via Project Reactor. Native HTTP REST endpoints are used primarily for authentication (`/api/users/login`) and AI prompting (`/api/ai/prompt`), but the live MUD environment relies on a fast, asynchronous socket stream.
 
 ## Connection Layer
-**Endpoint:** `ws://localhost:8080/ws/game` (Handled by `GameWebSocketHandler.java`)
+**Main Endpoint:** `ws://localhost:8080/ws/game` (Handled by `GameWebSocketHandler.java`)
+**Combat Log Endpoint:** `ws://localhost:8080/ws/combat_log` (Handled by `CombatLogWebSocketHandler.java`)
 
 When the Angular frontend connects, it passes the JWT token as a bearer header. The connection must establish the user's active character immediately contextually.
 
-## The Standard JSON Payload
-All WebSocket messages sent and received by the `CommunicationService` strictly adhere to a consistent JSON structure:
+## Payload Protocols
+
+### The Standard JSON Payload (`/ws/game`)
+All standard WebSocket messages sent and received by the `CommunicationService` via the `/ws/game` endpoint strictly adhere to a consistent JSON structure:
 
 ```json
 {
@@ -17,6 +20,9 @@ All WebSocket messages sent and received by the `CommunicationService` strictly 
   "data": "any (object or string)"
 }
 ```
+
+### The Binary CBOR Payload (`/ws/combat_log`)
+To reduce bandwidth and serialization overhead during group encounters, high-frequency combat events are streamed via the `/ws/combat_log` endpoint using **CBOR** (Concise Binary Object Representation) instead of plain-text JSON. The Angular frontend handles the native decoding of the `ArrayBuffer` payloads using the `cbor-web` library.
 
 ### 1. `type` (String)
 Dictates how the frontend should parse the message or how the backend should route the command.

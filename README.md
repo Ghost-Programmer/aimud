@@ -95,5 +95,5 @@ Detailed documentation on classes, mechanics, scaling factors, abilities, and in
 
 ## 🤝 Architecture Notes
 * **Data Flow**: Reactive (`Mono`/`Flux`) architecture using Spring WebFlux communicating locally via `docker-compose` routing. 
-* **Live Game Loop**: Governed centrally via `TickService` executing every 2.0s without persistent DB blocking. All states run primarily in memory (`CharacterService.availableCharacters`), broadcasting via Reactor Sinks to `/ws/game`. 
+* **Live Game Loop**: Governed centrally via `TickService`, split into a multi-tiered virtual thread scheduler (`FastTick` at 1s, `SlowTick` at 5s) without persistent DB blocking. All states run primarily in memory (`MobileService.getAvailableCharacters`), broadcasting via Reactor Sinks to `/ws/game` (JSON) and `/ws/combat_log` (binary CBOR). 
 * **Persistence & State**: Liquibase authoritative migrations are loaded seamlessly out of `db/changelog`.

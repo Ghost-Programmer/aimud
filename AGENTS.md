@@ -11,9 +11,9 @@
 - HTTP API is reactive (`Mono`/`Flux`) and mostly in `controller/*` -> `service/*` -> `repository/*`.
 - Authentication flow: `/api/users/login` returns JWT, frontend stores it in `localStorage` key `token` (`frontend/src/app/interceptors/auth.interceptor.ts`).
 - Security is configured in `src/main/java/com/aimud/aimud/config/SecurityConfiguration.java` with explicit public routes and JWT filter insertion.
-- Live game loop is scheduled in `src/main/java/com/aimud/aimud/service/TickService.java` every 2s; active player state is in-memory (`CharacterService.availableCharacters`), not DB-only.
-- Real-time updates go through Reactor sinks (`CommunicationService`) to `/ws/game` (`GameWebSocketHandler` + `WebSocketConfiguration`).
-- WebSocket payload contract is JSON `{ type, id, data }` where `type` is `character|text|logout`; broadcast text uses `id: -1`.
+- Live game loop is scheduled in `src/main/java/com/aimud/aimud/service/TickService.java` with a multi-tiered virtual thread scheduler (`FastTick` at 1s for combat/actions, `SlowTick` at 5s for regen/weather); active player state is in-memory (`MobileService.getAvailableCharacters`), not DB-only.
+- Real-time updates go through Reactor sinks (`CommunicationService`) to `/ws/game` for JSON events and `/ws/combat_log` for binary CBOR events (`GameWebSocketHandler` and `CombatLogWebSocketHandler`).
+- WebSocket payload contract for standard events is JSON `{ type, id, data }` where `type` is `character|text|logout|party`; broadcast text uses `id: -1`. High-throughput combat logs use compressed binary CBOR payloads.
 
 ## AI + MCP integration
 
