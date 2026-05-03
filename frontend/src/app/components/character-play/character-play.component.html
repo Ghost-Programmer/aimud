@@ -59,14 +59,19 @@
     <div *ngIf="activeStatTab === 'stats'" class="stat-content">
       <div class="resource-bars">
         <div class="resource-bar hp-bar">
-          <div [style.width.%]="(character.maxHp / character.maxHp) * 100" class="bar-fill"></div>
-          <span class="bar-text">HP: {{ character.currentHp | number:'1.0-0' }}
-            / {{ character.maxHp | number:'1.0-0' }}</span>
+          <div [style.width.%]="maxHp() ? (hp() / maxHp()) * 100 : 0" class="bar-fill"></div>
+          <span class="bar-text">HP: {{ hp() | number:'1.0-0' }}
+            / {{ maxHp() | number:'1.0-0' }}</span>
         </div>
         <div class="resource-bar mana-bar">
-          <div [style.width.%]="(character.maxMana / character.maxMana) * 100" class="bar-fill"></div>
-          <span class="bar-text">Mana: {{ character.currentMana | number:'1.0-0' }}
-            / {{ character.maxMana | number:'1.0-0' }}</span>
+          <div [style.width.%]="maxMana() ? (mana() / maxMana()) * 100 : 0" class="bar-fill"></div>
+          <span class="bar-text">Mana: {{ mana() | number:'1.0-0' }}
+            / {{ maxMana() | number:'1.0-0' }}</span>
+        </div>
+        <div class="resource-bar stamina-bar">
+          <div [style.width.%]="maxStamina() ? (stamina() / maxStamina()) * 100 : 0" class="bar-fill"></div>
+          <span class="bar-text">Stamina: {{ stamina() | number:'1.0-0' }}
+            / {{ maxStamina() | number:'1.0-0' }}</span>
         </div>
       </div>
       <div class="divider"></div>

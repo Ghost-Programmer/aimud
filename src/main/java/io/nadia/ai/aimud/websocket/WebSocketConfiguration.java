@@ -21,9 +21,10 @@ public class WebSocketConfiguration {
      * @return payload of type HandlerMapping
      */
     @Bean
-    public HandlerMapping webSocketHandlerMapping(GameWebSocketHandler handler) {
+    public HandlerMapping webSocketHandlerMapping(GameWebSocketHandler handler, CombatLogWebSocketHandler combatLogHandler) {
         Map<String, WebSocketHandler> map = new HashMap<>();
         map.put("/ws/game", handler);
+        map.put("/ws/combat_log", combatLogHandler);
 
         SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
         mapping.setUrlMap(map);

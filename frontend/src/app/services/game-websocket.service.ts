@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {webSocket, WebSocketSubject} from 'rxjs/webSocket';
-import {filter, Observable, retry, shareReplay, tap} from 'rxjs';
+import {filter, map, Observable, retry, shareReplay, tap} from 'rxjs';
+import * as CBOR from 'cbor-web';
 
 @Injectable({
   providedIn: 'root'
@@ -8,11 +9,14 @@ import {filter, Observable, retry, shareReplay, tap} from 'rxjs';
 export class GameWebSocketService {
   private socket$: WebSocketSubject<any>;
   private messages$: Observable<any>;
+  private combatSocket$: WebSocketSubject<any>;
+  private combatLogs$: Observable<any>;
 
   constructor() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.host;
     const wsUrl = `${protocol}//${host}/ws/game`;
+    const combatWsUrl = `${protocol}//${host}/ws/combat_log`;
 
     this.socket$ = webSocket({
       url: wsUrl,
@@ -28,6 +32,24 @@ export class GameWebSocketService {
       retry({delay: 3000}),
       shareReplay({bufferSize: 10, refCount: true})
     );
+
+    this.combatSocket$ = webSocket({
+      url: combatWsUrl,
+      binaryType: 'arraybuffer',
+      deserializer: (msg) => msg.data,
+      openObserver: {
+        next: () => console.log('Combat WebSocket connected')
+      },
+      closeObserver: {
+        next: () => console.log('Combat WebSocket disconnected')
+      }
+    });
+
+    this.combatLogs$ = this.combatSocket$.pipe(
+      retry({delay: 3000}),
+      map((data: ArrayBuffer) => CBOR.decode(new Uint8Array(data))),
+      shareReplay({bufferSize: 10, refCount: true})
+    );
   }
 
   public getCharacterUpdates(characterId: number): Observable<any> {
@@ -40,6 +62,10 @@ export class GameWebSocketService {
         return String(msg.id) === String(characterId) || String(msg.id) === '-1';
       })
     );
+  }
+
+  public getCombatLogs(): Observable<any> {
+    return this.combatLogs$;
   }
 
   public getAllMessages(): Observable<any> {

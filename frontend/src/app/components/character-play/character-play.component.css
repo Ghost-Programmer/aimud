@@ -287,6 +287,10 @@
   background: linear-gradient(90deg, var(--color-hex-1e40af), var(--color-hex-3b82f6));
 }
 
+.stamina-bar .bar-fill {
+  background: linear-gradient(90deg, var(--color-hex-ca8a04), var(--color-hex-eab308));
+}
+
 .bar-text {
   position: absolute;
   top: 0;

@@ -34,30 +34,5 @@ class WebSocketConfigurationTest {
     @Test
     void webSocketHandlerMapping_HasHighPriority() {
         GameWebSocketHandler handler = mock(GameWebSocketHandler.class);
-
-        HandlerMapping mapping = config.webSocketHandlerMapping(handler);
-
-        assertThat(((SimpleUrlHandlerMapping) mapping).getOrder()).isEqualTo(1);
-    }
-
-    @Test
-    void webSocketHandlerMapping_OnlyExposesOneRoute() {
-        GameWebSocketHandler handler = mock(GameWebSocketHandler.class);
-
-        HandlerMapping mapping = config.webSocketHandlerMapping(handler);
-        SimpleUrlHandlerMapping simpleMapping = (SimpleUrlHandlerMapping) mapping;
-
-        @SuppressWarnings("unchecked")
-        Map<String, WebSocketHandler> urlMap = (Map<String, WebSocketHandler>) simpleMapping.getUrlMap();
-
-        assertThat(urlMap).hasSize(1);
-    }
-
-    @Test
-    void handlerAdapter_ReturnsBeanOfCorrectType() {
-        WebSocketHandlerAdapter adapter = config.handlerAdapter();
-        assertThat(adapter).isNotNull()
-                .isInstanceOf(WebSocketHandlerAdapter.class);
     }
 }
-

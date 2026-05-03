@@ -5,6 +5,7 @@ import io.nadia.ai.aimud.model.PartyUpdate;
 import io.nadia.ai.aimud.model.StoreDialogEvent;
 import io.nadia.ai.aimud.model.TargetUpdate;
 import io.nadia.ai.aimud.model.TextMessage;
+import io.nadia.ai.aimud.model.CombatLogMessage;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class CommunicationService {
     private final Sinks.Many<TargetUpdate> targetUpdates = Sinks.many().multicast().directBestEffort();
     private final Sinks.Many<PartyUpdate> partyUpdates = Sinks.many().multicast().directBestEffort();
     private final Sinks.Many<StoreDialogEvent> storeDialogs = Sinks.many().multicast().directBestEffort();
+    private final Sinks.Many<CombatLogMessage> combatLogs = Sinks.many().multicast().directBestEffort();
 
     @Setter
     private MobileService mobileService;
@@ -85,6 +87,15 @@ public class CommunicationService {
      */
     public Flux<StoreDialogEvent> getStoreDialogs() {
         return storeDialogs.asFlux();
+    }
+
+    /**
+     * Retrieves the stream of combat log messages.
+     *
+     * @return a {@link Flux} emitting combat log events
+     */
+    public Flux<CombatLogMessage> getCombatLogs() {
+        return combatLogs.asFlux();
     }
 
     /**
@@ -205,6 +216,16 @@ public class CommunicationService {
         conversationService.triggerRoomConversations(roomId);
     }
 
-
+    /**
+     * Broadcasts a combat log message to a specific room.
+     *
+     * @param roomId      the room ID
+     * @param characterId the character ID targeted or instigating
+     * @param message     the combat log message
+     */
+    public void sendCombatLog(Long roomId, Long characterId, String message) {
+        log.debug("Sending combat log to room {}: {}", roomId, message);
+        combatLogs.tryEmitNext(new CombatLogMessage(roomId, characterId, message, System.currentTimeMillis()));
+    }
 }
 

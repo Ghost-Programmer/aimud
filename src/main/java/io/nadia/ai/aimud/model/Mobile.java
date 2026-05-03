@@ -68,6 +68,12 @@ public class Mobile {
     @Column("current_mana")
     private int currentMana;
 
+    @Transient
+    private int currentStamina;
+
+    @Transient
+    private int maxStamina;
+
     private int gold;
 
     @Column("hunger")

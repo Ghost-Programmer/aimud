@@ -1,4 +1,4 @@
-import {Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, AfterViewInit, HostListener, NgZone} from '@angular/core';
+import {Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, AfterViewInit, HostListener, NgZone, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {DragDropModule} from '@angular/cdk/drag-drop';
@@ -34,6 +34,14 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
   macros: MobileMacro[] = Array(12).fill(null).map((_, i) => ({ macroIndex: i, label: '', command: '' }));
 
   private wsSubscription: Subscription | null = null;
+  private combatLogSubscription: Subscription | null = null;
+
+  hp = signal(0);
+  maxHp = signal(0);
+  mana = signal(0);
+  maxMana = signal(0);
+  stamina = signal(0);
+  maxStamina = signal(0);
 
   @HostListener('window:keydown', ['$event'])
   handleKeyDown(event: KeyboardEvent) {
@@ -119,6 +127,20 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
     if (this.wsSubscription) {
       this.wsSubscription.unsubscribe();
     }
+    if (this.combatLogSubscription) {
+      this.combatLogSubscription.unsubscribe();
+    }
+  }
+
+  private updateSignals() {
+    if (this.character) {
+      this.hp.set(this.character.currentHp || 0);
+      this.maxHp.set(this.character.maxHp || 0);
+      this.mana.set(this.character.currentMana || 0);
+      this.maxMana.set(this.character.maxMana || 0);
+      this.stamina.set(this.character.currentStamina || 0);
+      this.maxStamina.set(this.character.maxStamina || 0);
+    }
   }
 
   refreshCharacter() {
@@ -126,6 +148,7 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
     this.characterService.getCharacter(this.character.id).subscribe({
       next: (c) => {
         Object.assign(this.character, c);
+        this.updateSignals();
         this.loadMacros();
       },
       error: (err) => console.error('Error refreshing character', err)
@@ -191,6 +214,7 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
           if (update.type === 'character') {
             // Apply updates by reassigning to trigger change detection accurately
             this.character = { ...this.character, ...update.data };
+            this.updateSignals();
           } else if (update.type === 'text') {
             this.textMessages.push(update.data);
             this.scrollToBottom();
@@ -210,6 +234,18 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
         });
       },
       error: (err) => console.error('WebSocket error', err)
+    });
+
+    this.combatLogSubscription = this.gameWebSocketService.getCombatLogs().subscribe({
+      next: (update) => {
+        this.ngZone.run(() => {
+          if (update && update.message) {
+             this.textMessages.push(update.message);
+             this.scrollToBottom();
+          }
+        });
+      },
+      error: (err) => console.error('Combat Log WebSocket error', err)
     });
   }
 
