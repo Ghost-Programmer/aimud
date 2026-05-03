@@ -111,6 +111,13 @@ public class TickService {
                         nextYear++;
                     }
 
+                    Mono<Void> respawnMono = Mono.empty();
+                    if (nextHour == 0) {
+                        respawnMono = roomService.getAllRooms()
+                            .doOnNext(r -> mobileService.spawnMobilesForRoom(r))
+                            .then();
+                    }
+
                     Mono<Void> timeMsgMono = Mono.empty();
                     if (nextHour == 8 || nextHour == 20) {
                         final String msg = nextHour == 8 
@@ -166,7 +173,7 @@ public class TickService {
                         settings.createdAt(), settings.modifiedAt(), settings.createdBy(), settings.modifiedBy()
                     );
                     
-                    return Mono.when(timeMsgMono, weatherMsgMono, lightsMono, configService.updateServerSettings(updated));
+                    return Mono.when(respawnMono, timeMsgMono, weatherMsgMono, lightsMono, configService.updateServerSettings(updated));
                 })
                 .doOnError(error -> log.error("Critical failure during hourly server bounds tick!", error))
                 .subscribe();

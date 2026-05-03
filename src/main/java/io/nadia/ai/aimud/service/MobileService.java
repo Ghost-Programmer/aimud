@@ -1131,4 +1131,32 @@ public class MobileService {
                         .thenReturn(mobile));
     }
 
+    /**
+     * Reloads all NPCs from the database, removing existing active ones first.
+     *
+     * @return a Mono indicating completion
+     */
+    @CacheEvict(value = {"mobiles", "mobile"}, allEntries = true)
+    public Mono<Void> reloadAllNPCs() {
+        log.info("Reloading all NPCs from database");
+        activeMobiles.entrySet().removeIf(entry -> entry.getValue().getUserId() == null);
+        return roomService.getAllRooms()
+                .doOnNext(this::spawnMobilesForRoom)
+                .then();
+    }
+
+    /**
+     * Reloads NPCs for a specific room.
+     *
+     * @param roomId the ID of the room
+     * @return a Mono indicating completion
+     */
+    public Mono<Void> reloadRoomNPCs(Long roomId) {
+        log.info("Reloading NPCs for room {}", roomId);
+        activeMobiles.entrySet().removeIf(entry -> 
+                entry.getValue().getUserId() == null && entry.getValue().getCurrentRoomId() != null && entry.getValue().getCurrentRoomId().equals(roomId));
+        return roomService.getRoom(roomId)
+                .doOnNext(this::spawnMobilesForRoom)
+                .then();
+    }
 }

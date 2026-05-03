@@ -203,4 +203,55 @@ public class StoreService {
                     }
                 });
     }
+
+    /**
+     * Reloads all stores and their items into memory, clearing the existing cache.
+     *
+     * @return a Mono indicating completion
+     */
+    public Mono<Void> reloadAllStores() {
+        log.info("Reloading all stores into memory...");
+        cachedStores.clear();
+        return storeRepository.findAll()
+                .flatMap(store -> {
+                    store.setItems(new ArrayList<>());
+                    cachedStores.put(store.getId(), store);
+                    return storeItemRepository.findByStoreId(store.getId())
+                            .flatMap(storeItem -> {
+                                storeItem.setAvailable(Integer.MAX_VALUE); // Default to infinite
+                                return itemService.getItem(storeItem.getItemId())
+                                        .map(item -> {
+                                            storeItem.setItem(item);
+                                            store.getItems().add(storeItem);
+                                            return storeItem;
+                                        });
+                            });
+                }).then();
+    }
+
+    /**
+     * Reloads a specific store and its items into memory, removing its existing cache entry.
+     *
+     * @param storeId the ID of the store
+     * @return a Mono indicating completion
+     */
+    public Mono<Void> reloadStore(Long storeId) {
+        log.info("Reloading store {} into memory...", storeId);
+        cachedStores.remove(storeId);
+        return storeRepository.findById(storeId)
+                .flatMapMany(store -> {
+                    store.setItems(new ArrayList<>());
+                    cachedStores.put(store.getId(), store);
+                    return storeItemRepository.findByStoreId(store.getId())
+                            .flatMap(storeItem -> {
+                                storeItem.setAvailable(Integer.MAX_VALUE); // Default to infinite
+                                return itemService.getItem(storeItem.getItemId())
+                                        .map(item -> {
+                                            storeItem.setItem(item);
+                                            store.getItems().add(storeItem);
+                                            return storeItem;
+                                        });
+                            });
+                }).then();
+    }
 }

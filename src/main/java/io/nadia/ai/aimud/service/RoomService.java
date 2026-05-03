@@ -248,4 +248,28 @@ public class RoomService {
                     return light;
                 });
     }
+
+    /**
+     * Evicts the room cache to force a reload from the database on next fetch.
+     * Transient properties like corpses are retained.
+     *
+     * @return a Mono indicating completion
+     */
+    @CacheEvict(value = {"rooms", "room"}, allEntries = true)
+    public Mono<Void> reloadAllRooms() {
+        log.info("Evicting all room caches for reload");
+        return Mono.empty();
+    }
+
+    /**
+     * Evicts a single room's cache to force a reload from the database on next fetch.
+     *
+     * @param roomId the ID of the room
+     * @return a Mono indicating completion
+     */
+    @CacheEvict(value = "room", key = "#roomId")
+    public Mono<Void> reloadRoom(Long roomId) {
+        log.info("Evicting room cache for room {}", roomId);
+        return Mono.empty();
+    }
 }
