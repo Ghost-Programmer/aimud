@@ -218,7 +218,10 @@ public class MobileService {
                                         return skillsMono.flatMap(c2 -> 
                                             databaseClient.sql("SELECT starting_effects FROM races WHERE id = :rId")
                                                     .bind("rId", c2.getRaceId())
-                                                    .map((row, meta) -> row.get(0, String.class))
+                                                    .map((row, meta) -> {
+                                                        String val = row.get(0, String.class);
+                                                        return val == null ? "" : val;
+                                                    })
                                                     .one()
                                                     .flatMap(effs -> {
                                                         if (effs == null || effs.isEmpty()) return Mono.just(c2);
