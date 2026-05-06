@@ -45,3 +45,5 @@ databaseChangeLog:
       file: db/changelog/changes/076-update-container-inventory.sql
   - include:
       file: db/changelog/changes/077-container-items-load.sql
+  - include:
+      file: db/changelog/changes/078-admin-faction.sql

@@ -55,14 +55,32 @@ public class FactionService {
             return Mono.just(ratingCache.get(mId).get(targetFactionId));
         }
 
-        return databaseClient.sql("SELECT rating FROM mobile_factions WHERE mobile_id = :mobileId AND faction_id = :factionId")
-                .bind("mobileId", mId)
-                .bind("factionId", targetFactionId)
-                .map((row, rowMetadata) -> row.get("rating", Integer.class))
-                .first()
-                .defaultIfEmpty(50)
-                .doOnNext(rating -> {
-                    ratingCache.computeIfAbsent(mId, k -> new ConcurrentHashMap<>()).put(targetFactionId, rating);
+        return factionRepository.findById(targetFactionId)
+                .flatMap(faction -> {
+                    if ("ADMIN".equals(faction.getName()) && mobile.getUserId() != null) {
+                        return databaseClient.sql("SELECT role FROM users WHERE id = :userId")
+                                .bind("userId", mobile.getUserId())
+                                .map((row, metadata) -> row.get("role", String.class))
+                                .first()
+                                .map(role -> "MUD_ADMIN".equals(role) ? 100 : -1)
+                                .defaultIfEmpty(-1);
+                    }
+                    return Mono.just(-1);
+                })
+                .defaultIfEmpty(-1)
+                .flatMap(adminCheck -> {
+                    if (adminCheck != -1) {
+                        return Mono.just(adminCheck);
+                    }
+                    return databaseClient.sql("SELECT rating FROM mobile_factions WHERE mobile_id = :mobileId AND faction_id = :factionId")
+                            .bind("mobileId", mId)
+                            .bind("factionId", targetFactionId)
+                            .map((row, rowMetadata) -> row.get("rating", Integer.class))
+                            .first()
+                            .defaultIfEmpty(50)
+                            .doOnNext(rating -> {
+                                ratingCache.computeIfAbsent(mId, k -> new ConcurrentHashMap<>()).put(targetFactionId, rating);
+                            });
                 });
     }
 
@@ -88,6 +106,18 @@ public class FactionService {
         
         // Blocking fallback - should ideally rarely happen inside tight loops due to preemptive loading
         try {
+            Faction targetFaction = factionRepository.findById(targetFactionId).block();
+            if (targetFaction != null && "ADMIN".equals(targetFaction.getName()) && mobile.getUserId() != null) {
+                String role = databaseClient.sql("SELECT role FROM users WHERE id = :userId")
+                        .bind("userId", mobile.getUserId())
+                        .map((row, metadata) -> row.get("role", String.class))
+                        .first()
+                        .block();
+                if ("MUD_ADMIN".equals(role)) {
+                    return 100;
+                }
+            }
+
             Integer rating = databaseClient.sql("SELECT rating FROM mobile_factions WHERE mobile_id = :mobileId AND faction_id = :factionId")
                 .bind("mobileId", mId)
                 .bind("factionId", targetFactionId)
