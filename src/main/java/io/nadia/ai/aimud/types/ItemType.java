@@ -7,34 +7,38 @@ import lombok.Getter;
 import java.util.stream.Stream;
 
 /**
- * Enumeration detailing the specific classifications for items within the game world.
+ * Enumeration detailing the specific classifications for items within the game
+ * world.
  * Contains definitions for property mapping per item category.
  */
 public enum ItemType {
-    WEAPON("Weapon", "Damage Dice Count", "Size of Damage Dice", "Bonus Damage", "Weapon Category"),
-    TWO_HANDED_WEAPON("Two Handed Weapon", "Damage Dice Count", "Size of Damage Dice", "Bonus Damage", "Weapon Category"),
-    RANGED_WEAPON("Ranged Weapon", "Damage Dice Count", "Size of Damage Dice", "Bonus Damage", "Ammunition Type"),
-    LIGHT_ARMOR("Light Armor", "Armor Class Value", null, null, null),
-    MEDIUM_ARMOR("Medium Armor", "Armor Class Value", null, null, null),
-    HEAVY_ARMOR("Heavy Armor", "Armor Class Value", null, null, null),
-    FOOD("Food", "Portions / Bites", "Hours Satiated", null, "Poisoned Flag"),
-    DRINK("Drink", "Liquid Volume (Sips)", "Hours Quenched", "Liquid Type", "Poisoned Flag"),
-    POTION("Potion", "Spell Effect ID 1", "Spell Effect ID 2", "Spell Effect ID 3", "Spell Level"),
-    BOOK("Book", "Skill ID to Teach", null, null, null),
-    SCROLL("Scroll", "Spell Effect ID", "Required Skill ID", null, null),
-    MONEY("Money", "Value in Gold", "Value in Silver", "Value in Copper", null),
-    WAND("Wand", "Spell Effect ID", "Max Charges", "Current Charges", null),
-    QUEST("Quest", "Quest ID", null, null, null),
-    KEY("Key", "Lock ID", null, null, null),
-    LIGHT("Light", "Duration (Ticks)", null, null, null),
-    CONTAINER("Container", "Max Weight Capacity", "Max Item Count", "Lock ID", "Key ID"),
-    TRASH("Trash", null, null, null, null),
-    MISC("Miscellaneous", null, null, null, null),
-    CORPSE("Corpse", "Decay Timer (Ticks)", "Original Mobile ID", null, null),
-    BANDAGE("Bandage", "Healing Dice Count", "Size of Healing Dice", null, null),
-    NONE("None", null, null, null, null);
+    WEAPON("Weapon", 100, "Damage Dice Count", "Size of Damage Dice", "Bonus Damage", "Weapon Category"),
+    TWO_HANDED_WEAPON("Two Handed Weapon", 200, "Damage Dice Count", "Size of Damage Dice", "Bonus Damage",
+            "Weapon Category"),
+    RANGED_WEAPON("Ranged Weapon", 150, "Damage Dice Count", "Size of Damage Dice", "Bonus Damage", "Ammunition Type"),
+    LIGHT_ARMOR("Light Armor", 50, "Armor Class Value", null, null, null),
+    MEDIUM_ARMOR("Medium Armor", 150, "Armor Class Value", null, null, null),
+    HEAVY_ARMOR("Heavy Armor", 300, "Armor Class Value", null, null, null),
+    FOOD("Food", 5, "Portions / Bites", "Hours Satiated", null, "Poisoned Flag"),
+    DRINK("Drink", 2, "Liquid Volume (Sips)", "Hours Quenched", "Liquid Type", "Poisoned Flag"),
+    POTION("Potion", 50, "Spell Effect ID 1", "Spell Effect ID 2", "Spell Effect ID 3", "Spell Level"),
+    BOOK("Book", 500, "Skill ID to Teach", null, null, null),
+    SCROLL("Scroll", 100, "Spell Effect ID", "Required Skill ID", null, null),
+    MONEY("Money", 0, "Value in Gold", null, null, null),
+    WAND("Wand", 250, "Spell Effect ID", "Max Charges", "Current Charges", null),
+    QUEST("Quest", 0, "Quest ID", null, null, null),
+    KEY("Key", 10, "Lock ID", null, null, null),
+    LIGHT("Light", 20, "Duration (Ticks)", null, null, null),
+    CONTAINER("Container", 50, "Max Weight Capacity", "Max Item Count", "Lock ID", "Key ID"),
+    TRASH("Trash", 0, null, null, null, null),
+    MISC("Miscellaneous", 10, null, null, null, null),
+    CORPSE("Corpse", 0, "Decay Timer (Ticks)", "Original Mobile ID", null, null),
+    BANDAGE("Bandage", 5, "Healing Dice Count", "Size of Healing Dice", null, null),
+    NONE("None", 0, null, null, null, null);
 
     private final String label;
+    @Getter
+    private final int baseValue;
     @Getter
     private final String property1Name;
     @Getter
@@ -48,13 +52,16 @@ public enum ItemType {
      * Constructs a new ItemType.
      *
      * @param label         the human-readable type label
+     * @param baseValue     the base value in gold for the item type
      * @param property1Name the definition for property slots 1
      * @param property2Name the definition for property slots 2
      * @param property3Name the definition for property slots 3
      * @param property4Name the definition for property slots 4
      */
-    ItemType(String label, String property1Name, String property2Name, String property3Name, String property4Name) {
+    ItemType(String label, int baseValue, String property1Name, String property2Name, String property3Name,
+            String property4Name) {
         this.label = label;
+        this.baseValue = baseValue;
         this.property1Name = property1Name;
         this.property2Name = property2Name;
         this.property3Name = property3Name;

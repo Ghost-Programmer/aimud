@@ -195,7 +195,52 @@ public class ItemService {
             return 0;
         }
 
-        int value = 50; // Base value for any item
+        int value = 0; // Base value for any item
+
+        if (item.getItemType() != null) {
+            value = item.getItemType().getBaseValue();
+            
+            switch (item.getItemType()) {
+                case WEAPON:
+                case TWO_HANDED_WEAPON:
+                case RANGED_WEAPON:
+                    double avgDamage = (item.getProperty1() * ((item.getProperty2() + 1) / 2.0)) + item.getProperty3();
+                    value += (int) (avgDamage * 50);
+                    break;
+                case LIGHT_ARMOR:
+                case MEDIUM_ARMOR:
+                case HEAVY_ARMOR:
+                    value += item.getProperty1() * 20;
+                    break;
+                case FOOD:
+                    value += item.getProperty1() * item.getProperty2() * 2;
+                    break;
+                case DRINK:
+                    value += item.getProperty1() * item.getProperty2();
+                    break;
+                case POTION:
+                    value += item.getProperty4() * 25;
+                    break;
+                case WAND:
+                    value += item.getProperty2() * 10;
+                    break;
+                case LIGHT:
+                    value += item.getProperty1() * 2;
+                    break;
+                case CONTAINER:
+                    value += (item.getProperty1() * 2) + (item.getProperty2() * 5);
+                    break;
+                case BANDAGE:
+                    double avgHeal = item.getProperty1() * ((item.getProperty2() + 1) / 2.0);
+                    value += (int) (avgHeal * 10);
+                    break;
+                case MONEY:
+                    value += item.getProperty1(); // Value in Gold
+                    break;
+                default:
+                    break;
+            }
+        }
 
         if (item.getEffects() != null) {
             for (Effect effect : item.getEffects()) {
