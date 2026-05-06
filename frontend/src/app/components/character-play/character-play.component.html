@@ -308,7 +308,7 @@
 
     <div *ngIf="activeStatTab === 'inventory'" class="stat-content">
       <div class="gold-display" style="margin-bottom: 10px; font-weight: bold; color: gold; display: flex; align-items: center; gap: 4px;">
-        <mat-icon style="transform: scale(1.1);">monetization_on</mat-icon> {{ character.gold || 0 }}
+        <mat-icon style="transform: scale(1.1);">monetization_on</mat-icon> {{ (character.gold || 0) | number }}
       </div>
       <div class="inventory-container">
           <!-- Filter Bar -->
@@ -385,7 +385,7 @@
             <td>{{ item.stackable ? item.count : '' }}</td>
             <td (click)="onShowItemStats(item)">{{ item.itemType }}</td>
             <td (click)="onShowItemStats(item)">{{ item.wearLocation }}</td>
-            <td (click)="onShowItemStats(item)" class="item-value">{{ item.value }}g</td>
+            <td (click)="onShowItemStats(item)" class="item-value">{{ item.value | number }}g</td>
             <td class="action-cell">
               <div class="action-buttons">
                 <button (click)="onEquip(item.id)" class="action-btn equip-btn" mat-icon-button title="Equip">

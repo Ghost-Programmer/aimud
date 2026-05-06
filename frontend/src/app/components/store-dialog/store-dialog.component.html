@@ -3,7 +3,7 @@
     <h2 mat-dialog-title>
       Store: {{ storeData?.shopkeeperName || 'Merchant' }}
       <span class="gold-balance" style="display: inline-flex; align-items: center; gap: 4px;">
-        <mat-icon style="color: gold; transform: scale(1.1);">monetization_on</mat-icon> {{ storeData?.playerGold || 0 }}
+        <mat-icon style="color: gold; transform: scale(1.1);">monetization_on</mat-icon> {{ (storeData?.playerGold || 0) | number }}
       </span>
     </h2>
     <button mat-icon-button (click)="close()" class="close-btn"><mat-icon>close</mat-icon></button>
@@ -68,7 +68,7 @@
                   {{ si.item.name }}
                 </td>
                 <td>{{ si.item.stackable ? si.item.count : '' }}</td>
-                <td class="price-buy">{{ si.buyPrice }}g</td>
+                <td class="price-buy">{{ si.buyPrice | number }}g</td>
                 <td>
                   <button class="btn-buy" [disabled]="storeData.playerGold < si.buyPrice || si.available === 0" (click)="buyItem(si.itemId)">Buy</button>
                 </td>
@@ -106,7 +106,7 @@
                   {{ pi.item.name }}
                 </td>
                 <td>{{ pi.item.stackable ? pi.item.count : '' }}</td>
-                <td class="price-sell">{{ pi.sellPrice }}g</td>
+                <td class="price-sell">{{ pi.sellPrice | number }}g</td>
                 <td>
                   <button class="btn-sell" (click)="sellItem(pi.itemId)">Sell</button>
                 </td>
