@@ -32,7 +32,7 @@ class ItemServiceTest {
 
     @BeforeEach
     void setUp() {
-        itemService = new ItemService(itemRepository, effectService);
+        itemService = new ItemService(itemRepository, effectService, org.mockito.Mockito.mock(org.springframework.r2dbc.core.DatabaseClient.class));
     }
 
     // --- calculateItemValue ---

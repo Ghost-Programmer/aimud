@@ -76,11 +76,9 @@ public class PutCommand implements Command {
                                     container.setInventory(new java.util.ArrayList<>());
                                 }
                                 container.getInventory().add(itemToPut);
-                                itemService.addItemToContainer(container, itemToPut.getId());
 
                                 // Save container, then update player inventory
-                                return itemService.saveItem(container)
-                                        .then(Mono.defer(() -> mobileService.updateInventory(mobile, inv)))
+                                return Mono.defer(() -> mobileService.updateInventory(mobile, inv))
                                         .doOnNext(savedChar -> {
                                             communicationService.sendTextMessage(savedChar, "\n\nYou put " + itemToPut.getName() + " in " + container.getName() + ".");
                                             communicationService.roomMessage(savedChar, "\n" + savedChar.getName() + " puts " + itemToPut.getName() + " in " + container.getName() + ".");

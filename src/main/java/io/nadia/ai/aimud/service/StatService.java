@@ -367,23 +367,13 @@ public class StatService {
     }
 
     private Mono<Void> loadContainerContents(Item container) {
-        if (container.getInventoryIds() == null || container.getInventoryIds().isEmpty()) {
-            return Mono.empty();
-        }
-        
-        java.util.List<Long> ids = new java.util.ArrayList<>();
-        for (String idStr : container.getInventoryIds().split(",")) {
-            try {
-                ids.add(Long.parseLong(idStr.trim()));
-            } catch (NumberFormatException ignored) {}
-        }
-        
-        if (ids.isEmpty()) return Mono.empty();
-        
-        return Flux.fromIterable(ids)
-                .flatMap(id -> loadItemWithEffects(id))
+        return itemRepository.findLoadedContainerItems(container.getId())
+                .flatMap(item -> loadItemWithEffects(item.getId()))
                 .collectList()
                 .flatMap(contents -> {
+                    if (contents.isEmpty()) {
+                        return Mono.empty();
+                    }
                     if (container.getInventory() == null) {
                         container.setInventory(new java.util.ArrayList<>());
                     }

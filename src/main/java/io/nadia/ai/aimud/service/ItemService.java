@@ -18,16 +18,19 @@ public class ItemService {
 
     private final ItemRepository itemRepository;
     private final EffectService effectService;
+    private final org.springframework.r2dbc.core.DatabaseClient databaseClient;
 
     /**
      * Constructs a new ItemService.
      *
      * @param itemRepository the item repository
      * @param effectService  the effect service
+     * @param databaseClient the database client
      */
-    public ItemService(ItemRepository itemRepository, EffectService effectService) {
+    public ItemService(ItemRepository itemRepository, EffectService effectService, org.springframework.r2dbc.core.DatabaseClient databaseClient) {
         this.itemRepository = itemRepository;
         this.effectService = effectService;
+        this.databaseClient = databaseClient;
     }
 
     /**
@@ -44,7 +47,7 @@ public class ItemService {
                     java.util.List<Long> itemIds = items.stream().map(Item::getId).toList();
                     return effectService.getEffectsByItemIds(itemIds)
                             .collectList()
-                            .map(itemEffects -> {
+                            .flatMap(itemEffects -> {
                                 java.util.Map<Long, java.util.List<Effect>> effectsByItemId = itemEffects.stream()
                                         .collect(java.util.stream.Collectors.groupingBy(
                                                 io.nadia.ai.aimud.model.ItemEffectDTO::itemId,
@@ -55,19 +58,34 @@ public class ItemService {
                                     item.setValue(calculateItemValue(item));
                                 }
                                 java.util.Map<Long, Item> itemMap = items.stream().collect(java.util.stream.Collectors.toMap(Item::getId, i -> i));
-                                for (Item item : items) {
-                                    if (item.getInventoryIds() != null && !item.getInventoryIds().isEmpty()) {
-                                        java.util.List<Item> inv = new java.util.ArrayList<>();
-                                        for (String idStr : item.getInventoryIds().split(",")) {
-                                            try {
-                                                Item contained = itemMap.get(Long.valueOf(idStr.trim()));
-                                                if (contained != null) inv.add(contained);
-                                            } catch (NumberFormatException ignored) {}
-                                        }
-                                        item.setInventory(inv);
-                                    }
-                                }
-                                return items;
+                                
+                                return databaseClient.sql("SELECT container_id, item_id FROM container_items_load")
+                                        .map((row, metadata) -> new java.util.AbstractMap.SimpleEntry<>(
+                                                row.get("container_id", Long.class),
+                                                row.get("item_id", Long.class)
+                                        ))
+                                        .all()
+                                        .collectList()
+                                        .map(containerMappings -> {
+                                            java.util.Map<Long, java.util.List<Long>> containerToItems = containerMappings.stream()
+                                                    .collect(java.util.stream.Collectors.groupingBy(
+                                                            java.util.Map.Entry::getKey,
+                                                            java.util.stream.Collectors.mapping(java.util.Map.Entry::getValue, java.util.stream.Collectors.toList())
+                                                    ));
+                                            
+                                            for (Item item : items) {
+                                                java.util.List<Long> nestedIds = containerToItems.get(item.getId());
+                                                if (nestedIds != null && !nestedIds.isEmpty()) {
+                                                    java.util.List<Item> inv = new java.util.ArrayList<>();
+                                                    for (Long id : nestedIds) {
+                                                        Item contained = itemMap.get(id);
+                                                        if (contained != null) inv.add(contained);
+                                                    }
+                                                    item.setInventory(inv);
+                                                }
+                                            }
+                                            return items;
+                                        });
                             });
                 })
                 .flatMapIterable(items -> items)
@@ -102,24 +120,13 @@ public class ItemService {
                     item.setEffects(effects);
                     item.setValue(calculateItemValue(item));
                     
-                    if (item.getInventoryIds() == null || item.getInventoryIds().isEmpty()) {
-                        return Mono.just(item);
-                    }
-                    
-                    java.util.List<Long> ids = new java.util.ArrayList<>();
-                    for (String idStr : item.getInventoryIds().split(",")) {
-                        try {
-                            ids.add(Long.valueOf(idStr.trim()));
-                        } catch (NumberFormatException ignored) {}
-                    }
-                    
-                    if (ids.isEmpty()) return Mono.just(item);
-                    
-                    return Flux.fromIterable(ids)
-                            .flatMap(id -> itemRepository.findById(id).flatMap(this::loadEffectsAndValue))
+                    return itemRepository.findLoadedContainerItems(item.getId())
+                            .flatMap(this::loadEffectsAndValue)
                             .collectList()
                             .map(inv -> {
-                                item.setInventory(inv);
+                                if (!inv.isEmpty()) {
+                                    item.setInventory(inv);
+                                }
                                 return item;
                             });
                 });
@@ -275,26 +282,5 @@ public class ItemService {
             default -> false;
         };
     }
-
-    /**
-     * Helper to add an item ID to a container's inventory_ids string.
-     */
-    public void addItemToContainer(Item container, Long itemId) {
-        if (container.getInventoryIds() == null || container.getInventoryIds().isEmpty()) {
-            container.setInventoryIds(String.valueOf(itemId));
-        } else {
-            container.setInventoryIds(container.getInventoryIds() + "," + itemId);
-        }
-    }
-
-    /**
-     * Helper to remove an item ID from a container's inventory_ids string.
-     */
-    public void removeItemFromContainer(Item container, Long itemId) {
-        if (container.getInventoryIds() != null && !container.getInventoryIds().isEmpty()) {
-            java.util.List<String> ids = new java.util.ArrayList<>(java.util.Arrays.asList(container.getInventoryIds().split(",")));
-            ids.remove(String.valueOf(itemId));
-            container.setInventoryIds(ids.isEmpty() ? null : String.join(",", ids));
-        }
-    }
 }
+

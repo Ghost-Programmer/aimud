@@ -101,15 +101,13 @@ public class TakeCommand implements Command {
                                 
                                 // remove from container
                                 container.getInventory().remove(itemToTake);
-                                itemService.removeItemFromContainer(container, itemToTake.getId());
                                 
                                 // save container, then give item to player
-                                return itemService.saveItem(container)
-                                        .then(Mono.defer(() -> {
+                                return Mono.defer(() -> {
                                             java.util.List<Item> inv = new java.util.ArrayList<>(mobile.getInventory());
                                             inv.add(itemToTake);
                                             return mobileService.updateInventory(mobile, inv);
-                                        }))
+                                        })
                                         .doOnNext(savedChar -> {
                                             communicationService.sendTextMessage(savedChar, "\n\nYou take " + itemToTake.getName() + " from " + container.getName() + ".");
                                             communicationService.roomMessage(savedChar, "\n" + savedChar.getName() + " takes " + itemToTake.getName() + " from " + container.getName() + ".");
