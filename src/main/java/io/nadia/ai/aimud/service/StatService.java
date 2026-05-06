@@ -68,8 +68,8 @@ public class StatService {
 
         mobile.setMaxHp(100 + (con * 15) + (str * 5));
         mobile.setMaxMana(50 + (intel * 20));
-        mobile.setHpRegen(Math.max(1, (int) (0.5 + (con / 20.0) + (str / 100.0))));
-        mobile.setManaRegen(Math.max(1, (int) (1.0 + (wis / 25.0))));
+        mobile.setHpRegen(Math.max(1, (int) (0.5 + (con / 5.0) + (str / 50.0))));
+        mobile.setManaRegen(Math.max(1, (int) (1.0 + (wis / 5.0))));
 
         if (mobile.getCurrentHp() > mobile.getMaxHp()) {
             mobile.setCurrentHp(mobile.getMaxHp());
