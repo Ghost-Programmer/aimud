@@ -3,6 +3,7 @@ package io.nadia.ai.aimud.service;
 import io.nadia.ai.aimud.model.*;
 import io.nadia.ai.aimud.repository.*;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
@@ -354,34 +355,43 @@ public class StatService {
                         }))
                 .collectList()
                 .map(inventory -> {
-                    java.util.List<Item> rootItems = new java.util.ArrayList<>();
-                    java.util.Map<Long, Item> containers = new java.util.HashMap<>();
-
-                    for (Item item : inventory) {
-                        if (item.getContainerItemId() == null || item.getContainerItemId() == 0) {
-                            rootItems.add(item);
-                            if (item.getItemType() == io.nadia.ai.aimud.types.ItemType.CONTAINER) {
-                                containers.put(item.getId(), item);
-                            }
-                        }
-                    }
-
-                    for (Item item : inventory) {
-                        if (item.getContainerItemId() != null && item.getContainerItemId() != 0) {
-                            Item container = containers.get(item.getContainerItemId());
-                            if (container != null) {
-                                if (container.getInventory() == null) {
-                                    container.setInventory(new java.util.ArrayList<>());
-                                }
-                                container.getInventory().add(item);
-                            } else {
-                                rootItems.add(item);
-                            }
-                        }
-                    }
-
-                    character.setInventory(rootItems);
+                    character.setInventory(inventory);
                     return character;
+                })
+                .flatMap(characterWithRootItems -> {
+                    // recursively load contents for containers
+                    return Flux.fromIterable(characterWithRootItems.getInventory())
+                            .flatMap(item -> loadContainerContents(item))
+                            .then(Mono.just(characterWithRootItems));
+                });
+    }
+
+    private Mono<Void> loadContainerContents(Item container) {
+        if (container.getInventoryIds() == null || container.getInventoryIds().isEmpty()) {
+            return Mono.empty();
+        }
+        
+        java.util.List<Long> ids = new java.util.ArrayList<>();
+        for (String idStr : container.getInventoryIds().split(",")) {
+            try {
+                ids.add(Long.parseLong(idStr.trim()));
+            } catch (NumberFormatException ignored) {}
+        }
+        
+        if (ids.isEmpty()) return Mono.empty();
+        
+        return Flux.fromIterable(ids)
+                .flatMap(id -> loadItemWithEffects(id))
+                .collectList()
+                .flatMap(contents -> {
+                    if (container.getInventory() == null) {
+                        container.setInventory(new java.util.ArrayList<>());
+                    }
+                    container.getInventory().addAll(contents);
+                    
+                    return Flux.fromIterable(contents)
+                            .flatMap(item -> loadContainerContents(item))
+                            .then();
                 });
     }
 

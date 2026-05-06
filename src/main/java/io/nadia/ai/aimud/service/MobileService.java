@@ -303,36 +303,24 @@ public class MobileService {
             return Mono.just(character);
         log.debug("Updating inventory for character: {}", character.getId());
 
-        java.util.Map<String, Item> uniqueItemsMap = new java.util.HashMap<>();
+        java.util.Map<Long, Item> uniqueItemsMap = new java.util.HashMap<>();
         java.util.List<Item> toProcess = new java.util.ArrayList<>();
 
         for (Item item : inventory) {
-            item.setContainerItemId(0L);
             toProcess.add(item);
         }
 
         while (!toProcess.isEmpty()) {
             Item current = toProcess.remove(0);
             if (current != null && current.getId() != null) {
-                Long cid = current.getContainerItemId() == null ? 0L : current.getContainerItemId();
-                String key = current.getId() + "_" + cid;
-
-                if (uniqueItemsMap.containsKey(key)) {
-                    Item existing = uniqueItemsMap.get(key);
+                if (uniqueItemsMap.containsKey(current.getId())) {
+                    Item existing = uniqueItemsMap.get(current.getId());
                     existing.setCount(existing.getCount() + current.getCount());
                 } else {
                     Item clone = new Item();
                     clone.setId(current.getId());
                     clone.setCount(current.getCount());
-                    clone.setContainerItemId(cid);
-                    uniqueItemsMap.put(key, clone);
-                }
-
-                if (current.getInventory() != null) {
-                    for (Item nested : current.getInventory()) {
-                        nested.setContainerItemId(current.getId());
-                        toProcess.add(nested);
-                    }
+                    uniqueItemsMap.put(current.getId(), clone);
                 }
             }
         }
@@ -344,11 +332,10 @@ public class MobileService {
                 .then()
                 .thenMany(Flux.fromIterable(uniqueItems))
                 .flatMap(item -> databaseClient
-                        .sql("INSERT INTO character_inventory (character_id, item_id, item_count, container_item_id) VALUES (:characterId, :itemId, :count, :containerId)")
+                        .sql("INSERT INTO character_inventory (character_id, item_id, item_count) VALUES (:characterId, :itemId, :count)")
                         .bind("characterId", character.getId())
                         .bind("itemId", item.getId())
                         .bind("count", item.getCount())
-                        .bind("containerId", item.getContainerItemId())
                         .fetch()
                         .rowsUpdated())
                 .then(Mono.defer(() -> {

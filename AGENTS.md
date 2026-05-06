@@ -28,7 +28,7 @@
 - Default world/config seed data (rooms, classes, races, server settings) lives in the consolidated SQL changeset.
 - Soft-delete is used for races/classes (`deleted` flag), so list endpoints filter rather than hard-delete (`ConfigService`).
 - Some relations are managed with explicit SQL (`CharacterService.updateInventory` uses `DatabaseClient` on `character_inventory`).
-- **Memory-Centric World State:** We are NOT persisting things across server restarts for non-player entities. Therefore, we do not save rooms, items, or NPC Mobiles; we only save Player mobiles. Any changes to the world state (items dropped in rooms, containers, NPC states) exist only in memory and reset upon server restart. Initial item nesting (e.g. containers) is achieved via `container_item_id` in the `items` table.
+- **Memory-Centric World State:** We are NOT persisting things across server restarts for non-player entities. Therefore, we do not save rooms, items, or NPC Mobiles; we only save Player mobiles. Any changes to the world state (items dropped in rooms, containers, NPC states) exist only in memory and reset upon server restart. Initial item nesting (e.g. containers) is achieved via the `inventory_ids` column directly on the container `Item` in the `items` table.
 
 ## Developer workflows (project-specific)
 

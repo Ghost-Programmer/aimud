@@ -8,6 +8,7 @@ import io.nadia.ai.aimud.service.*;
 import io.nadia.ai.aimud.types.ItemType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
@@ -44,18 +45,24 @@ public class LookCommand implements Command {
                 .flatMap(room -> {
                     if (isTargetedLook) {
                         String targetName = parts[1].toLowerCase();
+                        if (targetName.startsWith("in ")) {
+                            targetName = targetName.substring(3).trim();
+                        } else if (targetName.startsWith("inside ")) {
+                            targetName = targetName.substring(7).trim();
+                        }
                         
                         // Look inside corpses
                         for (Item item : roomService.getTransientItemsInRoom(room.getId())) {
                             if (item.getItemType() == ItemType.CORPSE && item.getName().toLowerCase().contains(targetName)) {
-                                communicationService.sendTextMessage(mobile, "\n\nUpon " + item.getName() + " you see:");
+                                StringBuilder desc = new StringBuilder("\n\nUpon " + item.getName() + " you see:\n");
                                 if (item.getInventory() == null || item.getInventory().isEmpty()) {
-                                    communicationService.sendTextMessage(mobile, "Nothing of value.");
+                                    desc.append("Nothing of value.");
                                 } else {
                                     for (Item lootItem : item.getInventory()) {
-                                        communicationService.sendTextMessage(mobile, " - " + lootItem.getName());
+                                        desc.append("* ").append(lootItem.getName()).append("\n");
                                     }
                                 }
+                                communicationService.sendTextMessage(mobile, desc.toString());
                                 return Mono.empty();
                             }
                         }
@@ -104,9 +111,40 @@ public class LookCommand implements Command {
                             }
                         }
 
-                        // We could look at items here later, but default to nothing found for now
-                        communicationService.sendTextMessage(mobile, "\n\nYou don't see that here.");
-                        return Mono.empty();
+                        String finalTargetName = targetName;
+                        Flux<Item> roomItems = Flux.fromIterable(room.getItemIds()).flatMap(itemService::getItem);
+                        Flux<Item> transientItems = Flux.fromIterable(roomService.getTransientItemsInRoom(room.getId()));
+                        Flux<Item> inventoryItems = Flux.fromIterable(mobile.getInventory());
+
+                        Flux<Item> allTopLevelItems = Flux.concat(roomItems, transientItems, inventoryItems);
+                        
+                        Flux<Item> allNestedItems = allTopLevelItems
+                                .filter(i -> i.getItemType() == ItemType.CONTAINER && i.getInventory() != null)
+                                .flatMapIterable(Item::getInventory);
+
+                        return Flux.concat(allTopLevelItems, allNestedItems)
+                                .filter(i -> i.getName().toLowerCase().contains(finalTargetName))
+                                .next()
+                                .switchIfEmpty(Mono.defer(() -> {
+                                    communicationService.sendTextMessage(mobile, "\n\nYou don't see that here.");
+                                    return Mono.empty();
+                                }))
+                                .flatMap(item -> {
+                                    if (item.getItemType() == ItemType.CONTAINER) {
+                                        StringBuilder desc = new StringBuilder("\n\nInside " + item.getName() + " you see:\n");
+                                        if (item.getInventory() == null || item.getInventory().isEmpty()) {
+                                            desc.append("Nothing.");
+                                        } else {
+                                            for (Item lootItem : item.getInventory()) {
+                                                desc.append("* ").append(lootItem.getName()).append("\n");
+                                            }
+                                        }
+                                        communicationService.sendTextMessage(mobile, desc.toString());
+                                    } else {
+                                        communicationService.sendTextMessage(mobile, "\n\nYou look at " + item.getName() + ".");
+                                    }
+                                    return Mono.<Void>empty();
+                                });
                     }
 
                     // Otherwise, regular room look
@@ -185,7 +223,7 @@ public class LookCommand implements Command {
 
     @Override
     public String getDetailedDescription() {
-        return "Syntax: look\n\nShows you the description of your current location, including other characters, monsters, items, and available exits.";
+        return "Syntax: look [target | in <container>]\n\nShows you the description of your current location, including other characters, monsters, items, and available exits. You can also use 'look <target>' to closely inspect a specific item, character, or corpse either in the room or in your inventory. Use 'look in <container>' to list the contents of a container.";
     }
 }
 

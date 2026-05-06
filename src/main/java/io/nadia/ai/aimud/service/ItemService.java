@@ -54,6 +54,19 @@ public class ItemService {
                                     item.setEffects(effectsByItemId.getOrDefault(item.getId(), java.util.List.of()));
                                     item.setValue(calculateItemValue(item));
                                 }
+                                java.util.Map<Long, Item> itemMap = items.stream().collect(java.util.stream.Collectors.toMap(Item::getId, i -> i));
+                                for (Item item : items) {
+                                    if (item.getInventoryIds() != null && !item.getInventoryIds().isEmpty()) {
+                                        java.util.List<Item> inv = new java.util.ArrayList<>();
+                                        for (String idStr : item.getInventoryIds().split(",")) {
+                                            try {
+                                                Item contained = itemMap.get(Long.valueOf(idStr.trim()));
+                                                if (contained != null) inv.add(contained);
+                                            } catch (NumberFormatException ignored) {}
+                                        }
+                                        item.setInventory(inv);
+                                    }
+                                }
                                 return items;
                             });
                 })
@@ -85,10 +98,30 @@ public class ItemService {
         log.debug("Loading effects for item: {} (id: {})", item.getName(), item.getId());
         return effectService.getEffectsByItem(item.getId())
                 .collectList()
-                .map(effects -> {
+                .flatMap(effects -> {
                     item.setEffects(effects);
                     item.setValue(calculateItemValue(item));
-                    return item;
+                    
+                    if (item.getInventoryIds() == null || item.getInventoryIds().isEmpty()) {
+                        return Mono.just(item);
+                    }
+                    
+                    java.util.List<Long> ids = new java.util.ArrayList<>();
+                    for (String idStr : item.getInventoryIds().split(",")) {
+                        try {
+                            ids.add(Long.valueOf(idStr.trim()));
+                        } catch (NumberFormatException ignored) {}
+                    }
+                    
+                    if (ids.isEmpty()) return Mono.just(item);
+                    
+                    return Flux.fromIterable(ids)
+                            .flatMap(id -> itemRepository.findById(id).flatMap(this::loadEffectsAndValue))
+                            .collectList()
+                            .map(inv -> {
+                                item.setInventory(inv);
+                                return item;
+                            });
                 });
     }
 
@@ -241,5 +274,27 @@ public class ItemService {
             case FLY, WATER_BREATHING, INVISIBLE -> true;
             default -> false;
         };
+    }
+
+    /**
+     * Helper to add an item ID to a container's inventory_ids string.
+     */
+    public void addItemToContainer(Item container, Long itemId) {
+        if (container.getInventoryIds() == null || container.getInventoryIds().isEmpty()) {
+            container.setInventoryIds(String.valueOf(itemId));
+        } else {
+            container.setInventoryIds(container.getInventoryIds() + "," + itemId);
+        }
+    }
+
+    /**
+     * Helper to remove an item ID from a container's inventory_ids string.
+     */
+    public void removeItemFromContainer(Item container, Long itemId) {
+        if (container.getInventoryIds() != null && !container.getInventoryIds().isEmpty()) {
+            java.util.List<String> ids = new java.util.ArrayList<>(java.util.Arrays.asList(container.getInventoryIds().split(",")));
+            ids.remove(String.valueOf(itemId));
+            container.setInventoryIds(ids.isEmpty() ? null : String.join(",", ids));
+        }
     }
 }
