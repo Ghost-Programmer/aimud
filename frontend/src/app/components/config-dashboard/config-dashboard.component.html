@@ -1,7 +1,11 @@
 <div class="config-container">
-  <!-- Server Settings -->
-  <section class="config-section">
-    <h2>Server Settings</h2>
+  <!-- Server Settings Accordion -->
+  <div [class.active]="activeConfigSection === 'server'" class="accordion-item">
+    <div (click)="toggleConfigSection('server')" class="accordion-header">
+      <span class="accordion-title">Server Settings</span>
+      <span class="accordion-icon">{{ activeConfigSection === 'server' ? '▼' : '▶' }}</span>
+    </div>
+    <div class="accordion-content">
     <form (ngSubmit)="saveServerSettings()" [formGroup]="serverSettingsForm">
       <div class="form-group">
         <label for="serverName">Server Name</label>
@@ -27,14 +31,19 @@
       </div>
       <button [disabled]="serverSettingsForm.invalid" class="btn-primary" type="submit">Save Settings</button>
     </form>
-  </section>
-
-  <!-- Agents -->
-  <section class="config-section">
-    <div class="section-header">
-      <h2>Agents</h2>
-      <button (click)="openAgentForm()" class="btn-secondary">Add Agent</button>
     </div>
+  </div>
+
+  <!-- Agents Accordion -->
+  <div [class.active]="activeConfigSection === 'agents'" class="accordion-item">
+    <div (click)="toggleConfigSection('agents')" class="accordion-header">
+      <span class="accordion-title">Agents</span>
+      <span class="accordion-icon">{{ activeConfigSection === 'agents' ? '▼' : '▶' }}</span>
+    </div>
+    <div class="accordion-content">
+      <div class="section-header" style="justify-content: flex-end;">
+        <button (click)="openAgentForm()" class="btn-secondary">Add Agent</button>
+      </div>
     <div class="table-container">
       <table>
         <thead>
@@ -49,7 +58,7 @@
         <tr (click)="openAgentForm(agent)" *ngFor="let agent of paginatedAgents" class="clickable-row">
           <td>{{ agent.id }}</td>
           <td>{{ agent.title }}</td>
-          <td class="agent-content-cell">{{ agent.content }}</td>
+          <td class="agent-content-cell" [innerHTML]="agent.content | markdown"></td>
           <td class="actions-cell">
             <button (click)="deleteAgent(agent.id, $event)" class="icon-btn delete-btn" title="Delete">
               <svg class="bi bi-trash-fill" fill="currentColor" height="16" viewBox="0 0 16 16"
@@ -77,14 +86,18 @@
         </button>
       </div>
     </div>
-  </section>
-
-  <!-- Races -->
-  <section class="config-section">
-    <div class="section-header">
-      <h2>Races</h2>
-      <button (click)="openRaceForm()" class="btn-secondary">Add Race</button>
     </div>
+  </div>
+  <!-- Races Accordion -->
+  <div [class.active]="activeConfigSection === 'races'" class="accordion-item">
+    <div (click)="toggleConfigSection('races')" class="accordion-header">
+      <span class="accordion-title">Races</span>
+      <span class="accordion-icon">{{ activeConfigSection === 'races' ? '▼' : '▶' }}</span>
+    </div>
+    <div class="accordion-content">
+      <div class="section-header" style="justify-content: flex-end;">
+        <button (click)="openRaceForm()" class="btn-secondary">Add Race</button>
+      </div>
     <div class="table-container">
       <table>
         <thead>
@@ -111,14 +124,18 @@
         </tbody>
       </table>
     </div>
-  </section>
-
-  <!-- Character Classes -->
-  <section class="config-section">
-    <div class="section-header">
-      <h2>Character Classes</h2>
-      <button (click)="openClassForm()" class="btn-secondary">Add Class</button>
     </div>
+  </div>
+  <!-- Character Classes Accordion -->
+  <div [class.active]="activeConfigSection === 'classes'" class="accordion-item">
+    <div (click)="toggleConfigSection('classes')" class="accordion-header">
+      <span class="accordion-title">Character Classes</span>
+      <span class="accordion-icon">{{ activeConfigSection === 'classes' ? '▼' : '▶' }}</span>
+    </div>
+    <div class="accordion-content">
+      <div class="section-header" style="justify-content: flex-end;">
+        <button (click)="openClassForm()" class="btn-secondary">Add Class</button>
+      </div>
     <div class="table-container">
       <table>
         <thead>
@@ -145,14 +162,18 @@
         </tbody>
       </table>
     </div>
-  </section>
-
-  <!-- Factions -->
-  <section class="config-section">
-    <div class="section-header">
-      <h2>Factions</h2>
-      <button (click)="openFactionForm()" class="btn-secondary">Add Faction</button>
     </div>
+  </div>
+  <!-- Factions Accordion -->
+  <div [class.active]="activeConfigSection === 'factions'" class="accordion-item">
+    <div (click)="toggleConfigSection('factions')" class="accordion-header">
+      <span class="accordion-title">Factions</span>
+      <span class="accordion-icon">{{ activeConfigSection === 'factions' ? '▼' : '▶' }}</span>
+    </div>
+    <div class="accordion-content">
+      <div class="section-header" style="justify-content: flex-end;">
+        <button (click)="openFactionForm()" class="btn-secondary">Add Faction</button>
+      </div>
     <div class="table-container">
       <table>
         <thead>
@@ -179,7 +200,7 @@
         </tbody>
       </table>
     </div>
-  </section>
+  </div>
 </div>
 
 <!-- Agent Form Dialog -->
@@ -193,7 +214,7 @@
       </div>
       <div class="form-group">
         <label for="agentContent">Content</label>
-        <textarea formControlName="content" id="agentContent" rows="12"></textarea>
+        <textarea #mdeTextarea formControlName="content" id="agentContent" rows="12"></textarea>
       </div>
       <div class="dialog-actions">
         <button (click)="closeAgentForm()" type="button">Cancel</button>

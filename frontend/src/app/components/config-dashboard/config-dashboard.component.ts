@@ -1,5 +1,7 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ViewChild, ElementRef} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import EasyMDE from 'easymde';
+import {MarkdownPipe} from '../../pipes/markdown.pipe';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Title} from '@angular/platform-browser';
 import {ConfigService} from '../../services/config.service';
@@ -10,11 +12,13 @@ import {Item} from '../../models/item.model';
 @Component({
   selector: 'app-config-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, MarkdownPipe],
   templateUrl: './config-dashboard.component.html',
   styleUrl: './config-dashboard.component.css'
 })
 export class ConfigDashboardComponent implements OnInit {
+  activeConfigSection: string = 'server';
+
   serverSettingsForm: FormGroup;
   agents: Agent[] = [];
   readonly agentPageSize = 5;
@@ -26,6 +30,9 @@ export class ConfigDashboardComponent implements OnInit {
   selectedAgent: Agent | null = null;
   agentForm: FormGroup;
   isAgentFormVisible = false;
+  
+  @ViewChild('mdeTextarea') mdeTextarea!: ElementRef<HTMLTextAreaElement>;
+  private easyMDE: EasyMDE | null = null;
 
   selectedRace: any = null;
   raceForm: FormGroup;
@@ -141,6 +148,14 @@ export class ConfigDashboardComponent implements OnInit {
     this.loadFactions();
   }
 
+  toggleConfigSection(section: string) {
+    if (this.activeConfigSection === section) {
+      this.activeConfigSection = '';
+    } else {
+      this.activeConfigSection = section;
+    }
+  }
+
   // Server Settings
   loadServerSettings() {
     this.configService.getServerSettings().subscribe(settings => {
@@ -190,9 +205,34 @@ export class ConfigDashboardComponent implements OnInit {
       });
     }
     this.isAgentFormVisible = true;
+
+    // Initialize or update EasyMDE
+    setTimeout(() => {
+      if (this.mdeTextarea && !this.easyMDE) {
+        this.easyMDE = new EasyMDE({ 
+          element: this.mdeTextarea.nativeElement,
+          spellChecker: false,
+          maxHeight: '400px'
+        });
+        
+        if (agent) {
+          this.easyMDE.value(agent.content || '');
+        }
+
+        this.easyMDE.codemirror.on('change', () => {
+          this.agentForm.patchValue({ content: this.easyMDE?.value() || '' });
+        });
+      } else if (this.easyMDE) {
+        this.easyMDE.value(agent ? agent.content || '' : '');
+      }
+    });
   }
 
   closeAgentForm() {
+    if (this.easyMDE) {
+      this.easyMDE.toTextArea();
+      this.easyMDE = null;
+    }
     this.isAgentFormVisible = false;
     this.selectedAgent = null;
   }

@@ -330,3 +330,40 @@ tr:hover {
   background-color: var(--color-hex-ffea00);
   border-color: var(--color-hex-ffea00);
 }
+
+/* EasyMDE Dark Theme Overrides */
+::ng-deep .editor-toolbar {
+  background-color: var(--glass-005);
+  border-color: var(--glass-border);
+  opacity: 1;
+}
+
+::ng-deep .editor-toolbar button {
+  color: var(--text-muted) !important;
+}
+
+::ng-deep .editor-toolbar button.active, 
+::ng-deep .editor-toolbar button:hover {
+  background-color: var(--glass-10) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--primary) !important;
+}
+
+::ng-deep .editor-toolbar i.separator {
+  border-left: 1px solid var(--glass-border);
+  border-right: none;
+}
+
+::ng-deep .CodeMirror {
+  background-color: var(--input-bg);
+  color: var(--text-main);
+  border-color: var(--glass-border);
+}
+
+::ng-deep .CodeMirror-cursor {
+  border-left-color: var(--text-main) !important;
+}
+
+::ng-deep .editor-statusbar {
+  color: var(--text-muted);
+}
