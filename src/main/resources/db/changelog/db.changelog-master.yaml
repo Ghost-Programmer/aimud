@@ -47,3 +47,7 @@ databaseChangeLog:
       file: db/changelog/changes/077-container-items-load.sql
   - include:
       file: db/changelog/changes/078-admin-faction.sql
+  - include:
+      file: db/changelog/changes/079-fix-character-inventory.sql
+  - include:
+      file: db/changelog/changes/080-stackable-consumables.sql

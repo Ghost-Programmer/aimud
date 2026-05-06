@@ -304,33 +304,32 @@ public class MobileService {
         log.debug("Updating inventory for character: {}", character.getId());
 
         java.util.Map<Long, Item> uniqueItemsMap = new java.util.HashMap<>();
-        java.util.List<Item> toProcess = new java.util.ArrayList<>();
-
-        for (Item item : inventory) {
-            toProcess.add(item);
-        }
+        java.util.List<Item> nonStackables = new java.util.ArrayList<>();
+        java.util.List<Item> toProcess = new java.util.ArrayList<>(inventory);
 
         while (!toProcess.isEmpty()) {
             Item current = toProcess.remove(0);
             if (current != null && current.getId() != null) {
-                if (uniqueItemsMap.containsKey(current.getId())) {
-                    Item existing = uniqueItemsMap.get(current.getId());
-                    existing.setCount(existing.getCount() + current.getCount());
+                if (current.isStackable()) {
+                    if (uniqueItemsMap.containsKey(current.getId())) {
+                        Item existing = uniqueItemsMap.get(current.getId());
+                        existing.setCount(existing.getCount() + current.getCount());
+                    } else {
+                        uniqueItemsMap.put(current.getId(), current);
+                    }
                 } else {
-                    Item clone = new Item();
-                    clone.setId(current.getId());
-                    clone.setCount(current.getCount());
-                    uniqueItemsMap.put(current.getId(), clone);
+                    nonStackables.add(current);
                 }
             }
         }
 
-        List<Item> uniqueItems = new java.util.ArrayList<>(uniqueItemsMap.values());
+        List<Item> finalItems = new java.util.ArrayList<>(uniqueItemsMap.values());
+        finalItems.addAll(nonStackables);
 
         return databaseClient.sql("DELETE FROM character_inventory WHERE character_id = :characterId")
                 .bind("characterId", character.getId())
                 .then()
-                .thenMany(Flux.fromIterable(uniqueItems))
+                .thenMany(Flux.fromIterable(finalItems))
                 .flatMap(item -> databaseClient
                         .sql("INSERT INTO character_inventory (character_id, item_id, item_count) VALUES (:characterId, :itemId, :count)")
                         .bind("characterId", character.getId())
@@ -339,7 +338,7 @@ public class MobileService {
                         .fetch()
                         .rowsUpdated())
                 .then(Mono.defer(() -> {
-                     character.setInventory(inventory);
+                     character.setInventory(finalItems);
                      return Mono.just(character);
                 }));
     }

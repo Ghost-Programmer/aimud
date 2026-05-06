@@ -352,6 +352,52 @@
   overflow-x: auto;
 }
 
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: var(--glass-005);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-group label {
+  color: var(--text-muted, #bbb);
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.filter-group input, .filter-group select {
+  background: var(--input-bg, rgba(0, 0, 0, 0.2));
+  border: 1px solid var(--input-border, rgba(255, 255, 255, 0.2));
+  color: var(--text-main, #fff);
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.filter-group input:focus, .filter-group select:focus {
+  outline: none;
+  border-color: var(--primary, #ffd700);
+}
+
+.filter-group select option {
+  background-color: var(--color-hex-1a1d24, #1a1d24);
+  color: var(--text-main, #fff);
+}
+
+.filter-group input[type="number"] {
+  width: 70px;
+}
+
 .inventory-table {
   width: 100%;
   border-collapse: collapse;

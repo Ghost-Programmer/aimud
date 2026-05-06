@@ -33,6 +33,16 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
   partyData: any = null;
   macros: MobileMacro[] = Array(12).fill(null).map((_, i) => ({ macroIndex: i, label: '', command: '' }));
 
+  // Filter state
+  filterName: string = '';
+  filterType: string = '';
+  filterLocation: string = '';
+  filterMinValue: number | null = null;
+  filterMaxValue: number | null = null;
+
+  itemTypes: string[] = ['Weapon', 'Two Handed Weapon', 'Ranged Weapon', 'Light Armor', 'Medium Armor', 'Heavy Armor', 'Food', 'Drink', 'Potion', 'Book', 'Scroll', 'Money', 'Wand', 'Quest', 'Key', 'Light', 'Container', 'Trash', 'Miscellaneous', 'Corpse', 'Bandage'];
+  wearLocations: string[] = ['Head', 'Neck', 'Torso', 'Arms', 'Hands', 'Finger', 'Waist', 'Legs', 'Feet', 'Wield', 'Hold', 'Shield', 'Floating', 'Light'];
+
   private wsSubscription: Subscription | null = null;
   private combatLogSubscription: Subscription | null = null;
 
@@ -65,7 +75,16 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
   get sortedInventory() {
     if (!this.character || !this.character.inventory) return [];
 
-    const inventory = [...this.character.inventory];
+    let inventory = [...this.character.inventory];
+
+    inventory = inventory.filter(item => {
+      if (this.filterName && !item.name?.toLowerCase().includes(this.filterName.toLowerCase())) return false;
+      if (this.filterType && item.itemType !== this.filterType) return false;
+      if (this.filterLocation && item.wearLocation !== this.filterLocation) return false;
+      if (this.filterMinValue !== null && (item.value || 0) < this.filterMinValue) return false;
+      if (this.filterMaxValue !== null && (item.value || 0) > this.filterMaxValue) return false;
+      return true;
+    });
 
     if (this.sortColumn) {
       inventory.sort((a, b) => {
@@ -332,6 +351,8 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
     switch (column) {
       case 'name':
         return item.name?.toLowerCase() || '';
+      case 'count':
+        return item.stackable ? (item.count || 1) : 1;
       case 'itemType':
         return item.itemType?.toLowerCase() || '';
       case 'wearLocation':

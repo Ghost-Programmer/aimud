@@ -311,12 +311,48 @@
         <mat-icon style="transform: scale(1.1);">monetization_on</mat-icon> {{ character.gold || 0 }}
       </div>
       <div class="inventory-container">
+          <!-- Filter Bar -->
+          <div class="filter-bar">
+            <div class="filter-group">
+              <label>Name:</label>
+              <input type="text" [(ngModel)]="filterName" placeholder="Filter by name...">
+            </div>
+            <div class="filter-group">
+              <label>Type:</label>
+              <select [(ngModel)]="filterType">
+                <option value="">All</option>
+                <option *ngFor="let type of itemTypes" [value]="type">{{ type }}</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Location:</label>
+              <select [(ngModel)]="filterLocation">
+                <option value="">All</option>
+                <option *ngFor="let loc of wearLocations" [value]="loc">{{ loc }}</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Min Value:</label>
+              <input type="number" [(ngModel)]="filterMinValue" placeholder="Min">
+            </div>
+            <div class="filter-group">
+              <label>Max Value:</label>
+              <input type="number" [(ngModel)]="filterMaxValue" placeholder="Max">
+            </div>
+          </div>
+
         <table class="inventory-table">
           <thead>
           <tr>
             <th (click)="toggleSort('name')" [class.sorted]="sortColumn === 'name'">
               Name
               <span *ngIf="sortColumn === 'name'" class="sort-indicator">
+                  {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                </span>
+            </th>
+            <th (click)="toggleSort('count')" [class.sorted]="sortColumn === 'count'">
+              Count
+              <span *ngIf="sortColumn === 'count'" class="sort-indicator">
                   {{ sortDirection === 'asc' ? '▲' : '▼' }}
                 </span>
             </th>
@@ -344,8 +380,9 @@
           <tbody>
           <tr *ngFor="let item of sortedInventory">
             <td (click)="onShowItemStats(item)" class="item-name">
-              {{ item.name }} <span *ngIf="item.stackable" class="item-count">(x{{ item.count }})</span>
+              {{ item.name }}
             </td>
+            <td>{{ item.stackable ? item.count : '' }}</td>
             <td (click)="onShowItemStats(item)">{{ item.itemType }}</td>
             <td (click)="onShowItemStats(item)">{{ item.wearLocation }}</td>
             <td (click)="onShowItemStats(item)" class="item-value">{{ item.value }}g</td>
@@ -361,7 +398,7 @@
             </td>
           </tr>
           <tr *ngIf="!character.inventory || character.inventory.length === 0">
-            <td class="empty-inventory" colspan="5">Inventory is empty.</td>
+            <td class="empty-inventory" colspan="6">Inventory is empty.</td>
           </tr>
           </tbody>
         </table>

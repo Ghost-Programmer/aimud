@@ -10,6 +10,37 @@
   </div>
 
   <div class="dialog-content" *ngIf="!loading && storeData">
+    
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>Name:</label>
+        <input type="text" [(ngModel)]="filterName" placeholder="Filter by name...">
+      </div>
+      <div class="filter-group">
+        <label>Type:</label>
+        <select [(ngModel)]="filterType">
+          <option value="">All</option>
+          <option *ngFor="let type of itemTypes" [value]="type">{{ type }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Location:</label>
+        <select [(ngModel)]="filterLocation">
+          <option value="">All</option>
+          <option *ngFor="let loc of wearLocations" [value]="loc">{{ loc }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Min Value:</label>
+        <input type="number" [(ngModel)]="filterMinValue" placeholder="Min">
+      </div>
+      <div class="filter-group">
+        <label>Max Value:</label>
+        <input type="number" [(ngModel)]="filterMaxValue" placeholder="Max">
+      </div>
+    </div>
+
     <div class="columns-wrapper">
       
       <!-- Store Inventory (Buy) -->
@@ -19,24 +50,30 @@
           <table class="store-table">
             <thead>
               <tr>
-                <th>Item</th>
-                <th>Stock</th>
-                <th>Price</th>
+                <th (click)="toggleSortBuy('name')" [class.sorted]="sortColumnBuy === 'name'">
+                  Item <span *ngIf="sortColumnBuy === 'name'" class="sort-indicator">{{ sortDirBuy === 'asc' ? '▲' : '▼' }}</span>
+                </th>
+                <th (click)="toggleSortBuy('count')" [class.sorted]="sortColumnBuy === 'count'">
+                  Count <span *ngIf="sortColumnBuy === 'count'" class="sort-indicator">{{ sortDirBuy === 'asc' ? '▲' : '▼' }}</span>
+                </th>
+                <th (click)="toggleSortBuy('price')" [class.sorted]="sortColumnBuy === 'price'">
+                  Price <span *ngIf="sortColumnBuy === 'price'" class="sort-indicator">{{ sortDirBuy === 'asc' ? '▲' : '▼' }}</span>
+                </th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let si of storeData.storeItems">
+              <tr *ngFor="let si of filteredAndSortedStoreItems">
                 <td class="item-name" (click)="showItemStats(si.item)">
-                  {{ si.item.name }} <span *ngIf="si.item.stackable" class="item-count">(x{{ si.item.count }})</span>
+                  {{ si.item.name }}
                 </td>
-                <td>{{ si.available === -1 ? '∞' : si.available }}</td>
+                <td>{{ si.item.stackable ? si.item.count : '' }}</td>
                 <td class="price-buy">{{ si.buyPrice }}g</td>
                 <td>
                   <button class="btn-buy" [disabled]="storeData.playerGold < si.buyPrice || si.available === 0" (click)="buyItem(si.itemId)">Buy</button>
                 </td>
               </tr>
-              <tr *ngIf="storeData.storeItems.length === 0">
+              <tr *ngIf="filteredAndSortedStoreItems.length === 0">
                 <td colspan="4" class="empty-state">No items available.</td>
               </tr>
             </tbody>
@@ -51,23 +88,31 @@
           <table class="store-table">
             <thead>
               <tr>
-                <th>Item</th>
-                <th>Price</th>
+                <th (click)="toggleSortSell('name')" [class.sorted]="sortColumnSell === 'name'">
+                  Item <span *ngIf="sortColumnSell === 'name'" class="sort-indicator">{{ sortDirSell === 'asc' ? '▲' : '▼' }}</span>
+                </th>
+                <th (click)="toggleSortSell('count')" [class.sorted]="sortColumnSell === 'count'">
+                  Count <span *ngIf="sortColumnSell === 'count'" class="sort-indicator">{{ sortDirSell === 'asc' ? '▲' : '▼' }}</span>
+                </th>
+                <th (click)="toggleSortSell('price')" [class.sorted]="sortColumnSell === 'price'">
+                  Price <span *ngIf="sortColumnSell === 'price'" class="sort-indicator">{{ sortDirSell === 'asc' ? '▲' : '▼' }}</span>
+                </th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let pi of storeData.playerInventory">
+              <tr *ngFor="let pi of filteredAndSortedPlayerItems">
                 <td class="item-name" (click)="showItemStats(pi.item)">
-                  {{ pi.item.name }} <span *ngIf="pi.item.stackable" class="item-count">(x{{ pi.item.count }})</span>
+                  {{ pi.item.name }}
                 </td>
+                <td>{{ pi.item.stackable ? pi.item.count : '' }}</td>
                 <td class="price-sell">{{ pi.sellPrice }}g</td>
                 <td>
                   <button class="btn-sell" (click)="sellItem(pi.itemId)">Sell</button>
                 </td>
               </tr>
-              <tr *ngIf="storeData.playerInventory.length === 0">
-                <td colspan="3" class="empty-state">Your inventory is empty.</td>
+              <tr *ngIf="filteredAndSortedPlayerItems.length === 0">
+                <td colspan="4" class="empty-state">Your inventory is empty.</td>
               </tr>
             </tbody>
           </table>

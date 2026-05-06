@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+
 /**
  * StoreCommand standard implementation layer.
  * Opens the store for a merchant in the room.
@@ -46,7 +47,7 @@ public class StoreCommand implements Command {
         }
 
         StoreDialogEvent event = new StoreDialogEvent(character.getId(), merchant.getStoreId(), merchant.getName());
-        communicationService.sendTextMessage(character, "Opening store for " + merchant.getName() + "...");
+        communicationService.sendTextMessage(character, "\nOpening store for " + merchant.getName() + "...");
         communicationService.sendStoreDialog(event);
         return reactor.core.publisher.Mono.empty();
     }
