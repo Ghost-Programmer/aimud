@@ -21,6 +21,7 @@ export class ConfigDashboardComponent implements OnInit {
   currentAgentPage = 1;
   races: any[] = [];
   classes: any[] = [];
+  factions: any[] = [];
 
   selectedAgent: Agent | null = null;
   agentForm: FormGroup;
@@ -33,6 +34,10 @@ export class ConfigDashboardComponent implements OnInit {
   selectedClass: any = null;
   classForm: FormGroup;
   isClassFormVisible = false;
+
+  selectedFaction: any = null;
+  factionForm: FormGroup;
+  isFactionFormVisible = false;
 
   // Items selection
   availableItems: Item[] = [];
@@ -95,6 +100,12 @@ export class ConfigDashboardComponent implements OnInit {
       startingItems: [''],
       startingSkills: ['']
     });
+
+    this.factionForm = this.fb.group({
+      id: [null],
+      name: ['', Validators.required],
+      description: ['', Validators.required]
+    });
   }
 
   get totalAgentPages(): number {
@@ -127,6 +138,7 @@ export class ConfigDashboardComponent implements OnInit {
     this.loadClasses();
     this.loadItems();
     this.loadSkills();
+    this.loadFactions();
   }
 
   // Server Settings
@@ -420,5 +432,58 @@ export class ConfigDashboardComponent implements OnInit {
 
   private clampAgentPage() {
     this.currentAgentPage = Math.min(Math.max(1, this.currentAgentPage), this.totalAgentPages);
+  }
+
+  // Factions
+  loadFactions() {
+    this.configService.getAllFactions().subscribe(factions => {
+      this.factions = [...factions].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+    });
+  }
+
+  openFactionForm(faction: any = null) {
+    this.selectedFaction = faction;
+    if (faction) {
+      this.factionForm.patchValue(faction);
+    } else {
+      this.factionForm.reset({
+        id: null,
+        name: '',
+        description: ''
+      });
+    }
+    this.isFactionFormVisible = true;
+  }
+
+  closeFactionForm() {
+    this.isFactionFormVisible = false;
+    this.selectedFaction = null;
+  }
+
+  saveFaction() {
+    if (this.factionForm.valid) {
+      const faction = this.factionForm.value;
+      if (this.selectedFaction) {
+        this.configService.updateFaction(this.selectedFaction.id, faction).subscribe(() => {
+          this.loadFactions();
+          this.closeFactionForm();
+        });
+      } else {
+        this.configService.createFaction(faction).subscribe(() => {
+          this.loadFactions();
+          this.closeFactionForm();
+        });
+      }
+    }
+  }
+
+  deleteFaction(id: number, event?: Event) {
+    event?.stopPropagation();
+
+    if (confirm('Are you sure you want to delete this faction?')) {
+      this.configService.deleteFaction(id).subscribe(() => {
+        this.loadFactions();
+      });
+    }
   }
 }

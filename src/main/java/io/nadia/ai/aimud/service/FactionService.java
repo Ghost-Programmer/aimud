@@ -145,6 +145,45 @@ public class FactionService {
     }
 
     /**
+     * Creates a new faction.
+     *
+     * @param faction the faction to create
+     * @return a {@link Mono} containing the saved faction
+     */
+    public Mono<Faction> createFaction(Faction faction) {
+        return factionRepository.save(faction);
+    }
+
+    /**
+     * Updates an existing faction.
+     *
+     * @param id      the ID of the faction to update
+     * @param faction the updated faction details
+     * @return a {@link Mono} containing the updated faction, if found
+     */
+    public Mono<Faction> updateFaction(Long id, Faction faction) {
+        return factionRepository.findById(id)
+                .flatMap(existing -> {
+                    existing.setName(faction.getName());
+                    existing.setDescription(faction.getDescription());
+                    return factionRepository.save(existing);
+                });
+    }
+
+    /**
+     * Deletes a faction by its ID and removes it from any mobiles.
+     *
+     * @param id the ID of the faction to delete
+     * @return a {@link Mono} indicating completion
+     */
+    public Mono<Void> deleteFaction(Long id) {
+        return databaseClient.sql("UPDATE mobiles SET faction_id = NULL WHERE faction_id = :id")
+                .bind("id", id)
+                .then()
+                .then(factionRepository.deleteById(id));
+    }
+
+    /**
      * Retrieves a map of all specific faction ratings for a given mobile ID.
      *
      * @param mobileId the ID of the mobile entity

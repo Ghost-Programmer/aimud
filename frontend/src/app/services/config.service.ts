@@ -84,4 +84,21 @@ export class ConfigService {
   getAllSkills(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/skills`);
   }
+
+  // Factions
+  getAllFactions(): Observable<any[]> {
+    return this.http.get<any[]>('/api/factions');
+  }
+
+  createFaction(faction: any): Observable<any> {
+    return this.http.post('/api/factions', faction);
+  }
+
+  updateFaction(id: number, faction: any): Observable<any> {
+    return this.http.put(`/api/factions/${id}`, faction);
+  }
+
+  deleteFaction(id: number): Observable<any> {
+    return this.http.delete(`/api/factions/${id}`);
+  }
 }

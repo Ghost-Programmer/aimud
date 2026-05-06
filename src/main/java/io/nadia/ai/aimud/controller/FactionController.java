@@ -3,6 +3,7 @@ package io.nadia.ai.aimud.controller;
 import io.nadia.ai.aimud.model.Faction;
 import io.nadia.ai.aimud.service.FactionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -47,5 +48,39 @@ public class FactionController {
     @PostMapping("/mobile/{mobileId}")
     public Mono<Void> updateMobileRatings(@PathVariable Long mobileId, @RequestBody Map<Long, Integer> ratings) {
         return factionService.updateMobileRatings(mobileId, ratings);
+    }
+
+    /**
+     * Handles HTTP POST requests to create faction.
+     * @param faction the faction to create
+     * @return dynamic reactive {@code Mono<Faction>} response payload
+     */
+    @PostMapping
+    public Mono<Faction> createFaction(@RequestBody Faction faction) {
+        return factionService.createFaction(faction);
+    }
+
+    /**
+     * Handles HTTP PUT requests to update faction.
+     * @param id the faction id
+     * @param faction the updated faction
+     * @return dynamic reactive {@code Mono<ResponseEntity<Faction>>} response payload
+     */
+    @PutMapping("/{id}")
+    public Mono<ResponseEntity<Faction>> updateFaction(@PathVariable Long id, @RequestBody Faction faction) {
+        return factionService.updateFaction(id, faction)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Handles HTTP DELETE requests to delete faction.
+     * @param id the faction id
+     * @return dynamic reactive {@code Mono<ResponseEntity<Void>>} response payload
+     */
+    @DeleteMapping("/{id}")
+    public Mono<ResponseEntity<Void>> deleteFaction(@PathVariable Long id) {
+        return factionService.deleteFaction(id)
+                .then(Mono.just(ResponseEntity.ok().build()));
     }
 }

@@ -146,6 +146,40 @@
       </table>
     </div>
   </section>
+
+  <!-- Factions -->
+  <section class="config-section">
+    <div class="section-header">
+      <h2>Factions</h2>
+      <button (click)="openFactionForm()" class="btn-secondary">Add Faction</button>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr (click)="openFactionForm(faction)" *ngFor="let faction of factions" class="clickable-row">
+          <td>{{ faction.name }}</td>
+          <td>{{ faction.description }}</td>
+          <td class="actions-cell">
+            <button (click)="deleteFaction(faction.id, $event)" class="icon-btn delete-btn" title="Delete">
+              <svg class="bi bi-trash-fill" fill="currentColor" height="16" viewBox="0 0 16 16"
+                   width="16" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 </div>
 
 <!-- Agent Form Dialog -->
@@ -285,3 +319,25 @@
     </form>
   </div>
 </div>
+
+<!-- Faction Form Dialog -->
+<div *ngIf="isFactionFormVisible" class="dialog-overlay">
+  <div class="dialog-content">
+    <h2>{{ selectedFaction ? 'Edit' : 'Add' }} Faction</h2>
+    <form (ngSubmit)="saveFaction()" [formGroup]="factionForm">
+      <div class="form-group">
+        <label for="factionName">Name</label>
+        <input formControlName="name" id="factionName" type="text">
+      </div>
+      <div class="form-group">
+        <label for="factionDesc">Description</label>
+        <textarea formControlName="description" id="factionDesc"></textarea>
+      </div>
+      <div class="dialog-actions">
+        <button (click)="closeFactionForm()" type="button">Cancel</button>
+        <button [disabled]="factionForm.invalid" class="btn-primary" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
