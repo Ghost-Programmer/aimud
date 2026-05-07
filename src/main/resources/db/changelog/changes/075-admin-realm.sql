@@ -717,7 +717,25 @@ VALUES
     -- Sash: ManaRegen(117)
     (131, 117);
 
--- Add all divine items (100-141) to the Admin Store
+-- Description: Unified changeset for the "Arms" pieces. Handles definition and all effect linkages (Stats, Armor, and Mana Regen).
+INSERT INTO items (id, item_type, wear_location, name, description, property_1, property_2, property_3, property_4)
+VALUES 
+    (142, 'HEAVY_ARMOR', 'ARMS', 'Vambraces of the Celestial', 'Heavy plating that shields the arms of the Architect.', 25, 0, 0, 0),
+    (143, 'MEDIUM_ARMOR', 'ARMS', 'Armguards of the Celestial', 'Reinforced guards that provide balance and protection.', 25, 0, 0, 0),
+    (144, 'LIGHT_ARMOR', 'ARMS', 'Sleeves of the Celestial', 'Flowing silk sleeves that offer ethereal protection.', 25, 0, 0, 0)
+ON CONFLICT (id) DO NOTHING;
+
+-- Link +25 core stats (13, 26, 39, 52, 65, 78) and +25 Armor (91)
+INSERT INTO item_effects (item_id, effect_id)
+SELECT i.id, e.eid
+FROM items i
+CROSS JOIN (SELECT unnest(ARRAY[13, 26, 39, 52, 65, 78, 91]) as eid) e
+WHERE i.id IN (142, 143, 144);
+
+-- Link special utility for Light Arms: Mana Regen +25 (117)
+INSERT INTO item_effects (item_id, effect_id) VALUES (144, 117);
+
+-- Add all divine items (100-144) to the Admin Store
 INSERT INTO
     store_items (
         store_id,
@@ -728,7 +746,7 @@ INSERT INTO
 SELECT 666, id, 'system', 'system'
 FROM items
 WHERE
-    id BETWEEN 100 AND 141
+    id BETWEEN 100 AND 144
 ON CONFLICT (store_id, item_id) DO NOTHING;
 
 -- 4. Synchronize Sequences
