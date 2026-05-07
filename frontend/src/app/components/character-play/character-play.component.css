@@ -543,14 +543,19 @@
 }
 
 /* Equipment Tab Styles */
+.stat-content,
 .equipped-tab {
-  padding: 10px;
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
 
+.stat-content::-webkit-scrollbar,
 .equipped-tab::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
+}
+
+.equipped-tab {
+  padding: 10px;
 }
 
 .equipment-layout {
