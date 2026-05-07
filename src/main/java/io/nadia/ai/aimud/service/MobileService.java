@@ -654,6 +654,21 @@ public class MobileService {
 
         return this.itemService.getItem(itemId)
                 .flatMap(itemToTake -> {
+                    if (itemToTake.getItemType() == io.nadia.ai.aimud.types.ItemType.MONEY) {
+                        int goldAmount = itemToTake.getProperty1();
+                        character.setGold(character.getGold() + goldAmount);
+                        return this.roomService.removeItemFromRoom(character.getCurrentRoomId(), itemId)
+                                .then(this.save(character))
+                                .flatMap(savedChar -> getCharacterById(savedChar.getId()))
+                                .doOnNext(savedChar -> {
+                                    communicationService.sendTextMessage(savedChar,
+                                            "\n\nYou pick up " + goldAmount + " gold.");
+                                    communicationService.roomMessage(savedChar,
+                                            "\n" + savedChar.getName() + " picks up some gold.");
+                                    communicationService.sendCharacterUpdate(savedChar);
+                                });
+                    }
+
                     List<Item> currentInventory = new ArrayList<>(character.getInventory());
                     currentInventory.add(itemToTake);
                     character.setInventory(currentInventory);

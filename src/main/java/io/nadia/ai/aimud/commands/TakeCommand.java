@@ -102,6 +102,19 @@ public class TakeCommand implements Command {
                                 // remove from container
                                 container.getInventory().remove(itemToTake);
                                 
+                                if (itemToTake.getItemType() == io.nadia.ai.aimud.types.ItemType.MONEY) {
+                                    int goldAmount = itemToTake.getProperty1();
+                                    mobile.setGold(mobile.getGold() + goldAmount);
+                                    
+                                    return Mono.defer(() -> mobileService.save(mobile))
+                                            .doOnNext(savedChar -> {
+                                                communicationService.sendTextMessage(savedChar, "\n\nYou take " + goldAmount + " gold from " + container.getName() + ".");
+                                                communicationService.roomMessage(savedChar, "\n" + savedChar.getName() + " takes some gold from " + container.getName() + ".");
+                                                communicationService.sendCharacterUpdate(savedChar);
+                                            })
+                                            .then();
+                                }
+                                
                                 // save container, then give item to player
                                 return Mono.defer(() -> {
                                             java.util.List<Item> inv = new java.util.ArrayList<>(mobile.getInventory());
