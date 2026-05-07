@@ -17,6 +17,7 @@ import {AiDialogComponent} from '../../components/ai-dialog/ai-dialog.component'
 import {EffectDashboardComponent} from '../../components/effect-dashboard/effect-dashboard.component';
 import {MobileEditorComponent} from '../../components/mobile-editor/mobile-editor.component';
 import {StoreManagementComponent} from '../../components/store-management/store-management.component';
+import {QuestManagementComponent} from '../../components/world-builder/quest-management/quest-management.component';
 import {GameWebSocketService} from '../../services/game-websocket.service';
 import {Subscription} from 'rxjs';
 import {ThemeService} from '../../services/theme.service';
@@ -53,7 +54,8 @@ interface PlayTabData {
     AiDialogComponent,
     EffectDashboardComponent,
     MobileEditorComponent,
-    StoreManagementComponent
+    StoreManagementComponent,
+    QuestManagementComponent
   ],
   templateUrl: './user-dashboard.component.html',
   styleUrl: './user-dashboard.component.css'

@@ -6967,3 +6967,60 @@ UPDATE rooms SET day_light_value = 0, night_light_value = 0 WHERE room_type IN (
 --changeset jeff:mobile-agent-field
 ALTER TABLE mobiles ADD COLUMN IF NOT EXISTS agent VARCHAR(255);
 CREATE INDEX IF NOT EXISTS idx_agents_title ON agents(title);
+
+--changeset jeff:quests-system
+CREATE TABLE IF NOT EXISTS quests (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    reward_item_id BIGINT,
+    level INT DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255) DEFAULT 'system',
+    modified_by VARCHAR(255) DEFAULT 'system'
+);
+
+CREATE TABLE IF NOT EXISTS quest_steps (
+    id SERIAL PRIMARY KEY,
+    quest_id BIGINT NOT NULL REFERENCES quests (id) ON DELETE CASCADE,
+    step_number INT NOT NULL,
+    objective_type VARCHAR(50) NOT NULL,
+    target_mobile_id BIGINT,
+    target_item_id BIGINT,
+    target_faction_id BIGINT,
+    target_race_id BIGINT,
+    target_count INT DEFAULT 1,
+    instructions TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255) DEFAULT 'system',
+    modified_by VARCHAR(255) DEFAULT 'system'
+);
+
+CREATE TABLE IF NOT EXISTS quest_drops (
+    id SERIAL PRIMARY KEY,
+    quest_id BIGINT NOT NULL REFERENCES quests (id) ON DELETE CASCADE,
+    item_id BIGINT NOT NULL,
+    target_mobile_id BIGINT,
+    target_faction_id BIGINT,
+    target_race_id BIGINT,
+    drop_chance DECIMAL(4,3) NOT NULL DEFAULT 1.0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255) DEFAULT 'system',
+    modified_by VARCHAR(255) DEFAULT 'system'
+);
+
+CREATE TABLE IF NOT EXISTS character_quests (
+    id SERIAL PRIMARY KEY,
+    character_id BIGINT NOT NULL REFERENCES characters (id) ON DELETE CASCADE,
+    quest_id BIGINT NOT NULL REFERENCES quests (id) ON DELETE CASCADE,
+    current_step_id BIGINT REFERENCES quest_steps (id) ON DELETE SET NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
+    progress_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255) DEFAULT 'system',
+    modified_by VARCHAR(255) DEFAULT 'system'
+);

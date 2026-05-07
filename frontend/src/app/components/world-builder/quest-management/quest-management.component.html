@@ -1,0 +1,307 @@
+<div class="quest-management-container">
+  <!-- List View -->
+  <div *ngIf="!selectedQuest">
+    <div class="filters-bar">
+      <h2>Quest Management</h2>
+      <button class="create-btn" (click)="createNewQuest()">+ New Quest</button>
+    </div>
+
+    <div class="table-container">
+      <table class="quests-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Level</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let quest of quests">
+            <td>{{quest.id}}</td>
+            <td>{{quest.name}}</td>
+            <td>{{quest.level}}</td>
+            <td>
+              <button (click)="editQuest(quest)" class="icon-btn" title="Edit">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
+                  <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
+                </svg>
+              </button>
+              <button (click)="deleteQuest(quest.id)" class="icon-btn delete-btn" title="Delete">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                  <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                </svg>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="quests.length === 0">
+            <td colspan="4" class="no-results">No quests found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Edit View -->
+  <div *ngIf="selectedQuest">
+    <div class="filters-bar" style="margin-bottom: 20px;">
+      <h2>{{ selectedQuest.id ? 'Edit Quest' : 'Create Quest' }}</h2>
+      <button class="back-btn" (click)="cancelEdit()">Back to Quests</button>
+    </div>
+
+    <div class="form-section">
+      <form (ngSubmit)="saveQuest()">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" [(ngModel)]="selectedQuest.name" name="name" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label>Level</label>
+            <input type="number" [(ngModel)]="selectedQuest.level" name="level" class="form-input" required>
+          </div>
+          <div class="form-group full-width">
+            <label>Description</label>
+            <textarea [(ngModel)]="selectedQuest.description" name="description" rows="3" class="form-input" required></textarea>
+          </div>
+          <div class="form-group">
+            <label>Reward Item ID (Optional)</label>
+            <app-searchable-dropdown
+              [(ngModel)]="selectedQuest.rewardItemId"
+              name="rewardItemId"
+              [options]="availableItems"
+              bindLabel="name"
+              bindValue="id"
+              [displayFn]="itemDisplayFn"
+              [showNoneOption]="true"
+              placeholder="Select Reward Item...">
+            </app-searchable-dropdown>
+          </div>
+        </div>
+        <button type="submit" class="btn-save">Save Quest</button>
+      </form>
+    </div>
+
+    <div *ngIf="selectedQuest.id" class="form-section">
+      <h3>Quest Steps</h3>
+      
+      <div class="table-container" style="margin-bottom: 20px;">
+        <table class="quests-table">
+          <thead>
+            <tr>
+              <th>Step</th>
+              <th>Type</th>
+              <th>Target</th>
+              <th>Count</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let step of steps">
+              <td>{{step.stepNumber}}</td>
+              <td>{{step.objectiveType}}</td>
+              <td>
+                <span *ngIf="step.targetMobileId">NPC ID: {{step.targetMobileId}}</span>
+                <span *ngIf="step.targetItemId">Item ID: {{step.targetItemId}}</span>
+                <span *ngIf="step.targetFactionId">Faction ID: {{step.targetFactionId}}</span>
+                <span *ngIf="step.targetRaceId">Race ID: {{step.targetRaceId}}</span>
+              </td>
+              <td>{{step.targetCount}}</td>
+              <td>
+                <button (click)="deleteStep(step.id)" class="icon-btn delete-btn" title="Delete">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                    <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="steps.length === 0">
+              <td colspan="5" class="no-results">No steps defined.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Add New Step</h4>
+      <form (ngSubmit)="addStep()" class="form-section" style="background: var(--glass-005);">
+        <div class="form-grid three-col">
+          <div class="form-group">
+            <label>Step Number</label>
+            <input type="number" [(ngModel)]="newStep.stepNumber" name="stepNumber" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label>Objective Type</label>
+            <select [(ngModel)]="newStep.objectiveType" name="objectiveType" class="form-input">
+              <option *ngFor="let type of objectiveTypes" [value]="type">{{type}}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Target Count</label>
+            <input type="number" [(ngModel)]="newStep.targetCount" name="targetCount" class="form-input" required>
+          </div>
+          
+          <!-- Conditional Target Fields -->
+          <div class="form-group" *ngIf="newStep.objectiveType === 'TALK_TO_NPC' || newStep.objectiveType === 'KILL_NPC' || newStep.objectiveType === 'GIVE_ITEM'">
+            <label>Target NPC</label>
+            <app-searchable-dropdown
+              [(ngModel)]="newStep.targetMobileId"
+              name="targetMobileId"
+              [options]="availableMobiles"
+              bindLabel="name"
+              bindValue="id"
+              [displayFn]="mobileDisplayFn"
+              placeholder="Select NPC...">
+            </app-searchable-dropdown>
+          </div>
+          <div class="form-group" *ngIf="newStep.objectiveType === 'GIVE_ITEM'">
+            <label>Target Item</label>
+            <app-searchable-dropdown
+              [(ngModel)]="newStep.targetItemId"
+              name="targetItemId"
+              [options]="availableItems"
+              bindLabel="name"
+              bindValue="id"
+              [displayFn]="itemDisplayFn"
+              placeholder="Select Item...">
+            </app-searchable-dropdown>
+          </div>
+          <div class="form-group" *ngIf="newStep.objectiveType === 'KILL_NPC_TYPE'">
+            <label>Target Faction</label>
+            <app-searchable-dropdown
+              [(ngModel)]="newStep.targetFactionId"
+              name="targetFactionId"
+              [options]="availableFactions"
+              bindLabel="name"
+              bindValue="id"
+              [displayFn]="factionDisplayFn"
+              placeholder="Select Faction...">
+            </app-searchable-dropdown>
+          </div>
+          <div class="form-group" *ngIf="newStep.objectiveType === 'KILL_NPC_TYPE'">
+            <label>Target Race</label>
+            <app-searchable-dropdown
+              [(ngModel)]="newStep.targetRaceId"
+              name="targetRaceId"
+              [options]="availableRaces"
+              bindLabel="name"
+              bindValue="id"
+              [displayFn]="raceDisplayFn"
+              placeholder="Select Race...">
+            </app-searchable-dropdown>
+          </div>
+          
+          <div class="form-group full-width">
+            <label>Instructions (Shown to player or used by AI)</label>
+            <textarea [(ngModel)]="newStep.instructions" name="instructions" rows="2" class="form-input"></textarea>
+          </div>
+        </div>
+        <button type="submit" class="btn-add">Add Step</button>
+      </form>
+    </div>
+
+    <!-- Quest Drops Section -->
+    <div *ngIf="selectedQuest.id" class="form-section">
+      <h3>Quest Drops</h3>
+      
+      <div class="table-container" style="margin-bottom: 20px;">
+        <table class="quests-table">
+          <thead>
+            <tr>
+              <th>Item ID</th>
+              <th>Target</th>
+              <th>Chance (%)</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let drop of drops">
+              <td>{{drop.itemId}}</td>
+              <td>
+                <span *ngIf="drop.targetMobileId">NPC ID: {{drop.targetMobileId}}</span>
+                <span *ngIf="drop.targetFactionId">Faction ID: {{drop.targetFactionId}}</span>
+                <span *ngIf="drop.targetRaceId">Race ID: {{drop.targetRaceId}}</span>
+                <span *ngIf="!drop.targetMobileId && !drop.targetFactionId && !drop.targetRaceId">Any</span>
+              </td>
+              <td>{{drop.dropChance}}</td>
+              <td>
+                <button (click)="deleteDrop(drop.id)" class="icon-btn delete-btn" title="Delete">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                    <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="drops.length === 0">
+              <td colspan="4" class="no-results">No drops defined.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Add New Drop</h4>
+      <form (ngSubmit)="addDrop()" class="form-section" style="background: var(--glass-005);">
+        <div class="form-grid three-col">
+          <div class="form-group">
+            <label>Drop Item</label>
+            <app-searchable-dropdown
+              [(ngModel)]="newDrop.itemId"
+              name="dropItemId"
+              [options]="availableItems"
+              bindLabel="name"
+              bindValue="id"
+              [displayFn]="itemDisplayFn"
+              placeholder="Select Item to Drop..."
+              required>
+            </app-searchable-dropdown>
+          </div>
+          <div class="form-group">
+            <label>Drop Chance (0-100)</label>
+            <input type="number" [(ngModel)]="newDrop.dropChance" name="dropChance" class="form-input" required min="0" max="100" step="0.1">
+          </div>
+          
+          <!-- Optional Target Selectors -->
+          <div class="form-group">
+            <label>Specific NPC (Optional)</label>
+            <app-searchable-dropdown
+              [(ngModel)]="newDrop.targetMobileId"
+              name="dropMobileId"
+              [options]="availableMobiles"
+              bindLabel="name"
+              bindValue="id"
+              [displayFn]="mobileDisplayFn"
+              [showNoneOption]="true"
+              placeholder="Any / Specific NPC...">
+            </app-searchable-dropdown>
+          </div>
+          <div class="form-group">
+            <label>Specific Faction (Optional)</label>
+            <app-searchable-dropdown
+              [(ngModel)]="newDrop.targetFactionId"
+              name="dropFactionId"
+              [options]="availableFactions"
+              bindLabel="name"
+              bindValue="id"
+              [displayFn]="factionDisplayFn"
+              [showNoneOption]="true"
+              placeholder="Any / Specific Faction...">
+            </app-searchable-dropdown>
+          </div>
+          <div class="form-group">
+            <label>Specific Race (Optional)</label>
+            <app-searchable-dropdown
+              [(ngModel)]="newDrop.targetRaceId"
+              name="dropRaceId"
+              [options]="availableRaces"
+              bindLabel="name"
+              bindValue="id"
+              [displayFn]="raceDisplayFn"
+              [showNoneOption]="true"
+              placeholder="Any / Specific Race...">
+            </app-searchable-dropdown>
+          </div>
+        </div>
+        <button type="submit" class="btn-add">Add Drop</button>
+      </form>
+    </div>
+  </div>
+</div>

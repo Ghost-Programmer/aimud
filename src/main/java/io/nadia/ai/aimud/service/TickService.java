@@ -36,6 +36,7 @@ public class TickService {
     private final RoomService roomService;
     private final FactionService factionService;
     private final ConfigService configService;
+    private final QuestService questService;
     private final java.util.concurrent.Executor taskExecutor;
     private final Random random = new Random();
 
@@ -56,7 +57,7 @@ public class TickService {
      */
     public TickService(MobileService mobileService, CommandService commandService,
             CommunicationService communicationService, SkillService skillService, RoomService roomService,
-            FactionService factionService, ConfigService configService,
+            FactionService factionService, ConfigService configService, QuestService questService,
             @org.springframework.beans.factory.annotation.Qualifier("applicationTaskExecutor") java.util.concurrent.Executor taskExecutor) {
 
         this.mobileService = mobileService;
@@ -66,6 +67,7 @@ public class TickService {
         this.roomService = roomService;
         this.factionService = factionService;
         this.configService = configService;
+        this.questService = questService;
         this.taskExecutor = taskExecutor;
     }
 
@@ -925,39 +927,43 @@ public class TickService {
         addIfPresent(contents, deceased.getPrimary());
         addIfPresent(contents, deceased.getOffhand());
 
-        Mobile looter = null;
-        if (deceased.getCurrentRoomId() != null && killerId != null) {
-            looter = mobileService.findAllByRoomId(deceased.getCurrentRoomId()).stream()
-                    .filter(m -> m.getId().equals(killerId) && m.isWillLoot() && m.getCurrentHp() > 0)
-                    .findFirst()
-                    .orElse(null);
-        }
+        questService.rollAndGetDrops(deceased).collectList().subscribe(drops -> {
+            contents.addAll(drops);
 
-        if (looter != null && !contents.isEmpty()) {
-            communicationService.roomMessage(looter,
-                    "\n\n" + looter.getName() + " eagerly loots the corpse of " + deceased.getName() + "!");
-            if (looter.getInventory() == null) {
-                looter.setInventory(new ArrayList<>());
+            Mobile looter = null;
+            if (deceased.getCurrentRoomId() != null && killerId != null) {
+                looter = mobileService.findAllByRoomId(deceased.getCurrentRoomId()).stream()
+                        .filter(m -> m.getId().equals(killerId) && m.isWillLoot() && m.getCurrentHp() > 0)
+                        .findFirst()
+                        .orElse(null);
             }
-            looter.getInventory().addAll(contents);
-            contents.clear();
-        }
 
-        // Build the corpse item (transient — never saved to the DB)
-        Item corpse = new Item();
-        corpse.setName(deceased.getName() + "'s Corpse");
-        corpse.setDescription("The corpse of " + deceased.getName() + " lies here.");
-        corpse.setItemType(ItemType.CORPSE);
-        corpse.setNoPickup(true);
-        corpse.setInventory(contents);
+            if (looter != null && !contents.isEmpty()) {
+                communicationService.roomMessage(looter,
+                        "\n\n" + looter.getName() + " eagerly loots the corpse of " + deceased.getName() + "!");
+                if (looter.getInventory() == null) {
+                    looter.setInventory(new ArrayList<>());
+                }
+                looter.getInventory().addAll(contents);
+                contents.clear();
+            }
 
-        // Place corpse in the room
-        if (deceased.getCurrentRoomId() != null) {
-            roomService.addTransientItemToRoom(deceased.getCurrentRoomId(), corpse);
-            mobileService.findAllByRoomId(deceased.getCurrentRoomId())
-                    .forEach(c -> communicationService.sendTextMessage(c,
-                            "\nThe corpse of " + deceased.getName() + " lies here."));
-        }
+            // Build the corpse item (transient — never saved to the DB)
+            Item corpse = new Item();
+            corpse.setName(deceased.getName() + "'s Corpse");
+            corpse.setDescription("The corpse of " + deceased.getName() + " lies here.");
+            corpse.setItemType(ItemType.CORPSE);
+            corpse.setNoPickup(true);
+            corpse.setInventory(contents);
+
+            // Place corpse in the room
+            if (deceased.getCurrentRoomId() != null) {
+                roomService.addTransientItemToRoom(deceased.getCurrentRoomId(), corpse);
+                mobileService.findAllByRoomId(deceased.getCurrentRoomId())
+                        .forEach(c -> communicationService.sendTextMessage(c,
+                                "\nThe corpse of " + deceased.getName() + " lies here."));
+            }
+        });
 
         if (deceased.getUserId() != null) {
             // Strip PC's inventory/equipment from DB so they log back in empty
@@ -1010,6 +1016,7 @@ public class TickService {
             factionService.handleKillPenalty(attacker, target)
                     .doOnError(e -> log.error("Failed to handle faction kill penalty", e))
                     .subscribe();
+            questService.checkKillObjective(attacker, target).subscribe();
             mobileService.setTarget(attacker, null);
         } else {
             if (target.getUserId() != null) {

@@ -166,6 +166,17 @@
                 </div>
               </div>
 
+              <!-- Quest Management Accordion -->
+              <div [class.active]="activeWorldSection === 'quests'" class="accordion-item">
+                <div (click)="toggleWorldSection('quests')" class="accordion-header">
+                  <span class="accordion-title">Quest Management</span>
+                  <span class="accordion-icon">{{ activeWorldSection === 'quests' ? '▼' : '▶' }}</span>
+                </div>
+                <div class="accordion-content" style="padding: 0;">
+                  <app-quest-management></app-quest-management>
+                </div>
+              </div>
+
               <!-- Store Management Accordion -->
               <div [class.active]="activeWorldSection === 'stores'" class="accordion-item">
                 <div (click)="toggleWorldSection('stores')" class="accordion-header">

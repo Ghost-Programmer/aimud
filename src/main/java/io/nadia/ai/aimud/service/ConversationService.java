@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 @Slf4j
@@ -27,6 +29,8 @@ public class ConversationService {
     private final SpellService spellService;
     private final SongService songService;
     private final PrayerService prayerService;
+    private final QuestService questService;
+    private final ObjectMapper objectMapper;
     private final org.springframework.ai.vectorstore.VectorStore vectorStore;
     private final org.springframework.ai.chat.client.ChatClient chatClient;
 
@@ -50,7 +54,7 @@ public class ConversationService {
     public ConversationService(MobileService mobileService, RoomService roomService,
             CommandService commandService,
             FactionService factionService, ConfigService configService, SpellService spellService,
-            SongService songService, PrayerService prayerService,
+            SongService songService, PrayerService prayerService, QuestService questService,
             org.springframework.ai.vectorstore.VectorStore vectorStore,
             org.springframework.ai.ollama.OllamaChatModel chatModel) {
         this.mobileService = mobileService;
@@ -63,6 +67,8 @@ public class ConversationService {
         this.spellService = spellService;
         this.songService = songService;
         this.prayerService = prayerService;
+        this.questService = questService;
+        this.objectMapper = new ObjectMapper();
         this.vectorStore = vectorStore;
         this.chatClient = org.springframework.ai.chat.client.ChatClient.builder(chatModel).build();
     }
@@ -339,12 +345,11 @@ public class ConversationService {
                     prompt.append("\nYour Decision Rules:\n");
                     prompt.append("1. Roleplay strictly. You are completely immersed in a high-fantasy world.\n");
                     prompt.append("2. READ the retrieved memory context carefully to understand what is going on.\n");
-                    prompt.append("3. Choose ONE OR MORE of the Available Actions based on the context.\n");
-                    prompt.append(
-                            "4. ONLY output a comma-separated list of the numbers of the actions you want to take.\n");
-                    prompt.append("5. For example: 1,3\n");
-                    prompt.append("6. If there is absolutely nothing to do, output EXACTLY ONE WORD: IGNORE\n");
-                    prompt.append("7. DO NOT output internal thoughts, JSON, quotes, or markdown.\n");
+                    prompt.append("3. Output your response in strict JSON format.\n");
+                    prompt.append("4. The JSON must contain 'actionIndices' (an array of numbers corresponding to the available actions you want to take) and optionally 'speech' (a string of what you want to say to the room/players).\n");
+                    prompt.append("5. For example: {\"actionIndices\": [1,3], \"speech\": \"Greetings travelers!\"}\n");
+                    prompt.append("6. If there is absolutely nothing to do and say, output EXACTLY: {\"actionIndices\": []}\n");
+                    prompt.append("7. DO NOT output any text outside of the JSON block.\n");
 
                     org.springframework.ai.ollama.api.OllamaChatOptions options = org.springframework.ai.ollama.api.OllamaChatOptions
                             .builder()
@@ -371,21 +376,32 @@ public class ConversationService {
                             prompt.insert(0, agents.get(0).content() + "\n\n\n");
                         }
 
-                        log.info("Processing conversation for NPC: {}", npc.getName());
-                        log.info("Prompt: \n {}", prompt.toString());
+                        return questService.getActiveQuestContextForNpc(npc, players)
+                                .collectList()
+                                .flatMapMany(questContexts -> {
+                                    if (!questContexts.isEmpty()) {
+                                        prompt.append("\nActive Quests for present players:\n");
+                                        for (String ctx : questContexts) {
+                                            prompt.append(ctx).append("\n");
+                                        }
+                                    }
 
-                        return chatClient.mutate()
-                                .defaultOptions(options)
-                                .defaultAdvisors(ragAdvisor)
-                                .build()
-                                .prompt()
-                                .user(prompt.toString())
-                                .stream().content()
-                                .filter(text -> text != null && !text.isEmpty());
+                                    log.info("Processing conversation for NPC: {}", npc.getName());
+                                    log.info("Prompt: \n {}", prompt.toString());
+
+                                    return chatClient.mutate()
+                                            .defaultOptions(options)
+                                            .defaultAdvisors(ragAdvisor)
+                                            .build()
+                                            .prompt()
+                                            .user(prompt.toString())
+                                            .stream().content()
+                                            .filter(text -> text != null && !text.isEmpty());
+                                });
                     })
                             .reduce("", (a, b) -> a + String.valueOf(b))
                             .subscribe(
-                                    response -> processAiResponse(npc, availableActions, response),
+                                    response -> processAiResponse(npc, availableActions, response, players),
                                     error -> {
                                         log.error("Error generating conversation for NPC {}", npc.getName(), error);
                                         processingNpcs.remove(npc.getId());
@@ -402,35 +418,49 @@ public class ConversationService {
      *                         taken
      * @param response         the raw textual response from the AI
      */
-    private void processAiResponse(Mobile npc, List<MobileAction> availableActions, String response) {
+    private void processAiResponse(Mobile npc, List<MobileAction> availableActions, String response, List<Mobile> playersInRoom) {
         try {
-            if (response == null)
+            if (response == null || response.trim().isEmpty())
                 return;
             String text = response.trim();
             log.info("NPC AI Response: {}", text);
 
-            if (text.isEmpty() || text.equalsIgnoreCase("IGNORE") || text.contains("IGNORE")) {
+            if (text.equalsIgnoreCase("IGNORE") || text.contains("IGNORE")) {
                 return;
             }
 
-            // Clean up any Ollama wrapping hallucinations
-            text = text.replaceAll("[a-zA-Z`\\[\\]\\{\\}\"\\n]", "").trim();
-            log.info("NPC AI Response: {}", text);
-            String[] indices = text.split(",");
-            for (String indexStr : indices) {
-                indexStr = indexStr.trim();
-                if (!indexStr.isEmpty()) {
-                    try {
-                        int index = Integer.parseInt(indexStr) - 1;
+            try {
+                if (text.contains("```json")) {
+                    text = text.substring(text.indexOf("```json") + 7);
+                    if (text.contains("```")) {
+                        text = text.substring(0, text.indexOf("```"));
+                    }
+                } else if (text.contains("```")) {
+                    text = text.replaceAll("```", "");
+                }
+                
+                JsonNode rootNode = objectMapper.readTree(text.trim());
+                
+                if (rootNode.has("speech") && !rootNode.get("speech").isNull()) {
+                    String speech = rootNode.get("speech").asText();
+                    if (!speech.isEmpty()) {
+                        npc.getCommandQueue().add("say " + speech);
+                        questService.processNpcSpeech(npc, playersInRoom, speech).subscribe();
+                    }
+                }
+                
+                if (rootNode.has("actionIndices") && rootNode.get("actionIndices").isArray()) {
+                    for (JsonNode indexNode : rootNode.get("actionIndices")) {
+                        int index = indexNode.asInt() - 1;
                         if (index >= 0 && index < availableActions.size()) {
                             String command = availableActions.get(index).getActionCommand();
                             log.info("NPC AI Action Execution queued: {}", command);
                             npc.getCommandQueue().add(command);
                         }
-                    } catch (NumberFormatException e) {
-                        log.warn("NPC AI returned invalid index: {}", indexStr);
                     }
                 }
+            } catch (Exception e) {
+                log.warn("Failed to parse JSON from AI: {}", text, e);
             }
         } finally {
             processingNpcs.remove(npc.getId());

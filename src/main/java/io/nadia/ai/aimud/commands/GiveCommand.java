@@ -22,6 +22,7 @@ public class GiveCommand implements Command {
     private final CommunicationService communicationService;
     private final MobileService mobileService;
     private final RoomService roomService;
+    private final io.nadia.ai.aimud.service.QuestService questService;
 
     @Override
     public Mono<Void> execute(Mobile mobile, String commandLine) {
@@ -87,18 +88,21 @@ public class GiveCommand implements Command {
 
                     Item itemToGive = itemOpt.get();
 
-                    mobile.getInventory().remove(itemToGive);
-                    target.getInventory().add(itemToGive);
+                    return questService.checkGiveObjective(mobile, target, itemToGive)
+                            .flatMap(advanced -> {
+                                mobile.getInventory().remove(itemToGive);
+                                target.getInventory().add(itemToGive);
 
-                    communicationService.sendTextMessage(mobile, "\n\nYou give " + itemToGive.getName() + " to " + target.getName() + ".");
-                    if (target.getUserId() != null) {
-                        communicationService.sendTextMessage(target, "\n\n" + mobile.getName() + " gives you " + itemToGive.getName() + ".");
-                    }
+                                communicationService.sendTextMessage(mobile, "\n\nYou give " + itemToGive.getName() + " to " + target.getName() + ".");
+                                if (target.getUserId() != null) {
+                                    communicationService.sendTextMessage(target, "\n\n" + mobile.getName() + " gives you " + itemToGive.getName() + ".");
+                                }
 
-                    return Mono.when(
-                            mobileService.updateInventory(mobile, mobile.getInventory()),
-                            mobileService.updateInventory(target, target.getInventory())
-                    ).then();
+                                return Mono.when(
+                                        mobileService.updateInventory(mobile, mobile.getInventory()),
+                                        target.getUserId() != null ? mobileService.updateInventory(target, target.getInventory()) : Mono.empty()
+                                ).then();
+                            });
                 }).then();
     }
 
