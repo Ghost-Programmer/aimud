@@ -33,7 +33,10 @@ public class StatService {
      * @param itemService               the item service
      * @param skillRepository           the skill repository
      */
-    public StatService(RaceRepository raceRepository, CharacterClassRepository characterClassRepository, RoomService roomService, ItemRepository itemRepository, EffectRepository effectRepository, CharacterEffectRepository characterEffectRepository, ItemService itemService, SkillRepository skillRepository) {
+    public StatService(RaceRepository raceRepository, CharacterClassRepository characterClassRepository,
+            RoomService roomService, ItemRepository itemRepository, EffectRepository effectRepository,
+            CharacterEffectRepository characterEffectRepository, ItemService itemService,
+            SkillRepository skillRepository) {
         this.raceRepository = raceRepository;
         this.characterClassRepository = characterClassRepository;
         this.roomService = roomService;
@@ -45,66 +48,20 @@ public class StatService {
     }
 
     /**
-     * Updates a mobile's derived stats and combat percentages based on their base attributes and equipment.
-     * This operates synchronously and modifies the given instance in place.
-     *
-     * @param mobile the mobile instance to update
-     */
-    public void updateMobileStats(Mobile mobile) {
-        mobile.setCurrentStrength(mobile.getStrength());
-        mobile.setCurrentDexterity(mobile.getDexterity());
-        mobile.setCurrentConstitution(mobile.getConstitution());
-        mobile.setCurrentIntelligence(mobile.getIntelligence());
-        mobile.setCurrentWisdom(mobile.getWisdom());
-        mobile.setCurrentCharisma(mobile.getCharisma());
-
-        applyEquipmentBonuses(mobile);
-
-        int str = mobile.getCurrentStrength();
-        int dex = mobile.getCurrentDexterity();
-        int con = mobile.getCurrentConstitution();
-        int intel = mobile.getCurrentIntelligence();
-        int wis = mobile.getCurrentWisdom();
-
-        mobile.setMaxHp(100 + (con * 15) + (str * 5));
-        mobile.setMaxMana(50 + (intel * 20));
-        mobile.setHpRegen(Math.max(1, (int) (0.5 + (con / 5.0) + (str / 50.0))));
-        mobile.setManaRegen(Math.max(1, (int) (1.0 + (wis / 5.0))));
-
-        if (mobile.getCurrentHp() > mobile.getMaxHp()) {
-            mobile.setCurrentHp(mobile.getMaxHp());
-        } else if (mobile.getCurrentHp() == 0) {
-            mobile.setCurrentHp(mobile.getMaxHp()); // initialize currentHp if it is 0
-        }
-
-        if (mobile.getCurrentMana() > mobile.getMaxMana()) {
-            mobile.setCurrentMana(mobile.getMaxMana());
-        } else if (mobile.getCurrentMana() == 0) {
-            mobile.setCurrentMana(mobile.getMaxMana()); // initialize currentMana if it is 0
-        }
-
-        mobile.setDodgeChance((double) dex / (dex + 500));
-        mobile.setCritChance((dex + (intel / 2.0)) / (dex + intel + 1000));
-
-        mobile.setPhysicalAttack((str * 2) + (dex * 0.5));
-        mobile.setMagicAttack((intel * 2.5) + (wis * 0.5));
-        mobile.setArmor(str + (con * 1.5));
-        mobile.setMagicResist(wis + (intel * 0.5));
-
-        float cr = calculateChallengeRating(mobile);
-        mobile.setChallengeRating(cr);
-    }
-
-    /**
-     * Computes a character's current and derived stats, taking into account their race, class, and equipment.
-     * Operates reactively and resolves any missing related models from the database before recalculating.
+     * Computes a character's current and derived stats, taking into account their
+     * race, class, and equipment.
+     * Operates reactively and resolves any missing related models from the database
+     * before recalculating.
      *
      * @param character the character instance to update
      * @return a {@link Mono} containing the modified character
      */
     public Mono<Mobile> updateCurrentStats(Mobile character) {
-        Mono<Race> raceMono = character.getRaceId() != null ? raceRepository.findById(character.getRaceId()) : Mono.empty();
-        Mono<CharacterClass> classMono = character.getClassId() != null ? characterClassRepository.findById(character.getClassId()) : Mono.empty();
+        Mono<Race> raceMono = character.getRaceId() != null ? raceRepository.findById(character.getRaceId())
+                : Mono.empty();
+        Mono<CharacterClass> classMono = character.getClassId() != null
+                ? characterClassRepository.findById(character.getClassId())
+                : Mono.empty();
 
         return Mono.zip(raceMono.defaultIfEmpty(new Race()), classMono.defaultIfEmpty(new CharacterClass()))
                 .flatMap(tuple -> {
@@ -115,12 +72,17 @@ public class StatService {
                     return loadEquipment(character)
                             .map(c -> {
                                 // Calculate Current Stats
-                                c.setCurrentStrength(c.getStrength() + race.getStrengthMod() + characterClass.getStrengthMod());
-                                c.setCurrentDexterity(c.getDexterity() + race.getDexterityMod() + characterClass.getDexterityMod());
-                                c.setCurrentConstitution(c.getConstitution() + race.getConstitutionMod() + characterClass.getConstitutionMod());
-                                c.setCurrentIntelligence(c.getIntelligence() + race.getIntelligenceMod() + characterClass.getIntelligenceMod());
+                                c.setCurrentStrength(
+                                        c.getStrength() + race.getStrengthMod() + characterClass.getStrengthMod());
+                                c.setCurrentDexterity(
+                                        c.getDexterity() + race.getDexterityMod() + characterClass.getDexterityMod());
+                                c.setCurrentConstitution(c.getConstitution() + race.getConstitutionMod()
+                                        + characterClass.getConstitutionMod());
+                                c.setCurrentIntelligence(c.getIntelligence() + race.getIntelligenceMod()
+                                        + characterClass.getIntelligenceMod());
                                 c.setCurrentWisdom(c.getWisdom() + race.getWisdomMod() + characterClass.getWisdomMod());
-                                c.setCurrentCharisma(c.getCharisma() + race.getCharismaMod() + characterClass.getCharismaMod());
+                                c.setCurrentCharisma(
+                                        c.getCharisma() + race.getCharismaMod() + characterClass.getCharismaMod());
 
                                 // Add bonuses from equipment stats
                                 applyEquipmentBonuses(c);
@@ -135,11 +97,13 @@ public class StatService {
                                 // Health & Resource Pools
                                 c.setMaxHp(100 + (con * 15) + (str * 5));
                                 c.setMaxMana(50 + (intel * 20));
-                                c.setHpRegen(Math.max(1, (int) (0.5 + (con / 20.0) + (str / 100.0))));
-                                c.setManaRegen(Math.max(1, (int) (1.0 + (wis / 25.0))));
+                                c.setHpRegen(Math.max(1, (int) (0.5 + (con / 5.0) + (str / 50.0))));
+                                c.setManaRegen(Math.max(1, (int) (1.0 + (wis / 5.0))));
 
-                                // Ensure current stats are not above max (e.g. if max dropped due to equipment change)
-                                // Although currentHp/currentMana are persistent, we might want to clamp them here just in case?
+                                // Ensure current stats are not above max (e.g. if max dropped due to equipment
+                                // change)
+                                // Although currentHp/currentMana are persistent, we might want to clamp them
+                                // here just in case?
                                 // For now, we only calculate derived stats.
                                 if (c.getCurrentHp() > c.getMaxHp()) {
                                     c.setCurrentHp(c.getMaxHp());
@@ -180,7 +144,8 @@ public class StatService {
     }
 
     /**
-     * Calculates the overall challenge rating of a mobile based on a weighted formula.
+     * Calculates the overall challenge rating of a mobile based on a weighted
+     * formula.
      *
      * @param c the mobile instance
      * @return the calculated challenge rating (CR)
@@ -190,7 +155,8 @@ public class StatService {
         float statsScore = (c.getCurrentStrength() + c.getCurrentDexterity() + c.getCurrentConstitution() +
                 c.getCurrentIntelligence() + c.getCurrentWisdom() + c.getCurrentCharisma()) / 6.0f;
 
-        // HP contribution (assuming 100 HP is roughly CR 1 for a basic mob, but scaling down)
+        // HP contribution (assuming 100 HP is roughly CR 1 for a basic mob, but scaling
+        // down)
         float hpScore = (float) c.getMaxHp() / 50.0f;
 
         // Attack/Defense contribution
@@ -205,7 +171,8 @@ public class StatService {
     }
 
     /**
-     * Merges stats from all worn equipment and active spell effects into the mobile's current capacity.
+     * Merges stats from all worn equipment and active spell effects into the
+     * mobile's current capacity.
      *
      * @param c the mobile instance
      */
@@ -237,7 +204,8 @@ public class StatService {
     }
 
     /**
-     * Applies a specific effect modifier to the appropriate character stat or attribute.
+     * Applies a specific effect modifier to the appropriate character stat or
+     * attribute.
      *
      * @param c      the mobile instance
      * @param effect the effect to apply
@@ -260,13 +228,15 @@ public class StatService {
                 case MAGIC_ATTACK -> c.setMagicAttack(c.getMagicAttack() + effect.getModifier1());
                 case DODGE -> c.setDodgeChance(c.getDodgeChance() + (effect.getModifier1() / 100.0));
                 case CRITICAL_HIT -> c.setCritChance(c.getCritChance() + (effect.getModifier1() / 100.0));
-                default -> { /* No stat modification for other effects */ }
+                default -> {
+                    /* No stat modification for other effects */ }
             }
         }
     }
 
     /**
-     * Scans all equipment slots and queries the database to load the complete Item entities and their effects.
+     * Scans all equipment slots and queries the database to load the complete Item
+     * entities and their effects.
      *
      * @param character the character instance
      * @return a {@link Mono} containing the character with equipment populated
@@ -279,17 +249,25 @@ public class StatService {
         monos.add(loadItemWithEffects(character.getFeetId()).doOnNext(character::setFeet).defaultIfEmpty(new Item()));
         monos.add(loadItemWithEffects(character.getArmsId()).doOnNext(character::setArms).defaultIfEmpty(new Item()));
         monos.add(loadItemWithEffects(character.getHandsId()).doOnNext(character::setHands).defaultIfEmpty(new Item()));
-        monos.add(loadItemWithEffects(character.getRightFingerId()).doOnNext(character::setRightFinger).defaultIfEmpty(new Item()));
-        monos.add(loadItemWithEffects(character.getLeftFingerId()).doOnNext(character::setLeftFinger).defaultIfEmpty(new Item()));
-        monos.add(loadItemWithEffects(character.getRightWristId()).doOnNext(character::setRightWrist).defaultIfEmpty(new Item()));
-        monos.add(loadItemWithEffects(character.getLeftWristId()).doOnNext(character::setLeftWrist).defaultIfEmpty(new Item()));
+        monos.add(loadItemWithEffects(character.getRightFingerId()).doOnNext(character::setRightFinger)
+                .defaultIfEmpty(new Item()));
+        monos.add(loadItemWithEffects(character.getLeftFingerId()).doOnNext(character::setLeftFinger)
+                .defaultIfEmpty(new Item()));
+        monos.add(loadItemWithEffects(character.getRightWristId()).doOnNext(character::setRightWrist)
+                .defaultIfEmpty(new Item()));
+        monos.add(loadItemWithEffects(character.getLeftWristId()).doOnNext(character::setLeftWrist)
+                .defaultIfEmpty(new Item()));
         monos.add(loadItemWithEffects(character.getNeckId()).doOnNext(character::setNeck).defaultIfEmpty(new Item()));
-        monos.add(loadItemWithEffects(character.getLeftEarId()).doOnNext(character::setLeftEar).defaultIfEmpty(new Item()));
-        monos.add(loadItemWithEffects(character.getRightEarId()).doOnNext(character::setRightEar).defaultIfEmpty(new Item()));
+        monos.add(loadItemWithEffects(character.getLeftEarId()).doOnNext(character::setLeftEar)
+                .defaultIfEmpty(new Item()));
+        monos.add(loadItemWithEffects(character.getRightEarId()).doOnNext(character::setRightEar)
+                .defaultIfEmpty(new Item()));
         monos.add(loadItemWithEffects(character.getFaceId()).doOnNext(character::setFace).defaultIfEmpty(new Item()));
         monos.add(loadItemWithEffects(character.getWaistId()).doOnNext(character::setWaist).defaultIfEmpty(new Item()));
-        monos.add(loadItemWithEffects(character.getPrimaryId()).doOnNext(character::setPrimary).defaultIfEmpty(new Item()));
-        monos.add(loadItemWithEffects(character.getOffhandId()).doOnNext(character::setOffhand).defaultIfEmpty(new Item()));
+        monos.add(loadItemWithEffects(character.getPrimaryId()).doOnNext(character::setPrimary)
+                .defaultIfEmpty(new Item()));
+        monos.add(loadItemWithEffects(character.getOffhandId()).doOnNext(character::setOffhand)
+                .defaultIfEmpty(new Item()));
 
         return Mono.zip(monos, results -> results)
                 .flatMap(results -> loadSpellEffects(character))
@@ -298,13 +276,15 @@ public class StatService {
     }
 
     /**
-     * Queries the database to load and attach all skills belonging to the character.
+     * Queries the database to load and attach all skills belonging to the
+     * character.
      *
      * @param character the character instance
      * @return a {@link Mono} containing the character with skills populated
      */
     private Mono<Mobile> loadSkills(Mobile character) {
-        if (character.getId() == null) return Mono.just(character);
+        if (character.getId() == null)
+            return Mono.just(character);
 
         return skillRepository.findByCharacterId(character.getId())
                 .collectList()
@@ -315,13 +295,15 @@ public class StatService {
     }
 
     /**
-     * Queries the database to load and attach all active spell effects belonging to the character.
+     * Queries the database to load and attach all active spell effects belonging to
+     * the character.
      *
      * @param character the character instance
      * @return a {@link Mono} containing the character with spell effects populated
      */
     private Mono<Mobile> loadSpellEffects(Mobile character) {
-        if (character.getId() == null) return Mono.just(character);
+        if (character.getId() == null)
+            return Mono.just(character);
 
         return characterEffectRepository.findByCharacterId(character.getId())
                 .flatMap(ce -> effectRepository.findById(ce.getEffectId())
@@ -337,13 +319,15 @@ public class StatService {
     }
 
     /**
-     * Queries the database to load and attach all inventory items and their associated effects.
+     * Queries the database to load and attach all inventory items and their
+     * associated effects.
      *
      * @param character the character instance
      * @return a {@link Mono} containing the character with inventory populated
      */
     private Mono<Mobile> loadInventory(Mobile character) {
-        if (character.getId() == null) return Mono.just(character);
+        if (character.getId() == null)
+            return Mono.just(character);
 
         return itemRepository.findAllByCharacterId(character.getId())
                 .flatMap(item -> effectRepository.findByItemId(item.getId())
@@ -378,7 +362,7 @@ public class StatService {
                         container.setInventory(new java.util.ArrayList<>());
                     }
                     container.getInventory().addAll(contents);
-                    
+
                     return Flux.fromIterable(contents)
                             .flatMap(item -> loadContainerContents(item))
                             .then();
@@ -386,13 +370,15 @@ public class StatService {
     }
 
     /**
-     * Internal helper to load an item entity and its attached effects from the database.
+     * Internal helper to load an item entity and its attached effects from the
+     * database.
      *
      * @param itemId the ID of the item
      * @return a {@link Mono} containing the populated item
      */
     private Mono<Item> loadItemWithEffects(Long itemId) {
-        if (itemId == null) return Mono.empty();
+        if (itemId == null)
+            return Mono.empty();
         return itemRepository.findById(itemId)
                 .flatMap(item -> effectRepository.findByItemId(item.getId())
                         .collectList()

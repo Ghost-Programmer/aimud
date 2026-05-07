@@ -119,12 +119,10 @@
         class="stat-value">{{ character.magicResist | number:'1.1-1' }}</span>
       </div>
       <div class="stat-row">
-        <span class="stat-label">Dodge:</span> <span class="stat-value">{{ character.dodgeChance | number:'1.1-1' }}
-        %</span>
+        <span class="stat-label">Dodge:</span> <span class="stat-value">{{ character.dodgeChance | percent:'1.1-1' }}</span>
       </div>
       <div class="stat-row">
-        <span class="stat-label">Crit:</span> <span class="stat-value">{{ character.critChance | number:'1.1-1' }}
-        %</span>
+        <span class="stat-label">Crit:</span> <span class="stat-value">{{ character.critChance | percent:'1.1-1' }}</span>
       </div>
 
       <ng-container *ngIf="target">

@@ -1023,13 +1023,14 @@ public class MobileService {
                 // Ensure the mobile knows which room it is in
                 mobile.setCurrentRoomId(room.getId());
                 mobile.setUserId(null);
-                statService.updateMobileStats(mobile);
                 
-                // Fetch AI actions into transient list
-                getMobileActions(mobile.getId()).collectList().subscribe(actions -> {
-                    mobile.setActions(actions);
-                    activeMobiles.put(mobile.getId(), mobile);
-                    log.info("Spawned mobile: {} (id: {}) into room {}", mobile.getName(), mobile.getId(), room.getId());
+                statService.updateCurrentStats(mobile).subscribe(updatedMobile -> {
+                    // Fetch AI actions into transient list
+                    getMobileActions(updatedMobile.getId()).collectList().subscribe(actions -> {
+                        updatedMobile.setActions(actions);
+                        activeMobiles.put(updatedMobile.getId(), updatedMobile);
+                        log.info("Spawned mobile: {} (id: {}) into room {}", updatedMobile.getName(), updatedMobile.getId(), room.getId());
+                    });
                 });
             } else {
                 log.info("Mobile already spawned in room: {} (id: {})", room.getName(), room.getId());
