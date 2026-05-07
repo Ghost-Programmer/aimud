@@ -565,10 +565,8 @@
 .equipment-slot {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
   align-items: center;
-  column-gap: 4px;
-  row-gap: 2px;
+  gap: 4px;
   font-size: 0.8rem;
   width: 100%;
 }
@@ -579,7 +577,6 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   flex-shrink: 0;
-  width: 100%;
 }
 
 .slot-item {
@@ -589,7 +586,6 @@
   text-overflow: ellipsis;
   padding: 2px 4px;
   flex: 1;
-  min-width: 0;
 }
 
 .has-item {
