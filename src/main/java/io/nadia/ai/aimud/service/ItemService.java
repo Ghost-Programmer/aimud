@@ -237,6 +237,11 @@ public class ItemService {
                 case MONEY:
                     value += item.getProperty1(); // Value in Gold
                     break;
+                case TRASH:
+                    return 0;
+                case MISC:
+                    value += item.getProperty1();
+                    break;
                 default:
                     break;
             }

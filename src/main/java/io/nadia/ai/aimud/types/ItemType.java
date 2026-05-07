@@ -31,7 +31,7 @@ public enum ItemType {
     LIGHT("Light", 20, "Duration (Ticks)", null, null, null),
     CONTAINER("Container", 50, "Max Weight Capacity", "Max Item Count", "Lock ID", "Key ID"),
     TRASH("Trash", 0, null, null, null, null),
-    MISC("Miscellaneous", 10, null, null, null, null),
+    MISC("Miscellaneous", 0, "Value in Gold", null, null, null),
     CORPSE("Corpse", 0, "Decay Timer (Ticks)", "Original Mobile ID", null, null),
     BANDAGE("Bandage", 5, "Healing Dice Count", "Size of Healing Dice", null, null),
     NONE("None", 0, null, null, null, null);
