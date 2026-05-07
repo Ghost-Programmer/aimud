@@ -5,9 +5,11 @@ import io.nadia.ai.aimud.service.FactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,12 +23,27 @@ public class FactionController {
     private final FactionService factionService;
 
     /**
-     * Handles HTTP GET requests to get all factions.
-     * @return dynamic reactive {@code Flux<Faction>} response payload
+     * Handles HTTP GET requests to get all factions with pagination.
      */
     @GetMapping
-    public Flux<Faction> getAllFactions() {
-        return factionService.findAllFactions();
+    public Mono<Map<String, Object>> getAllFactions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return factionService.findAllFactions()
+                .collectList()
+                .map(factions -> {
+                    factions.sort(Comparator.comparing(f -> f.getName().toLowerCase()));
+                    int total = factions.size();
+                    int fromIndex = page * size;
+                    int toIndex = Math.min(fromIndex + size, total);
+                    List<Faction> paged = (fromIndex < total) ? factions.subList(fromIndex, toIndex) : List.of();
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("factions", paged);
+                    response.put("total", total);
+                    response.put("page", page);
+                    response.put("size", size);
+                    return response;
+                });
     }
 
     /**

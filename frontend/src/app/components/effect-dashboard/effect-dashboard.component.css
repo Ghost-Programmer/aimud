@@ -130,15 +130,3 @@ select.input option {
   font-style: italic;
 }
 
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 1rem;
-}
-
-.pagination span {
-  font-size: 0.9rem;
-  color: var(--color-hex-aaa);
-}

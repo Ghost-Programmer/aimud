@@ -14,6 +14,12 @@
         <button (click)="deleteStore(s); $event.stopPropagation()" class="btn-delete">×</button>
       </li>
     </ul>
+
+    <div class="pagination">
+      <button (click)="prevPage()" [disabled]="page === 0" class="pag-btn">Previous</button>
+      <span class="page-info">Page {{ page + 1 }} of {{ Math.ceil(totalItems / size) || 1 }} ({{ totalItems }} total)</span>
+      <button (click)="nextPage()" [disabled]="(page + 1) * size >= totalItems" class="pag-btn">Next</button>
+    </div>
   </div>
 
   <!-- Right Panel: Editor -->

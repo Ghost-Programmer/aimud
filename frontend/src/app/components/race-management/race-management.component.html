@@ -1,4 +1,7 @@
-<div class="section-header" style="justify-content: flex-end;">
+<div class="filters-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+  <div class="filter-group">
+    <input (ngModelChange)="onSearch()" [(ngModel)]="search" class="search-input" placeholder="Search by name..." type="text" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; min-width: 200px;">
+  </div>
   <button (click)="openRaceForm()" class="btn-secondary">Add Race</button>
 </div>
 <div class="table-container">
@@ -24,8 +27,16 @@
         </button>
       </td>
     </tr>
+    <tr *ngIf="races.length === 0">
+      <td class="no-results" colspan="3">No races found matching your criteria.</td>
+    </tr>
     </tbody>
   </table>
+</div>
+<div class="pagination">
+  <button (click)="prevPage()" [disabled]="page === 0" class="pag-btn">Previous</button>
+  <span class="page-info">Page {{ page + 1 }} of {{ Math.ceil(totalItems / size) || 1 }} ({{ totalItems }} total)</span>
+  <button (click)="nextPage()" [disabled]="(page + 1) * size >= totalItems" class="pag-btn">Next</button>
 </div>
 
 <!-- Race Form Dialog -->

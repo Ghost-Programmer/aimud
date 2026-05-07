@@ -14,6 +14,10 @@ import { Item } from '../../models/item.model';
 })
 export class ClassManagementComponent implements OnInit {
   classes: any[] = [];
+  totalItems: number = 0;
+  page: number = 0;
+  size: number = 10;
+  search: string = '';
   selectedClass: any = null;
   classForm: FormGroup;
   isClassFormVisible = false;
@@ -55,10 +59,32 @@ export class ClassManagementComponent implements OnInit {
     this.loadSkills();
   }
 
+  Math = Math;
+
   loadClasses() {
-    this.configService.getAllCharacterClasses().subscribe(classes => {
-      this.classes = [...classes].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+    this.configService.getAllCharacterClasses(this.page, this.size, this.search).subscribe(res => {
+      this.classes = res.classes;
+      this.totalItems = res.total;
     });
+  }
+
+  onSearch() {
+    this.page = 0;
+    this.loadClasses();
+  }
+
+  prevPage() {
+    if (this.page > 0) {
+      this.page--;
+      this.loadClasses();
+    }
+  }
+
+  nextPage() {
+    if ((this.page + 1) * this.size < this.totalItems) {
+      this.page++;
+      this.loadClasses();
+    }
   }
 
   loadItems() {

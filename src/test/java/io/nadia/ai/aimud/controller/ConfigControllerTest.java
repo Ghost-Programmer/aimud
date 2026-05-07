@@ -31,8 +31,12 @@ class ConfigControllerTest {
         race.setName("Elf");
         when(configService.getPlayableRaces()).thenReturn(Flux.just(race));
 
-        StepVerifier.create(controller.getAllRaces(true))
-                .expectNext(race)
+        StepVerifier.create(controller.getAllRaces(true, "", 0, 10))
+                .assertNext(res -> {
+                    @SuppressWarnings("unchecked")
+                    java.util.List<Race> list = (java.util.List<Race>) res.get("races");
+                    org.assertj.core.api.Assertions.assertThat(list).containsExactly(race);
+                })
                 .verifyComplete();
 
         verify(configService).getPlayableRaces();

@@ -66,11 +66,11 @@ export class CreateCharacterComponent implements OnInit {
 
   loadData() {
     forkJoin({
-      races: this.configService.getPlayableRaces(),
-      classes: this.configService.getPlayableCharacterClasses()
+      races: this.configService.getPlayableRaces(0, 100),
+      classes: this.configService.getPlayableCharacterClasses(0, 100)
     }).subscribe(({races, classes}) => {
-      this.races = [...races].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
-      this.classes = [...classes].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+      this.races = [...races.races].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+      this.classes = [...classes.classes].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
 
       // Default to Human Cleric
       const human = this.races.find(r => r.name === 'Human');

@@ -248,3 +248,37 @@ body {
   --panel-50: rgba(0, 0, 0, 0.06);
   --panel-60: rgba(0, 0, 0, 0.08);
 }
+
+/* Global Pagination Styles */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.pag-btn {
+  background: var(--glass-10);
+  color: var(--text-main);
+  border: 1px solid var(--glass-20);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pag-btn:hover:not(:disabled) {
+  background: var(--glass-20);
+  border-color: var(--primary, var(--color-hex-ffd700));
+}
+
+.pag-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-size: 0.9rem;
+  color: var(--color-hex-aaa);
+}

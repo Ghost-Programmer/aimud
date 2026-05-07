@@ -9,6 +9,11 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * REST Controller exposing HTTP API endpoints for Mobile manipulation.
  */
@@ -24,13 +29,39 @@ public class MobileController {
     }
 
     /**
-     * Handles HTTP GET requests to get all mobiles.
-     * @return dynamic reactive Flux<Mobile> response payload
+     * Handles HTTP GET requests to get all mobiles with pagination.
      */
     @GetMapping
-    public Flux<Mobile> getAllMobiles() {
-        log.info("REST request to get all mobiles");
-        return mobileService.getAllMobiles();
+    public Mono<Map<String, Object>> getAllMobiles(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String name) {
+        log.info("REST request to get mobiles: page={}, size={}, name={}", page, size, name);
+        return mobileService.getAllMobiles()
+                .filter(mobile -> {
+                    if (name != null && !name.isEmpty()) {
+                        return mobile.getName().toLowerCase().contains(name.toLowerCase());
+                    }
+                    return true;
+                })
+                .collectList()
+                .map(mobiles -> {
+                    mobiles.sort(Comparator.comparing(mobile -> mobile.getName().toLowerCase()));
+                    int totalMobiles = mobiles.size();
+                    int fromIndex = page * size;
+                    int toIndex = Math.min(fromIndex + size, totalMobiles);
+
+                    List<Mobile> pagedMobiles = (fromIndex < totalMobiles)
+                            ? mobiles.subList(fromIndex, toIndex)
+                            : List.of();
+
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("mobiles", pagedMobiles);
+                    response.put("total", totalMobiles);
+                    response.put("page", page);
+                    response.put("size", size);
+                    return response;
+                });
     }
 
     /**

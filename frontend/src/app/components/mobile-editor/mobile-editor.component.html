@@ -14,6 +14,12 @@
         <button (click)="deleteMobile(m); $event.stopPropagation()" class="btn-delete">×</button>
       </li>
     </ul>
+
+    <div class="pagination" *ngIf="totalMobiles > 0">
+      <button (click)="prevPage()" [disabled]="page === 0">&laquo; Prev</button>
+      <span>Page {{ page + 1 }}</span>
+      <button (click)="nextPage()" [disabled]="(page + 1) * size >= totalMobiles">Next &raquo;</button>
+    </div>
   </div>
 
   <!-- Right Panel: Editor -->

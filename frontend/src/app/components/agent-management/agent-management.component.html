@@ -29,19 +29,10 @@
     </tbody>
   </table>
 </div>
-<div *ngIf="agents.length > 0" class="pagination-bar">
-  <div class="pagination-summary">
-    Showing {{ agentRangeStart }}-{{ agentRangeEnd }} of {{ agents.length }} agents
-  </div>
-  <div class="pagination-controls">
-    <button (click)="previousAgentPage()" [disabled]="currentAgentPage === 1" class="btn-secondary" type="button">
-      Previous
-    </button>
-    <span class="page-indicator">Page {{ currentAgentPage }} of {{ totalAgentPages }}</span>
-    <button (click)="nextAgentPage()" [disabled]="currentAgentPage === totalAgentPages" class="btn-secondary"
-            type="button">Next
-    </button>
-  </div>
+<div class="pagination">
+  <button (click)="previousAgentPage()" [disabled]="page === 0" class="pag-btn">Previous</button>
+  <span class="page-info">Page {{ page + 1 }} of {{ totalAgentPages }} ({{ totalItems }} total)</span>
+  <button (click)="nextAgentPage()" [disabled]="(page + 1) * size >= totalItems" class="pag-btn">Next</button>
 </div>
 
 <!-- Agent Form Dialog -->

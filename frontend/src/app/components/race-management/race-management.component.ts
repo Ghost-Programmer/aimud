@@ -1,17 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { ConfigService } from '../../services/config.service';
 
 @Component({
   selector: 'app-race-management',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './race-management.component.html',
   styleUrl: './race-management.component.css'
 })
 export class RaceManagementComponent implements OnInit {
   races: any[] = [];
+  totalItems: number = 0;
+  page: number = 0;
+  size: number = 10;
+  search: string = '';
   selectedRace: any = null;
   raceForm: FormGroup;
   isRaceFormVisible = false;
@@ -38,10 +42,32 @@ export class RaceManagementComponent implements OnInit {
     this.loadRaces();
   }
 
+  Math = Math;
+
   loadRaces() {
-    this.configService.getAllRaces().subscribe(races => {
-      this.races = [...races].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+    this.configService.getAllRaces(this.page, this.size, this.search).subscribe(res => {
+      this.races = res.races;
+      this.totalItems = res.total;
     });
+  }
+
+  onSearch() {
+    this.page = 0;
+    this.loadRaces();
+  }
+
+  prevPage() {
+    if (this.page > 0) {
+      this.page--;
+      this.loadRaces();
+    }
+  }
+
+  nextPage() {
+    if ((this.page + 1) * this.size < this.totalItems) {
+      this.page++;
+      this.loadRaces();
+    }
   }
 
   openRaceForm(race: any = null) {

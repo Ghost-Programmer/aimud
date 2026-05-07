@@ -27,6 +27,11 @@
     </tbody>
   </table>
 </div>
+<div class="pagination">
+  <button (click)="prevPage()" [disabled]="page === 0" class="pag-btn">Previous</button>
+  <span class="page-info">Page {{ page + 1 }} of {{ Math.ceil(totalItems / size) || 1 }} ({{ totalItems }} total)</span>
+  <button (click)="nextPage()" [disabled]="(page + 1) * size >= totalItems" class="pag-btn">Next</button>
+</div>
 
 <!-- Faction Form Dialog -->
 <div *ngIf="isFactionFormVisible" class="dialog-overlay">

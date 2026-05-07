@@ -21,6 +21,9 @@ import {Subscription} from 'rxjs';
 })
 export class MobileEditorComponent implements OnInit, OnDestroy {
   mobiles: Mobile[] = [];
+  totalMobiles: number = 0;
+  page: number = 0;
+  size: number = 10;
   selectedMobile: Mobile | null = null;
   mobileForm!: FormGroup;
 
@@ -69,9 +72,9 @@ export class MobileEditorComponent implements OnInit, OnDestroy {
     this.loadItems();
     this.loadSkills();
     this.loadRacesAndClasses();
-    this.factionService.getAllFactions().subscribe(f => this.factions = f);
+    this.factionService.getAllFactions(0, 1000).subscribe(res => this.factions = res.factions);
     this.loadStores();
-    this.configService.getAllAgents().subscribe(a => this.availableAgents = a);
+    this.configService.getAllAgents(0, 1000).subscribe(res => this.availableAgents = res.agents);
     this.storeSub = this.storeService.storesUpdated$.subscribe(() => {
       this.loadStores();
     });
@@ -84,19 +87,19 @@ export class MobileEditorComponent implements OnInit, OnDestroy {
   }
 
   loadStores() {
-    this.storeService.getAllStores().subscribe({
-      next: (data) => this.stores = [...data].sort((a, b) => a.name.localeCompare(b.name)),
+    this.storeService.getAllStores(0, 1000).subscribe({
+      next: (res) => this.stores = [...res.stores].sort((a, b) => a.name.localeCompare(b.name)),
       error: (err) => console.error('Error loading stores', err)
     });
   }
 
   loadRacesAndClasses() {
-    this.configService.getAllRaces().subscribe({
-      next: (data) => this.availableRaces = [...data].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
+    this.configService.getAllRaces(0, 1000).subscribe({
+      next: (res) => this.availableRaces = [...res.races].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
       error: (err) => console.error('Error loading races', err)
     });
-    this.configService.getAllCharacterClasses().subscribe({
-      next: (data) => this.availableClasses = [...data].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
+    this.configService.getAllCharacterClasses(0, 1000).subscribe({
+      next: (res) => this.availableClasses = [...res.classes].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
       error: (err) => console.error('Error loading classes', err)
     });
   }
@@ -175,10 +178,27 @@ export class MobileEditorComponent implements OnInit, OnDestroy {
   }
 
   loadMobiles() {
-    this.mobileService.getAllMobiles().subscribe({
-      next: (data) => this.mobiles = [...data].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
+    this.mobileService.getAllMobiles(this.page, this.size).subscribe({
+      next: (data) => {
+        this.mobiles = data.mobiles;
+        this.totalMobiles = data.total;
+      },
       error: (err) => console.error('Error loading mobiles', err)
     });
+  }
+
+  prevPage() {
+    if (this.page > 0) {
+      this.page--;
+      this.loadMobiles();
+    }
+  }
+
+  nextPage() {
+    if ((this.page + 1) * this.size < this.totalMobiles) {
+      this.page++;
+      this.loadMobiles();
+    }
   }
 
   loadItems() {

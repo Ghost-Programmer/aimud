@@ -8,7 +8,9 @@ import io.nadia.ai.aimud.types.WearLocation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -69,8 +71,23 @@ public class ConfigController {
      * @return dynamic reactive {@code Flux<Agent>} response payload
      */
     @GetMapping("/agents")
-    public Flux<Agent> getAllAgents() {
-        return configService.getAllAgents();
+    public Mono<Map<String, Object>> getAllAgents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return configService.getAllAgents()
+                .collectList()
+                .map(agents -> {
+                    int total = agents.size();
+                    int fromIndex = page * size;
+                    int toIndex = Math.min(fromIndex + size, total);
+                    List<Agent> paged = (fromIndex < total) ? agents.subList(fromIndex, toIndex) : List.of();
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("agents", paged);
+                    response.put("total", total);
+                    response.put("page", page);
+                    response.put("size", size);
+                    return response;
+                });
     }
 
     /**
@@ -114,8 +131,32 @@ public class ConfigController {
      * @return dynamic reactive {@code Flux<Race>} response payload
      */
     @GetMapping("/races")
-    public Flux<Race> getAllRaces(@RequestParam(defaultValue = "false") boolean playableOnly) {
-        return playableOnly ? configService.getPlayableRaces() : configService.getAllRaces();
+    public Mono<Map<String, Object>> getAllRaces(
+            @RequestParam(defaultValue = "false") boolean playableOnly,
+            @RequestParam(defaultValue = "") String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Flux<Race> source = playableOnly ? configService.getPlayableRaces() : configService.getAllRaces();
+        return source.collectList()
+                .map(races -> {
+                    if (!search.isEmpty()) {
+                        String lowerSearch = search.toLowerCase();
+                        races = races.stream()
+                                .filter(r -> r.getName().toLowerCase().contains(lowerSearch))
+                                .collect(Collectors.toList());
+                    }
+                    races.sort(java.util.Comparator.comparing(r -> r.getName().toLowerCase()));
+                    int total = races.size();
+                    int fromIndex = page * size;
+                    int toIndex = Math.min(fromIndex + size, total);
+                    List<Race> paged = (fromIndex < total) ? races.subList(fromIndex, toIndex) : List.of();
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("races", paged);
+                    response.put("total", total);
+                    response.put("page", page);
+                    response.put("size", size);
+                    return response;
+                });
     }
 
     /**
@@ -159,8 +200,32 @@ public class ConfigController {
      * @return dynamic reactive {@code Flux<CharacterClass>} response payload
      */
     @GetMapping("/classes")
-    public Flux<CharacterClass> getAllCharacterClasses(@RequestParam(defaultValue = "false") boolean playableOnly) {
-        return playableOnly ? configService.getPlayableCharacterClasses() : configService.getAllCharacterClasses();
+    public Mono<Map<String, Object>> getAllCharacterClasses(
+            @RequestParam(defaultValue = "false") boolean playableOnly,
+            @RequestParam(defaultValue = "") String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Flux<CharacterClass> source = playableOnly ? configService.getPlayableCharacterClasses() : configService.getAllCharacterClasses();
+        return source.collectList()
+                .map(classes -> {
+                    if (!search.isEmpty()) {
+                        String lowerSearch = search.toLowerCase();
+                        classes = classes.stream()
+                                .filter(c -> c.getName().toLowerCase().contains(lowerSearch))
+                                .collect(Collectors.toList());
+                    }
+                    classes.sort(java.util.Comparator.comparing(c -> c.getName().toLowerCase()));
+                    int total = classes.size();
+                    int fromIndex = page * size;
+                    int toIndex = Math.min(fromIndex + size, total);
+                    List<CharacterClass> paged = (fromIndex < total) ? classes.subList(fromIndex, toIndex) : List.of();
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("classes", paged);
+                    response.put("total", total);
+                    response.put("page", page);
+                    response.put("size", size);
+                    return response;
+                });
     }
 
     /**

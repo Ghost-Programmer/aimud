@@ -31,10 +31,15 @@ class StoreControllerTest {
         StoreController controller = new StoreController(storeService, storeTradeService);
         Store store = new Store();
         store.setId(1L);
+        store.setName("General");
         when(storeService.getAllStores()).thenReturn(Flux.just(store));
 
-        StepVerifier.create(controller.getAllStores())
-                .expectNext(store)
+        StepVerifier.create(controller.getAllStores(0, 10))
+                .assertNext(res -> {
+                    @SuppressWarnings("unchecked")
+                    java.util.List<Store> list = (java.util.List<Store>) res.get("stores");
+                    org.assertj.core.api.Assertions.assertThat(list).containsExactly(store);
+                })
                 .verifyComplete();
 
         verify(storeService).getAllStores();

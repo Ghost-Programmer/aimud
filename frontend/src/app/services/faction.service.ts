@@ -11,8 +11,8 @@ export class FactionService {
 
   constructor(private http: HttpClient) {}
 
-  getAllFactions(): Observable<Faction[]> {
-    return this.http.get<Faction[]>(this.apiUrl);
+  getAllFactions(page: number = 0, size: number = 10): Observable<any> {
+    return this.http.get<any>(this.apiUrl, { params: { page, size } });
   }
 
   getMobileFactionRatings(mobileId: number): Observable<{ [key: number]: number }> {
@@ -21,5 +21,17 @@ export class FactionService {
 
   updateMobileFactionRatings(mobileId: number, ratings: { [key: number]: number }): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/mobile/${mobileId}`, ratings);
+  }
+
+  createFaction(faction: Faction): Observable<Faction> {
+    return this.http.post<Faction>(this.apiUrl, faction);
+  }
+
+  updateFaction(id: number, faction: Faction): Observable<Faction> {
+    return this.http.put<Faction>(`${this.apiUrl}/${id}`, faction);
+  }
+
+  deleteFaction(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

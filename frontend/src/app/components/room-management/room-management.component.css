@@ -139,32 +139,6 @@
   font-style: italic;
 }
 
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 1rem;
-}
-
-.pag-btn {
-  background: var(--glass-10);
-  color: var(--text-main);
-  border: 1px solid var(--glass-20);
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.pag-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.page-info {
-  font-size: 0.9rem;
-  color: var(--color-hex-aaa);
-}
 
 select.filter-select option {
   background-color: var(--color-hex-1a1d24); /* Dark background matching the theme */

@@ -12,6 +12,11 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * REST Controller exposing HTTP API endpoints for Store manipulation.
  */
@@ -24,12 +29,27 @@ public class StoreController {
     private final StoreTradeService storeTradeService;
 
     /**
-     * Handles HTTP GET requests to get all stores.
-     * @return dynamic reactive Flux<Store> response payload
+     * Handles HTTP GET requests to get all stores with pagination.
      */
     @GetMapping
-    public Flux<Store> getAllStores() {
-        return storeService.getAllStores();
+    public Mono<Map<String, Object>> getAllStores(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return storeService.getAllStores()
+                .collectList()
+                .map(stores -> {
+                    stores.sort(Comparator.comparing(s -> s.getName().toLowerCase()));
+                    int total = stores.size();
+                    int fromIndex = page * size;
+                    int toIndex = Math.min(fromIndex + size, total);
+                    List<Store> paged = (fromIndex < total) ? stores.subList(fromIndex, toIndex) : List.of();
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("stores", paged);
+                    response.put("total", total);
+                    response.put("page", page);
+                    response.put("size", size);
+                    return response;
+                });
     }
 
     /**

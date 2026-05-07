@@ -14,6 +14,9 @@ import {SearchableDropdownComponent} from '../searchable-dropdown/searchable-dro
 })
 export class StoreManagementComponent implements OnInit {
   stores: Store[] = [];
+  totalItems: number = 0;
+  page: number = 0;
+  size: number = 10;
   selectedStore: Store | null = null;
   storeForm!: FormGroup;
 
@@ -34,6 +37,8 @@ export class StoreManagementComponent implements OnInit {
     this.loadItems();
   }
 
+  Math = Math;
+
   createForm() {
     this.storeForm = this.fb.group({
       id: [null],
@@ -43,10 +48,27 @@ export class StoreManagementComponent implements OnInit {
   }
 
   loadStores() {
-    this.storeService.getAllStores().subscribe({
-      next: (data) => this.stores = [...data].sort((a, b) => a.name.localeCompare(b.name)),
+    this.storeService.getAllStores(this.page, this.size).subscribe({
+      next: (res) => {
+        this.stores = res.stores;
+        this.totalItems = res.total;
+      },
       error: (err) => console.error('Error loading stores', err)
     });
+  }
+
+  prevPage() {
+    if (this.page > 0) {
+      this.page--;
+      this.loadStores();
+    }
+  }
+
+  nextPage() {
+    if ((this.page + 1) * this.size < this.totalItems) {
+      this.page++;
+      this.loadStores();
+    }
   }
 
   loadItems() {

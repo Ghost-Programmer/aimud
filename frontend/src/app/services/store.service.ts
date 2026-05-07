@@ -18,8 +18,8 @@ export class StoreService {
 
   constructor(private http: HttpClient) {}
 
-  getAllStores(): Observable<Store[]> {
-    return this.http.get<Store[]>(this.apiUrl);
+  getAllStores(page: number = 0, size: number = 10): Observable<any> {
+    return this.http.get<any>(this.apiUrl, { params: { page, size } });
   }
 
   getStore(id: number): Observable<Store> {

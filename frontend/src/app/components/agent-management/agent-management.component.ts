@@ -15,8 +15,9 @@ import { MarkdownPipe } from '../../pipes/markdown.pipe';
 })
 export class AgentManagementComponent implements OnInit {
   agents: Agent[] = [];
-  readonly agentPageSize = 5;
-  currentAgentPage = 1;
+  totalItems: number = 0;
+  page: number = 0;
+  size: number = 5;
 
   selectedAgent: Agent | null = null;
   agentForm: FormGroup;
@@ -37,26 +38,25 @@ export class AgentManagementComponent implements OnInit {
   }
 
   get totalAgentPages(): number {
-    return Math.max(1, Math.ceil(this.agents.length / this.agentPageSize));
+    return Math.max(1, Math.ceil(this.totalItems / this.size));
   }
 
   get paginatedAgents(): Agent[] {
-    const startIndex = (this.currentAgentPage - 1) * this.agentPageSize;
-    return this.agents.slice(startIndex, startIndex + this.agentPageSize);
+    return this.agents;
   }
 
   get agentRangeStart(): number {
-    if (this.agents.length === 0) {
+    if (this.totalItems === 0) {
       return 0;
     }
-    return (this.currentAgentPage - 1) * this.agentPageSize + 1;
+    return (this.page * this.size) + 1;
   }
 
   get agentRangeEnd(): number {
-    if (this.agents.length === 0) {
+    if (this.totalItems === 0) {
       return 0;
     }
-    return Math.min(this.currentAgentPage * this.agentPageSize, this.agents.length);
+    return Math.min((this.page + 1) * this.size, this.totalItems);
   }
 
   ngOnInit() {
@@ -64,21 +64,23 @@ export class AgentManagementComponent implements OnInit {
   }
 
   loadAgents() {
-    this.configService.getAllAgents().subscribe(agents => {
-      this.agents = [...agents].sort((a, b) => (a.title ?? '').localeCompare(b.title ?? ''));
-      this.clampAgentPage();
+    this.configService.getAllAgents(this.page, this.size).subscribe(res => {
+      this.agents = res.agents;
+      this.totalItems = res.total;
     });
   }
 
   previousAgentPage() {
-    if (this.currentAgentPage > 1) {
-      this.currentAgentPage--;
+    if (this.page > 0) {
+      this.page--;
+      this.loadAgents();
     }
   }
 
   nextAgentPage() {
-    if (this.currentAgentPage < this.totalAgentPages) {
-      this.currentAgentPage++;
+    if ((this.page + 1) * this.size < this.totalItems) {
+      this.page++;
+      this.loadAgents();
     }
   }
 
@@ -136,7 +138,6 @@ export class AgentManagementComponent implements OnInit {
         });
       } else {
         this.configService.createAgent(agent).subscribe(() => {
-          this.currentAgentPage = this.totalAgentPages + 1;
           this.loadAgents();
           this.closeAgentForm();
         });
@@ -158,7 +159,5 @@ export class AgentManagementComponent implements OnInit {
     }
   }
 
-  private clampAgentPage() {
-    this.currentAgentPage = Math.min(Math.max(1, this.currentAgentPage), this.totalAgentPages);
-  }
+
 }

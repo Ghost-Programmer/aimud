@@ -26,10 +26,15 @@ class FactionControllerTest {
         FactionController controller = new FactionController(factionService);
         Faction faction = new Faction();
         faction.setId(1L);
+        faction.setName("test");
         when(factionService.findAllFactions()).thenReturn(Flux.just(faction));
 
-        StepVerifier.create(controller.getAllFactions())
-                .expectNext(faction)
+        StepVerifier.create(controller.getAllFactions(0, 10))
+                .assertNext(res -> {
+                    @SuppressWarnings("unchecked")
+                    java.util.List<Faction> list = (java.util.List<Faction>) res.get("factions");
+                    org.assertj.core.api.Assertions.assertThat(list).containsExactly(faction);
+                })
                 .verifyComplete();
 
         verify(factionService).findAllFactions();

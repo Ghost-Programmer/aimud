@@ -30,8 +30,8 @@ export class ConfigService {
   }
 
   // Agents
-  getAllAgents(): Observable<Agent[]> {
-    return this.http.get<Agent[]>(`${this.apiUrl}/agents`);
+  getAllAgents(page: number = 0, size: number = 10): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/agents`, { params: { page, size } });
   }
 
   createAgent(agent: Agent): Observable<Agent> {
@@ -47,12 +47,12 @@ export class ConfigService {
   }
 
   // Races
-  getAllRaces(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/races`);
+  getAllRaces(page: number = 0, size: number = 10, search: string = ''): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/races`, { params: { page, size, search } });
   }
 
-  getPlayableRaces(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/races`, {params: {playableOnly: 'true'}});
+  getPlayableRaces(page: number = 0, size: number = 10, search: string = ''): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/races`, {params: {playableOnly: 'true', page, size, search}});
   }
 
   createRace(race: any): Observable<any> {
@@ -68,12 +68,12 @@ export class ConfigService {
   }
 
   // Character Classes
-  getAllCharacterClasses(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/classes`);
+  getAllCharacterClasses(page: number = 0, size: number = 10, search: string = ''): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/classes`, { params: { page, size, search } });
   }
 
-  getPlayableCharacterClasses(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/classes`, {params: {playableOnly: 'true'}});
+  getPlayableCharacterClasses(page: number = 0, size: number = 10, search: string = ''): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/classes`, {params: {playableOnly: 'true', page, size, search}});
   }
 
   createCharacterClass(characterClass: any): Observable<any> {

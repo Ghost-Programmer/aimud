@@ -12,8 +12,10 @@ export class MobileService {
   constructor(private http: HttpClient) {
   }
 
-  getAllMobiles(): Observable<Mobile[]> {
-    return this.http.get<Mobile[]>(this.apiUrl);
+  getAllMobiles(page: number = 0, size: number = 10, name: string = ''): Observable<any> {
+    const params: any = { page, size };
+    if (name) params.name = name;
+    return this.http.get<any>(this.apiUrl, { params });
   }
 
   getMobile(id: number): Observable<Mobile> {
