@@ -63,10 +63,7 @@
           <span [class.online-text]="systemStatus?.llmStatus === 'Connected'"
                 class="value">{{ systemStatus?.llmStatus || '---' }}</span>
         </div>
-        <div class="status-item">
-          <span class="label">Model</span>
-          <span class="value">{{ systemStatus?.llmModel || '---' }}</span>
-        </div>
+
       </div>
     </div>
   </div>
