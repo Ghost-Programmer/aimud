@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
 /**
  * CharacterService standard implementation layer.
  * Primary processing handler mapping structural integrations natively.
@@ -60,7 +61,8 @@ public class MobileService {
             DatabaseClient databaseClient, CharacterEffectRepository characterEffectRepository,
             CommunicationService communicationService, RoomService roomService,
             CharacterClassRepository characterClassRepository, SkillRepository skillRepository, ItemService itemService,
-            MobileActionRepository mobileActionRepository, MobileSkillRepository mobileSkillRepository, FactionService factionService, MobileMacroRepository mobileMacroRepository) {
+            MobileActionRepository mobileActionRepository, MobileSkillRepository mobileSkillRepository,
+            FactionService factionService, MobileMacroRepository mobileMacroRepository) {
         this.mobileRepository = mobileRepository;
         this.userRepository = userRepository;
         this.statService = statService;
@@ -83,7 +85,7 @@ public class MobileService {
     }
 
     public Flux<MobileMacro> saveCharacterMacros(Long characterId,
-                                                 List<MobileMacro> macros) {
+            List<MobileMacro> macros) {
         return mobileMacroRepository.deleteByMobileId(characterId)
                 .thenMany(Flux.fromIterable(macros))
                 .flatMap(macro -> {
@@ -139,8 +141,20 @@ public class MobileService {
         return false;
     }
 
-    public List<Mobile> getAvailableCharacters() {
+    public List<Mobile> getAvailableMobiles() {
         return new ArrayList<>(activeMobiles.values());
+    }
+
+    public List<Mobile> getAvailableNPCs() {
+        return activeMobiles.values().stream()
+                .filter(character -> character.getUserId() == null)
+                .collect(Collectors.toList());
+    }
+
+    public List<Mobile> getAvailablePlayers() {
+        return activeMobiles.values().stream()
+                .filter(character -> character.getUserId() != null)
+                .collect(Collectors.toList());
     }
 
     public Mono<Mobile> createCharacter(String username, Mobile character) {
@@ -208,33 +222,39 @@ public class MobileService {
                                                         skill.setRank(1);
                                                         return skillRepository.save(skill)
                                                                 .onErrorResume(e -> {
-                                                                    log.error("Failed to add starting skill {} to character {}", skillName, c.getId(), e);
+                                                                    log.error(
+                                                                            "Failed to add starting skill {} to character {}",
+                                                                            skillName, c.getId(), e);
                                                                     return Mono.empty();
                                                                 });
                                                     })
                                                     .then(Mono.just(c));
                                         }
-                                        
-                                        return skillsMono.flatMap(c2 -> 
-                                            databaseClient.sql("SELECT starting_effects FROM races WHERE id = :rId")
-                                                    .bind("rId", c2.getRaceId())
-                                                    .map((row, meta) -> {
-                                                        String val = row.get(0, String.class);
-                                                        return val == null ? "" : val;
-                                                    })
-                                                    .one()
-                                                    .flatMap(effs -> {
-                                                        if (effs == null || effs.isEmpty()) return Mono.just(c2);
-                                                        java.util.List<Long> ids = new java.util.ArrayList<>();
-                                                        for (String s : effs.split(",")) {
-                                                            try { ids.add(Long.parseLong(s.trim())); } catch (Exception ignored) {}
+
+                                        return skillsMono.flatMap(c2 -> databaseClient
+                                                .sql("SELECT starting_effects FROM races WHERE id = :rId")
+                                                .bind("rId", c2.getRaceId())
+                                                .map((row, meta) -> {
+                                                    String val = row.get(0, String.class);
+                                                    return val == null ? "" : val;
+                                                })
+                                                .one()
+                                                .flatMap(effs -> {
+                                                    if (effs == null || effs.isEmpty())
+                                                        return Mono.just(c2);
+                                                    java.util.List<Long> ids = new java.util.ArrayList<>();
+                                                    for (String s : effs.split(",")) {
+                                                        try {
+                                                            ids.add(Long.parseLong(s.trim()));
+                                                        } catch (Exception ignored) {
                                                         }
-                                                        return Flux.fromIterable(ids)
-                                                                .flatMap(i -> characterEffectRepository.save(new CharacterEffect(c2.getId(), i, -1)))
-                                                                .then(Mono.just(c2));
-                                                    })
-                                                    .defaultIfEmpty(c2)
-                                        );
+                                                    }
+                                                    return Flux.fromIterable(ids)
+                                                            .flatMap(i -> characterEffectRepository
+                                                                    .save(new CharacterEffect(c2.getId(), i, -1)))
+                                                            .then(Mono.just(c2));
+                                                })
+                                                .defaultIfEmpty(c2));
                                     });
                                 })
                                 .defaultIfEmpty(savedCharacter);
@@ -338,8 +358,8 @@ public class MobileService {
                         .fetch()
                         .rowsUpdated())
                 .then(Mono.defer(() -> {
-                     character.setInventory(finalItems);
-                     return Mono.just(character);
+                    character.setInventory(finalItems);
+                    return Mono.just(character);
                 }));
     }
 
@@ -701,7 +721,7 @@ public class MobileService {
 
     public void addCommand(Long characterId, String command) {
         log.info("Adding command '{}' to character id {}", command, characterId);
-        getAvailableCharacters().stream()
+        getAvailableMobiles().stream()
                 .filter(c -> c.getId().equals(characterId))
                 .findFirst()
                 .ifPresent(c -> {
@@ -796,7 +816,7 @@ public class MobileService {
                                 } else {
                                     this.communicationService.sendTextMessage(character,
                                             "\n\nYou have entered " + room.getName() + ".");
-                                    
+
                                     if (light >= 5) {
                                         this.communicationService.sendTextMessage(character,
                                                 "\n\n" + room.getDescription() + "\n\n");
@@ -804,24 +824,31 @@ public class MobileService {
 
                                     if (light == 1) {
                                         long othersCount = this.findAllByRoomId(room.getId()).stream()
-                                                .filter(m -> !m.getId().equals(character.getId()) && !m.isHidden() && !m.isInvisible()).count();
-                                        boolean hasItems = !room.getItemIds().isEmpty() || !this.roomService.getTransientItemsInRoom(room.getId()).isEmpty();
-                                        
+                                                .filter(m -> !m.getId().equals(character.getId()) && !m.isHidden()
+                                                        && !m.isInvisible())
+                                                .count();
+                                        boolean hasItems = !room.getItemIds().isEmpty()
+                                                || !this.roomService.getTransientItemsInRoom(room.getId()).isEmpty();
+
                                         if (othersCount > 0 || hasItems) {
-                                            this.communicationService.sendTextMessage(character, "\n\nYou sense something present in the darkness.");
+                                            this.communicationService.sendTextMessage(character,
+                                                    "\n\nYou sense something present in the darkness.");
                                         } else {
-                                            this.communicationService.sendTextMessage(character, "\n\nIt is too dark to make out any details.");
+                                            this.communicationService.sendTextMessage(character,
+                                                    "\n\nIt is too dark to make out any details.");
                                         }
                                     } else if (light > 1) {
                                         this.findAllByRoomId(room.getId()).stream()
-                                                .filter(m -> !m.getId().equals(character.getId()) && !m.isHidden() && !m.isInvisible())
+                                                .filter(m -> !m.getId().equals(character.getId()) && !m.isHidden()
+                                                        && !m.isInvisible())
                                                 .forEach(m -> {
                                                     if (light >= 7) {
                                                         this.communicationService.sendTextMessage(character,
                                                                 "\nYou see " + m.getName() + " here.");
                                                         if (m.getStoreId() != null) {
                                                             this.communicationService.sendTextMessage(character,
-                                                                    "\n" + m.getName() + " appears to be running a store.");
+                                                                    "\n" + m.getName()
+                                                                            + " appears to be running a store.");
                                                         }
                                                     } else {
                                                         this.communicationService.sendTextMessage(character,
@@ -832,18 +859,22 @@ public class MobileService {
                                         if (light >= 7) {
                                             room.getItemIds().stream().forEach(itemId -> {
                                                 this.itemService.getItem(itemId)
-                                                        .doOnNext(item -> this.communicationService.sendTextMessage(character,
+                                                        .doOnNext(item -> this.communicationService.sendTextMessage(
+                                                                character,
                                                                 "\nYou see " + item.getName() + " laying here."))
                                                         .subscribe();
                                             });
-                                            this.roomService.getTransientItemsInRoom(room.getId()).forEach(item ->
-                                                    this.communicationService.sendTextMessage(character, "\nYou see " + item.getName() + " laying here."));
+                                            this.roomService.getTransientItemsInRoom(room.getId()).forEach(
+                                                    item -> this.communicationService.sendTextMessage(character,
+                                                            "\nYou see " + item.getName() + " laying here."));
                                         } else {
                                             room.getItemIds().forEach(itemId -> {
-                                                this.communicationService.sendTextMessage(character, "\nYou see some sort of item laying here.");
+                                                this.communicationService.sendTextMessage(character,
+                                                        "\nYou see some sort of item laying here.");
                                             });
-                                            this.roomService.getTransientItemsInRoom(room.getId()).forEach(item ->
-                                                this.communicationService.sendTextMessage(character, "\nYou see some sort of item laying here."));
+                                            this.roomService.getTransientItemsInRoom(room.getId()).forEach(
+                                                    item -> this.communicationService.sendTextMessage(character,
+                                                            "\nYou see some sort of item laying here."));
                                         }
                                     }
                                 }
@@ -948,7 +979,7 @@ public class MobileService {
      * @param mobile the mobile to save
      * @return a {@link Mono} containing the saved mobile
      */
-    @CacheEvict(value = {"mobiles", "mobile", "mobiles"}, allEntries = true)
+    @CacheEvict(value = { "mobiles", "mobile", "mobiles" }, allEntries = true)
     public Mono<Mobile> saveMobile(Mobile mobile) {
         log.info("Saving mobile: {} (id: {})", mobile.getName(), mobile.getId());
         return mobileRepository.save(mobile)
@@ -957,8 +988,9 @@ public class MobileService {
                     if (saved.getId() != null && activeMobiles.containsKey(saved.getId())) {
                         activeMobiles.put(saved.getId(), saved);
                     }
-                    if (saved.getRaceId() == null) return Mono.just(saved);
-                    
+                    if (saved.getRaceId() == null)
+                        return Mono.just(saved);
+
                     return databaseClient.sql("SELECT starting_effects FROM races WHERE id = :rId")
                             .bind("rId", saved.getRaceId())
                             .map((row, meta) -> {
@@ -967,15 +999,22 @@ public class MobileService {
                             })
                             .one()
                             .flatMap(effs -> {
-                                if (effs.isEmpty()) return Mono.just(saved);
+                                if (effs.isEmpty())
+                                    return Mono.just(saved);
                                 java.util.List<Long> ids = new java.util.ArrayList<>();
                                 for (String s : effs.split(",")) {
-                                    try { ids.add(Long.parseLong(s.trim())); } catch (Exception ignored) {}
+                                    try {
+                                        ids.add(Long.parseLong(s.trim()));
+                                    } catch (Exception ignored) {
+                                    }
                                 }
                                 return Flux.fromIterable(ids)
-                                        .flatMap(effId -> databaseClient.sql("INSERT INTO character_effects (character_id, effect_id, tick_count, created_at, modified_at, created_by, modified_by) " +
-                                                "SELECT :cid, :eid, -1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'system', 'system' " +
-                                                "WHERE NOT EXISTS (SELECT 1 FROM character_effects WHERE character_id = :cid AND effect_id = :eid AND tick_count = -1)")
+                                        .flatMap(effId -> databaseClient.sql(
+                                                "INSERT INTO character_effects (character_id, effect_id, tick_count, created_at, modified_at, created_by, modified_by) "
+                                                        +
+                                                        "SELECT :cid, :eid, -1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'system', 'system' "
+                                                        +
+                                                        "WHERE NOT EXISTS (SELECT 1 FROM character_effects WHERE character_id = :cid AND effect_id = :eid AND tick_count = -1)")
                                                 .bind("cid", saved.getId())
                                                 .bind("eid", effId)
                                                 .fetch().rowsUpdated())
@@ -991,7 +1030,7 @@ public class MobileService {
      * @param id the ID of the mobile to delete
      * @return a {@link Mono} indicating completion
      */
-    @CacheEvict(value = {"mobiles", "mobile", "mobiles"}, allEntries = true)
+    @CacheEvict(value = { "mobiles", "mobile", "mobiles" }, allEntries = true)
     public Mono<Void> deleteMobile(Long id) {
         log.info("Deleting mobile with id: {}", id);
         return mobileRepository.deleteById(id)
@@ -1010,7 +1049,7 @@ public class MobileService {
     }
 
     /**
-     * Scans the room for assigned mobile IDs, dropping them into memory and 
+     * Scans the room for assigned mobile IDs, dropping them into memory and
      * caching them with all stats and actions if not already present.
      *
      * @param room the room to spawn mobiles for
@@ -1023,13 +1062,14 @@ public class MobileService {
                 // Ensure the mobile knows which room it is in
                 mobile.setCurrentRoomId(room.getId());
                 mobile.setUserId(null);
-                
+
                 statService.updateCurrentStats(mobile).subscribe(updatedMobile -> {
                     // Fetch AI actions into transient list
                     getMobileActions(updatedMobile.getId()).collectList().subscribe(actions -> {
                         updatedMobile.setActions(actions);
                         activeMobiles.put(updatedMobile.getId(), updatedMobile);
-                        log.info("Spawned mobile: {} (id: {}) into room {}", updatedMobile.getName(), updatedMobile.getId(), room.getId());
+                        log.info("Spawned mobile: {} (id: {}) into room {}", updatedMobile.getName(),
+                                updatedMobile.getId(), room.getId());
                     });
                 });
             } else {
@@ -1039,7 +1079,8 @@ public class MobileService {
     }
 
     /**
-     * Gets all active (spawned, in-memory) mobiles currently located in a specific room.
+     * Gets all active (spawned, in-memory) mobiles currently located in a specific
+     * room.
      *
      * @param roomId the ID of the room
      * @return a list of active mobiles in the room
@@ -1061,8 +1102,8 @@ public class MobileService {
     public Mono<MobileSkill> assignSkill(Long mobileId, String skillName, int rank) {
         log.info("Assigning skill '{}' rank {} to mobile {}", skillName, rank, mobileId);
         return databaseClient.sql(
-                        "INSERT INTO mobile_skills (mobile_id, name, rank) VALUES (:mobileId, :name, :rank) " +
-                                "ON CONFLICT (mobile_id, name) DO UPDATE SET rank = EXCLUDED.rank")
+                "INSERT INTO mobile_skills (mobile_id, name, rank) VALUES (:mobileId, :name, :rank) " +
+                        "ON CONFLICT (mobile_id, name) DO UPDATE SET rank = EXCLUDED.rank")
                 .bind("mobileId", mobileId)
                 .bind("name", skillName)
                 .bind("rank", rank)
@@ -1114,7 +1155,8 @@ public class MobileService {
 
     public Mono<Mobile> addItemToInventory(Long mobileId, Long itemId) {
         return mobileRepository.findById(mobileId)
-                .flatMap(mobile -> databaseClient.sql("INSERT INTO character_inventory (character_id, item_id, item_count) VALUES (:mobileId, :itemId, 1)")
+                .flatMap(mobile -> databaseClient.sql(
+                        "INSERT INTO character_inventory (character_id, item_id, item_count) VALUES (:mobileId, :itemId, 1)")
                         .bind("mobileId", mobileId)
                         .bind("itemId", itemId)
                         .fetch().rowsUpdated()
@@ -1126,7 +1168,7 @@ public class MobileService {
      *
      * @return a Mono indicating completion
      */
-    @CacheEvict(value = {"mobiles", "mobile"}, allEntries = true)
+    @CacheEvict(value = { "mobiles", "mobile" }, allEntries = true)
     public Mono<Void> reloadAllNPCs() {
         log.info("Reloading all NPCs from database");
         activeMobiles.entrySet().removeIf(entry -> entry.getValue().getUserId() == null);
@@ -1143,8 +1185,8 @@ public class MobileService {
      */
     public Mono<Void> reloadRoomNPCs(Long roomId) {
         log.info("Reloading NPCs for room {}", roomId);
-        activeMobiles.entrySet().removeIf(entry -> 
-                entry.getValue().getUserId() == null && entry.getValue().getCurrentRoomId() != null && entry.getValue().getCurrentRoomId().equals(roomId));
+        activeMobiles.entrySet().removeIf(entry -> entry.getValue().getUserId() == null
+                && entry.getValue().getCurrentRoomId() != null && entry.getValue().getCurrentRoomId().equals(roomId));
         return roomService.getRoom(roomId)
                 .doOnNext(this::spawnMobilesForRoom)
                 .then();

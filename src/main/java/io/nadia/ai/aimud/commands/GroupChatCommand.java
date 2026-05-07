@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+
 /**
  * GroupChatCommand standard implementation layer.
  * Speak to everyone in your group.
@@ -28,9 +29,10 @@ public class GroupChatCommand implements Command {
 
     @Override
     /**
-
+     * 
      * Execute sequence logic maps.
-     * @param Mobile local contextual object
+     * 
+     * @param Mobile      local contextual object
      * @param commandLine trailing standard query parameters
      * @return a reactive pipeline
      */
@@ -48,15 +50,15 @@ public class GroupChatCommand implements Command {
 
         String text = parts[1];
         communicationService.sendTextMessage(mobile, "\nYou tell the group, '" + text + "'");
-        
+
         List<Mobile> allOnline = new ArrayList<>();
-        allOnline.addAll(mobileService.getAvailableCharacters());
-        allOnline.addAll(mobileService.getAvailableCharacters());
+        allOnline.addAll(mobileService.getAvailableMobiles());
+        allOnline.addAll(mobileService.getAvailableMobiles());
 
         for (Mobile c : allOnline) {
-             if (mobile.getPartyLeaderId().equals(c.getPartyLeaderId()) && !c.getId().equals(mobile.getId())) {
-                 communicationService.sendTextMessage(c, "\n[" + mobile.getName() + "] tells the group, '" + text + "'");
-             }
+            if (mobile.getPartyLeaderId().equals(c.getPartyLeaderId()) && !c.getId().equals(mobile.getId())) {
+                communicationService.sendTextMessage(c, "\n[" + mobile.getName() + "] tells the group, '" + text + "'");
+            }
         }
 
         return Mono.empty();
@@ -72,4 +74,3 @@ public class GroupChatCommand implements Command {
         return "Syntax: group <message>\n\nSends a message privately that only members of your current party can hear, regardless of if they are in your room or not.";
     }
 }
-

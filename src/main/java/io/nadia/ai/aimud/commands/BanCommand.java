@@ -35,7 +35,7 @@ public class BanCommand implements Command {
 
         String playerName = parts[1];
 
-        Optional<Mobile> targetOpt = mobileService.getAvailableCharacters().stream()
+        Optional<Mobile> targetOpt = mobileService.getAvailableMobiles().stream()
                 .filter(c -> c.getName().equalsIgnoreCase(playerName))
                 .findFirst();
 
@@ -61,11 +61,14 @@ public class BanCommand implements Command {
                     communicationService.sendLogout(target);
                     // Remove them from active game instance
                     mobileService.deselectCharacter(target.getId());
-                    communicationService.sendTextMessage(mobile, "\n\nYou have permanently banned " + target.getName() + ".");
-                    communicationService.roomMessage(mobile, "\n" + target.getName() + " has been banished from the realm.");
+                    communicationService.sendTextMessage(mobile,
+                            "\n\nYou have permanently banned " + target.getName() + ".");
+                    communicationService.roomMessage(mobile,
+                            "\n" + target.getName() + " has been banished from the realm.");
                 })
                 .switchIfEmpty(Mono.defer(() -> {
-                    communicationService.sendTextMessage(mobile, "\n\nUser account not found for player " + target.getName() + ".");
+                    communicationService.sendTextMessage(mobile,
+                            "\n\nUser account not found for player " + target.getName() + ".");
                     return Mono.empty();
                 }))
                 .then();
@@ -81,4 +84,3 @@ public class BanCommand implements Command {
         return "Syntax: ban <playerName>\n\nForcefully drops the specified player's connection and locks their user account, preventing future logins. This is an administrative command.";
     }
 }
-

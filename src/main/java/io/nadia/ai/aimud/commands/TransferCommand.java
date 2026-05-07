@@ -40,7 +40,7 @@ public class TransferCommand implements Command {
         String playerName = parts[1];
         String targetStr = parts.length > 2 ? parts[2] : null;
 
-        Optional<Mobile> targetPlayerOpt = mobileService.getAvailableCharacters().stream()
+        Optional<Mobile> targetPlayerOpt = mobileService.getAvailableMobiles().stream()
                 .filter(c -> c.getName().equalsIgnoreCase(playerName))
                 .findFirst();
 
@@ -65,8 +65,10 @@ public class TransferCommand implements Command {
 
         return roomService.getRoom(roomId)
                 .flatMap(room -> {
-                    communicationService.sendTextMessage(mobile, "\n\nYou transfer " + targetPlayer.getName() + " to room " + room.getId() + ".");
-                    communicationService.sendTextMessage(targetPlayer, "\n\nYou have been forcefully transferred by an administrator.");
+                    communicationService.sendTextMessage(mobile,
+                            "\n\nYou transfer " + targetPlayer.getName() + " to room " + room.getId() + ".");
+                    communicationService.sendTextMessage(targetPlayer,
+                            "\n\nYou have been forcefully transferred by an administrator.");
                     return mobileService.enterRoom(targetPlayer, room.getId());
                 })
                 .switchIfEmpty(Mono.defer(() -> {
@@ -85,4 +87,3 @@ public class TransferCommand implements Command {
         return "Syntax: transfer <playerName> [roomID]\n\nTeleports the specified player instantly to the specified room ID. If no room ID is provided, teleports them to your current room. This is an administrative command.";
     }
 }
-

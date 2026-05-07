@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 /**
  * VanishCommand standard implementation layer.
  * Disappear instantly, shedding enemy focus.
@@ -40,18 +41,21 @@ public class VanishCommand implements Command {
 
     @Override
     /**
-
+     * 
      * Execute sequence logic maps.
-     * @param Mobile local contextual object
+     * 
+     * @param Mobile      local contextual object
      * @param commandLine trailing standard query parameters
      * @return a reactive pipeline
      */
     public Mono<Void> execute(Mobile mobile, String arguments) {
-        if (mobile.getUserId() == null) return Mono.empty();
+        if (mobile.getUserId() == null)
+            return Mono.empty();
 
         int hideRank = skillService.getSkillRank(mobile, SkillsType.HIDE);
         if (hideRank < 50) {
-            communicationService.sendTextMessage(mobile, "\n\nYou lack the prerequisite hide skill to vanish into thin air.");
+            communicationService.sendTextMessage(mobile,
+                    "\n\nYou lack the prerequisite hide skill to vanish into thin air.");
             return Mono.empty();
         }
 
@@ -66,7 +70,8 @@ public class VanishCommand implements Command {
 
         skillService.checkSkill(mobile, SkillsType.VANISH, 0, success)
                 .doOnNext(improvedSkill -> {
-                    communicationService.sendTextMessage(mobile, "\n\nYour " + SkillsType.VANISH + " skill has improved to " + improvedSkill.getRank() + "!");
+                    communicationService.sendTextMessage(mobile, "\n\nYour " + SkillsType.VANISH
+                            + " skill has improved to " + improvedSkill.getRank() + "!");
                 })
                 .subscribe();
 
@@ -77,8 +82,8 @@ public class VanishCommand implements Command {
 
         // Apply drop-aggro logic
         List<Mobile> allMobiles = new ArrayList<>();
-        allMobiles.addAll(mobileService.getAvailableCharacters());
-        allMobiles.addAll(mobileService.getAvailableCharacters());
+        allMobiles.addAll(mobileService.getAvailableMobiles());
+        allMobiles.addAll(mobileService.getAvailableMobiles());
 
         boolean droppedAggro = false;
         for (Mobile m : allMobiles) {
@@ -98,14 +103,15 @@ public class VanishCommand implements Command {
                     m.getHateList().put(mobile.getId(), newHate);
                     droppedAggro = true;
                 }
-                
+
                 // Usually vanishing cancels the active target locking
                 this.mobileService.setTarget(m, null);
             }
         }
 
         if (droppedAggro) {
-            communicationService.roomMessage(mobile, "\n" + mobile.getName() + " suddenly vanishes in a puff of smoke!");
+            communicationService.roomMessage(mobile,
+                    "\n" + mobile.getName() + " suddenly vanishes in a puff of smoke!");
         }
 
         // Apply Hidden effect
@@ -120,7 +126,8 @@ public class VanishCommand implements Command {
                     int durationTicks = 120;
                     return effectService.attachEffectToCharacter(mobile, hiddenEffect, durationTicks, "Hidden")
                             .then(Mono.fromRunnable(() -> {
-                                communicationService.sendTextMessage(mobile, "\n\nYou vanish from sight, melting into the shadows and dropping enemy aggression.");
+                                communicationService.sendTextMessage(mobile,
+                                        "\n\nYou vanish from sight, melting into the shadows and dropping enemy aggression.");
                             }));
                 });
     }
@@ -135,4 +142,3 @@ public class VanishCommand implements Command {
         return "Syntax: vanish\n\nRequires a Hide skill rank of 50 or higher. You will immediately enter a hidden state and reduce your threat level on all enemies who are targeting you, effectively dropping aggro.";
     }
 }
-

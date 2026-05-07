@@ -32,7 +32,7 @@ public class FreezeCommand implements Command {
 
         String playerName = parts[1];
 
-        Optional<Mobile> targetOpt = mobileService.getAvailableCharacters().stream()
+        Optional<Mobile> targetOpt = mobileService.getAvailableMobiles().stream()
                 .filter(c -> c.getName().equalsIgnoreCase(playerName))
                 .findFirst();
 
@@ -47,7 +47,8 @@ public class FreezeCommand implements Command {
         return mobileService.save(target)
                 .then(Mono.defer(() -> {
                     communicationService.sendTextMessage(mobile, "\n\nYou have frozen " + target.getName() + ".");
-                    communicationService.sendTextMessage(target, "\n\nYou have been frozen by an administrator. You cannot execute any commands.");
+                    communicationService.sendTextMessage(target,
+                            "\n\nYou have been frozen by an administrator. You cannot execute any commands.");
                     return Mono.empty();
                 }));
     }
@@ -62,4 +63,3 @@ public class FreezeCommand implements Command {
         return "Syntax: freeze <playerName>\n\nFreezes the specified player, preventing them from executing any commands until unfrozen.";
     }
 }
-

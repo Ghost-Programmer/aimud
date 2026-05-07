@@ -32,7 +32,7 @@ public class UnfreezeCommand implements Command {
 
         String playerName = parts[1];
 
-        Optional<Mobile> targetOpt = mobileService.getAvailableCharacters().stream()
+        Optional<Mobile> targetOpt = mobileService.getAvailableMobiles().stream()
                 .filter(c -> c.getName().equalsIgnoreCase(playerName))
                 .findFirst();
 
@@ -47,7 +47,8 @@ public class UnfreezeCommand implements Command {
         return mobileService.save(target)
                 .then(Mono.defer(() -> {
                     communicationService.sendTextMessage(mobile, "\n\nYou have unfrozen " + target.getName() + ".");
-                    communicationService.sendTextMessage(target, "\n\nYou have been unfrozen by an administrator and can now execute commands.");
+                    communicationService.sendTextMessage(target,
+                            "\n\nYou have been unfrozen by an administrator and can now execute commands.");
                     return Mono.empty();
                 }));
     }
@@ -62,4 +63,3 @@ public class UnfreezeCommand implements Command {
         return "Syntax: unfreeze <playerName>\n\nUnfreezes the specified player, restoring their command execution privileges.";
     }
 }
-

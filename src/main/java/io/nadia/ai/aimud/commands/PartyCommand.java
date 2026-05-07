@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
 /**
  * PartyCommand standard implementation layer.
  * Manage your party.
@@ -27,9 +28,10 @@ public class PartyCommand implements Command {
 
     @Override
     /**
-
+     * 
      * Execute sequence logic maps.
-     * @param Mobile local contextual object
+     * 
+     * @param Mobile      local contextual object
      * @param commandLine trailing standard query parameters
      * @return a reactive pipeline
      */
@@ -37,7 +39,8 @@ public class PartyCommand implements Command {
         String[] parts = commandLine.trim().split("\\s+");
 
         if (parts.length < 2) {
-            communicationService.sendTextMessage(mobile, "\n\nParty commands: \n party invite <name> \n party accept \n party decline \n party leave \n party remove <name> \n party list");
+            communicationService.sendTextMessage(mobile,
+                    "\n\nParty commands: \n party invite <name> \n party accept \n party decline \n party leave \n party remove <name> \n party list");
             return Mono.empty();
         }
 
@@ -64,21 +67,23 @@ public class PartyCommand implements Command {
                 handleList(mobile);
                 break;
             default:
-                communicationService.sendTextMessage(mobile, "\n\nUnknown party command. Valid options: invite, accept, decline, leave, remove, list.");
+                communicationService.sendTextMessage(mobile,
+                        "\n\nUnknown party command. Valid options: invite, accept, decline, leave, remove, list.");
         }
 
         return Mono.empty();
     }
 
     private List<Mobile> getAllActiveMobiles() {
-        List<Mobile> allMobiles = new ArrayList<>(mobileService.getAvailableCharacters());
-        allMobiles.addAll(mobileService.getAvailableCharacters());
+        List<Mobile> allMobiles = new ArrayList<>(mobileService.getAvailableMobiles());
+        allMobiles.addAll(mobileService.getAvailableMobiles());
         return allMobiles;
     }
 
     private void handleInvite(Mobile mobile, String[] parts) {
         if (parts.length < 3) {
-            communicationService.sendTextMessage(mobile, "\n\nYou must specify who you want to invite: party invite <name>");
+            communicationService.sendTextMessage(mobile,
+                    "\n\nYou must specify who you want to invite: party invite <name>");
             return;
         }
 
@@ -124,7 +129,8 @@ public class PartyCommand implements Command {
 
         communicationService.sendTextMessage(mobile, "\n\nYou have invited " + target.getName() + " to the party.");
         if (target.getUserId() != null) {
-            communicationService.sendTextMessage(target, "\n\n" + mobile.getName() + " has invited you to join their party. Type 'party accept' or 'party decline'.");
+            communicationService.sendTextMessage(target, "\n\n" + mobile.getName()
+                    + " has invited you to join their party. Type 'party accept' or 'party decline'.");
         }
     }
 
@@ -142,7 +148,7 @@ public class PartyCommand implements Command {
         Long leaderId = mobile.getPendingPartyInviteId();
         mobile.setPartyLeaderId(leaderId);
         mobile.setPendingPartyInviteId(null);
-        
+
         communicationService.sendTextMessage(mobile, "\n\nYou join the party.");
 
         for (Mobile m : getAllActiveMobiles()) {
@@ -161,7 +167,7 @@ public class PartyCommand implements Command {
         Long leaderId = mobile.getPendingPartyInviteId();
         mobile.setPendingPartyInviteId(null);
         communicationService.sendTextMessage(mobile, "\n\nYou decline the party invite.");
-        
+
         for (Mobile m : getAllActiveMobiles()) {
             if (m.getId().equals(leaderId) && m.getUserId() != null) {
                 communicationService.sendTextMessage(m, "\n\n" + mobile.getName() + " declined your party invite.");
@@ -179,12 +185,13 @@ public class PartyCommand implements Command {
 
         if (mobile.getId().equals(leaderId)) {
             communicationService.sendTextMessage(mobile, "\n\nYou disband the party.");
-            
+
             for (Mobile m : getAllActiveMobiles()) {
                 if (leaderId.equals(m.getPartyLeaderId())) {
                     m.setPartyLeaderId(null);
                     if (!m.getId().equals(mobile.getId()) && m.getUserId() != null) {
-                        communicationService.sendTextMessage(m, "\n\n" + mobile.getName() + " has disbanded the party.");
+                        communicationService.sendTextMessage(m,
+                                "\n\n" + mobile.getName() + " has disbanded the party.");
                     }
                 }
             }
@@ -202,7 +209,8 @@ public class PartyCommand implements Command {
 
     private void handleRemove(Mobile mobile, String[] parts) {
         if (parts.length < 3) {
-            communicationService.sendTextMessage(mobile, "\n\nYou must specify who you want to remove: party remove <name>");
+            communicationService.sendTextMessage(mobile,
+                    "\n\nYou must specify who you want to remove: party remove <name>");
             return;
         }
 
@@ -213,7 +221,7 @@ public class PartyCommand implements Command {
 
         String targetName = parts[2].toLowerCase();
         Mobile target = null;
-        
+
         for (Mobile m : getAllActiveMobiles()) {
             if (mobile.getId().equals(m.getPartyLeaderId()) && m.getName().toLowerCase().startsWith(targetName)) {
                 target = m;
@@ -235,12 +243,14 @@ public class PartyCommand implements Command {
 
         communicationService.sendTextMessage(mobile, "\n\nYou have removed " + target.getName() + " from the party.");
         if (target.getUserId() != null) {
-            communicationService.sendTextMessage(target, "\n\n" + mobile.getName() + " has removed you from the party.");
+            communicationService.sendTextMessage(target,
+                    "\n\n" + mobile.getName() + " has removed you from the party.");
         }
-        
+
         for (Mobile m : getAllActiveMobiles()) {
             if (mobile.getId().equals(m.getPartyLeaderId()) && m.getUserId() != null) {
-                communicationService.sendTextMessage(m, "\n\n" + mobile.getName() + " removed " + target.getName() + " from the party.");
+                communicationService.sendTextMessage(m,
+                        "\n\n" + mobile.getName() + " removed " + target.getName() + " from the party.");
             }
         }
     }
@@ -281,4 +291,3 @@ public class PartyCommand implements Command {
         return "Syntax: party invite <name> | party accept | party decline | party remove <name> | party leave | party list\n\nAllows you to form a party, invite characters, or check who is grouped with you.";
     }
 }
-

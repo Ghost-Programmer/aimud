@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+
 /**
  * TellCommand standard implementation layer.
  * Send a private message to a specific person.
@@ -30,9 +31,10 @@ public class TellCommand implements Command {
 
     @Override
     /**
-
+     * 
      * Execute sequence logic maps.
-     * @param Mobile local contextual object
+     * 
+     * @param Mobile      local contextual object
      * @param commandLine trailing standard query parameters
      * @return a reactive pipeline
      */
@@ -45,10 +47,10 @@ public class TellCommand implements Command {
 
         String targetName = parts[1].toLowerCase();
         String text = parts[2];
-        
+
         List<Mobile> allOnline = new ArrayList<>();
-        allOnline.addAll(mobileService.getAvailableCharacters());
-        allOnline.addAll(mobileService.getAvailableCharacters());
+        allOnline.addAll(mobileService.getAvailableMobiles());
+        allOnline.addAll(mobileService.getAvailableMobiles());
 
         Mobile target = allOnline.stream()
                 .filter(m -> m.getName().toLowerCase().startsWith(targetName))
@@ -65,9 +67,11 @@ public class TellCommand implements Command {
 
         if (eventPublisher != null) {
             if (mobile.getUserId() != null && target.getUserId() == null) {
-                eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(target.getId(), mobile.getId(), mobile.getName() + " tells you, '" + text + "'"));
+                eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(target.getId(),
+                        mobile.getId(), mobile.getName() + " tells you, '" + text + "'"));
             } else if (mobile.getUserId() == null && target.getUserId() != null) {
-                eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(mobile.getId(), target.getId(), mobile.getName() + " tells you, '" + text + "'"));
+                eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(mobile.getId(),
+                        target.getId(), mobile.getName() + " tells you, '" + text + "'"));
             }
         }
 
@@ -84,4 +88,3 @@ public class TellCommand implements Command {
         return "Syntax: tell <target> <message>\n\nSends a private, direct piece of text to a particular character or mobile by name.";
     }
 }
-

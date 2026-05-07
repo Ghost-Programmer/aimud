@@ -31,7 +31,7 @@ public class WhoCommand implements Command {
     public Mono<Void> execute(Mobile mobile, String commandLine) {
         log.info("Executing who command for Mobile: {}", mobile.getName());
 
-        List<Mobile> players = mobileService.getAvailableCharacters().stream()
+        List<Mobile> players = mobileService.getAvailableMobiles().stream()
                 .filter(m -> m.getUserId() != null)
                 .collect(Collectors.toList());
 

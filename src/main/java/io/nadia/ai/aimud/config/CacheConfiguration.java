@@ -35,7 +35,8 @@ public class CacheConfiguration {
                 "rooms",
                 "room",
                 "mobiles",
-                "mobile"
+                "mobile",
+                "factionRatings"
         );
     }
 }

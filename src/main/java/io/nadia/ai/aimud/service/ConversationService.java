@@ -77,7 +77,7 @@ public class ConversationService {
     @org.springframework.scheduling.annotation.Scheduled(fixedRate = 10000)
     public void processIdleConversations() {
         log.info("Processing idle conversations...");
-        List<Mobile> npcs = mobileService.getAvailableCharacters().stream().filter(m -> m.isUsesAi())
+        List<Mobile> npcs = mobileService.getAvailableMobiles().stream().filter(m -> m.isUsesAi())
                 .collect(Collectors.toList());
         if (npcs == null || npcs.isEmpty()) {
             log.info("No Mobiles with AI Chat enabled found.");
@@ -175,7 +175,6 @@ public class ConversationService {
             processingNpcs.remove(npc.getId());
             return;
         }
-
 
         List<Mobile> npcsInRoom = mobileService.findAllByRoomId(room.getId()).stream()
                 .filter(m -> !m.getId().equals(npc.getId()))
@@ -275,110 +274,123 @@ public class ConversationService {
         }
 
         configService.getServerSettings()
-            .publishOn(reactor.core.scheduler.Schedulers.boundedElastic())
-            .subscribe(settings -> {
-                StringBuilder prompt = new StringBuilder();
-                prompt.append("You are an NPC in a Multi-User Dungeon (MUD).\n");
-                prompt.append("Current Game Time: Year ").append(settings.mudYear()).append(", Month ").append(settings.mudMonth()).append(", Day ").append(settings.mudDay()).append(", Hour ").append(settings.mudHour()).append("\n");
-                prompt.append("You are currently in: ").append(room.getName()).append("\n");
-                prompt.append("Room Description: ").append(room.getDescription()).append("\n\n");
+                .publishOn(reactor.core.scheduler.Schedulers.boundedElastic())
+                .subscribe(settings -> {
+                    StringBuilder prompt = new StringBuilder();
+                    prompt.append("You are an NPC in a Multi-User Dungeon (MUD).\n");
+                    prompt.append("Current Game Time: Year ").append(settings.mudYear()).append(", Month ")
+                            .append(settings.mudMonth()).append(", Day ").append(settings.mudDay()).append(", Hour ")
+                            .append(settings.mudHour()).append("\n");
+                    prompt.append("You are currently in: ").append(room.getName()).append("\n");
+                    prompt.append("Room Description: ").append(room.getDescription()).append("\n\n");
 
-                prompt.append("Your Identity & Stats:\n");
-                prompt.append("(Note: Stats begin at 1 and can go up to 500. A stat of 10 is considered a normal player, while 500 is God-like.)\n");
-                prompt.append("- Name: ").append(npc.getName()).append("\n");
-                prompt.append("- Race: ").append(raceName).append("\n");
-                prompt.append("- Class: ").append(className).append("\n");
-                prompt.append("- Level (Challenge Rating): ").append((int) npc.getChallengeRating()).append("\n");
-                prompt.append("- HP: ").append(npc.getCurrentHp()).append(" / ").append(npc.getMaxHp()).append("\n");
-                prompt.append("- Mana: ").append(npc.getCurrentMana()).append(" / ").append(npc.getMaxMana()).append("\n");
-                prompt.append("- Strength: ").append(npc.getStrength())
-                        .append(" (High = strong/powerful, Low = weak/feeble)\n");
-                prompt.append("- Dexterity: ").append(npc.getDexterity())
-                        .append(" (High = agile/nimble, Low = clumsy/slow)\n");
-                prompt.append("- Constitution: ").append(npc.getConstitution())
-                        .append(" (High = hardy/tough, Low = frail/sickly)\n");
-                prompt.append("- Intelligence: ").append(npc.getIntelligence())
-                        .append(" (High = articulate/smart, Low = simple/dumb)\n");
-                prompt.append("- Wisdom: ").append(npc.getWisdom())
-                        .append(" (High = insightful/calm, Low = unobservant/foolish)\n");
-                prompt.append("- Charisma: ").append(npc.getCharisma())
-                        .append(" (High = charming/persuasive, Low = rude/abrasive)\n\n");
+                    prompt.append("Your Identity & Stats:\n");
+                    prompt.append(
+                            "(Note: Stats begin at 1 and can go up to 500. A stat of 10 is considered a normal player, while 500 is God-like.)\n");
+                    prompt.append("- Name: ").append(npc.getName()).append("\n");
+                    prompt.append("- Race: ").append(raceName).append("\n");
+                    prompt.append("- Class: ").append(className).append("\n");
+                    prompt.append("- Level (Challenge Rating): ").append((int) npc.getChallengeRating()).append("\n");
+                    prompt.append("- HP: ").append(npc.getCurrentHp()).append(" / ").append(npc.getMaxHp())
+                            .append("\n");
+                    prompt.append("- Mana: ").append(npc.getCurrentMana()).append(" / ").append(npc.getMaxMana())
+                            .append("\n");
+                    prompt.append("- Strength: ").append(npc.getStrength())
+                            .append(" (High = strong/powerful, Low = weak/feeble)\n");
+                    prompt.append("- Dexterity: ").append(npc.getDexterity())
+                            .append(" (High = agile/nimble, Low = clumsy/slow)\n");
+                    prompt.append("- Constitution: ").append(npc.getConstitution())
+                            .append(" (High = hardy/tough, Low = frail/sickly)\n");
+                    prompt.append("- Intelligence: ").append(npc.getIntelligence())
+                            .append(" (High = articulate/smart, Low = simple/dumb)\n");
+                    prompt.append("- Wisdom: ").append(npc.getWisdom())
+                            .append(" (High = insightful/calm, Low = unobservant/foolish)\n");
+                    prompt.append("- Charisma: ").append(npc.getCharisma())
+                            .append(" (High = charming/persuasive, Low = rude/abrasive)\n\n");
 
-                prompt.append("Other entities present in the room:\n");
-                for (Mobile p : players) {
-                    int rating = factionService.getFactionRatingSync(npc, p.getFactionId());
-                    prompt.append("- ").append(p.getName()).append(" (Player, ID: ").append(p.getId()).append(") [Faction Rating to you: ").append(rating)
-                            .append("]\n");
-                    if (p.getTarget() != null) {
-                        prompt.append("  * Currently attacking: ").append(p.getTarget().getName()).append("\n");
+                    prompt.append("Other entities present in the room:\n");
+                    for (Mobile p : players) {
+                        int rating = factionService.getFactionRatingSync(npc, p.getFactionId());
+                        prompt.append("- ").append(p.getName()).append(" (Player, ID: ").append(p.getId())
+                                .append(") [Faction Rating to you: ").append(rating)
+                                .append("]\n");
+                        if (p.getTarget() != null) {
+                            prompt.append("  * Currently attacking: ").append(p.getTarget().getName()).append("\n");
+                        }
                     }
-                }
-                for (Mobile n : npcsInRoom) {
-                    int rating = factionService.getFactionRatingSync(npc, n.getFactionId());
-                    prompt.append("- ").append(n.getName()).append(" (NPC, ID: ").append(n.getId()).append(") [Faction Rating to you: ").append(rating)
-                            .append("]\n");
-                    if (n.getTarget() != null) {
-                        prompt.append("  * Currently attacking: ").append(n.getTarget().getName()).append("\n");
+                    for (Mobile n : npcsInRoom) {
+                        int rating = factionService.getFactionRatingSync(npc, n.getFactionId());
+                        prompt.append("- ").append(n.getName()).append(" (NPC, ID: ").append(n.getId())
+                                .append(") [Faction Rating to you: ").append(rating)
+                                .append("]\n");
+                        if (n.getTarget() != null) {
+                            prompt.append("  * Currently attacking: ").append(n.getTarget().getName()).append("\n");
+                        }
                     }
-                }
-                prompt.append(
-                        "\n* Note: Faction rating 80-100 is allied/friendly. 21-79 is neutral. 0-20 is hostile/hating.\n");
+                    prompt.append(
+                            "\n* Note: Faction rating 80-100 is allied/friendly. 21-79 is neutral. 0-20 is hostile/hating.\n");
 
-                prompt.append("\nAvailable Actions:\n");
-                for (int i = 0; i < availableActions.size(); i++) {
-                    prompt.append((i + 1)).append(". ").append(availableActions.get(i).getDescription()).append("\n");
-                }
-
-                prompt.append("\nYour Decision Rules:\n");
-                prompt.append("1. Roleplay strictly. You are completely immersed in a high-fantasy world.\n");
-                prompt.append("2. READ the retrieved memory context carefully to understand what is going on.\n");
-                prompt.append("3. Choose ONE OR MORE of the Available Actions based on the context.\n");
-                prompt.append("4. ONLY output a comma-separated list of the numbers of the actions you want to take.\n");
-                prompt.append("5. For example: 1,3\n");
-                prompt.append("6. If there is absolutely nothing to do, output EXACTLY ONE WORD: IGNORE\n");
-                prompt.append("7. DO NOT output internal thoughts, JSON, quotes, or markdown.\n");
-
-                org.springframework.ai.ollama.api.OllamaChatOptions options = org.springframework.ai.ollama.api.OllamaChatOptions.builder()
-                        .temperature(0.95)
-                        .model("hermes3")
-                        .build();
-
-                org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor ragAdvisor = org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor.builder(vectorStore)
-                        .searchRequest(org.springframework.ai.vectorstore.SearchRequest.builder()
-                                .topK(50)
-                                .filterExpression("npcId == " + npc.getId())
-                                .build())
-                        .build();
-
-                reactor.core.publisher.Mono<List<io.nadia.ai.aimud.model.Agent>> agentMono = (npc.getAgent() != null && !npc.getAgent().isEmpty())
-                        ? configService.getAllAgents().filter(a -> npc.getAgent().equals(a.title())).collectList()
-                        : reactor.core.publisher.Mono.just(java.util.Collections.emptyList());
-
-                agentMono.<String>flatMapMany(agents -> {
-                    if (!agents.isEmpty()) {
-                        prompt.insert(0, agents.get(0).content() + "\n\n\n");
+                    prompt.append("\nAvailable Actions:\n");
+                    for (int i = 0; i < availableActions.size(); i++) {
+                        prompt.append((i + 1)).append(". ").append(availableActions.get(i).getDescription())
+                                .append("\n");
                     }
 
-                    log.info("Processing conversation for NPC: {}", npc.getName());
-                    log.info("Prompt: \n {}", prompt.toString());
+                    prompt.append("\nYour Decision Rules:\n");
+                    prompt.append("1. Roleplay strictly. You are completely immersed in a high-fantasy world.\n");
+                    prompt.append("2. READ the retrieved memory context carefully to understand what is going on.\n");
+                    prompt.append("3. Choose ONE OR MORE of the Available Actions based on the context.\n");
+                    prompt.append(
+                            "4. ONLY output a comma-separated list of the numbers of the actions you want to take.\n");
+                    prompt.append("5. For example: 1,3\n");
+                    prompt.append("6. If there is absolutely nothing to do, output EXACTLY ONE WORD: IGNORE\n");
+                    prompt.append("7. DO NOT output internal thoughts, JSON, quotes, or markdown.\n");
 
-                    return chatClient.mutate()
-                            .defaultOptions(options)
-                            .defaultAdvisors(ragAdvisor)
-                            .build()
-                            .prompt()
-                            .user(prompt.toString())
-                            .stream().content()
-                            .filter(text -> text != null && !text.isEmpty());
-                })
-                        .reduce("", (a, b) -> a + String.valueOf(b))
-                        .subscribe(
-                                response -> processAiResponse(npc, availableActions, response),
-                                error -> {
-                                    log.error("Error generating conversation for NPC {}", npc.getName(), error);
-                                    processingNpcs.remove(npc.getId());
-                                });
-            });
+                    org.springframework.ai.ollama.api.OllamaChatOptions options = org.springframework.ai.ollama.api.OllamaChatOptions
+                            .builder()
+                            .temperature(0.95)
+                            .model("hermes3")
+                            .build();
+
+                    org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor ragAdvisor = org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor
+                            .builder(vectorStore)
+                            .searchRequest(org.springframework.ai.vectorstore.SearchRequest.builder()
+                                    .topK(50)
+                                    .filterExpression("npcId == " + npc.getId())
+                                    .build())
+                            .build();
+
+                    reactor.core.publisher.Mono<List<io.nadia.ai.aimud.model.Agent>> agentMono = (npc.getAgent() != null
+                            && !npc.getAgent().isEmpty())
+                                    ? configService.getAllAgents().filter(a -> npc.getAgent().equals(a.title()))
+                                            .collectList()
+                                    : reactor.core.publisher.Mono.just(java.util.Collections.emptyList());
+
+                    agentMono.<String>flatMapMany(agents -> {
+                        if (!agents.isEmpty()) {
+                            prompt.insert(0, agents.get(0).content() + "\n\n\n");
+                        }
+
+                        log.info("Processing conversation for NPC: {}", npc.getName());
+                        log.info("Prompt: \n {}", prompt.toString());
+
+                        return chatClient.mutate()
+                                .defaultOptions(options)
+                                .defaultAdvisors(ragAdvisor)
+                                .build()
+                                .prompt()
+                                .user(prompt.toString())
+                                .stream().content()
+                                .filter(text -> text != null && !text.isEmpty());
+                    })
+                            .reduce("", (a, b) -> a + String.valueOf(b))
+                            .subscribe(
+                                    response -> processAiResponse(npc, availableActions, response),
+                                    error -> {
+                                        log.error("Error generating conversation for NPC {}", npc.getName(), error);
+                                        processingNpcs.remove(npc.getId());
+                                    });
+                });
     }
 
     /**

@@ -4,9 +4,11 @@ import io.nadia.ai.aimud.annontation.MudCommand;
 import io.nadia.ai.aimud.model.Mobile;
 import io.nadia.ai.aimud.service.CommunicationService;
 import io.nadia.ai.aimud.service.MobileService;
+import io.nadia.ai.aimud.service.FactionService;
 import io.nadia.ai.aimud.service.RoomService;
 import io.nadia.ai.aimud.service.StoreService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -22,12 +24,16 @@ public class ReloadCommand implements Command {
     private final CommunicationService communicationService;
     private final RoomService roomService;
     private final StoreService storeService;
+    private final FactionService factionService;
+    private final CacheManager cacheManager;
 
     public ReloadCommand(ApplicationContext context) {
         this.mobileService = context.getBean(MobileService.class);
         this.communicationService = context.getBean(CommunicationService.class);
         this.roomService = context.getBean(RoomService.class);
         this.storeService = context.getBean(StoreService.class);
+        this.factionService = context.getBean(FactionService.class);
+        this.cacheManager = context.getBean(CacheManager.class);
     }
 
     @Override
@@ -45,6 +51,19 @@ public class ReloadCommand implements Command {
             case "stores" -> storeService.reloadAllStores()
                     .doOnSuccess(v -> communicationService.sendTextMessage(mobile, "\n\nAll stores have been reloaded from the database."))
                     .then();
+            case "cache" -> {
+                cacheManager.getCacheNames().forEach(name -> {
+                    var cache = cacheManager.getCache(name);
+                    if (cache != null) {
+                        cache.clear();
+                    }
+                });
+                factionService.clearCache();
+                
+                yield storeService.reloadAllStores()
+                        .doOnSuccess(v -> communicationService.sendTextMessage(mobile, "\n\nAll memory caches have been cleared and will reload from the database."))
+                        .then();
+            }
             case "" -> {
                 Long roomId = mobile.getCurrentRoomId();
                 if (roomId == null) {
@@ -69,7 +88,7 @@ public class ReloadCommand implements Command {
                         .then();
             }
             default -> {
-                communicationService.sendTextMessage(mobile, "\n\nInvalid reload target. Use: reload [rooms|npcs|stores|].");
+                communicationService.sendTextMessage(mobile, "\n\nInvalid reload target. Use: reload [rooms|npcs|stores|cache|].");
                 yield Mono.empty();
             }
         };
@@ -82,10 +101,11 @@ public class ReloadCommand implements Command {
 
     @Override
     public String getDetailedDescription() {
-        return "Syntax: reload [rooms|npcs|stores]\n\n" +
+        return "Syntax: reload [rooms|npcs|stores|cache]\n\n" +
                "reload rooms  - Loads all rooms from the database.\n" +
                "reload npcs   - Reloads all NPCs from the database and removes all of the ones in memory.\n" +
                "reload stores - Reloads all stores from the database.\n" +
+               "reload cache  - Clears all in-memory caches, forcing a fresh load from the database.\n" +
                "reload        - Reloads the current room, any NPCs for that room, and any stores associated with NPCs in that room.";
     }
 }

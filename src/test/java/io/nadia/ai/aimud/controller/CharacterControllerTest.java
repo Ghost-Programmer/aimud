@@ -49,7 +49,7 @@ class CharacterControllerTest {
         CharacterController controller = new CharacterController(MobileService, roomService);
         Mobile m = new Mobile();
         m.setId(1L);
-        when(MobileService.getAvailableCharacters()).thenReturn(List.of(m));
+        when(MobileService.getAvailableMobiles()).thenReturn(List.of(m));
 
         StepVerifier.create(controller.getAvailableCharacters())
                 .expectNext(m)
@@ -68,7 +68,7 @@ class CharacterControllerTest {
 
         Authentication auth = new TestingAuthenticationToken("jeff", "pw");
         StepVerifier.create(controller.createCharacter(request)
-                        .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth)))
+                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth)))
                 .assertNext(resp -> {
                     assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
                     assertThat(resp.getBody()).isEqualTo(created);
@@ -124,4 +124,3 @@ class CharacterControllerTest {
         verify(MobileService).saveCharacterMacros(5L, macros);
     }
 }
-

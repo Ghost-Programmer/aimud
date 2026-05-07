@@ -24,6 +24,14 @@ public class FactionService {
     private final Map<Long, Map<Long, Integer>> ratingCache = new ConcurrentHashMap<>();
 
     /**
+     * Clears the faction rating cache.
+     */
+    public void clearCache() {
+        log.info("Clearing faction rating cache");
+        ratingCache.clear();
+    }
+
+    /**
      * Retrieves a faction by its ID.
      *
      * @param id the ID of the faction

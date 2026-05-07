@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+
 /**
  * ShoutCommand standard implementation layer.
  * Shout a message to everyone in the entire world.
@@ -28,9 +29,10 @@ public class ShoutCommand implements Command {
 
     @Override
     /**
-
+     * 
      * Execute sequence logic maps.
-     * @param Mobile local contextual object
+     * 
+     * @param Mobile      local contextual object
      * @param commandLine trailing standard query parameters
      * @return a reactive pipeline
      */
@@ -43,15 +45,15 @@ public class ShoutCommand implements Command {
 
         String text = parts[1];
         communicationService.sendTextMessage(mobile, "\nYou shout, '" + text + "'");
-        
+
         List<Mobile> allOnline = new ArrayList<>();
-        allOnline.addAll(mobileService.getAvailableCharacters());
-        allOnline.addAll(mobileService.getAvailableCharacters());
+        allOnline.addAll(mobileService.getAvailableMobiles());
+        allOnline.addAll(mobileService.getAvailableMobiles());
 
         for (Mobile c : allOnline) {
-             if (!c.getId().equals(mobile.getId())) {
-                 communicationService.sendTextMessage(c, "\n" + mobile.getName() + " shouts, '" + text + "'");
-             }
+            if (!c.getId().equals(mobile.getId())) {
+                communicationService.sendTextMessage(c, "\n" + mobile.getName() + " shouts, '" + text + "'");
+            }
         }
 
         return Mono.empty();
@@ -67,4 +69,3 @@ public class ShoutCommand implements Command {
         return "Syntax: shout <message>\n\nShouts a message that magically reaches every single person currently exploring the realm.";
     }
 }
-

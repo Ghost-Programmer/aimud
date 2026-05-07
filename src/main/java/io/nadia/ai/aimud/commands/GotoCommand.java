@@ -62,7 +62,7 @@ public class GotoCommand implements Command {
     }
 
     private Mono<Void> teleportToPlayer(Mobile mobile, String playerName) {
-        Optional<Mobile> targetPlayer = mobileService.getAvailableCharacters().stream()
+        Optional<Mobile> targetPlayer = mobileService.getAvailableMobiles().stream()
                 .filter(c -> c.getName().equalsIgnoreCase(playerName))
                 .findFirst();
 
@@ -88,4 +88,3 @@ public class GotoCommand implements Command {
         return "Syntax: goto <roomID|playerName>\n\nTeleports you instantly to the specified room ID or to the room where the specified player is currently located.";
     }
 }
-

@@ -59,7 +59,8 @@ public class LoadCommand implements Command {
             case "room" -> loadRoom(mobile, id);
             case "npc" -> loadNpc(mobile, adminRoomId, id);
             default -> {
-                communicationService.sendTextMessage(mobile, "\n\nInvalid load target. Use: load <npc|item|room> <id>.");
+                communicationService.sendTextMessage(mobile,
+                        "\n\nInvalid load target. Use: load <npc|item|room> <id>.");
                 yield Mono.empty();
             }
         };
@@ -72,7 +73,8 @@ public class LoadCommand implements Command {
                     return Mono.empty();
                 }))
                 .flatMap(item -> roomService.addItemToRoom(roomId, itemId)
-                        .doOnSuccess(r -> communicationService.sendTextMessage(admin, "\n\nYou have loaded " + item.getName() + " into the room."))
+                        .doOnSuccess(r -> communicationService.sendTextMessage(admin,
+                                "\n\nYou have loaded " + item.getName() + " into the room."))
                         .then());
     }
 
@@ -89,13 +91,14 @@ public class LoadCommand implements Command {
     }
 
     private Mono<Void> loadNpc(Mobile admin, Long adminRoomId, Long npcId) {
-        Optional<Mobile> activeNpcOpt = mobileService.getAvailableCharacters().stream()
+        Optional<Mobile> activeNpcOpt = mobileService.getAvailableMobiles().stream()
                 .filter(m -> m.getId().equals(npcId))
                 .findFirst();
 
         if (activeNpcOpt.isPresent()) {
             Mobile existingNpc = activeNpcOpt.get();
-            communicationService.sendTextMessage(admin, "\n\nMoving active NPC " + existingNpc.getName() + " to your room.");
+            communicationService.sendTextMessage(admin,
+                    "\n\nMoving active NPC " + existingNpc.getName() + " to your room.");
             return mobileService.enterRoom(existingNpc, adminRoomId);
         }
 
@@ -109,7 +112,8 @@ public class LoadCommand implements Command {
                     npc.setCurrentRoomId(adminRoomId);
                     return mobileService.saveMobile(npc)
                             .then(mobileService.selectCharacter(npcId))
-                            .doOnSuccess(v -> communicationService.sendTextMessage(admin, "\n\nLoaded NPC " + npc.getName() + " from database to your room."));
+                            .doOnSuccess(v -> communicationService.sendTextMessage(admin,
+                                    "\n\nLoaded NPC " + npc.getName() + " from database to your room."));
                 });
     }
 
@@ -121,8 +125,8 @@ public class LoadCommand implements Command {
     @Override
     public String getDetailedDescription() {
         return "Syntax: load <npc|item|room> <id>\n\n" +
-               "load npc <id>  - Moves an existing NPC or loads it from the database to your current room.\n" +
-               "load item <id> - Creates a new instance of an item and adds it to your current room.\n" +
-               "load room <id> - Fetches the room and teleports you to it.";
+                "load npc <id>  - Moves an existing NPC or loads it from the database to your current room.\n" +
+                "load item <id> - Creates a new instance of an item and adds it to your current room.\n" +
+                "load room <id> - Fetches the room and teleports you to it.";
     }
 }
