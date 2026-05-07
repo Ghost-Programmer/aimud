@@ -375,11 +375,8 @@ public class MobileService {
             return Mono.just(character);
         }
 
-        // Check if item is equippable
-        boolean isEquippable = switch (itemToEquip.getItemType()) {
-            case WEAPON, TWO_HANDED_WEAPON, LIGHT_ARMOR, MEDIUM_ARMOR, HEAVY_ARMOR -> true;
-            default -> false;
-        };
+        // Check if item is equippable based on wear location rather than just type
+        boolean isEquippable = itemToEquip.getWearLocation() != io.nadia.ai.aimud.types.WearLocation.NONE;
 
         if (!isEquippable) {
             communicationService.sendTextMessage(character, "\n\nYou cannot equip " + itemToEquip.getName() + ".");

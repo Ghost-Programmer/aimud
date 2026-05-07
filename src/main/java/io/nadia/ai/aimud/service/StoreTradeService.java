@@ -44,7 +44,8 @@ public class StoreTradeService {
 
     /**
      * Calculates the price a player receives for selling an item to a store,
-     * factoring in faction reputation and charisma, capped at a hard maximum markup.
+     * factoring in faction reputation and charisma, capped at a hard maximum
+     * markup.
      *
      * @param item          the item to sell
      * @param factionRating the player's faction rating with the merchant
@@ -62,7 +63,8 @@ public class StoreTradeService {
     }
 
     /**
-     * Locates a merchant mobile in the given character's current room matching the store ID.
+     * Locates a merchant mobile in the given character's current room matching the
+     * store ID.
      *
      * @param storeId   the ID of the store
      * @param character the character instance
@@ -78,7 +80,8 @@ public class StoreTradeService {
     }
 
     /**
-     * Assembles the required data for displaying the interactive store dialog to a player.
+     * Assembles the required data for displaying the interactive store dialog to a
+     * player.
      *
      * @param storeId     the ID of the store
      * @param characterId the ID of the character opening the dialog
@@ -162,7 +165,7 @@ public class StoreTradeService {
                 // Add to inventory
                 List<Item> currentInventory = new ArrayList<>(character.getInventory());
                 Item boughtItem = storeItem.getItem();
-                
+
                 boolean itemAdded = false;
                 if (boughtItem.isStackable()) {
                     for (Item invItem : currentInventory) {
@@ -192,7 +195,7 @@ public class StoreTradeService {
                     newItem.setValue(boughtItem.getValue());
                     currentInventory.add(newItem);
                 }
-                
+
                 character.setInventory(currentInventory);
 
                 return mobileService.save(character)
@@ -201,9 +204,11 @@ public class StoreTradeService {
                         .flatMap(savedChar -> {
                             communicationService.sendCharacterUpdate(savedChar);
                             communicationService.sendTextMessage(savedChar,
-                                    "You bought " + storeItem.getItem().getName() + " for " + price + " gold.");
+                                    "\nYou bought " + storeItem.getItem().getName() + " for " + price + " gold.");
                             if (eventPublisher != null && savedChar.getUserId() != null) {
-                                eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(merchant.getId(), savedChar.getId(), savedChar.getName() + " bought " + storeItem.getItem().getName() + " for " + price + " gold."));
+                                eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(
+                                        merchant.getId(), savedChar.getId(), savedChar.getName() + " bought "
+                                                + storeItem.getItem().getName() + " for " + price + " gold."));
                             }
                             return getStoreDialogPayload(storeId, characterId);
                         });
@@ -274,9 +279,11 @@ public class StoreTradeService {
                         .flatMap(savedChar -> {
                             communicationService.sendCharacterUpdate(savedChar);
                             communicationService.sendTextMessage(savedChar,
-                                    "You sold " + itemToSell.getName() + " for " + price + " gold.");
+                                    "\nYou sold " + itemToSell.getName() + " for " + price + " gold.");
                             if (eventPublisher != null && savedChar.getUserId() != null) {
-                                eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(merchant.getId(), savedChar.getId(), savedChar.getName() + " sold " + itemToSell.getName() + " for " + price + " gold."));
+                                eventPublisher.publishEvent(new io.nadia.ai.aimud.event.NpcInteractionEvent(
+                                        merchant.getId(), savedChar.getId(), savedChar.getName() + " sold "
+                                                + itemToSell.getName() + " for " + price + " gold."));
                             }
                             return getStoreDialogPayload(storeId, characterId);
                         });
@@ -284,4 +291,3 @@ public class StoreTradeService {
         });
     }
 }
-
