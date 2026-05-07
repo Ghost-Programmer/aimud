@@ -311,7 +311,7 @@ public class TickService {
                 } else {
                     character.setIdle(character.getIdle() + 1);
 
-                    if (character.getIdle() > 300) {
+                    if (character.getIdle() > 1500) {
                         character.getCommandQueue().add("logout");
                         commandService.processCommand(character)
                                 .doOnError(error -> log.error("Error processing idle logout for {}",
