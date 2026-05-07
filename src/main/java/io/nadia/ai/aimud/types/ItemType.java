@@ -21,7 +21,7 @@ public enum ItemType {
     HEAVY_ARMOR("Heavy Armor", 300, "Armor Class Value", null, null, null),
     FOOD("Food", 5, "Portions / Bites", "Hours Satiated", null, "Poisoned Flag"),
     DRINK("Drink", 2, "Liquid Volume (Sips)", "Hours Quenched", "Liquid Type", "Poisoned Flag"),
-    POTION("Potion", 50, "Spell Effect ID 1", "Spell Effect ID 2", "Spell Effect ID 3", "Spell Level"),
+    POTION("Potion", 50, "Spell Effect ID 1", "Spell Effect ID 2", "Duration", "Spell Level"),
     BOOK("Book", 500, "Skill ID to Teach", null, null, null),
     SCROLL("Scroll", 100, "Spell Effect ID", "Required Skill ID", null, null),
     MONEY("Money", 0, "Value in Gold", null, null, null),
