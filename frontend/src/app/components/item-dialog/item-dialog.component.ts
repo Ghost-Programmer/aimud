@@ -5,6 +5,7 @@ import {Item, ItemType, WearLocation} from '../../models/item.model';
 import {Effect} from '../../models/effect.model';
 import {EffectService} from '../../services/effect.service';
 import {SearchableDropdownComponent} from '../searchable-dropdown/searchable-dropdown.component';
+import {ConfigService} from '../../services/config.service';
 
 @Component({
   selector: 'app-item-dialog',
@@ -31,19 +32,24 @@ export class ItemDialogComponent implements OnInit {
     noPickup: false
   };
 
-  itemTypes = Object.values(ItemType);
-  wearLocations = Object.values(WearLocation);
+  itemTypes: string[] = [];
+  wearLocations: string[] = [];
 
   availableEffects: Effect[] = [];
   selectedEffectId: number | null = null;
 
-  constructor(private effectService: EffectService) {
+  constructor(
+    private effectService: EffectService,
+    private configService: ConfigService
+  ) {
   }
 
   ngOnInit(): void {
     if (this.itemData) {
       this.item = JSON.parse(JSON.stringify(this.itemData));
     }
+    this.configService.getItemTypes().subscribe(types => this.itemTypes = types);
+    this.configService.getWearLocations().subscribe(locs => this.wearLocations = locs);
     this.loadEffects();
   }
 

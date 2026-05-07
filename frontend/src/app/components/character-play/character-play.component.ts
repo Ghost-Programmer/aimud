@@ -13,6 +13,7 @@ import {MobileMacro} from '../../models/mobile-macro.model';
 import {CharacterService} from '../../services/character.service';
 import {GameWebSocketService} from '../../services/game-websocket.service';
 import {Subscription} from 'rxjs';
+import {ConfigService} from '../../services/config.service';
 
 @Component({
   selector: 'app-character-play',
@@ -40,8 +41,8 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
   filterMinValue: number | null = null;
   filterMaxValue: number | null = null;
 
-  itemTypes: string[] = ['Weapon', 'Two Handed Weapon', 'Ranged Weapon', 'Light Armor', 'Medium Armor', 'Heavy Armor', 'Food', 'Drink', 'Potion', 'Book', 'Scroll', 'Money', 'Wand', 'Quest', 'Key', 'Light', 'Container', 'Trash', 'Miscellaneous', 'Corpse', 'Bandage'];
-  wearLocations: string[] = ['Head', 'Neck', 'Torso', 'Arms', 'Hands', 'Finger', 'Waist', 'Legs', 'Feet', 'Wield', 'Hold', 'Shield', 'Floating', 'Light'];
+  itemTypes: string[] = [];
+  wearLocations: string[] = [];
 
   private wsSubscription: Subscription | null = null;
   private combatLogSubscription: Subscription | null = null;
@@ -68,7 +69,8 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
     private characterService: CharacterService,
     private gameWebSocketService: GameWebSocketService,
     private dialog: MatDialog,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private configService: ConfigService
   ) {
   }
 
@@ -121,6 +123,15 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
   }
 
   ngOnInit() {
+    this.configService.getItemTypes().subscribe({
+      next: (types) => this.itemTypes = types,
+      error: (err) => console.error('Failed to load item types', err)
+    });
+    this.configService.getWearLocations().subscribe({
+      next: (locs) => this.wearLocations = locs,
+      error: (err) => console.error('Failed to load wear locations', err)
+    });
+
     if (this.character) {
       this.refreshCharacter();
       this.subscribeToUpdates();

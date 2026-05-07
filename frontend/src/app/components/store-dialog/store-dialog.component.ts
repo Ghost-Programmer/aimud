@@ -7,6 +7,8 @@ import {MatIconModule} from '@angular/material/icon';
 import {ItemStatsDialogComponent} from '../item-stats-dialog/item-stats-dialog.component';
 import {FormsModule} from '@angular/forms';
 
+import {ConfigService} from '../../services/config.service';
+
 @Component({
   selector: 'app-store-dialog',
   standalone: true,
@@ -33,18 +35,27 @@ export class StoreDialogComponent implements OnInit {
   sortDirSell: 'asc' | 'desc' = 'asc';
 
   // Common types and locations for the dropdowns
-  itemTypes: string[] = ['Weapon', 'Two Handed Weapon', 'Ranged Weapon', 'Light Armor', 'Medium Armor', 'Heavy Armor', 'Food', 'Drink', 'Potion', 'Book', 'Scroll', 'Money', 'Wand', 'Quest', 'Key', 'Light', 'Container', 'Trash', 'Miscellaneous', 'Corpse', 'Bandage'];
-  wearLocations: string[] = ['Head', 'Neck', 'Torso', 'Arms', 'Hands', 'Finger', 'Waist', 'Legs', 'Feet', 'Wield', 'Hold', 'Shield', 'Floating', 'Light'];
+  itemTypes: string[] = [];
+  wearLocations: string[] = [];
 
   constructor(
     public dialogRef: MatDialogRef<StoreDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { storeId: number, characterId: number },
     private storeService: StoreService,
+    private configService: ConfigService,
     private matDialog: MatDialog
   ) {}
 
   ngOnInit(): void {
     this.refreshDialog();
+    this.configService.getItemTypes().subscribe({
+      next: (types) => this.itemTypes = types,
+      error: (err) => console.error('Failed to load item types', err)
+    });
+    this.configService.getWearLocations().subscribe({
+      next: (locs) => this.wearLocations = locs,
+      error: (err) => console.error('Failed to load wear locations', err)
+    });
   }
 
   refreshDialog() {

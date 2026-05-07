@@ -17,6 +17,14 @@ export class ConfigService {
     return this.http.get(`${this.apiUrl}/settings`);
   }
 
+  getItemTypes(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/item-types`);
+  }
+
+  getWearLocations(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/wear-locations`);
+  }
+
   updateServerSettings(settings: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/settings`, settings);
   }

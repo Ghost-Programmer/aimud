@@ -3,8 +3,13 @@ package io.nadia.ai.aimud.controller;
 import io.nadia.ai.aimud.model.*;
 import io.nadia.ai.aimud.model.*;
 import io.nadia.ai.aimud.service.ConfigService;
+import io.nadia.ai.aimud.types.ItemType;
+import io.nadia.ai.aimud.types.WearLocation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -39,6 +44,23 @@ public class ConfigController {
     @PutMapping("/settings")
     public Mono<ServerSettings> updateServerSettings(@RequestBody ServerSettings settings) {
         return configService.updateServerSettings(settings);
+    }
+
+    // Types
+    @GetMapping("/item-types")
+    public Mono<List<String>> getItemTypes() {
+        return Mono.just(Arrays.stream(ItemType.values())
+                .map(ItemType::getLabel)
+                .sorted()
+                .collect(Collectors.toList()));
+    }
+
+    @GetMapping("/wear-locations")
+    public Mono<List<String>> getWearLocations() {
+        return Mono.just(Arrays.stream(WearLocation.values())
+                .map(WearLocation::getLabel)
+                .sorted()
+                .collect(Collectors.toList()));
     }
 
     // Agents

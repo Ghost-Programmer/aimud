@@ -4,6 +4,7 @@ import {FormsModule} from '@angular/forms';
 import {ItemService} from '../../services/item.service';
 import {Item, ItemType, WearLocation} from '../../models/item.model';
 import {ItemDialogComponent} from '../item-dialog/item-dialog.component';
+import {ConfigService} from '../../services/config.service';
 
 @Component({
   selector: 'app-item-creator',
@@ -29,11 +30,12 @@ export class ItemCreatorComponent implements OnInit {
     maxValue: undefined as number | undefined
   };
 
-  itemTypes = Object.values(ItemType);
-  wearLocations = Object.values(WearLocation);
+  itemTypes: string[] = [];
+  wearLocations: string[] = [];
 
   constructor(
-    private itemService: ItemService
+    private itemService: ItemService,
+    private configService: ConfigService
   ) {
   }
 
@@ -42,6 +44,8 @@ export class ItemCreatorComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.configService.getItemTypes().subscribe(types => this.itemTypes = types);
+    this.configService.getWearLocations().subscribe(locs => this.wearLocations = locs);
     this.loadItems();
   }
 
