@@ -33,22 +33,42 @@ public class ItemController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) ItemType type,
-            @RequestParam(required = false) WearLocation location,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String location,
             @RequestParam(required = false) Integer minValue,
             @RequestParam(required = false) Integer maxValue) {
-        log.info("REST Request to get items: page={}, size={}, name={}, type={}", page, size, name, type);
+        log.info("REST Request to get items: page={}, size={}, name={}, type={}, location={}", page, size, name, type, location);
+
+        ItemType parsedType = null;
+        if (type != null && !type.isEmpty()) {
+            parsedType = java.util.Arrays.stream(ItemType.values())
+                    .filter(t -> t.name().equalsIgnoreCase(type) || t.getLabel().equalsIgnoreCase(type))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        WearLocation parsedLocation = null;
+        if (location != null && !location.isEmpty()) {
+            parsedLocation = java.util.Arrays.stream(WearLocation.values())
+                    .filter(l -> l.name().equalsIgnoreCase(location) || l.getLabel().equalsIgnoreCase(location))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        ItemType finalType = parsedType;
+        WearLocation finalLocation = parsedLocation;
+
         return itemService.getAllItems()
                 .filter(item -> {
                     boolean matches = true;
                     if (name != null && !name.isEmpty()) {
                         matches = item.getName().toLowerCase().contains(name.toLowerCase());
                     }
-                    if (matches && type != null) {
-                        matches = item.getItemType() == type;
+                    if (matches && finalType != null) {
+                        matches = item.getItemType() == finalType;
                     }
-                    if (matches && location != null) {
-                        matches = item.getWearLocation() == location;
+                    if (matches && finalLocation != null) {
+                        matches = item.getWearLocation() == finalLocation;
                     }
                     if (matches && minValue != null) {
                         matches = item.getValue() >= minValue;
