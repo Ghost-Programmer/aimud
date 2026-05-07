@@ -19,6 +19,7 @@ public class ItemService {
     private final ItemRepository itemRepository;
     private final EffectService effectService;
     private final org.springframework.r2dbc.core.DatabaseClient databaseClient;
+    private final io.nadia.ai.aimud.repository.SkillRegistryRepository skillRegistryRepository;
 
     /**
      * Constructs a new ItemService.
@@ -26,11 +27,13 @@ public class ItemService {
      * @param itemRepository the item repository
      * @param effectService  the effect service
      * @param databaseClient the database client
+     * @param skillRegistryRepository the skill registry repository
      */
-    public ItemService(ItemRepository itemRepository, EffectService effectService, org.springframework.r2dbc.core.DatabaseClient databaseClient) {
+    public ItemService(ItemRepository itemRepository, EffectService effectService, org.springframework.r2dbc.core.DatabaseClient databaseClient, io.nadia.ai.aimud.repository.SkillRegistryRepository skillRegistryRepository) {
         this.itemRepository = itemRepository;
         this.effectService = effectService;
         this.databaseClient = databaseClient;
+        this.skillRegistryRepository = skillRegistryRepository;
     }
 
     /**
@@ -332,5 +335,31 @@ public class ItemService {
             default -> false;
         };
     }
+    @org.springframework.context.event.EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
+    @org.springframework.core.annotation.Order(org.springframework.core.Ordered.LOWEST_PRECEDENCE)
+    public void generateMissingBooks() {
+        log.info("Scanning for missing skill books...");
+        skillRegistryRepository.findAll()
+                .flatMap(skill -> {
+                    String bookName = "Book: " + skill.getName();
+                    return itemRepository.existsByName(bookName)
+                            .flatMap(exists -> {
+                                if (Boolean.FALSE.equals(exists)) {
+                                    Item book = new Item();
+                                    book.setItemType(io.nadia.ai.aimud.types.ItemType.BOOK);
+                                    book.setWearLocation(io.nadia.ai.aimud.types.WearLocation.NONE);
+                                    book.setName(bookName);
+                                    book.setDescription("A heavy tome containing the knowledge to learn " + skill.getName() + ".");
+                                    if (skill.getId() != null) {
+                                        book.setProperty1(skill.getId().intValue());
+                                    }
+                                    book.setCreatedBy("system");
+                                    log.info("Generating missing book: {}", bookName);
+                                    return itemRepository.save(book);
+                                }
+                                return Mono.empty();
+                            });
+                })
+                .subscribe();
+    }
 }
-

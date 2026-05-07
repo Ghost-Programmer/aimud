@@ -5,6 +5,7 @@ import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * Data access repository for ItemRepository entities.
@@ -23,4 +24,6 @@ public interface ItemRepository extends ReactiveCrudRepository<Item, Long> {
 
     @Query("SELECT i.* FROM items i JOIN container_items_load c ON i.id = c.item_id WHERE c.container_id = :containerId")
     Flux<Item> findLoadedContainerItems(Long containerId);
+
+    Mono<Boolean> existsByName(String name);
 }

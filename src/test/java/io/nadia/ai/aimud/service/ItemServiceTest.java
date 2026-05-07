@@ -24,12 +24,13 @@ class ItemServiceTest {
 
     @Mock private ItemRepository itemRepository;
     @Mock private EffectService effectService;
+    @Mock private io.nadia.ai.aimud.repository.SkillRegistryRepository skillRegistryRepository;
 
     private ItemService itemService;
 
     @BeforeEach
     void setUp() {
-        itemService = new ItemService(itemRepository, effectService, org.mockito.Mockito.mock(org.springframework.r2dbc.core.DatabaseClient.class));
+        itemService = new ItemService(itemRepository, effectService, org.mockito.Mockito.mock(org.springframework.r2dbc.core.DatabaseClient.class), skillRegistryRepository);
     }
 
     // --- calculateItemValue ---
