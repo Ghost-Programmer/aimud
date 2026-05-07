@@ -6,7 +6,11 @@ import {PlayerListComponent} from '../../components/player-list/player-list.comp
 import {CreateCharacterComponent} from '../../components/create-character/create-character.component';
 import {CharacterSelectComponent} from '../../components/character-select/character-select.component';
 import {CharacterPlayComponent} from '../../components/character-play/character-play.component';
-import {ConfigDashboardComponent} from '../../components/config-dashboard/config-dashboard.component';
+import {ServerSettingsComponent} from '../../components/server-settings/server-settings.component';
+import {AgentManagementComponent} from '../../components/agent-management/agent-management.component';
+import {RaceManagementComponent} from '../../components/race-management/race-management.component';
+import {ClassManagementComponent} from '../../components/class-management/class-management.component';
+import {FactionManagementComponent} from '../../components/faction-management/faction-management.component';
 import {ItemCreatorComponent} from '../../components/item-creator/item-creator.component';
 import {RoomManagementComponent} from '../../components/room-management/room-management.component';
 import {AiDialogComponent} from '../../components/ai-dialog/ai-dialog.component';
@@ -20,7 +24,7 @@ import {ThemeService} from '../../services/theme.service';
 interface Tab {
   id: string;
   label: string;
-  type: 'create-character' | 'select-character' | 'play-character' | 'players' | 'config' | 'world';
+  type: 'create-character' | 'select-character' | 'play-character' | 'players' | 'world';
   data?: any;
 }
 
@@ -39,7 +43,11 @@ interface PlayTabData {
     CreateCharacterComponent,
     CharacterSelectComponent,
     CharacterPlayComponent,
-    ConfigDashboardComponent,
+    ServerSettingsComponent,
+    AgentManagementComponent,
+    RaceManagementComponent,
+    ClassManagementComponent,
+    FactionManagementComponent,
     ItemCreatorComponent,
     RoomManagementComponent,
     AiDialogComponent,
@@ -82,7 +90,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         if (this.role === 'MUD_ADMIN') {
           this.tabs.push({id: 'world', label: 'World', type: 'world'});
           this.tabs.push({id: 'players', label: 'Players', type: 'players'});
-          this.tabs.push({id: 'config', label: 'Config', type: 'config'});
         }
         this.tabs.push({id: 'select-character-1', label: 'Select Character', type: 'select-character'});
         this.tabs.push({id: 'create-character', label: 'Create Character', type: 'create-character'});

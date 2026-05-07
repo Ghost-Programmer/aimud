@@ -1,0 +1,113 @@
+<div class="section-header" style="justify-content: flex-end;">
+  <button (click)="openClassForm()" class="btn-secondary">Add Class</button>
+</div>
+<div class="table-container">
+  <table>
+    <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr (click)="openClassForm(cls)" *ngFor="let cls of classes" class="clickable-row">
+      <td>{{ cls.name }}</td>
+      <td>{{ cls.description }}</td>
+      <td class="actions-cell">
+        <button (click)="deleteClass(cls.id, $event)" class="icon-btn delete-btn" title="Delete">
+          <svg class="bi bi-trash-fill" fill="currentColor" height="16" viewBox="0 0 16 16"
+                width="16" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+          </svg>
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Class Form Dialog -->
+<div *ngIf="isClassFormVisible" class="dialog-overlay">
+  <div class="dialog-content">
+    <h2>{{ selectedClass ? 'Edit' : 'Add' }} Class</h2>
+    <form (ngSubmit)="saveClass()" [formGroup]="classForm">
+      <div class="form-group">
+        <label for="className">Name</label>
+        <input formControlName="name" id="className" type="text">
+      </div>
+      <div class="form-group">
+        <label for="classDesc">Description</label>
+        <textarea formControlName="description" id="classDesc"></textarea>
+      </div>
+      <div class="form-group checkbox-group">
+        <input formControlName="npcOnly" id="classNpcOnly" type="checkbox">
+        <label for="classNpcOnly">NPC Only</label>
+      </div>
+
+      <!-- Starting Items UI -->
+      <div class="form-group">
+        <label>Starting Items</label>
+
+        <div *ngIf="currentClassStartingItems.length > 0" class="selected-items-list">
+          <div *ngFor="let item of currentClassStartingItems; let i = index" class="selected-item-pill">
+            <span>{{ item.name }} ({{ item.id }})</span>
+            <button (click)="removeStartingItem(i)" class="remove-btn" title="Remove" type="button">&times;</button>
+          </div>
+        </div>
+
+        <div class="item-selector">
+          <select (change)="onSelectItemIdChange($event)" [ngModelOptions]="{standalone: true}"
+                  [ngModel]="selectedItemId">
+            <option [value]="null">Select an item to add...</option>
+            <option *ngFor="let item of availableItems" [value]="item.id">
+              {{ item.name }} ({{ item.id }}) - {{ item.itemType }}
+            </option>
+          </select>
+          <button (click)="addSelectedItem()" [disabled]="!selectedItemId" class="btn-secondary" type="button">Add
+          </button>
+        </div>
+        <input formControlName="startingItems" type="hidden">
+      </div>
+
+      <!-- Starting Skills UI -->
+      <div class="form-group">
+        <label>Starting Skills</label>
+
+        <div *ngIf="currentClassStartingSkills.length > 0" class="selected-items-list">
+          <div *ngFor="let skill of currentClassStartingSkills; let i = index" class="selected-item-pill">
+            <span>{{ skill }}</span>
+            <button (click)="removeStartingSkill(i)" class="remove-btn" title="Remove" type="button">&times;</button>
+          </div>
+        </div>
+
+        <div class="item-selector">
+          <select (change)="onSelectSkillChange($event)" [ngModelOptions]="{standalone: true}"
+                  [ngModel]="selectedSkillName">
+            <option [value]="null">Select a skill to add...</option>
+            <option *ngFor="let skill of availableSkills" [value]="skill.name">
+              {{ skill.name }}
+            </option>
+          </select>
+          <button (click)="addSelectedSkill()" [disabled]="!selectedSkillName" class="btn-secondary" type="button">Add
+          </button>
+        </div>
+        <input formControlName="startingSkills" type="hidden">
+      </div>
+
+      <div class="stats-grid">
+        <div class="form-group"><label>STR Mod</label><input formControlName="strengthMod" type="number"></div>
+        <div class="form-group"><label>DEX Mod</label><input formControlName="dexterityMod" type="number"></div>
+        <div class="form-group"><label>CON Mod</label><input formControlName="constitutionMod" type="number"></div>
+        <div class="form-group"><label>INT Mod</label><input formControlName="intelligenceMod" type="number"></div>
+        <div class="form-group"><label>WIS Mod</label><input formControlName="wisdomMod" type="number"></div>
+        <div class="form-group"><label>CHA Mod</label><input formControlName="charismaMod" type="number"></div>
+      </div>
+      <div class="dialog-actions">
+        <button (click)="closeClassForm()" type="button">Cancel</button>
+        <button [disabled]="classForm.invalid" class="btn-primary" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>

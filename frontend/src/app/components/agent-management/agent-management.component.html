@@ -1,0 +1,66 @@
+<div class="section-header" style="justify-content: flex-end;">
+  <button (click)="openAgentForm()" class="btn-secondary">Add Agent</button>
+</div>
+<div class="table-container">
+  <table>
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>Title</th>
+      <th>Content</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr (click)="openAgentForm(agent)" *ngFor="let agent of paginatedAgents" class="clickable-row">
+      <td>{{ agent.id }}</td>
+      <td>{{ agent.title }}</td>
+      <td class="agent-content-cell" [innerHTML]="agent.content | markdown"></td>
+      <td class="actions-cell">
+        <button (click)="deleteAgent(agent.id, $event)" class="icon-btn delete-btn" title="Delete">
+          <svg class="bi bi-trash-fill" fill="currentColor" height="16" viewBox="0 0 16 16"
+                width="16" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+          </svg>
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+<div *ngIf="agents.length > 0" class="pagination-bar">
+  <div class="pagination-summary">
+    Showing {{ agentRangeStart }}-{{ agentRangeEnd }} of {{ agents.length }} agents
+  </div>
+  <div class="pagination-controls">
+    <button (click)="previousAgentPage()" [disabled]="currentAgentPage === 1" class="btn-secondary" type="button">
+      Previous
+    </button>
+    <span class="page-indicator">Page {{ currentAgentPage }} of {{ totalAgentPages }}</span>
+    <button (click)="nextAgentPage()" [disabled]="currentAgentPage === totalAgentPages" class="btn-secondary"
+            type="button">Next
+    </button>
+  </div>
+</div>
+
+<!-- Agent Form Dialog -->
+<div *ngIf="isAgentFormVisible" class="dialog-overlay">
+  <div class="dialog-content">
+    <h2>{{ selectedAgent ? 'Edit' : 'Add' }} Agent</h2>
+    <form (ngSubmit)="saveAgent()" [formGroup]="agentForm">
+      <div class="form-group">
+        <label for="agentTitle">Title</label>
+        <input formControlName="title" id="agentTitle" type="text">
+      </div>
+      <div class="form-group">
+        <label for="agentContent">Content</label>
+        <textarea #mdeTextarea formControlName="content" id="agentContent" rows="12"></textarea>
+      </div>
+      <div class="dialog-actions">
+        <button (click)="closeAgentForm()" type="button">Cancel</button>
+        <button [disabled]="agentForm.invalid" class="btn-primary" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>

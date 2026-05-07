@@ -42,7 +42,7 @@
       <ng-container *ngFor="let tab of tabs">
         <div
           *ngIf="activeTabId === tab.id"
-          [class.full-height-pane]="tab.type === 'play-character' || tab.type === 'config'"
+          [class.full-height-pane]="tab.type === 'play-character'"
           class="tab-pane">
           <div *ngIf="tab.type === 'create-character'">
             <h2>Create Character</h2>
@@ -65,12 +65,64 @@
             <h2>Players Management</h2>
             <app-player-list></app-player-list>
           </div>
-          <div *ngIf="tab.type === 'config'" class="config-pane">
-            <app-config-dashboard></app-config-dashboard>
-          </div>
           <div *ngIf="tab.type === 'world'">
             <h2>World Builder</h2>
             <div class="world-builder-container">
+              <!-- Server Settings Accordion -->
+              <div [class.active]="activeWorldSection === 'server'" class="accordion-item">
+                <div (click)="toggleWorldSection('server')" class="accordion-header">
+                  <span class="accordion-title">Server Settings</span>
+                  <span class="accordion-icon">{{ activeWorldSection === 'server' ? '▼' : '▶' }}</span>
+                </div>
+                <div class="accordion-content">
+                  <app-server-settings></app-server-settings>
+                </div>
+              </div>
+
+              <!-- Agents Accordion -->
+              <div [class.active]="activeWorldSection === 'agents'" class="accordion-item">
+                <div (click)="toggleWorldSection('agents')" class="accordion-header">
+                  <span class="accordion-title">Agents</span>
+                  <span class="accordion-icon">{{ activeWorldSection === 'agents' ? '▼' : '▶' }}</span>
+                </div>
+                <div class="accordion-content">
+                  <app-agent-management></app-agent-management>
+                </div>
+              </div>
+
+              <!-- Races Accordion -->
+              <div [class.active]="activeWorldSection === 'races'" class="accordion-item">
+                <div (click)="toggleWorldSection('races')" class="accordion-header">
+                  <span class="accordion-title">Races</span>
+                  <span class="accordion-icon">{{ activeWorldSection === 'races' ? '▼' : '▶' }}</span>
+                </div>
+                <div class="accordion-content">
+                  <app-race-management></app-race-management>
+                </div>
+              </div>
+
+              <!-- Classes Accordion -->
+              <div [class.active]="activeWorldSection === 'classes'" class="accordion-item">
+                <div (click)="toggleWorldSection('classes')" class="accordion-header">
+                  <span class="accordion-title">Character Classes</span>
+                  <span class="accordion-icon">{{ activeWorldSection === 'classes' ? '▼' : '▶' }}</span>
+                </div>
+                <div class="accordion-content">
+                  <app-class-management></app-class-management>
+                </div>
+              </div>
+
+              <!-- Factions Accordion -->
+              <div [class.active]="activeWorldSection === 'factions'" class="accordion-item">
+                <div (click)="toggleWorldSection('factions')" class="accordion-header">
+                  <span class="accordion-title">Factions</span>
+                  <span class="accordion-icon">{{ activeWorldSection === 'factions' ? '▼' : '▶' }}</span>
+                </div>
+                <div class="accordion-content">
+                  <app-faction-management></app-faction-management>
+                </div>
+              </div>
+
               <!-- Room Management Accordion -->
               <div [class.active]="activeWorldSection === 'rooms'" class="accordion-item">
                 <div (click)="toggleWorldSection('rooms')" class="accordion-header">
