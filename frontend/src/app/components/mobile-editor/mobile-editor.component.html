@@ -205,7 +205,20 @@
       </div>
 
       <div class="form-section mt-3" *ngIf="mobileForm.get('usesAi')?.value">
-        <h4>AI Configuration (Available Actions)</h4>
+        <h4>AI Configuration</h4>
+        
+        <div class="form-row mb-3">
+          <label>AI Agent Template</label>
+          <app-searchable-dropdown
+            formControlName="agent"
+            [options]="availableAgents"
+            bindLabel="title"
+            bindValue="title"
+            placeholder="Select AI Agent...">
+          </app-searchable-dropdown>
+        </div>
+
+        <h5>Available Actions</h5>
         <div formArrayName="actions">
           <div *ngFor="let aiAction of actionsControls.controls; let i=index" [formGroupName]="i" class="array-row" style="margin-bottom: 10px;">
             <input formControlName="description" placeholder="AI Option Description (e.g. 'Greet the player')" type="text" style="flex: 2" />

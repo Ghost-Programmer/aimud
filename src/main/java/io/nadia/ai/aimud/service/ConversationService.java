@@ -350,20 +350,23 @@ public class ConversationService {
                                 .build())
                         .build();
 
-                log.info("Processing conversation for NPC: {}", npc.getName());
-                log.info("Prompt: \n {}", prompt.toString());
+                reactor.core.publisher.Mono<List<io.nadia.ai.aimud.model.Agent>> agentMono = (npc.getAgent() != null && !npc.getAgent().isEmpty())
+                        ? configService.getAllAgents().filter(a -> npc.getAgent().equals(a.title())).collectList()
+                        : reactor.core.publisher.Mono.just(java.util.Collections.emptyList());
 
-                configService.getAllAgents().collectList().<String>flatMapMany(agents -> {
-                    StringBuilder systemText = new StringBuilder();
-                    for (io.nadia.ai.aimud.model.Agent agent : agents) {
-                        systemText.append("Agent: ").append(agent.title()).append("\n").append(agent.content()).append("\n\n");
+                agentMono.<String>flatMapMany(agents -> {
+                    if (!agents.isEmpty()) {
+                        prompt.insert(0, agents.get(0).content() + "\n\n\n");
                     }
+
+                    log.info("Processing conversation for NPC: {}", npc.getName());
+                    log.info("Prompt: \n {}", prompt.toString());
+
                     return chatClient.mutate()
                             .defaultOptions(options)
                             .defaultAdvisors(ragAdvisor)
                             .build()
                             .prompt()
-                            .system(systemText.toString())
                             .user(prompt.toString())
                             .stream().content()
                             .filter(text -> text != null && !text.isEmpty());

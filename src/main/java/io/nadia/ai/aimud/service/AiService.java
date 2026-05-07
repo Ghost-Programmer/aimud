@@ -48,6 +48,7 @@ public class AiService {
         log.info("Processing AI prompt with tools: {}", userPrompt);
 
         return configService.getAllAgents()
+                .filter(agent -> "Admin AI".equals(agent.title()))
                 .collectList()
                 .flatMapMany(agents -> {
                     StringBuilder systemText = new StringBuilder();
@@ -80,6 +81,7 @@ public class AiService {
         log.info("Processing AI prompt WITHOUT tools: {}", userPrompt);
 
         return configService.getAllAgents()
+                .filter(agent -> "Admin AI".equals(agent.title()))
                 .collectList()
                 .flatMapMany(agents -> {
                     StringBuilder systemText = new StringBuilder();

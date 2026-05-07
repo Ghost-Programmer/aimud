@@ -51,8 +51,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 --changeset jeff:2
-ALTER TABLE users
-ADD COLUMN locked BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE users ADD COLUMN locked BOOLEAN NOT NULL DEFAULT false;
 
 --changeset jeff:3
 CREATE TABLE IF NOT EXISTS characters (
@@ -184,8 +183,7 @@ VALUES (
     );
 
 --changeset jeff:5
-ALTER TABLE races
-ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE races ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT false;
 
 ALTER TABLE character_classes
 ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT false;
@@ -317,8 +315,7 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 --changeset jeff:10
-ALTER TABLE characters
-ADD COLUMN current_room_id BIGINT DEFAULT 1;
+ALTER TABLE characters ADD COLUMN current_room_id BIGINT DEFAULT 1;
 
 ALTER TABLE characters
 ADD CONSTRAINT fk_character_room FOREIGN KEY (current_room_id) REFERENCES rooms (id);
@@ -557,8 +554,7 @@ ALTER TABLE races ALTER COLUMN created_at TYPE TIMESTAMP;
 
 ALTER TABLE races ALTER COLUMN modified_at TYPE TIMESTAMP;
 
-ALTER TABLE character_classes
-ALTER COLUMN created_at TYPE TIMESTAMP;
+ALTER TABLE character_classes ALTER COLUMN created_at TYPE TIMESTAMP;
 
 ALTER TABLE character_classes
 ALTER COLUMN modified_at TYPE TIMESTAMP;
@@ -575,11 +571,9 @@ ALTER TABLE effects ALTER COLUMN created_at TYPE TIMESTAMP;
 
 ALTER TABLE effects ALTER COLUMN modified_at TYPE TIMESTAMP;
 
-ALTER TABLE server_settings
-ALTER COLUMN created_at TYPE TIMESTAMP;
+ALTER TABLE server_settings ALTER COLUMN created_at TYPE TIMESTAMP;
 
-ALTER TABLE server_settings
-ALTER COLUMN modified_at TYPE TIMESTAMP;
+ALTER TABLE server_settings ALTER COLUMN modified_at TYPE TIMESTAMP;
 
 ALTER TABLE server_info ALTER COLUMN created_at TYPE TIMESTAMP;
 
@@ -5940,8 +5934,7 @@ SELECT setval(
 FROM rooms;
 
 --changeset jeff:62
-ALTER TABLE races
-ADD COLUMN npc_only BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE races ADD COLUMN npc_only BOOLEAN NOT NULL DEFAULT false;
 
 ALTER TABLE character_classes
 ADD COLUMN npc_only BOOLEAN NOT NULL DEFAULT false;
@@ -5989,24 +5982,19 @@ CREATE TABLE IF NOT EXISTS agents (
     content TEXT NOT NULL
 );
 
-INSERT INTO
-    agents (id, title, content)
-VALUES (
-        1,
-        'General World Builder Instructions',
-        'You are an Expert Multi-User Dungeon World Builder. You have access to MCP tools for creating rooms, items, and effects for items. Use these tools to help the user build their world.\n\nGUIDELINES:\n1. When a user asks to create something, use the appropriate MCP tools.'
-    ),
-    (2, 'Tools Instructions', ' ')
-ON CONFLICT (id) DO
-UPDATE
-SET
-    title = EXCLUDED.title,
-    content = EXCLUDED.content;
+DELETE FROM agents;
 
-UPDATE agents
-SET
-    content = '## Purpose
+INSERT INTO agents (id, title, content)
+VALUES (
+    1,
+    'Admin AI',
+    '## Purpose
 Use this guide as the system prompt/instruction set for an AI agent that builds AIMUD world content through `McpToolService`.
+
+You are an Expert Multi-User Dungeon World Builder. You have access to MCP tools for creating rooms, items, and effects for items. Use these tools to help the user build their world.
+
+GUIDELINES:
+1. When a user asks to create something, use the appropriate MCP tools.
 
 Primary goals:
 - Create and update rooms, mobiles (NPCs), items, and effects.
@@ -6268,11 +6256,8 @@ Slot fill behavior for grouped locations:
 1. `getItem(itemId)`  -- Ensure the item exists
 2. `createEffect("FIRE_DAMAGE", 1, 6, 0, 0)`  -- Create a new fire damage effect
 3. `linkEffectToItem(itemId, effectId)`  -- Link the new effect to the item
-4. `getEffectsByItem(itemId)`  -- Verify the effect is linked
-
-'
-WHERE
-    id = 2;
+4. `getEffectsByItem(itemId)`  -- Verify the effect is linked'
+);
 
 SELECT setval(
         pg_get_serial_sequence('agents', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL
@@ -6978,3 +6963,7 @@ UPDATE rooms SET day_light_value = 10, night_light_value = 2 WHERE room_type IN 
 UPDATE rooms SET day_light_value = 7, night_light_value = 1 WHERE room_type IN ('FOREST', 'SWAMP');
 UPDATE rooms SET day_light_value = 5, night_light_value = 0 WHERE room_type = 'UNDERWATER';
 UPDATE rooms SET day_light_value = 0, night_light_value = 0 WHERE room_type IN ('UNDERGROUND_CAVE', 'UNDERGROUND_DUNGEON');
+
+--changeset jeff:mobile-agent-field
+ALTER TABLE mobiles ADD COLUMN IF NOT EXISTS agent VARCHAR(255);
+CREATE INDEX IF NOT EXISTS idx_agents_title ON agents(title);

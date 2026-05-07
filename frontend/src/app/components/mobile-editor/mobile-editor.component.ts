@@ -31,6 +31,7 @@ export class MobileEditorComponent implements OnInit, OnDestroy {
   stores: Store[] = [];
   factions: Faction[] = [];
   factionRatings: { [key: number]: number } = {};
+  availableAgents: any[] = [];
 
   // Adjusted to match backend JSON mapping of WearLocation
   wearLocations = ['Head', 'Chest', 'Legs', 'Feet', 'Arms', 'Hands', 'Finger', 'Wrist', 'Neck', 'Ear', 'Face', 'Waist', 'Primary', 'Offhand'];
@@ -70,6 +71,7 @@ export class MobileEditorComponent implements OnInit, OnDestroy {
     this.loadRacesAndClasses();
     this.factionService.getAllFactions().subscribe(f => this.factions = f);
     this.loadStores();
+    this.configService.getAllAgents().subscribe(a => this.availableAgents = a);
     this.storeSub = this.storeService.storesUpdated$.subscribe(() => {
       this.loadStores();
     });
@@ -125,6 +127,7 @@ export class MobileEditorComponent implements OnInit, OnDestroy {
       willFollow: [false],
       willLoot: [false],
       usesAi: [false],
+      agent: [null],
       nonCombat: [false],
 
       actions: this.fb.array([]),
@@ -329,6 +332,7 @@ export class MobileEditorComponent implements OnInit, OnDestroy {
       willFollow: false,
       willLoot: false,
       usesAi: false,
+      agent: null,
       nonCombat: false,
       factionId: null,
       storeId: null

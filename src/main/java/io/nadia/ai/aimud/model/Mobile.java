@@ -100,6 +100,9 @@ public class Mobile {
     @Column("uses_ai")
     private boolean usesAi;
 
+    @Column("agent")
+    private String agent;
+
     @Column("non_combat")
     private boolean nonCombat;
 
