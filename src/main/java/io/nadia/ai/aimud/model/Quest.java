@@ -26,6 +26,9 @@ public class Quest {
 
     private int level = 1;
 
+    @Column("is_world_event")
+    private boolean isWorldEvent;
+
     @CreatedDate
     @Column("created_at")
     private LocalDateTime createdAt;

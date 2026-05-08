@@ -132,6 +132,7 @@ export class MobileEditorComponent implements OnInit, OnDestroy {
       usesAi: [false],
       agent: [null],
       nonCombat: [false],
+      isWorldLog: [false],
 
       actions: this.fb.array([]),
 

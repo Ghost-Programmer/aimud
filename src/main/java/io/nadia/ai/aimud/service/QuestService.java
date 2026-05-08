@@ -19,19 +19,22 @@ public class QuestService {
     private final QuestDropRepository questDropRepository;
     private final ItemService itemService;
     private final CommunicationService communicationService;
+    private final GameLogService gameLogService;
 
     public QuestService(QuestRepository questRepository,
                         QuestStepRepository questStepRepository,
                         CharacterQuestRepository characterQuestRepository,
                         QuestDropRepository questDropRepository,
                         ItemService itemService,
-                        CommunicationService communicationService) {
+                        CommunicationService communicationService,
+                        GameLogService gameLogService) {
         this.questRepository = questRepository;
         this.questStepRepository = questStepRepository;
         this.characterQuestRepository = characterQuestRepository;
         this.questDropRepository = questDropRepository;
         this.itemService = itemService;
         this.communicationService = communicationService;
+        this.gameLogService = gameLogService;
     }
 
     public Mono<Void> checkTalkObjective(Mobile player, Mobile targetNpc) {
@@ -103,18 +106,26 @@ public class QuestService {
                     }
                     return characterQuestRepository.save(cq).then();
                 })
-                .switchIfEmpty(Mono.defer(() -> completeQuest(player, cq)));
+                .switchIfEmpty(Mono.defer(() -> completeQuest(player, cq, interactingNpc)));
     }
 
-    private Mono<Void> completeQuest(Mobile player, CharacterQuest cq) {
+    private Mono<Void> completeQuest(Mobile player, CharacterQuest cq, Mobile interactingNpc) {
         cq.setStatus(QuestStatus.COMPLETED);
         cq.setProgressCount(0);
         return characterQuestRepository.save(cq)
                 .then(questRepository.findById(cq.getQuestId()))
                 .flatMap(quest -> {
                     communicationService.sendTextMessage(player, "\n\n*** Quest Completed: " + quest.getName() + " ***");
+                    
+                    // Record Logs
+                    Mono<Void> logMono = gameLogService.recordLog(player.getId(), false, player.getName() + " completed the quest: " + quest.getName() + ".").then();
+                    if (quest.isWorldEvent() || (interactingNpc != null && interactingNpc.isWorldLog())) {
+                        logMono = logMono.then(gameLogService.recordLog(player.getId(), true, player.getName() + " completed the epic quest: " + quest.getName() + ".").then());
+                    }
+
+                    Mono<Void> rewardMono = Mono.empty();
                     if (quest.getRewardItemId() != null) {
-                        return itemService.getItem(quest.getRewardItemId())
+                        rewardMono = itemService.getItem(quest.getRewardItemId())
                                 .flatMap(item -> {
                                     if (player.getInventory() != null) {
                                         player.getInventory().add(item);
@@ -123,7 +134,7 @@ public class QuestService {
                                     return Mono.empty();
                                 });
                     }
-                    return Mono.empty();
+                    return logMono.then(rewardMono);
                 });
     }
 

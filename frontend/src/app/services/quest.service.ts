@@ -8,6 +8,7 @@ export interface Quest {
   description: string;
   rewardItemId?: number;
   level: number;
+  isWorldEvent: boolean;
 }
 
 export interface QuestStep {

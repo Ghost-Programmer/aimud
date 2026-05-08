@@ -54,6 +54,9 @@
       <button (click)="setActiveStatTab('party')" [class.active]="activeStatTab === 'party'" class="stat-tab-btn">
         Party
       </button>
+      <button (click)="setActiveStatTab('log')" [class.active]="activeStatTab === 'log'" class="stat-tab-btn">
+        Log
+      </button>
     </div>
 
     <div *ngIf="activeStatTab === 'stats'" class="stat-content">
@@ -457,6 +460,51 @@
                 <mat-icon>person_remove</mat-icon>
               </button>
             </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div *ngIf="activeStatTab === 'log'" class="stat-content">
+      <div class="inventory-container">
+        <!-- Filter Bar -->
+        <div class="filter-bar" style="display: flex; gap: 15px; margin-bottom: 15px; align-items: center; flex-wrap: wrap;">
+          <div class="filter-group" style="display: flex; align-items: center; gap: 5px;">
+            <input type="checkbox" id="showPersonalLogs" [(ngModel)]="showPersonalLogs">
+            <label for="showPersonalLogs" style="margin: 0; cursor: pointer;">Personal Logs</label>
+          </div>
+          <div class="filter-group" style="display: flex; align-items: center; gap: 5px;">
+            <input type="checkbox" id="showWorldLogs" [(ngModel)]="showWorldLogs">
+            <label for="showWorldLogs" style="margin: 0; cursor: pointer;">World Logs</label>
+          </div>
+          <div class="filter-group" style="flex-grow: 1; display: flex; justify-content: flex-end;">
+            <input type="text" [(ngModel)]="logSearchFilter" placeholder="Search logs..." style="width: 250px;">
+          </div>
+          <button (click)="fetchLogs()" mat-icon-button title="Refresh Logs" style="background: rgba(255, 255, 255, 0.1); border-radius: 4px; padding: 4px; height: 32px; width: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; border: none;">
+            <mat-icon style="font-size: 18px; width: 18px; height: 18px;">refresh</mat-icon>
+          </button>
+        </div>
+
+        <table class="inventory-table">
+          <thead>
+          <tr>
+            <th style="width: 15%">Date</th>
+            <th style="width: 10%">Type</th>
+            <th>Message</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let log of filteredLogs">
+            <td style="font-size: 0.9em; color: #aaa;">{{ log.createdAt | date:'short' }}</td>
+            <td>
+              <span *ngIf="log.isWorldLog" style="color: #ff9800; font-weight: bold; font-size: 0.8em; padding: 2px 6px; border: 1px solid #ff9800; border-radius: 4px;">World</span>
+              <span *ngIf="!log.isWorldLog" style="color: #4caf50; font-weight: bold; font-size: 0.8em; padding: 2px 6px; border: 1px solid #4caf50; border-radius: 4px;">Personal</span>
+            </td>
+            <td class="item-name">{{ log.message }}</td>
+          </tr>
+          <tr *ngIf="filteredLogs.length === 0">
+            <td class="empty-inventory" colspan="3">No logs found.</td>
           </tr>
           </tbody>
         </table>

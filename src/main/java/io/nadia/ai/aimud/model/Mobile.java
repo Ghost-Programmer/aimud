@@ -16,7 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The core entity representing any physical actor traversing the MUD.
- * Handles both user-controlled Players and completely automated NPC merchants/monsters.
+ * Handles both user-controlled Players and completely automated NPC
+ * merchants/monsters.
  */
 @Getter
 @Setter
@@ -78,7 +79,7 @@ public class Mobile {
 
     @Column("hunger")
     private int hunger = 100;
-    
+
     @Column("thirst")
     private int thirst = 100;
 
@@ -108,6 +109,9 @@ public class Mobile {
 
     @Column("frozen")
     private boolean frozen;
+
+    @Column("is_world_log")
+    private boolean isWorldLog;
 
     @Transient
     private io.nadia.ai.aimud.types.MobileStatus status = io.nadia.ai.aimud.types.MobileStatus.STANDING;
@@ -277,7 +281,8 @@ public class Mobile {
      * @param amount     flat metric of hostility points
      */
     public void addHate(Long attackerId, int amount) {
-        if (attackerId == null || attackerId.equals(this.getId())) return;
+        if (attackerId == null || attackerId.equals(this.getId()))
+            return;
         hateList.merge(attackerId, amount, Integer::sum);
     }
 
@@ -287,7 +292,8 @@ public class Mobile {
      * @param attackerId id to clear from table
      */
     public void removeHate(Long attackerId) {
-        if (attackerId == null) return;
+        if (attackerId == null)
+            return;
         hateList.remove(attackerId);
     }
 
@@ -297,7 +303,8 @@ public class Mobile {
      * @return highest scored hostile threat ID, or null if mapping is empty
      */
     public Long getHighestHateTargetId() {
-        if (hateList.isEmpty()) return null;
+        if (hateList.isEmpty())
+            return null;
         return hateList.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
@@ -481,25 +488,49 @@ public class Mobile {
     }
 
     /**
-     * Checks if the Mobile represents a natively hidden presence within current spell buffs tracking.
+     * Returns true if the mobile is a player.
+     * 
+     * @return true if the mobile is a player, false otherwise
+     */
+    public boolean isPlayer() {
+        return this.userId != null;
+    }
+
+    /**
+     * Returns true if the mobile is an NPC.
+     * 
+     * @return true if the mobile is an NPC, false otherwise
+     */
+    public boolean isNpc() {
+        return this.userId == null;
+    }
+
+    /**
+     * Checks if the Mobile represents a natively hidden presence within current
+     * spell buffs tracking.
      *
      * @return true if currently hidden, else false
      */
     public boolean isHidden() {
-        if (this.spellEffects == null) return false;
+        if (this.spellEffects == null)
+            return false;
         return this.spellEffects.stream()
-                .anyMatch(effect -> effect.getEffect() != null && effect.getEffect().getEffectType() == EffectType.HIDDEN);
+                .anyMatch(effect -> effect.getEffect() != null
+                        && effect.getEffect().getEffectType() == EffectType.HIDDEN);
     }
 
     /**
-     * Checks the entity's active buffs to identify major invisibility status indicators.
+     * Checks the entity's active buffs to identify major invisibility status
+     * indicators.
      *
      * @return true if fully invisible, else false
      */
     public boolean isInvisible() {
-        if (this.spellEffects == null) return false;
+        if (this.spellEffects == null)
+            return false;
         return this.spellEffects.stream()
-                .anyMatch(effect -> effect.getEffect() != null && effect.getEffect().getEffectType() == EffectType.INVISIBLE);
+                .anyMatch(effect -> effect.getEffect() != null
+                        && effect.getEffect().getEffectType() == EffectType.INVISIBLE);
     }
 
     /**
@@ -508,8 +539,10 @@ public class Mobile {
      * @return true if sleeping, else false
      */
     public boolean isSleeping() {
-        if (this.spellEffects == null) return false;
+        if (this.spellEffects == null)
+            return false;
         return this.spellEffects.stream()
-                .anyMatch(effect -> effect.getEffect() != null && effect.getEffect().getEffectType() == EffectType.SLEEPING);
+                .anyMatch(effect -> effect.getEffect() != null
+                        && effect.getEffect().getEffectType() == EffectType.SLEEPING);
     }
 }

@@ -14,6 +14,7 @@ import {CharacterService} from '../../services/character.service';
 import {GameWebSocketService} from '../../services/game-websocket.service';
 import {Subscription} from 'rxjs';
 import {ConfigService} from '../../services/config.service';
+import {GameLogService, GameLog} from '../../services/game-log.service';
 
 @Component({
   selector: 'app-character-play',
@@ -44,6 +45,12 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
   itemTypes: string[] = [];
   wearLocations: string[] = [];
 
+  // Logs state
+  logs: GameLog[] = [];
+  showPersonalLogs: boolean = true;
+  showWorldLogs: boolean = true;
+  logSearchFilter: string = '';
+
   private wsSubscription: Subscription | null = null;
   private combatLogSubscription: Subscription | null = null;
 
@@ -70,7 +77,8 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
     private gameWebSocketService: GameWebSocketService,
     private dialog: MatDialog,
     private ngZone: NgZone,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private gameLogService: GameLogService
   ) {
   }
 
@@ -135,7 +143,49 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
     if (this.character) {
       this.refreshCharacter();
       this.subscribeToUpdates();
+      this.fetchLogs();
     }
+  }
+
+  fetchLogs() {
+    if (!this.character?.id) return;
+    this.logs = [];
+    
+    // Fetch personal logs
+    this.gameLogService.getPersonalLogs(this.character.id).subscribe({
+      next: (logs) => {
+        this.logs = [...this.logs, ...logs];
+        this.sortLogs();
+      },
+      error: (err) => console.error('Failed to load personal logs', err)
+    });
+
+    // Fetch world logs
+    this.gameLogService.getWorldLogs().subscribe({
+      next: (logs) => {
+        // filter out duplicates if world log was also personal somehow (not likely but safe)
+        const newLogs = logs.filter(wl => !this.logs.some(l => l.id === wl.id));
+        this.logs = [...this.logs, ...newLogs];
+        this.sortLogs();
+      },
+      error: (err) => console.error('Failed to load world logs', err)
+    });
+  }
+
+  sortLogs() {
+    this.logs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  get filteredLogs() {
+    return this.logs.filter(log => {
+      if (log.isWorldLog && !this.showWorldLogs) return false;
+      if (!log.isWorldLog && !this.showPersonalLogs) return false;
+      
+      if (this.logSearchFilter) {
+        return log.message.toLowerCase().includes(this.logSearchFilter.toLowerCase());
+      }
+      return true;
+    });
   }
 
   ngAfterViewInit() {

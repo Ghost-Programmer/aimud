@@ -37,6 +37,7 @@ public class TickService {
     private final FactionService factionService;
     private final ConfigService configService;
     private final QuestService questService;
+    private final GameLogService gameLogService;
     private final java.util.concurrent.Executor taskExecutor;
     private final Random random = new Random();
 
@@ -58,6 +59,7 @@ public class TickService {
     public TickService(MobileService mobileService, CommandService commandService,
             CommunicationService communicationService, SkillService skillService, RoomService roomService,
             FactionService factionService, ConfigService configService, QuestService questService,
+            GameLogService gameLogService,
             @org.springframework.beans.factory.annotation.Qualifier("applicationTaskExecutor") java.util.concurrent.Executor taskExecutor) {
 
         this.mobileService = mobileService;
@@ -68,6 +70,7 @@ public class TickService {
         this.factionService = factionService;
         this.configService = configService;
         this.questService = questService;
+        this.gameLogService = gameLogService;
         this.taskExecutor = taskExecutor;
     }
 
@@ -1024,6 +1027,15 @@ public class TickService {
                 communicationService.sendTextMessage(target, deathMsg);
             }
             communicationService.roomMessage(target, deathMsg);
+        }
+
+        // Record Game Logs
+        String killerName = attacker != null ? attacker.getName() : "an unknown force";
+        if (target.getUserId() != null) {
+            gameLogService.recordLog(target.getId(), false, target.getName() + " was slain by " + killerName + ".").subscribe();
+        }
+        if (target.isWorldLog()) {
+            gameLogService.recordLog(target.getId(), true, target.getName() + " was slain by " + killerName + ".").subscribe();
         }
 
         createCorpse(target, finalKillerId);

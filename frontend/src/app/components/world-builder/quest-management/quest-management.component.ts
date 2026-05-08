@@ -88,7 +88,12 @@ export class QuestManagementComponent implements OnInit {
   }
 
   createNewQuest(): void {
-    this.selectedQuest = { name: '', description: '', level: 1 };
+    this.selectedQuest = { 
+      name: '', 
+      description: '', 
+      level: 1,
+      isWorldEvent: false
+    };
     this.steps = [];
     this.drops = [];
   }
