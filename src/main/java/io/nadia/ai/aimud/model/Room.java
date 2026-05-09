@@ -64,6 +64,12 @@ public class Room {
     @Column("down_door_open")
     private boolean downDoorOpen;
 
+    @Column("room_persist")
+    private boolean roomPersist;
+
+    @Column("room_house")
+    private boolean roomHouse;
+
     @Column("day_light_value")
     private Integer dayLightValue;
 

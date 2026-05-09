@@ -57,3 +57,5 @@ databaseChangeLog:
       file: db/changelog/changes/082-game-logs.sql
   - include:
       file: db/changelog/changes/083-auto-map.sql
+  - include:
+      file: db/changelog/changes/084-room-flags.sql

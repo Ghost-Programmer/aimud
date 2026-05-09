@@ -38,6 +38,8 @@ export interface Room {
   westDoorOpen: boolean;
   upDoorOpen: boolean;
   downDoorOpen: boolean;
+  roomPersist: boolean;
+  roomHouse: boolean;
   dayLightValue?: number;
   nightLightValue?: number;
   items?: string;

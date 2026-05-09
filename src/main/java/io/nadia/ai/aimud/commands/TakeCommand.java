@@ -140,18 +140,18 @@ public class TakeCommand implements Command {
                             .findFirst();
 
                     if (transientMatch.isPresent()) {
-                        if (transientMatch.get().isNoPickup()) {
+                        Item itemToTake = transientMatch.get();
+                        if (itemToTake.isNoPickup()) {
                             communicationService.sendTextMessage(mobile, "\n\nYou cannot pick that up.");
+                            return Mono.<Void>empty();
                         }
-                        // Even if noPickup is false for a transient item, picking up
-                        // transient items is not yet implemented ??? treat as not allowed.
-                        return Mono.empty();
+                        return mobileService.takeTransientItem(mobile, itemToTake).then();
                     }
 
                     List<Long> itemIds = room.getItemIds();
                     if (itemIds.isEmpty()) {
                         communicationService.sendTextMessage(mobile, "\n\nYou don't see that here.");
-                        return Mono.empty();
+                        return Mono.<Void>empty();
                     }
 
                     return Flux.fromIterable(itemIds)

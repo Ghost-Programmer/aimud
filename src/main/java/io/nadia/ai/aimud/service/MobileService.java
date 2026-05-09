@@ -520,7 +520,15 @@ public class MobileService {
         currentInventory.remove(itemToDrop);
         character.setInventory(currentInventory);
 
-        return this.roomService.addItemToRoom(character.getCurrentRoomId(), itemId)
+        return this.roomService.getRoom(character.getCurrentRoomId())
+                .flatMap(room -> {
+                    if (room.isRoomPersist()) {
+                        return this.roomService.addItemToRoom(room.getId(), itemId);
+                    } else {
+                        this.roomService.addTransientItemToRoom(room.getId(), itemToDrop);
+                        return reactor.core.publisher.Mono.just(room);
+                    }
+                })
                 .then(this.save(character))
                 .flatMap(savedChar -> updateInventory(savedChar, currentInventory))
                 .flatMap(savedChar -> getCharacterById(savedChar.getId()))
@@ -648,6 +656,42 @@ public class MobileService {
                 .flatMap(savedChar -> updateInventory(savedChar, currentInventory))
                 .flatMap(savedChar -> getCharacterById(savedChar.getId()))
                 .doOnNext(communicationService::sendCharacterUpdate);
+    }
+
+    public Mono<Mobile> takeTransientItem(Mobile character, Item itemToTake) {
+        log.info("Taking transient item {} for character {}", itemToTake.getName(), character.getName());
+
+        if (itemToTake.getItemType() == io.nadia.ai.aimud.types.ItemType.MONEY) {
+            int goldAmount = itemToTake.getProperty1();
+            character.setGold(character.getGold() + goldAmount);
+            this.roomService.removeTransientItemFromRoom(character.getCurrentRoomId(), itemToTake);
+            return this.save(character)
+                    .flatMap(savedChar -> getCharacterById(savedChar.getId()))
+                    .doOnNext(savedChar -> {
+                        communicationService.sendTextMessage(savedChar,
+                                "\n\nYou pick up " + goldAmount + " gold.");
+                        communicationService.roomMessage(savedChar,
+                                "\n" + savedChar.getName() + " picks up some gold.");
+                        communicationService.sendCharacterUpdate(savedChar);
+                    });
+        }
+
+        List<Item> currentInventory = new ArrayList<>(character.getInventory());
+        currentInventory.add(itemToTake);
+        character.setInventory(currentInventory);
+
+        this.roomService.removeTransientItemFromRoom(character.getCurrentRoomId(), itemToTake);
+
+        return this.save(character)
+                .flatMap(savedChar -> updateInventory(savedChar, currentInventory))
+                .flatMap(savedChar -> getCharacterById(savedChar.getId()))
+                .doOnNext(savedChar -> {
+                    communicationService.sendTextMessage(savedChar,
+                            "\n\nYou take " + itemToTake.getName() + ".");
+                    communicationService.roomMessage(savedChar,
+                            "\n" + savedChar.getName() + " takes " + itemToTake.getName() + ".");
+                    communicationService.sendCharacterUpdate(savedChar);
+                });
     }
 
     public Mono<Mobile> takeItem(Mobile character, Long itemId) {
