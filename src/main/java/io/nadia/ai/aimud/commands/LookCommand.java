@@ -163,6 +163,22 @@ public class LookCommand implements Command {
 
                         if (light >= 5) {
                             communicationService.sendTextMessage(mobile, "\n\n" + room.getName() + "\n" + room.getDescription());
+                            
+                            if (room.isRoomHouse() && mobile.getInventory().stream().anyMatch(i -> i.getItemType() == ItemType.DOCUMENT && i.getName().equalsIgnoreCase("Housing Writ"))) {
+                                StringBuilder houseMsg = new StringBuilder("\nIt looks like a house could be built here.");
+                                List<String> availableExits = new ArrayList<>();
+                                if (room.getNorthId() == null) availableExits.add("North");
+                                if (room.getEastId() == null) availableExits.add("East");
+                                if (room.getSouthId() == null) availableExits.add("South");
+                                if (room.getWestId() == null) availableExits.add("West");
+                                if (room.getUpId() == null) availableExits.add("Up");
+                                if (room.getDownId() == null) availableExits.add("Down");
+                                
+                                if (!availableExits.isEmpty()) {
+                                    houseMsg.append(" Available directions: ").append(String.join(", ", availableExits)).append(".");
+                                }
+                                communicationService.sendTextMessage(mobile, houseMsg.toString());
+                            }
                         }
 
                         if (light == 1) {

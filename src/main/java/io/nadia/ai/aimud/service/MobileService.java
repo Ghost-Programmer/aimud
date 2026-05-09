@@ -888,6 +888,22 @@ public class MobileService {
                                     if (light >= 5) {
                                         this.communicationService.sendTextMessage(character,
                                                 "\n\n" + room.getDescription() + "\n\n");
+
+                                        if (room.isRoomHouse() && character.getInventory().stream().anyMatch(i -> i.getItemType() == io.nadia.ai.aimud.types.ItemType.DOCUMENT && i.getName().equalsIgnoreCase("Housing Writ"))) {
+                                            StringBuilder houseMsg = new StringBuilder("\nIt looks like a house could be built here.");
+                                            List<String> availableExits = new ArrayList<>();
+                                            if (room.getNorthId() == null) availableExits.add("North");
+                                            if (room.getEastId() == null) availableExits.add("East");
+                                            if (room.getSouthId() == null) availableExits.add("South");
+                                            if (room.getWestId() == null) availableExits.add("West");
+                                            if (room.getUpId() == null) availableExits.add("Up");
+                                            if (room.getDownId() == null) availableExits.add("Down");
+
+                                            if (!availableExits.isEmpty()) {
+                                                houseMsg.append(" Available directions: ").append(String.join(", ", availableExits)).append(".");
+                                            }
+                                            this.communicationService.sendTextMessage(character, houseMsg.toString());
+                                        }
                                     }
 
                                     if (light == 1) {
