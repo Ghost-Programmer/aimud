@@ -20,7 +20,8 @@ export enum ItemType {
   CONTAINER = 'Container',
   TRASH = 'Trash',
   MISCELLANEOUS = 'Miscellaneous',
-  CORPSE = 'Corpse'
+  CORPSE = 'Corpse',
+  DOCUMENT = 'Document'
 }
 
 export enum WearLocation {

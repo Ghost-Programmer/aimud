@@ -245,6 +245,9 @@ public class ItemService {
                 case MISC:
                     value += item.getProperty1();
                     break;
+                case DOCUMENT:
+                    value += item.getProperty1();
+                    break;
                 default:
                     break;
             }
