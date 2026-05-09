@@ -1,0 +1,123 @@
+.map-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.map-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.z-label {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.grid {
+  display: grid;
+  gap: 4px;
+  background: #2a2a2a;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #444;
+}
+
+.grid-cell-wrapper {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid-cell {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.grid-cell:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.8);
+  z-index: 10;
+}
+
+.current-room {
+  border: 3px solid #fff;
+  box-shadow: 0 0 10px #fff;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 5px #fff; }
+  50% { box-shadow: 0 0 15px #fff; }
+  100% { box-shadow: 0 0 5px #fff; }
+}
+
+.exit {
+  position: absolute;
+  background-color: #aaa;
+}
+
+.exit-n { top: -4px; left: 18px; width: 4px; height: 4px; }
+.exit-s { bottom: -4px; left: 18px; width: 4px; height: 4px; }
+.exit-e { top: 18px; right: -4px; width: 4px; height: 4px; }
+.exit-w { top: 18px; left: -4px; width: 4px; height: 4px; }
+
+.exit-up-icon, .exit-down-icon {
+  position: absolute;
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+.exit-up-icon { top: 2px; right: 2px; }
+.exit-down-icon { bottom: 2px; right: 2px; }
+
+/* Room Type Colors */
+.bg-forest { background-color: #2e7d32; }
+.bg-city { background-color: #757575; }
+.bg-water { background-color: #1976d2; }
+.bg-mountain { background-color: #5d4037; }
+.bg-desert { background-color: #fbc02d; }
+.bg-cave { background-color: #424242; }
+.bg-swamp { background-color: #558b2f; }
+.bg-field { background-color: #8bc34a; }
+.bg-indoors { background-color: #8d6e63; }
+.bg-default { background-color: #9e9e9e; }
+
+.legend-panel {
+  margin-top: 16px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.legend-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+}

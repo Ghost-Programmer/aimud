@@ -23,6 +23,7 @@ public class CommunicationService {
     private final Sinks.Many<PartyUpdate> partyUpdates = Sinks.many().multicast().directBestEffort();
     private final Sinks.Many<StoreDialogEvent> storeDialogs = Sinks.many().multicast().directBestEffort();
     private final Sinks.Many<CombatLogMessage> combatLogs = Sinks.many().multicast().directBestEffort();
+    private final Sinks.Many<io.nadia.ai.aimud.model.dto.MapData> mapUpdates = Sinks.many().multicast().directBestEffort();
 
     @Setter
     private MobileService mobileService;
@@ -98,6 +99,10 @@ public class CommunicationService {
         return combatLogs.asFlux();
     }
 
+    public Flux<io.nadia.ai.aimud.model.dto.MapData> getMapUpdates() {
+        return mapUpdates.asFlux();
+    }
+
     /**
      * Emits a character update if the character is associated with a user.
      *
@@ -146,6 +151,15 @@ public class CommunicationService {
         }
         log.info("Sending target update for {}", character.getName());
         targetUpdates.tryEmitNext(new TargetUpdate(character, target));
+    }
+
+    public void sendMapUpdate(Mobile character, io.nadia.ai.aimud.model.dto.MapData mapData) {
+        if (character == null || character.getId() == null || character.getUserId() == null) {
+            return;
+        }
+        log.info("Sending map update for character {}", character.getName());
+        mapData.setCharacterId(character.getId());
+        mapUpdates.tryEmitNext(mapData);
     }
 
     /**

@@ -57,6 +57,9 @@
       <button (click)="setActiveStatTab('log')" [class.active]="activeStatTab === 'log'" class="stat-tab-btn">
         Log
       </button>
+      <button (click)="setActiveStatTab('map')" [class.active]="activeStatTab === 'map'" class="stat-tab-btn">
+        Map
+      </button>
     </div>
 
     <div *ngIf="activeStatTab === 'stats'" class="stat-content">
@@ -509,6 +512,10 @@
           </tbody>
         </table>
       </div>
+    </div>
+
+    <div *ngIf="activeStatTab === 'map'" class="stat-content map-tab-content" style="height: 100%; overflow: auto;">
+      <app-map-display [characterId]="character?.id" [isAdmin]="character?.roles?.includes('MUD_ADMIN')"></app-map-display>
     </div>
   </div>
 </div>

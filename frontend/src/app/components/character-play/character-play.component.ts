@@ -9,6 +9,7 @@ import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import {ItemStatsDialogComponent} from '../item-stats-dialog/item-stats-dialog.component';
 import {MacroEditDialogComponent} from '../macro-edit-dialog/macro-edit-dialog.component';
 import {StoreDialogComponent} from '../store-dialog/store-dialog.component';
+import {MapDisplayComponent} from '../map-display/map-display.component';
 import {MobileMacro} from '../../models/mobile-macro.model';
 import {CharacterService} from '../../services/character.service';
 import {GameWebSocketService} from '../../services/game-websocket.service';
@@ -19,7 +20,7 @@ import {GameLogService, GameLog} from '../../services/game-log.service';
 @Component({
   selector: 'app-character-play',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule, MatMenuModule, MatButtonModule, MatIconModule, MatDialogModule],
+  imports: [CommonModule, FormsModule, DragDropModule, MatMenuModule, MatButtonModule, MatIconModule, MatDialogModule, MapDisplayComponent],
   templateUrl: './character-play.component.html',
   styleUrl: './character-play.component.css'
 })
@@ -327,6 +328,12 @@ export class CharacterPlayComponent implements OnInit, OnChanges, OnDestroy, Aft
       },
       error: (err) => console.error('Combat Log WebSocket error', err)
     });
+
+    setTimeout(() => {
+      if (this.character?.id) {
+        this.characterService.sendCommand(this.character.id, 'look').subscribe();
+      }
+    }, 500);
   }
 
   scrollToBottom() {

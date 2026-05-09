@@ -1,0 +1,51 @@
+<div class="map-container">
+  <div class="map-controls">
+    <button mat-icon-button (click)="changeZ(-1)" matTooltip="Go Down/Lower Z-Level">
+      <mat-icon>arrow_drop_down</mat-icon>
+    </button>
+    <span class="z-label">Z-Level: {{ currentZ }}</span>
+    <button mat-icon-button (click)="changeZ(1)" matTooltip="Go Up/Higher Z-Level">
+      <mat-icon>arrow_drop_up</mat-icon>
+    </button>
+  </div>
+
+  <div class="grid" [style.grid-template-columns]="'repeat(' + gridSize + ', 1fr)'">
+    <ng-container *ngFor="let row of gridCells; let y = index">
+      <div *ngFor="let cell of row; let x = index" class="grid-cell-wrapper">
+        <div *ngIf="cell" 
+             class="grid-cell" 
+             [ngClass]="getRoomColorClass(cell.roomType)"
+             [class.current-room]="cell.relativeX === 0 && cell.relativeY === 0 && cell.relativeZ === 0"
+             (click)="onRoomClick(cell)"
+             [matTooltip]="cell.name + (isAdmin ? ' (ID: ' + cell.roomId + ')' : '')">
+          
+          <!-- Exits Indicators -->
+          <div *ngIf="cell.north" class="exit exit-n"></div>
+          <div *ngIf="cell.south" class="exit exit-s"></div>
+          <div *ngIf="cell.east" class="exit exit-e"></div>
+          <div *ngIf="cell.west" class="exit exit-w"></div>
+          
+          <mat-icon *ngIf="cell.up" class="exit-up-icon">arrow_upward</mat-icon>
+          <mat-icon *ngIf="cell.down" class="exit-down-icon">arrow_downward</mat-icon>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <mat-expansion-panel class="legend-panel">
+    <mat-expansion-panel-header>
+      <mat-panel-title>Map Legend</mat-panel-title>
+    </mat-expansion-panel-header>
+    <div class="legend-grid">
+      <div class="legend-item"><div class="legend-color bg-forest"></div>Forest</div>
+      <div class="legend-item"><div class="legend-color bg-city"></div>City</div>
+      <div class="legend-item"><div class="legend-color bg-water"></div>Water</div>
+      <div class="legend-item"><div class="legend-color bg-mountain"></div>Mountain</div>
+      <div class="legend-item"><div class="legend-color bg-desert"></div>Desert</div>
+      <div class="legend-item"><div class="legend-color bg-cave"></div>Cave</div>
+      <div class="legend-item"><div class="legend-color bg-swamp"></div>Swamp</div>
+      <div class="legend-item"><div class="legend-color bg-field"></div>Field</div>
+      <div class="legend-item"><div class="legend-color bg-indoors"></div>Indoors</div>
+    </div>
+  </mat-expansion-panel>
+</div>

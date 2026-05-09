@@ -27,6 +27,7 @@ public class LookCommand implements Command {
     private final MobileService mobileService;
     private final ItemService itemService;
     private final ConfigService configService;
+    private final MapService mapService;
 
     @Override
     /**
@@ -150,6 +151,11 @@ public class LookCommand implements Command {
                     // Otherwise, regular room look
                     return roomService.calculateCurrentLightValue(room).flatMap(baseLight -> {
                         int light = mobileService.getEffectiveLight(mobile, baseLight);
+                        
+                        if (mobile.getUserId() != null) {
+                            mapService.sendMapSnapshot(mobile);
+                        }
+
                         if (light <= 0) {
                             communicationService.sendTextMessage(mobile, "\n\nIt is pitch black. You cannot see anything.");
                             return Mono.empty();

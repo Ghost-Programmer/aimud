@@ -54,6 +54,10 @@ public class MobileService {
     private final MobileSkillRepository mobileSkillRepository;
     private final MobileMacroRepository mobileMacroRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    @org.springframework.context.annotation.Lazy
+    private MapService mapService;
+
     // In-memory storage for active/available characters
     private final ConcurrentHashMap<Long, Mobile> activeMobiles = new ConcurrentHashMap<>();
 
@@ -812,12 +816,20 @@ public class MobileService {
                     }
 
                     character.setCurrentRoomId(room.getId());
+                    if (character.getUserId() != null) {
+                        this.addVisitedRoom(character.getId(), room.getId()).subscribe();
+                    }
+
                     return this.save(character)
                             .flatMap(savedChar -> roomService.calculateCurrentLightValue(room).doOnNext(baseLight -> {
                                 int light = this.getEffectiveLight(savedChar, baseLight);
                                 if (!savedChar.isHidden() && !savedChar.isInvisible()) {
                                     this.communicationService.roomMessage(savedChar,
                                             "\n" + savedChar.getName() + " has entered the room.");
+                                }
+
+                                if (savedChar.getUserId() != null) {
+                                    this.mapService.sendMapSnapshot(savedChar);
                                 }
 
                                 if (light <= 0) {
@@ -1202,5 +1214,19 @@ public class MobileService {
         return roomService.getRoom(roomId)
                 .doOnNext(this::spawnMobilesForRoom)
                 .then();
+    }
+
+    public Mono<Void> addVisitedRoom(Long mobileId, Long roomId) {
+        return databaseClient.sql("INSERT INTO mobile_visited_rooms (mobile_id, room_id) VALUES (:mobileId, :roomId) ON CONFLICT DO NOTHING")
+            .bind("mobileId", mobileId)
+            .bind("roomId", roomId)
+            .then();
+    }
+
+    public Flux<Long> getVisitedRooms(Long mobileId) {
+        return databaseClient.sql("SELECT room_id FROM mobile_visited_rooms WHERE mobile_id = :mobileId")
+            .bind("mobileId", mobileId)
+            .map(row -> row.get("room_id", Long.class))
+            .all();
     }
 }
