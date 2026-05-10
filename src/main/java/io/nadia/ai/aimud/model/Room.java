@@ -70,6 +70,9 @@ public class Room {
     @Column("room_house")
     private boolean roomHouse;
 
+    @Column("room_owner")
+    private Long roomOwner;
+
     @Column("day_light_value")
     private Integer dayLightValue;
 

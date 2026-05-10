@@ -61,3 +61,7 @@ databaseChangeLog:
       file: db/changelog/changes/084-room-flags.sql
   - include:
       file: db/changelog/changes/085-housing-writ.sql
+  - include:
+      file: db/changelog/changes/086-room-owner.sql
+  - include:
+      file: db/changelog/changes/087-house-expansion-permit.sql
