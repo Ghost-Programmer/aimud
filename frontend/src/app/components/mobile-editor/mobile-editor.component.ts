@@ -108,6 +108,7 @@ export class MobileEditorComponent implements OnInit, OnDestroy {
     this.mobileForm = this.fb.group({
       id: [null],
       name: ['', Validators.required],
+      description: [''],
       strength: [10],
       dexterity: [10],
       constitution: [10],
@@ -334,6 +335,7 @@ export class MobileEditorComponent implements OnInit, OnDestroy {
   createNew() {
     this.selectedMobile = null;
     this.mobileForm.reset({
+      description: '',
       strength: 10,
       dexterity: 10,
       constitution: 10,

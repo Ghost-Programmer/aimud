@@ -1148,6 +1148,10 @@ public class MobileService {
                 mobile.setUserId(null);
 
                 statService.updateCurrentStats(mobile).subscribe(updatedMobile -> {
+                    // Reset health and mana to max when spawning an NPC
+                    updatedMobile.setCurrentHp(updatedMobile.getMaxHp());
+                    updatedMobile.setCurrentMana(updatedMobile.getMaxMana());
+
                     // Fetch AI actions into transient list
                     getMobileActions(updatedMobile.getId()).collectList().subscribe(actions -> {
                         updatedMobile.setActions(actions);

@@ -85,6 +85,9 @@ public class LookCommand implements Command {
                                     String className = tuple.getT2();
 
                                     StringBuilder desc = new StringBuilder("\n\nYou look at " + m.getName() + ".\n");
+                                    if (m.getDescription() != null && !m.getDescription().isBlank()) {
+                                        desc.append(m.getDescription()).append("\n");
+                                    }
                                     desc.append(m.getName()).append(" is a ").append(raceName).append(" ").append(className).append(".\n");
 
                                     double hpPercent = m.getMaxHp() > 0 ? (double) m.getCurrentHp() / (double) m.getMaxHp() : 1.0;

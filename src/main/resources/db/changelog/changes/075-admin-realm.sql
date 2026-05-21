@@ -586,7 +586,7 @@ VALUES
     'NONE',
     'The Sun Fragment',
     'A light that never fades.',
-    99999,
+    10,
     0,
     0,
     0

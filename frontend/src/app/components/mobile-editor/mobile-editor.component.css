@@ -140,6 +140,33 @@
   font-weight: bold;
 }
 
+.form-row-vertical {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+.form-row-vertical label {
+  color: var(--color-hex-ccc);
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.form-row-vertical textarea {
+  width: 100%;
+  padding: 8px;
+  background: var(--input-bg);
+  border: 1px solid var(--glass-10);
+  color: var(--text-main);
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.form-row-vertical textarea:focus {
+  outline: none;
+  border-color: var(--primary, var(--color-hex-409cff));
+}
+
 .search-select-group {
   flex: 1;
   display: flex;
