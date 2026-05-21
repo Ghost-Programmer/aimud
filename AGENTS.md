@@ -14,6 +14,7 @@
 - Live game loop is scheduled in `src/main/java/com/aimud/aimud/service/TickService.java` with a multi-tiered virtual thread scheduler (`FastTick` at 1s for combat/actions, `SlowTick` at 5s for regen/weather); active player state is in-memory (`MobileService.getAvailableCharacters`), not DB-only.
 - Real-time updates go through Reactor sinks (`CommunicationService`) to `/ws/game` for JSON events and `/ws/combat_log` for binary CBOR events (`GameWebSocketHandler` and `CombatLogWebSocketHandler`).
 - WebSocket payload contract for standard events is JSON `{ type, id, data }` where `type` is `character|text|logout|party`; broadcast text uses `id: -1`. High-throughput combat logs use compressed binary CBOR payloads.
+- Item type property names mapped to the `ItemType` enum are exposed reactive via `/api/config/item-types/details` and cached on the frontend to dynamically display non-null properties in the item stats dialog.
 
 ## AI + MCP integration
 

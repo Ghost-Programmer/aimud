@@ -96,6 +96,31 @@ h2[mat-dialog-title] {
   color: var(--color-hex-f44336);
 }
 
+.properties-section {
+  margin-bottom: 12px;
+}
+
+.properties-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.property-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.property-label {
+  font-weight: bold;
+  color: var(--color-hex-aaa);
+}
+
+.property-value {
+  color: var(--color-hex-fff);
+}
+
 .no-stats {
   color: var(--color-hex-888);
   font-style: italic;

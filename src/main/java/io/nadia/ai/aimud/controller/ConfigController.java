@@ -2,6 +2,7 @@ package io.nadia.ai.aimud.controller;
 
 import io.nadia.ai.aimud.model.*;
 import io.nadia.ai.aimud.model.*;
+import io.nadia.ai.aimud.model.dto.ItemTypeDetails;
 import io.nadia.ai.aimud.service.ConfigService;
 import io.nadia.ai.aimud.types.ItemType;
 import io.nadia.ai.aimud.types.WearLocation;
@@ -55,6 +56,28 @@ public class ConfigController {
                 .map(ItemType::getLabel)
                 .sorted()
                 .collect(Collectors.toList()));
+    }
+
+    /**
+     * Handles HTTP GET requests to retrieve detailed metadata for all item types,
+     * including property names.
+     * @return dynamic reactive {@code Mono<Map<String, ItemTypeDetails>>} mapping item type labels to their details.
+     */
+    @GetMapping("/item-types/details")
+    public Mono<Map<String, ItemTypeDetails>> getItemTypesDetails() {
+        Map<String, ItemTypeDetails> details = Arrays.stream(ItemType.values())
+                .collect(Collectors.toMap(
+                        ItemType::getLabel,
+                        it -> new ItemTypeDetails(
+                                it.name(),
+                                it.getLabel(),
+                                it.getProperty1Name(),
+                                it.getProperty2Name(),
+                                it.getProperty3Name(),
+                                it.getProperty4Name()
+                        )
+                ));
+        return Mono.just(details);
     }
 
     @GetMapping("/wear-locations")

@@ -12,10 +12,9 @@ import java.util.stream.Stream;
  * Contains definitions for property mapping per item category.
  */
 public enum ItemType {
-    WEAPON("Weapon", 100, "Damage Dice Count", "Size of Damage Dice", "Bonus Damage", "Weapon Category"),
-    TWO_HANDED_WEAPON("Two Handed Weapon", 200, "Damage Dice Count", "Size of Damage Dice", "Bonus Damage",
-            "Weapon Category"),
-    RANGED_WEAPON("Ranged Weapon", 150, "Damage Dice Count", "Size of Damage Dice", "Bonus Damage", "Ammunition Type"),
+    WEAPON("Weapon", 100, null, null, null, null),
+    TWO_HANDED_WEAPON("Two Handed Weapon", 200, null, null, null, null),
+    RANGED_WEAPON("Ranged Weapon", 150, null, null, null, null),
     LIGHT_ARMOR("Light Armor", 50, "Armor Class Value", null, null, null),
     MEDIUM_ARMOR("Medium Armor", 150, "Armor Class Value", null, null, null),
     HEAVY_ARMOR("Heavy Armor", 300, "Armor Class Value", null, null, null),
@@ -28,7 +27,7 @@ public enum ItemType {
     WAND("Wand", 250, "Spell Effect ID", "Max Charges", "Current Charges", null),
     QUEST("Quest", 0, "Quest ID", null, null, null),
     KEY("Key", 10, "Lock ID", null, null, null),
-    LIGHT("Light", 20, "Duration (Ticks)", null, null, null),
+    LIGHT("Light", 20, "Brightness", null, null, null),
     CONTAINER("Container", 50, "Max Weight Capacity", "Max Item Count", "Lock ID", "Key ID"),
     TRASH("Trash", 0, null, null, null, null),
     MISC("Miscellaneous", 0, "Value in Gold", null, null, null),

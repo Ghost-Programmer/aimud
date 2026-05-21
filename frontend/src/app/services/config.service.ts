@@ -1,13 +1,16 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
+import {shareReplay} from 'rxjs/operators';
 import {Agent} from '../models/agent.model';
+import {ItemTypeDetails} from '../models/item.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ConfigService {
   private apiUrl = '/api/config';
+  private itemTypesDetails$: Observable<{[key: string]: ItemTypeDetails}> | null = null;
 
   constructor(private http: HttpClient) {
   }
@@ -19,6 +22,15 @@ export class ConfigService {
 
   getItemTypes(): Observable<string[]> {
     return this.http.get<string[]>(`${this.apiUrl}/item-types`);
+  }
+
+  getItemTypesDetails(): Observable<{[key: string]: ItemTypeDetails}> {
+    if (!this.itemTypesDetails$) {
+      this.itemTypesDetails$ = this.http.get<{[key: string]: ItemTypeDetails}>(`${this.apiUrl}/item-types/details`).pipe(
+        shareReplay(1)
+      );
+    }
+    return this.itemTypesDetails$;
   }
 
   getWearLocations(): Observable<string[]> {

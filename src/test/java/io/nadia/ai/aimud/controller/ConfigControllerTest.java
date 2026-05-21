@@ -5,6 +5,7 @@ import io.nadia.ai.aimud.model.CharacterClass;
 import io.nadia.ai.aimud.model.Race;
 import io.nadia.ai.aimud.model.SkillRegistry;
 import io.nadia.ai.aimud.service.ConfigService;
+import io.nadia.ai.aimud.model.dto.ItemTypeDetails;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -23,6 +24,23 @@ class ConfigControllerTest {
 
     @Mock
     private ConfigService configService;
+
+    @Test
+    void getItemTypesDetails_ReturnsMapOfDetails() {
+        ConfigController controller = new ConfigController(configService);
+        StepVerifier.create(controller.getItemTypesDetails())
+                .assertNext(detailsMap -> {
+                    assertThat(detailsMap).containsKey("Weapon");
+                    ItemTypeDetails weaponDetails = detailsMap.get("Weapon");
+                    assertThat(weaponDetails.getName()).isEqualTo("WEAPON");
+                    assertThat(weaponDetails.getLabel()).isEqualTo("Weapon");
+                    assertThat(weaponDetails.getProperty1Name()).isEqualTo("Damage Dice Count");
+                    assertThat(weaponDetails.getProperty2Name()).isEqualTo("Size of Damage Dice");
+                    assertThat(weaponDetails.getProperty3Name()).isEqualTo("Bonus Damage");
+                    assertThat(weaponDetails.getProperty4Name()).isEqualTo("Weapon Category");
+                })
+                .verifyComplete();
+    }
 
     @Test
     void getAllRaces_PlayableOnlyTrueUsesPlayableService() {

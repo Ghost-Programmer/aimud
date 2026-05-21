@@ -66,3 +66,12 @@ export interface PagedItems {
   page: number;
   size: number;
 }
+
+export interface ItemTypeDetails {
+  name: string;
+  label: string;
+  property1Name: string | null;
+  property2Name: string | null;
+  property3Name: string | null;
+  property4Name: string | null;
+}
