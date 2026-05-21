@@ -25,7 +25,8 @@ export class RoomManagementComponent implements OnInit {
     name: '',
     type: '' as RoomType | '',
     minId: undefined as number | undefined,
-    maxId: undefined as number | undefined
+    maxId: undefined as number | undefined,
+    roomHouse: '' as boolean | ''
   };
 
   roomTypes = Object.values(RoomType);
@@ -48,7 +49,8 @@ export class RoomManagementComponent implements OnInit {
       name: this.filters.name,
       type: this.filters.type || undefined,
       minId: this.filters.minId,
-      maxId: this.filters.maxId
+      maxId: this.filters.maxId,
+      roomHouse: this.filters.roomHouse === '' ? undefined : this.filters.roomHouse
     }).subscribe(response => {
       this.rooms = response.rooms;
       this.totalRooms = response.total;

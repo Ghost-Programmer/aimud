@@ -12,6 +12,14 @@
       </select>
     </div>
 
+    <div class="filter-group">
+      <select (change)="onSearch()" [(ngModel)]="filters.roomHouse" class="filter-select">
+        <option [value]="''">All Rooms</option>
+        <option [value]="true">Houses Only</option>
+        <option [value]="false">Non-Houses Only</option>
+      </select>
+    </div>
+
     <div class="filter-group id-filters">
       <input (ngModelChange)="onSearch()" [(ngModel)]="filters.minId" class="id-input" placeholder="Min ID"
              type="number">
@@ -30,6 +38,7 @@
         <th>ID</th>
         <th>Name</th>
         <th>Type</th>
+        <th>House</th>
         <th>Exits (N/S/E/W/U/D)</th>
         <th>Actions</th>
       </tr>
@@ -39,6 +48,11 @@
         <td>{{ room.id }}</td>
         <td>{{ room.name }}</td>
         <td>{{ room.roomType }}</td>
+        <td>
+          <span [class.badge-house]="room.roomHouse" [class.badge-non-house]="!room.roomHouse" class="badge">
+            {{ room.roomHouse ? 'House' : 'Standard' }}
+          </span>
+        </td>
         <td>
           {{ room.northId ? 'N' : '-' }}
           {{ room.southId ? 'S' : '-' }}
@@ -58,7 +72,7 @@
         </td>
       </tr>
       <tr *ngIf="rooms.length === 0">
-        <td class="no-results" colspan="5">No rooms found matching your criteria.</td>
+        <td class="no-results" colspan="6">No rooms found matching your criteria.</td>
       </tr>
       </tbody>
     </table>

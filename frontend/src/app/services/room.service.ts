@@ -16,7 +16,8 @@ export class RoomService {
     name?: string,
     type?: RoomType,
     minId?: number,
-    maxId?: number
+    maxId?: number,
+    roomHouse?: boolean
   }): Observable<PagedRooms> {
     let params = new HttpParams()
       .set('page', page.toString())
@@ -26,6 +27,7 @@ export class RoomService {
     if (filters.type) params = params.set('type', filters.type);
     if (filters.minId !== undefined) params = params.set('minId', filters.minId.toString());
     if (filters.maxId !== undefined) params = params.set('maxId', filters.maxId.toString());
+    if (filters.roomHouse !== undefined) params = params.set('roomHouse', filters.roomHouse.toString());
 
     return this.http.get<PagedRooms>(this.apiUrl, {params});
   }

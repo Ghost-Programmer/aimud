@@ -34,8 +34,9 @@ public class RoomController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) RoomType type,
             @RequestParam(required = false) Long minId,
-            @RequestParam(required = false) Long maxId) {
-        log.info("REST Request to get rooms: page={}, size={}, name={}, type={}", page, size, name, type);
+            @RequestParam(required = false) Long maxId,
+            @RequestParam(required = false) Boolean roomHouse) {
+        log.info("REST Request to get rooms: page={}, size={}, name={}, type={}, roomHouse={}", page, size, name, type, roomHouse);
         return roomService.getAllRooms()
                 .filter(room -> {
                     boolean matches = true;
@@ -50,6 +51,9 @@ public class RoomController {
                     }
                     if (matches && maxId != null) {
                         matches = room.getId() <= maxId;
+                    }
+                    if (matches && roomHouse != null) {
+                        matches = room.isRoomHouse() == roomHouse;
                     }
                     return matches;
                 })

@@ -18,8 +18,9 @@ class WebSocketConfigurationTest {
     @Test
     void webSocketHandlerMapping_RegistersHandlerAtGamePath() {
         GameWebSocketHandler handler = mock(GameWebSocketHandler.class);
+        CombatLogWebSocketHandler combatLogHandler = mock(CombatLogWebSocketHandler.class);
 
-        HandlerMapping mapping = config.webSocketHandlerMapping(handler);
+        HandlerMapping mapping = config.webSocketHandlerMapping(handler, combatLogHandler);
 
         assertThat(mapping).isInstanceOf(SimpleUrlHandlerMapping.class);
         SimpleUrlHandlerMapping simpleMapping = (SimpleUrlHandlerMapping) mapping;
@@ -29,10 +30,17 @@ class WebSocketConfigurationTest {
 
         assertThat(urlMap).containsKey("/ws/game");
         assertThat(urlMap.get("/ws/game")).isSameAs(handler);
+        assertThat(urlMap).containsKey("/ws/combat_log");
+        assertThat(urlMap.get("/ws/combat_log")).isSameAs(combatLogHandler);
     }
 
     @Test
     void webSocketHandlerMapping_HasHighPriority() {
         GameWebSocketHandler handler = mock(GameWebSocketHandler.class);
+        CombatLogWebSocketHandler combatLogHandler = mock(CombatLogWebSocketHandler.class);
+        HandlerMapping mapping = config.webSocketHandlerMapping(handler, combatLogHandler);
+        assertThat(mapping).isInstanceOf(SimpleUrlHandlerMapping.class);
+        SimpleUrlHandlerMapping simpleMapping = (SimpleUrlHandlerMapping) mapping;
+        assertThat(simpleMapping.getOrder()).isEqualTo(1);
     }
 }

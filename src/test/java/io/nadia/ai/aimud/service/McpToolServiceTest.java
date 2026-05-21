@@ -43,12 +43,15 @@ class McpToolServiceTest {
     @Mock
     private StoreService storeService;
 
+    @Mock
+    private TokenBlacklistService tokenBlacklistService;
+
     private McpToolService mcpToolService;
 
     @BeforeEach
     void setUp() {
         mcpToolService = new McpToolService(roomService, itemService, effectService, mobileService, configService,
-                storeService);
+                storeService, tokenBlacklistService);
     }
 
     @Test
