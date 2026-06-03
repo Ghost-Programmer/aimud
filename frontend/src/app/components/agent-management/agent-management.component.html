@@ -7,7 +7,6 @@
     <tr>
       <th>ID</th>
       <th>Title</th>
-      <th>Content</th>
       <th>Actions</th>
     </tr>
     </thead>
@@ -15,7 +14,6 @@
     <tr (click)="openAgentForm(agent)" *ngFor="let agent of paginatedAgents" class="clickable-row">
       <td>{{ agent.id }}</td>
       <td>{{ agent.title }}</td>
-      <td class="agent-content-cell" [innerHTML]="agent.content | markdown"></td>
       <td class="actions-cell">
         <button (click)="deleteAgent(agent.id, $event)" class="icon-btn delete-btn" title="Delete">
           <svg class="bi bi-trash-fill" fill="currentColor" height="16" viewBox="0 0 16 16"
