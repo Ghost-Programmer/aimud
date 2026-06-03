@@ -5,9 +5,14 @@ import io.nadia.ai.aimud.model.CharacterClass;
 import io.nadia.ai.aimud.model.MobileAction;
 import io.nadia.ai.aimud.model.Race;
 import io.nadia.ai.aimud.model.Room;
+import io.nadia.ai.aimud.model.Store;
+import io.nadia.ai.aimud.model.StoreItem;
+import io.nadia.ai.aimud.model.Item;
+import io.nadia.ai.aimud.model.ServerSettings;
 import io.nadia.ai.aimud.prayers.Prayer;
 import io.nadia.ai.aimud.songs.Song;
 import io.nadia.ai.aimud.spells.Spell;
+import org.springframework.context.annotation.Lazy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -33,30 +38,31 @@ public class ConversationService {
     private final ObjectMapper objectMapper;
     private final org.springframework.ai.vectorstore.VectorStore vectorStore;
     private final org.springframework.ai.chat.client.ChatClient chatClient;
+    private final StoreService storeService;
 
     /**
      * Constructs a new ConversationService.
      *
-     * @param mobileService        the mobile service
-     * @param MobileService        the character service
-     * @param roomService          the room service
-     * @param communicationService the communication service
-     * @param aiService            the AI conversation service
-     * @param commandService       the command processing service
-     * @param factionService       the faction relation service
-     * @param configService        the configuration service for races/classes
-     * @param spellService         the spell service
-     * @param songService          the song service
-     * @param prayerService        the prayer service
-     * @param vectorStore          the VectorStore
-     * @param chatModel            the Ollama chat model
+     * @param mobileService  the mobile service
+     * @param roomService    the room service
+     * @param commandService the command processing service
+     * @param factionService the faction relation service
+     * @param configService  the configuration service for races/classes
+     * @param spellService   the spell service
+     * @param songService    the song service
+     * @param prayerService  the prayer service
+     * @param questService   the quest service
+     * @param vectorStore    the VectorStore
+     * @param chatModel      the Ollama chat model
+     * @param storeService   the store service
      */
     public ConversationService(MobileService mobileService, RoomService roomService,
             CommandService commandService,
             FactionService factionService, ConfigService configService, SpellService spellService,
             SongService songService, PrayerService prayerService, QuestService questService,
             org.springframework.ai.vectorstore.VectorStore vectorStore,
-            org.springframework.ai.ollama.OllamaChatModel chatModel) {
+            org.springframework.ai.ollama.OllamaChatModel chatModel,
+            @Lazy StoreService storeService) {
         this.mobileService = mobileService;
 
         this.roomService = roomService;
@@ -71,6 +77,7 @@ public class ConversationService {
         this.objectMapper = new ObjectMapper();
         this.vectorStore = vectorStore;
         this.chatClient = org.springframework.ai.chat.client.ChatClient.builder(chatModel).build();
+        this.storeService = storeService;
     }
 
     private final java.util.concurrent.ConcurrentHashMap<Long, java.time.Instant> lastEvaluationTime = new java.util.concurrent.ConcurrentHashMap<>();
@@ -279,9 +286,17 @@ public class ConversationService {
             return;
         }
 
-        configService.getServerSettings()
+        reactor.core.publisher.Mono<ServerSettings> settingsMono = configService.getServerSettings();
+        reactor.core.publisher.Mono<Store> storeMono = npc.getStoreId() != null
+                ? storeService.getStore(npc.getStoreId())
+                : reactor.core.publisher.Mono.empty();
+
+        reactor.core.publisher.Mono.zip(settingsMono, storeMono.defaultIfEmpty(new Store()))
                 .publishOn(reactor.core.scheduler.Schedulers.boundedElastic())
-                .subscribe(settings -> {
+                .subscribe(tuple -> {
+                    ServerSettings settings = tuple.getT1();
+                    Store store = tuple.getT2();
+
                     StringBuilder prompt = new StringBuilder();
                     prompt.append("You are an NPC in a Multi-User Dungeon (MUD).\n");
                     prompt.append("Current Game Time: Year ").append(settings.mudYear()).append(", Month ")
@@ -313,6 +328,30 @@ public class ConversationService {
                             .append(" (High = insightful/calm, Low = unobservant/foolish)\n");
                     prompt.append("- Charisma: ").append(npc.getCharisma())
                             .append(" (High = charming/persuasive, Low = rude/abrasive)\n\n");
+
+                    if (store.getId() != null) {
+                        prompt.append("Store Details:\n");
+                        prompt.append("- You run a store named: ").append(store.getName()).append("\n");
+                        if (store.getDescription() != null && !store.getDescription().isBlank()) {
+                            prompt.append("- Store Description: ").append(store.getDescription()).append("\n");
+                        }
+                        prompt.append("- Items available for sale in your store:\n");
+                        if (store.getItems() != null && !store.getItems().isEmpty()) {
+                            for (StoreItem si : store.getItems()) {
+                                if (si.getItem() != null) {
+                                    Item item = si.getItem();
+                                    prompt.append("  * ").append(item.getName());
+                                    if (item.getDescription() != null && !item.getDescription().isBlank()) {
+                                        prompt.append(" (").append(item.getDescription()).append(")");
+                                    }
+                                    prompt.append("\n");
+                                }
+                            }
+                        } else {
+                            prompt.append("  * (No items currently in stock)\n");
+                        }
+                        prompt.append("\n");
+                    }
 
                     prompt.append("Other entities present in the room:\n");
                     for (Mobile p : players) {
@@ -346,9 +385,11 @@ public class ConversationService {
                     prompt.append("1. Roleplay strictly. You are completely immersed in a high-fantasy world.\n");
                     prompt.append("2. READ the retrieved memory context carefully to understand what is going on.\n");
                     prompt.append("3. Output your response in strict JSON format.\n");
-                    prompt.append("4. The JSON must contain 'actionIndices' (an array of numbers corresponding to the available actions you want to take) and optionally 'speech' (a string of what you want to say to the room/players).\n");
+                    prompt.append(
+                            "4. The JSON must contain 'actionIndices' (an array of numbers corresponding to the available actions you want to take) and optionally 'speech' (a string of what you want to say to the room/players).\n");
                     prompt.append("5. For example: {\"actionIndices\": [1,3], \"speech\": \"Greetings travelers!\"}\n");
-                    prompt.append("6. If there is absolutely nothing to do and say, output EXACTLY: {\"actionIndices\": []}\n");
+                    prompt.append(
+                            "6. If there is absolutely nothing to do and say, output EXACTLY: {\"actionIndices\": []}\n");
                     prompt.append("7. DO NOT output any text outside of the JSON block.\n");
 
                     org.springframework.ai.ollama.api.OllamaChatOptions options = org.springframework.ai.ollama.api.OllamaChatOptions
@@ -418,7 +459,8 @@ public class ConversationService {
      *                         taken
      * @param response         the raw textual response from the AI
      */
-    private void processAiResponse(Mobile npc, List<MobileAction> availableActions, String response, List<Mobile> playersInRoom) {
+    private void processAiResponse(Mobile npc, List<MobileAction> availableActions, String response,
+            List<Mobile> playersInRoom) {
         try {
             if (response == null || response.trim().isEmpty())
                 return;
@@ -438,9 +480,9 @@ public class ConversationService {
                 } else if (text.contains("```")) {
                     text = text.replaceAll("```", "");
                 }
-                
+
                 JsonNode rootNode = objectMapper.readTree(text.trim());
-                
+
                 if (rootNode.has("speech") && !rootNode.get("speech").isNull()) {
                     String speech = rootNode.get("speech").asText();
                     if (!speech.isEmpty()) {
@@ -448,7 +490,7 @@ public class ConversationService {
                         questService.processNpcSpeech(npc, playersInRoom, speech).subscribe();
                     }
                 }
-                
+
                 if (rootNode.has("actionIndices") && rootNode.get("actionIndices").isArray()) {
                     for (JsonNode indexNode : rootNode.get("actionIndices")) {
                         int index = indexNode.asInt() - 1;
