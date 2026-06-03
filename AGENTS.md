@@ -15,6 +15,7 @@
 - Real-time updates go through Reactor sinks (`CommunicationService`) to `/ws/game` for JSON events and `/ws/combat_log` for binary CBOR events (`GameWebSocketHandler` and `CombatLogWebSocketHandler`).
 - WebSocket payload contract for standard events is JSON `{ type, id, data }` where `type` is `character|text|logout|party`; broadcast text uses `id: -1`. High-throughput combat logs use compressed binary CBOR payloads.
 - Item type property names mapped to the `ItemType` enum are exposed reactive via `/api/config/item-types/details` and cached on the frontend to dynamically display non-null properties in the item stats dialog.
+- Room light and visibility levels are calculated dynamically via `RoomService.calculateCurrentLightValue` by combining ambient day/night settings, room spell effects, transient floor items, equipped light sources carried by mobiles, and persisted floor items of type `LIGHT`.
 
 ## AI + MCP integration
 

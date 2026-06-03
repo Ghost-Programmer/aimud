@@ -1,9 +1,11 @@
 package io.nadia.ai.aimud.service;
 
 import io.nadia.ai.aimud.model.Item;
+import io.nadia.ai.aimud.model.Mobile;
 import io.nadia.ai.aimud.model.Room;
 import io.nadia.ai.aimud.model.CharacterEffect;
 import io.nadia.ai.aimud.repository.RoomRepository;
+import io.nadia.ai.aimud.types.ItemType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -24,6 +26,7 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final MobileService mobileService;
     private final ConfigService configService;
+    private final ItemService itemService;
 
     // In-memory storage for transient room items (e.g., corpses) — never persisted to DB
     private final ConcurrentHashMap<Long, CopyOnWriteArrayList<Item>> transientRoomItems = new ConcurrentHashMap<>();
@@ -34,11 +37,13 @@ public class RoomService {
      * @param roomRepository       the room repository
      * @param mobileService        the mobile service
      * @param configService        the config service
+     * @param itemService          the item service
      */
-    public RoomService(RoomRepository roomRepository, @Lazy MobileService mobileService, @Lazy ConfigService configService) {
+    public RoomService(RoomRepository roomRepository, @Lazy MobileService mobileService, @Lazy ConfigService configService, @Lazy ItemService itemService) {
         this.roomRepository = roomRepository;
         this.mobileService = mobileService;
         this.configService = configService;
+        this.itemService = itemService;
     }
 
     /**
@@ -222,30 +227,81 @@ public class RoomService {
     }
 
     /**
-     * Calculates ambient light in the room by evaluating current server time.
+     * Calculates ambient light in the room by evaluating current server time,
+     * room spell effects, transient items, equipped light sources on mobiles in the room,
+     * and persisted items on the floor.
      * Updates the room's transient currentLightValue and returns it.
+     *
+     * @param room the room to calculate the light value for
+     * @return a {@link Mono} emitting the calculated current light value
      */
     public Mono<Integer> calculateCurrentLightValue(Room room) {
         return this.configService.getServerSettings()
-                .map(settings -> {
+                .flatMap(settings -> {
                     Integer dayLight = room.getDayLightValue() != null ? room.getDayLightValue() : 0;
                     Integer nightLight = room.getNightLightValue() != null ? room.getNightLightValue() : 0;
-                    Integer light = settings.isNight() ? nightLight : dayLight;
+                    final int[] light = { settings.isNight() ? nightLight : dayLight };
 
+                    // 1. Add Room Spell Effects (e.g. Darkness / Darkvision)
                     if (room.getEffects() != null) {
                         for (CharacterEffect ce : room.getEffects()) {
                             if (ce.getEffect() != null) {
                                 if (io.nadia.ai.aimud.types.EffectType.DARKVISION.equals(ce.getEffect().getEffectType())) {
-                                    light += ce.getEffect().getModifier1();
+                                    light[0] += ce.getEffect().getModifier1();
                                 } else if (io.nadia.ai.aimud.types.EffectType.DARKNESS.equals(ce.getEffect().getEffectType())) {
-                                    light -= ce.getEffect().getModifier1();
+                                    light[0] -= ce.getEffect().getModifier1();
                                 }
                             }
                         }
                     }
 
-                    room.setCurrentLightValue(light);
-                    return light;
+                    // 2. Add Brightness from Transient items (e.g. corpses or dropped transient items of type LIGHT)
+                    List<Item> transientItems = getTransientItemsInRoom(room.getId());
+                    if (transientItems != null) {
+                        for (Item item : transientItems) {
+                            if (item.getItemType() == ItemType.LIGHT) {
+                                light[0] += item.getProperty1();
+                            }
+                        }
+                    }
+
+                    // 3. Add Brightness from Equipped items of type LIGHT carried by mobiles in the room
+                    if (this.mobileService != null) {
+                        List<Mobile> mobiles = this.mobileService.findAllByRoomId(room.getId());
+                        if (mobiles != null) {
+                            for (Mobile m : mobiles) {
+                                Item[] equipment = {
+                                        m.getHead(), m.getChest(), m.getLegs(), m.getFeet(), m.getArms(), m.getHands(),
+                                        m.getRightFinger(), m.getLeftFinger(), m.getRightWrist(), m.getLeftWrist(),
+                                        m.getNeck(), m.getLeftEar(), m.getRightEar(), m.getFace(), m.getWaist(),
+                                        m.getPrimary(), m.getOffhand()
+                                };
+                                for (Item eq : equipment) {
+                                    if (eq != null && eq.getItemType() == ItemType.LIGHT) {
+                                        light[0] += eq.getProperty1();
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 4. Add Brightness from Database-persisted items on the floor
+                    List<Long> itemIds = room.getItemIds();
+                    if (itemIds == null || itemIds.isEmpty()) {
+                        room.setCurrentLightValue(light[0]);
+                        return Mono.just(light[0]);
+                    }
+
+                    return Flux.fromIterable(itemIds)
+                            .flatMap(itemId -> this.itemService.getItem(itemId).onErrorResume(e -> Mono.empty()))
+                            .filter(item -> item.getItemType() == ItemType.LIGHT)
+                            .map(Item::getProperty1)
+                            .reduce(0, Integer::sum)
+                            .map(sum -> {
+                                light[0] += sum;
+                                room.setCurrentLightValue(light[0]);
+                                return light[0];
+                            });
                 });
     }
 
