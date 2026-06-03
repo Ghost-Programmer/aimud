@@ -283,6 +283,11 @@ class MobileServiceTest {
 
         character.getInventory().add(itemToDrop);
 
+        io.nadia.ai.aimud.model.Room room = new io.nadia.ai.aimud.model.Room();
+        room.setId(101L);
+        room.setRoomPersist(true);
+        when(roomService.getRoom(101L)).thenReturn(Mono.just(room));
+
         when(roomService.addItemToRoom(eq(101L), eq(55L))).thenReturn(Mono.empty());
         when(mobileRepository.save(any(Mobile.class))).thenReturn(Mono.just(character));
         when(mobileRepository.findById(1L)).thenReturn(Mono.just(character));

@@ -4,6 +4,7 @@ import io.nadia.ai.aimud.model.Effect;
 import io.nadia.ai.aimud.model.Item;
 import io.nadia.ai.aimud.repository.ItemRepository;
 import io.nadia.ai.aimud.types.EffectType;
+import io.nadia.ai.aimud.types.ItemType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +44,7 @@ class ItemServiceTest {
     @Test
     void calculateItemValue_ItemWithNoEffectsReturnsBaseValue() {
         Item item = new Item();
+        item.setItemType(ItemType.LIGHT_ARMOR);
         item.setEffects(List.of());
         assertThat(itemService.calculateItemValue(item)).isEqualTo(50);
     }
@@ -50,6 +52,7 @@ class ItemServiceTest {
     @Test
     void calculateItemValue_StrengthEffectAdds100PerPoint() {
         Item item = new Item();
+        item.setItemType(ItemType.LIGHT_ARMOR);
         Effect e = new Effect(EffectType.STRENGTH, 3, 0, 0, 0);
         item.setEffects(List.of(e));
         // base 50 + 3 * 100 = 350
@@ -59,6 +62,7 @@ class ItemServiceTest {
     @Test
     void calculateItemValue_ArmorEffectAdds50PerPoint() {
         Item item = new Item();
+        item.setItemType(ItemType.LIGHT_ARMOR);
         Effect e = new Effect(EffectType.ARMOR, 4, 0, 0, 0);
         item.setEffects(List.of(e));
         // base 50 + 4 * 50 = 250
@@ -68,6 +72,7 @@ class ItemServiceTest {
     @Test
     void calculateItemValue_FlyEffectAdds1000() {
         Item item = new Item();
+        item.setItemType(ItemType.LIGHT_ARMOR);
         Effect e = new Effect(EffectType.FLY, 0, 0, 0, 0);
         item.setEffects(List.of(e));
         // base 50 + 1000 = 1050
@@ -77,6 +82,7 @@ class ItemServiceTest {
     @Test
     void calculateItemValue_NegativeModifierReducesValueByHalf() {
         Item item = new Item();
+        item.setItemType(ItemType.LIGHT_ARMOR);
         Effect e = new Effect(EffectType.STRENGTH, -2, 0, 0, 0);
         item.setEffects(List.of(e));
         // base 50 - (2 * 100 / 2) = 50 - 100 = clamped to min 1
@@ -86,6 +92,7 @@ class ItemServiceTest {
     @Test
     void calculateItemValue_MultipleEffectsAreAccumulated() {
         Item item = new Item();
+        item.setItemType(ItemType.LIGHT_ARMOR);
         Effect str = new Effect(EffectType.STRENGTH, 1, 0, 0, 0);    // +100
         Effect armor = new Effect(EffectType.ARMOR, 2, 0, 0, 0);     // +100
         item.setEffects(List.of(str, armor));

@@ -67,3 +67,13 @@ databaseChangeLog:
       file: db/changelog/changes/087-house-expansion-permit.sql
   - include:
       file: db/changelog/changes/088-mooncrest-town.sql
+  - include:
+      file: db/changelog/changes/089-store-real-estate-items.sql
+  - include:
+      file: db/changelog/changes/090-mooncrest-general-goods-items.sql
+  - include:
+      file: db/changelog/changes/091-weapons-weapons-store.sql
+  - include:
+      file: db/changelog/changes/092-mooncrest-armor-items.sql
+
+

@@ -43,6 +43,7 @@ class GameWebSocketHandlerTest {
         lenient().when(communicationService.getTargetUpdates()).thenReturn(Flux.empty());
         lenient().when(communicationService.getPartyUpdates()).thenReturn(Flux.empty());
         lenient().when(communicationService.getStoreDialogs()).thenReturn(Flux.empty());
+        lenient().when(communicationService.getMapUpdates()).thenReturn(Flux.empty());
     }
 
     // ── helper ────────────────────────────────────────────────────────────────

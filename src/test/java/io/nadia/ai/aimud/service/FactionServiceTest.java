@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.r2dbc.core.DatabaseClient;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,6 +26,7 @@ class FactionServiceTest {
     @BeforeEach
     void setUp() {
         factionService = new FactionService(factionRepository, databaseClient);
+        lenient().when(factionRepository.findById(anyLong())).thenReturn(Mono.empty());
     }
 
     // --- getFactionRating defaults ---

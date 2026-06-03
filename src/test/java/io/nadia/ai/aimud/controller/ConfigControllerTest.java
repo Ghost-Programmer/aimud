@@ -34,10 +34,19 @@ class ConfigControllerTest {
                     ItemTypeDetails weaponDetails = detailsMap.get("Weapon");
                     assertThat(weaponDetails.getName()).isEqualTo("WEAPON");
                     assertThat(weaponDetails.getLabel()).isEqualTo("Weapon");
-                    assertThat(weaponDetails.getProperty1Name()).isEqualTo("Damage Dice Count");
-                    assertThat(weaponDetails.getProperty2Name()).isEqualTo("Size of Damage Dice");
-                    assertThat(weaponDetails.getProperty3Name()).isEqualTo("Bonus Damage");
-                    assertThat(weaponDetails.getProperty4Name()).isEqualTo("Weapon Category");
+                    assertThat(weaponDetails.getProperty1Name()).isNull();
+                    assertThat(weaponDetails.getProperty2Name()).isNull();
+                    assertThat(weaponDetails.getProperty3Name()).isNull();
+                    assertThat(weaponDetails.getProperty4Name()).isNull();
+
+                    assertThat(detailsMap).containsKey("Food");
+                    ItemTypeDetails foodDetails = detailsMap.get("Food");
+                    assertThat(foodDetails.getName()).isEqualTo("FOOD");
+                    assertThat(foodDetails.getLabel()).isEqualTo("Food");
+                    assertThat(foodDetails.getProperty1Name()).isEqualTo("Portions / Bites");
+                    assertThat(foodDetails.getProperty2Name()).isEqualTo("Hours Satiated");
+                    assertThat(foodDetails.getProperty3Name()).isNull();
+                    assertThat(foodDetails.getProperty4Name()).isEqualTo("Poisoned Flag");
                 })
                 .verifyComplete();
     }

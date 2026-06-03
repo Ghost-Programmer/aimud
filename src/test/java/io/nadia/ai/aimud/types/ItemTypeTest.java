@@ -49,10 +49,15 @@ class ItemTypeTest {
 
     @Test
     void propertyMetadata_IsExposedForRepresentativeTypes() {
-        assertThat(ItemType.WEAPON.getProperty1Name()).isEqualTo("Damage Dice Count");
-        assertThat(ItemType.WEAPON.getProperty2Name()).isEqualTo("Size of Damage Dice");
-        assertThat(ItemType.WEAPON.getProperty3Name()).isEqualTo("Bonus Damage");
-        assertThat(ItemType.WEAPON.getProperty4Name()).isEqualTo("Weapon Category");
+        assertThat(ItemType.WEAPON.getProperty1Name()).isNull();
+        assertThat(ItemType.WEAPON.getProperty2Name()).isNull();
+        assertThat(ItemType.WEAPON.getProperty3Name()).isNull();
+        assertThat(ItemType.WEAPON.getProperty4Name()).isNull();
+
+        assertThat(ItemType.FOOD.getProperty1Name()).isEqualTo("Portions / Bites");
+        assertThat(ItemType.FOOD.getProperty2Name()).isEqualTo("Hours Satiated");
+        assertThat(ItemType.FOOD.getProperty3Name()).isNull();
+        assertThat(ItemType.FOOD.getProperty4Name()).isEqualTo("Poisoned Flag");
 
         assertThat(ItemType.TRASH.getProperty1Name()).isNull();
         assertThat(ItemType.TRASH.getProperty2Name()).isNull();
